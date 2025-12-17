@@ -1,0 +1,58 @@
+.row{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-around;
+}
+        
+.doboz{
+    background: white;
+    border: 1px solid #ddd;
+    width: 300px;
+    margin-bottom: 20px;
+}
+        
+.doboz-kep{
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+        
+.doboz-tartalom {
+    padding: 15px;
+}
+        
+.doboz-cim {
+    font-weight: bold;
+    font-size: 1.2em;
+}
+        
+.doboz-szoveg {
+    margin-bottom: 15px;
+    color: #555;
+}
+        
+.doboz-gomb {
+    padding: 8px 16px;
+    background-color: #f0f0f0;
+    color: #333;
+    text-decoration: none;
+    border: 1px solid #ccc;
+}
+            
+.doboz {
+    width: 100%;
+    max-width: 400px;
+}
+.asd-link{
+    font-weight: bold;
+    text-decoration: none;
+    color: #e74c3c;
+    font-size: 1.1em;
+    display: inline-block;
+    margin: 10px 0;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    cursor: pointer;
+}
