@@ -14,8 +14,9 @@
         
 .doboz-kep{
     width: 100%;
-    height: 200px;
+    height: 320px;
     object-fit: cover;
+    aspect-ratio: 1 / 1;
 }
         
 .doboz-tartalom {
@@ -24,7 +25,7 @@
         
 .doboz-cim {
     font-weight: bold;
-    font-size: 1.2em;
+    font-size: 20px;
 }
         
 .doboz-szoveg {
@@ -34,25 +35,35 @@
         
 .doboz-gomb {
     padding: 8px 16px;
-    background-color: #f0f0f0;
-    color: #333;
+    background-color: #ffa200; /*valamilyen színt ki kell találni a gomboknak, mert ez nagyon tippmixpros beütésű*/
+    color: black;
     text-decoration: none;
-    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-weight: bold;
+    display: inline-block;
+    margin-left: 30px;
+}
+.doboz-gomb:hover {
+    background-color: #e69500;
+    color: white;
 }
             
 .doboz {
     width: 100%;
     max-width: 400px;
 }
-.asd-link{
-    font-weight: bold;
-    text-decoration: none;
-    color: #e74c3c;
-    font-size: 1.1em;
-    display: inline-block;
-    margin: 10px 0;
-    padding: 5px 10px;
-    border-radius: 4px;
-    transition: all 0.2s;
+.tobb-info-gomb {
+    background: #3498db;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 8px;
+    margin-bottom: 15px;
     cursor: pointer;
+    border: none;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+}
+.tobb-info-gomb:hover {
+    background: #2980b9;
+    color: black;
 }
