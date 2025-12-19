@@ -32,45 +32,8 @@ body {
 }
 
 
-.layout {
-  display: grid;
-  grid-template-columns: 240px;
-  min-height: calc(100vh - 130px);
-}
-.sports {
-  background: #ffffff;
-  padding: 15px;
-  border-right: 1px solid #ddd;
-}
 
 
-.match-search {
-  position: sticky;
-  top: 10px;
-  display: grid;
-  grid-template-columns: 28px 1fr 32px;
-  gap: 8px;
-  padding: 10px;
-  border-radius: 12px;
-  background: #111318;
-  color: white;
-  margin-bottom: 15px;
-}
-
-.match-search input {
-  background: transparent;
-  border: none;
-  outline: none;
-  color: white;
-}
-
-#clearSearch {
-  border: none;
-  background: rgba(255,255,255,0.1);
-  color: white;
-  cursor: pointer;
-  border-radius: 8px;
-}
 
 
 .footer {
