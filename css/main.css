@@ -19,11 +19,16 @@ body {
   color: white;
 }
 
-.logo {
-  font-weight: bold;
-  font-size: larger;
+.logo-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-
+.kep{
+  height: 40px;
+  width: 40px;
+  
+}
 .nav a {
   color: white;
   margin: 0 10px;
