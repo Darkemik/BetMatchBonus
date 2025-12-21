@@ -35,8 +35,19 @@ body {
   text-decoration: none;
   font-size: large;
 }
-
-
+.registrationbtn{
+  color: black;
+  border-radius: 10px;
+  background-color: rgb(221, 221, 24);
+  height: 35px;
+  border: none;
+  font-weight: bold;  
+  cursor: pointer;
+  transition: opacity 0.5s;
+}
+.registrationbtn:hover{
+  opacity: 0.8;
+}
 
 
 
