@@ -1,33 +1,53 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hu">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>BetMatchBonus</title>
     <link rel="stylesheet" href="../css/main.css">
 </head>
 <body>
     <header class="header">
         <div class="logo">BetMatchBonus</div>
         <nav class="nav">
-          <a href="./index.html">Főoldal</a>
-          <a href="./elo.html">Élő</a>
-          <a href="./bonus.html">Bónuszok</a>
-          <a href="./help.html">Segítség</a>
-          <!-- nyelv allitas -->
-      <!-- qr kod-->
-       <!-- minigame freebetert-->
-        <!-- Futsall v-sport gomb foci szerűen 3v3-->
+          <a href="./index.html" data-i18n="nav.home">Főoldal</a>
+          <a href="./elo.html" data-i18n="nav.live">Élő</a>
+          <a href="./bonus.html" data-i18n="nav.bonuses">Bónuszok</a>
+          <a href="./help.html" data-i18n="nav.help">Segítség</a>
         </nav>
         <div class="right_side">
-          <button>Bejelentkezés</button>
-          <button class="registrationbtn" onclick="location.href='register.html'">Regisztráció</button>
+          <div class="lang-switcher">
+            
+            <button class="lang-btn active" id="lang-hu" title="Magyar">
+                <svg viewBox="0 0 9 6" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="9" height="2" y="0" fill="#c8102e"/>
+                    <rect width="9" height="2" y="2" fill="#ffffff"/>
+                    <rect width="9" height="2" y="4" fill="#436f4d"/>
+                </svg>
+            </button>
+            
+            
+<button class="lang-btn" id="lang-en" title="English">
+    <svg viewBox="0 0 9 6" xmlns="http://www.w3.org/2000/svg">
+        
+        <rect width="9" height="6" fill="#ffffff"/>
+      
+        <rect x="4" width="1" height="6" fill="#c8102e"/>
+        
+        <rect y="2.5" width="9" height="1" fill="#c8102e"/>
+    </svg>
+</button>
+          
+          <button data-i18n="nav.login">Bejelentkezés</button>
+          <button class="registrationbtn" onclick="location.href='register.html'" data-i18n="nav.register">Regisztráció</button>
         </div>
       </header>
 
-
-
       <div id="isport-free"></div>
+
+      <footer class="footer" data-i18n="footer.copyright">
+        Élményt nyújtunk, értéket teremtünk © BetMatchBonus – 2025. Minden jog fenntartva.
+      </footer>
 
       <script>
           document.getElementById("isport-free").innerHTML = `
@@ -40,12 +60,6 @@
               </iframe>
           `;
       </script>
-
-
-    <footer class="footer">
-        Élményt nyújtunk, értéket teremtünk © BetMatchBonus – 2025. Minden jog fenntartva.
-      </footer>
-
-      
+      <script src="../js/elo.js"></script>
 </body>
 </html>
