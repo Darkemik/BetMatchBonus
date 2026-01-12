@@ -37,7 +37,7 @@
 }
 
 .page .container:nth-child(1){
-    max-width: 20%;
+    max-width: 15%;
 }
 .search{
     width: max-content;
@@ -55,6 +55,27 @@
   font-family: 'Lexend', sans-serif;
   color: #333333;
   margin-left: 14px;  
+}
+.sidebar {
+  max-width: 15%;
+  
+}
+
+.time-bar {
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  background: linear-gradient(45deg, #08001f, #30197d);
+  color: #fff;
+  border-bottom: 1px solid #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.label {
+  opacity: 0.7;
 }
 
 @media (max-width: 768px){
