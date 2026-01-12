@@ -1,0 +1,51 @@
+*{
+background-color: #212221;
+
+}
+.btn{
+    height: 50px;
+    width: 130px;
+    border-radius: 25px;
+    border: none;
+    background-color: aquamarine;
+    color: black;
+    cursor: pointer;
+    transition: 2s;
+}
+.btn:hover{
+    background-color: antiquewhite;
+    
+}
+.email{
+    
+    height: 30px;
+    border-radius: 15px;
+    background-color: white;
+    text-align: center;
+    
+}
+.jelszo{
+
+    height: 30px;
+    
+    border-radius: 15px;
+    text-align: center;
+    background-color: white;
+}
+.container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    border: 1px solid blue;
+}
+
+.container form{
+    display: flex;
+    flex-direction: column;
+    border: 1px solid red;
+}
+
+input{
+    border: 1px solid green;
+}

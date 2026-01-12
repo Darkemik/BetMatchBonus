@@ -3,13 +3,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Regisztráció</title>
+    <link rel="stylesheet" href="../css/register.css">
 </head>
 <body>
-    <div>
+    <div class="container">
         <form action="../php/register.php" method="POST">
-            <input type="email" name="email" placeholder="Email" id="email" required>
-            <input type="password" name="password" placeholder="Jelszó" id="password" required>
-            <button type="submit" id="regisztracio">Regisztráció</button>
+            <input class="email" type="email" name="email"  id="email" required>
+            <input class="jelszo" type="password" name="password"  id="password" required>
+            <button class="btn" type="submit" id="regisztracio">Regisztráció</button>
         </form>
     </div>
     <script src="../js/registration.js"></script>
