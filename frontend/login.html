@@ -1,1 +1,19 @@
-<p>asd</p>
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bejelentkezés</title>
+    <link rel="stylesheet" href="../css/login.css">
+</head>
+<body>
+    <div class="container">
+    <form action="../php/login.php" method="post">
+        <input  class="email" type="text" placeholder="Felhasználónév" name="username" required id="username">
+    <input class="jelszo" type="password" name="password" placeholder="Jelszó" required>
+    <button class="btn" type="submit" id="bejelentkezes">Bejelentkezés</button>
+    </form>
+    </div>
+    <script src="../js/login.js"></script>
+</body>
+</html>
