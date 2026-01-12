@@ -6,6 +6,58 @@
     <title>BetMatchBonus</title>
     <link rel="stylesheet" href="../css/main.css">
 </head>
+
+
+<style>
+    .elo-main {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+        padding: 20px;
+    }
+    
+    .elo-container {
+        width: 100%;
+        max-width: 1200px;
+    }
+    
+    .elo-title {
+        text-align: center;
+        color: #333;
+        margin-bottom: 30px;
+        font-size: 32px;
+    }
+    
+    .elo-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 0 auto;
+    }
+    
+    .elo-table thead {
+        background: #2c3e50;
+        color: white;
+    }
+    
+    .elo-table th {
+        padding: 15px;
+        text-align: center;
+        font-weight: 600;
+    }
+    
+    .elo-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+        text-align: center;
+    }
+    
+
+</style>
 <body>
     <header class="header">
         <div class="logo">BetMatchBonus</div>
@@ -43,11 +95,11 @@
         </div>
       </header>
 
-      <div class="center-container">
-        <div class="matches-box">
-            <h1 class="matches-title">Élő meccsek</h1>
+      <div class="elo-main">
+        <div class="elo-container">
+            <h1 class="elo-title">Élő meccsek</h1>
             
-            <table class="matches-table">
+            <table class="elo-table">
                 <thead>
                     <tr>
                         <th>Bajnokság</th>
@@ -59,39 +111,39 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td class="league">Bajnokok Ligája</td>
-                        <td class="teams">Manchester City - Real Madrid</td>
-                        <td class="score">2 - 1</td>
-                        <td class="live">67' - Élő</td>
-                        <td class="odds">1.85 / 3.40 / 4.20</td>
+                        <td>Bajnokok Ligája</td>
+                        <td>Manchester City - Real Madrid</td>
+                        <td><strong>2 - 1</strong></td>
+                        <td style="color: red; font-weight: bold;">67' - Élő</td>
+                        <td>1.85 / 3.40 / 4.20</td>
                     </tr>
                     <tr>
-                        <td class="league">Premier League</td>
-                        <td class="teams">Liverpool - Chelsea</td>
-                        <td class="score">1 - 0</td>
-                        <td class="live">45' - Félidő</td>
-                        <td class="odds">2.10 / 3.20 / 3.50</td>
+                        <td>Premier League</td>
+                        <td>Liverpool - Chelsea</td>
+                        <td><strong>1 - 0</strong></td>
+                        <td style="color: red; font-weight: bold;">45' - Félidő</td>
+                        <td>2.10 / 3.20 / 3.50</td>
                     </tr>
                     <tr>
-                        <td class="league">La Liga</td>
-                        <td class="teams">Barcelona - Atlético Madrid</td>
-                        <td class="score">0 - 0</td>
-                        <td class="upcoming">21:00</td>
-                        <td class="odds">1.90 / 3.60 / 4.00</td>
+                        <td>La Liga</td>
+                        <td>Barcelona - Atlético Madrid</td>
+                        <td><strong>0 - 0</strong></td>
+                        <td style="color: blue;">21:00</td>
+                        <td>1.90 / 3.60 / 4.00</td>
                     </tr>
                     <tr>
-                        <td class="league">Bundesliga</td>
-                        <td class="teams">Bayern München - Dortmund</td>
-                        <td class="score">1 - 1</td>
-                        <td class="live">78' - Élő</td>
-                        <td class="odds">1.70 / 3.80 / 4.50</td>
+                        <td>Bundesliga</td>
+                        <td>Bayern München - Dortmund</td>
+                        <td><strong>1 - 1</strong></td>
+                        <td style="color: red; font-weight: bold;">78' - Élő</td>
+                        <td>1.70 / 3.80 / 4.50</td>
                     </tr>
                     <tr>
-                        <td class="league">Serie A</td>
-                        <td class="teams">Juventus - AC Milan</td>
-                        <td class="score">3 - 2</td>
-                        <td class="live">85' - Élő</td>
-                        <td class="odds">2.30 / 3.40 / 3.00</td>
+                        <td>Serie A</td>
+                        <td>Juventus - AC Milan</td>
+                        <td><strong>3 - 2</strong></td>
+                        <td style="color: red; font-weight: bold;">85' - Élő</td>
+                        <td>2.30 / 3.40 / 3.00</td>
                     </tr>
                 </tbody>
             </table>
