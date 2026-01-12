@@ -40,9 +40,22 @@
     max-width: 20%;
 }
 .search{
-  
+    width: max-content;
+    display: flex;
+    align-items: center;
+    padding: 14px;
+    border-radius: 28px;
+    background-color:#f1eded;
 }
-
+.search-icon:hover{
+  cursor: pointer;
+}
+.search-input{
+  font-size: 14px;
+  font-family: 'Lexend', sans-serif;
+  color: #333333;
+  margin-left: 14px;  
+}
 
 @media (max-width: 768px){
     .page .container:nth-child(1), .page .container:nth-child(3){
