@@ -5,99 +5,90 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BetMatchBonus</title>
     <link rel="stylesheet" href="../css/main.css">
+    <style>
+        .elo-main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+            padding: 20px;
+        }
+        
+        .elo-container {
+            width: 100%;
+            max-width: 1200px;
+        }
+        
+        .elo-title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 32px;
+        }
+        
+        .elo-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+        
+        .elo-table thead {
+            background: #2c3e50;
+            color: white;
+        }
+        
+        .elo-table th {
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .elo-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            text-align: center;
+        }
+    </style>
 </head>
-
-
-<style>
-    .elo-main {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 80vh;
-        padding: 20px;
-    }
-    
-    .elo-container {
-        width: 100%;
-        max-width: 1200px;
-    }
-    
-    .elo-title {
-        text-align: center;
-        color: #333;
-        margin-bottom: 30px;
-        font-size: 32px;
-    }
-    
-    .elo-table {
-        width: 100%;
-        border-collapse: collapse;
-        background: white;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        border-radius: 10px;
-        overflow: hidden;
-        margin: 0 auto;
-    }
-    
-    .elo-table thead {
-        background: #2c3e50;
-        color: white;
-    }
-    
-    .elo-table th {
-        padding: 15px;
-        text-align: center;
-        font-weight: 600;
-    }
-    
-    .elo-table td {
-        padding: 12px 15px;
-        border-bottom: 1px solid #eee;
-        text-align: center;
-    }
-    
-
-</style>
 <body>
     <header class="header">
         <div class="logo">BetMatchBonus</div>
         <nav class="nav">
-          <a href="./index.html" data-i18n="nav.home">Főoldal</a>
-          <a href="./elo.html" data-i18n="nav.live">Élő</a>
-          <a href="./bonus.html" data-i18n="nav.bonuses">Bónuszok</a>
-          <a href="./help.html" data-i18n="nav.help">Segítség</a>
+            <a href="./index.html" data-i18n="nav.home">Főoldal</a>
+            <a href="./elo.html" data-i18n="nav.live">Élő</a>
+            <a href="./bonus.html" data-i18n="nav.bonuses">Bónuszok</a>
+            <a href="../help/help.html" data-i18n="nav.help">Segítség</a>
         </nav>
         <div class="right_side">
-          <div class="lang-switcher">
-            
-            <button class="lang-btn active" id="lang-hu" title="Magyar">
-                <svg viewBox="0 0 9 6" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="9" height="2" y="0" fill="#c8102e"/>
-                    <rect width="9" height="2" y="2" fill="#ffffff"/>
-                    <rect width="9" height="2" y="4" fill="#436f4d"/>
-                </svg>
-            </button>
-            
-            
-<button class="lang-btn" id="lang-en" title="English">
-    <svg viewBox="0 0 9 6" xmlns="http://www.w3.org/2000/svg">
-        
-        <rect width="9" height="6" fill="#ffffff"/>
-      
-        <rect x="4" width="1" height="6" fill="#c8102e"/>
-        
-        <rect y="2.5" width="9" height="1" fill="#c8102e"/>
-    </svg>
-</button>
-          
-          <button data-i18n="nav.login">Bejelentkezés</button>
-          <button class="registrationbtn" onclick="location.href='register.html'" data-i18n="nav.register">Regisztráció</button>
+            <div class="lang-switcher">
+                <button class="lang-btn active" id="lang-hu" title="Magyar">
+                    <svg viewBox="0 0 9 6" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="9" height="2" y="0" fill="#c8102e"/>
+                        <rect width="9" height="2" y="2" fill="#ffffff"/>
+                        <rect width="9" height="2" y="4" fill="#436f4d"/>
+                    </svg>
+                </button>
+                <button class="lang-btn" id="lang-en" title="English">
+                    <svg viewBox="0 0 9 6" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="9" height="6" fill="#ffffff"/>
+                        <rect x="4" width="1" height="6" fill="#c8102e"/>
+                        <rect y="2.5" width="9" height="1" fill="#c8102e"/>
+                    </svg>
+                </button>
+            </div>
+            <button data-i18n="nav.login">Bejelentkezés</button>
+            <button class="registrationbtn" onclick="location.href='register.html'" data-i18n="nav.register">Regisztráció</button>
         </div>
-      </header>
+    </header>
 
-      <div class="elo-main">
+    <div class="elo-main">
         <div class="elo-container">
-            <h1 class="elo-title">Élő meccsek</h1>
+            <!-- CÍM - itt már NINCS data-i18n, mert a JS kezeli -->
+            <h1 class="elo-title" id="elo-title">Élő meccsek</h1>
             
             <table class="elo-table">
                 <thead>
@@ -114,14 +105,14 @@
                         <td>Bajnokok Ligája</td>
                         <td>Manchester City - Real Madrid</td>
                         <td><strong>2 - 1</strong></td>
-                        <td style="color: red; font-weight: bold;">67' - Élő</td>
+                        <td style="color: red; font-weight: bold;">67' - <span id="live-text-1">Élő</span></td>
                         <td>1.85 / 3.40 / 4.20</td>
                     </tr>
                     <tr>
                         <td>Premier League</td>
                         <td>Liverpool - Chelsea</td>
                         <td><strong>1 - 0</strong></td>
-                        <td style="color: red; font-weight: bold;">45' - Félidő</td>
+                        <td style="color: red; font-weight: bold;">45' - <span id="live-text-2">Félidő</span></td>
                         <td>2.10 / 3.20 / 3.50</td>
                     </tr>
                     <tr>
@@ -135,35 +126,26 @@
                         <td>Bundesliga</td>
                         <td>Bayern München - Dortmund</td>
                         <td><strong>1 - 1</strong></td>
-                        <td style="color: red; font-weight: bold;">78' - Élő</td>
+                        <td style="color: red; font-weight: bold;">78' - <span id="live-text-3">Élő</span></td>
                         <td>1.70 / 3.80 / 4.50</td>
                     </tr>
                     <tr>
                         <td>Serie A</td>
                         <td>Juventus - AC Milan</td>
                         <td><strong>3 - 2</strong></td>
-                        <td style="color: red; font-weight: bold;">85' - Élő</td>
+                        <td style="color: red; font-weight: bold;">85' - <span id="live-text-4">Élő</span></td>
                         <td>2.30 / 3.40 / 3.00</td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
-      <footer class="footer" data-i18n="footer.copyright">
-        Élményt nyújtunk, értéket teremtünk © BetMatchBonus – 2025. Minden jog fenntartva.
-      </footer>
 
-      <script>
-          document.getElementById("isport-free").innerHTML = `
-              <iframe
-                  src="https://www.bola080.com/soccer?bgColor=firstbody"
-                  width="100%"
-                  height="600"
-                  scrolling="auto"
-                  frameborder="0">
-              </iframe>
-          `;
-      </script>
-      <script src="../js/elo.js"></script>
+    <footer class="footer" id="footer-text">
+        Élményt nyújtunk, értéket teremtünk © BetMatchBonus – 2025. Minden jog fenntartva.
+    </footer>
+
+    <!-- CSAK EZ A SOR MARAD A VÉGÉN, a JS külön fájlban -->
+    <script src="../js/elo.js"></script>
 </body>
 </html>
