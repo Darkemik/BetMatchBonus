@@ -7,10 +7,25 @@
 </head>
 <body>
     <div class="container">
-        <form action="../php/register.php" method="POST">
-            <input class="email" type="email" name="email" placeholder="email"  id="email" required>
-            <input class="jelszo" type="password" name="password" placeholder="jelszó"  id="password" required>
-            <button class="btn" type="submit" id="regisztracio">Regisztráció</button>
+        <form id="registerForm" action="../php/register.php" method="POST">
+            <h1>Regisztráljon hozzánk!</h1>
+            <input class="inputok" type="text" name="username" placeholder="Felhasználónév" id="username" required>
+            <input class="inputok" type="email" name="email" placeholder="Email"  id="email" required>
+            <input class="inputok" type="password" name="password" placeholder="Jelszó"  id="password" required>
+            <p>A jelszó nem elég erős</p>
+            <input class="inputok" type="date" name="age" placeholder="Életkor" id="age" required>
+            <button class="regisztraciobtn" type="submit" id="regisztracio">Folytatás</button>
+            
+           <p>Már van fiókod?</p><a href="login.html">Jelentkezz be!</a>
+        </form>
+
+        <form action="">
+            <div class="container1">
+                <button class="visszabtn">Vissza</button>
+                <p>A *-al jelölt mezők kitöltése kötelező!</p>
+                <input type="checkbox" id="terms" name="terms" required>
+                <label for="terms">Elolvastam és elfogadom a <a href="../frontend/help.html">Felhasználási feltételeket*</a></label><br>
+            </div>
         </form>
     </div>
     <script src="../js/registration.js"></script>
