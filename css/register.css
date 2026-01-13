@@ -1,13 +1,22 @@
 *{
-background-color: #212221;
-
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
-.btn{
+
+body{
+    background: linear-gradient(white, rgb(158, 158, 158));
+    max-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.regisztraciobtn{
     height: 50px;
     width: 130px;
     border-radius: 25px;
     border: none;
-    background-color: aquamarine;
+    background-color: yellow;
     color: black;
     cursor: pointer;
     transition: 2s;
@@ -16,34 +25,33 @@ background-color: #212221;
     background-color: antiquewhite;
     
 }
-.email{
-    
-    height: 30px;
-    border-radius: 15px;
-    background-color: white;
-    text-align: center;
-    
-}
-.jelszo{
 
+.inputok{
     height: 30px;
-    
-    border-radius: 15px;
-    text-align: center;
+    width: 250px;
+    padding-left: 10px;
+    text-align: left;
     background-color: white;
 }
 .container{
     display: flex;
-    justify-content: center;
+    justify-content: left;
     align-items: center;
-    height: 100vh;
     border: 1px solid blue;
+    background: linear-gradient(90deg, rgb(65, 201, 247) 50%, white 50%);
 }
 
 .container form{
     display: flex;
     flex-direction: column;
     border: 1px solid red;
+    width: 400px;
+    height: 600px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: transparent;
+    gap: 20px;
 }
 
 input{
