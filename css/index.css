@@ -77,16 +77,180 @@ gap: 15px;
 .label {
 opacity: 0.7;
 }
-.sports-menu{
+/* ===== SPORT MENU (sidebar) – modern, cardos dizájn ===== */
 
-background-color: lightblue;
-border-radius: 15px;
+/* kis alap-változók (ha van global, nyugodtan igazítsd) */
+:root{
+  --panel-bg: rgba(18, 22, 30, .72);
+  --panel-border: rgba(255,255,255,.08);
+  --text: rgba(255,255,255,.92);
+  --muted: rgba(255,255,255,.62);
+  --shadow: 0 18px 50px rgba(0,0,0,.35);
+  --radius: 18px;
+  --accent: #5dd6ff;
+  --accent2: #9b7bff;
 }
-.level1{
-margin-left: 15px;
+
+/* konténer a sidebarban */
+.container{
+  width: 100%;
+  padding: 14px;
 }
-@media (max-width: 768px){
-  .page .container:nth-child(1), .page .container:nth-child(3){
-      display: none;
-  }
+
+/* “kártya” a menünek */
+.container form{
+  background: linear-gradient(145deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--shadow);
+  border-radius: var(--radius);
+  padding: 14px;
+  backdrop-filter: blur(10px);
+}
+
+/* ===== Search ===== */
+.search{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.22);
+  transition: transform .18s ease, border-color .18s ease, background .18s ease;
+  margin-bottom: 14px;
+}
+
+.search:focus-within{
+  transform: translateY(-1px);
+  border-color: rgba(93,214,255,.45);
+  background: rgba(0,0,0,.28);
+}
+
+.search-icon{
+  font-size: 22px;
+  color: rgba(255,255,255,.75);
+}
+
+.search-input{
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.search-input::placeholder{
+  color: rgba(255,255,255,.45);
+}
+
+//* --- Sport menü (rövid, letisztított) --- */
+
+:root{
+  --accent:#5dd6ff;
+  --accent2:#9b7bff;
+}
+
+/* minden kártya-háttér OFF */
+.container,
+.container form,
+.sports-menu details{
+  background: transparent !important;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  align-items: center;
+}
+
+.search{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:12px;
+  border-radius:14px;
+  background:rgba(0,0,0,.25);
+}
+.search-input{
+  
+  flex:1;
+  background:none;
+  border:0;
+  color:#fff;
+}
+.search-input::placeholder{
+  color:rgba(255,255,255,.45);
+}
+
+
+.sports-menu summary{
+  padding:12px;
+  cursor:pointer;
+  font-weight:700;
+  color:#706f6f;
+  display:flex;
+  justify-content:space-between;
+  background-color:#e2e2e2
+}
+.sports-menu summary::after{
+  content:"›";
+  transition:.18s;
+}
+.sports-menu details[open] > summary::after{
+  transform:rotate(90deg);
+}
+
+
+.level3{
+  list-style:none;
+  margin:8px 0;
+  padding:0;
+  display:grid;
+  gap:8px;
+}
+.level3 a{
+  padding:10px;
+  border-radius:12px;
+  background:rgba(0,0,0,.25);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  transition:.15s;
+  text-decoration: none;
+}
+.level3 a::before{
+  content:"";
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+}
+.level3 a:hover{
+  transform:translateY(-1px);
+  background:rgba(93,214,255,.15);
+}
+
+.level0 > summary{
+  padding:12px;
+  font-weight:800;
+  color:#fff;
+  background:rgba(0,0,0,.30);
+  border-radius:12px;
+  cursor:pointer;
+  display:flex;
+  justify-content:space-between;
+}
+.level0 > summary::after{ content:"›"; transition:.18s; }
+.level0[open] > summary::after{ transform:rotate(90deg); }
+
+
+.level0 > .level1{ margin:10px 0 0 0; }
+
+
+.level3 a{ text-decoration:none !important; }
+
+.center-container{
+  width: 45%;
+  margin: 0 auto;   
+  border: 3px solid blue; 
 }
