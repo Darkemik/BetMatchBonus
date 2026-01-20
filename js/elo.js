@@ -1,10 +1,9 @@
-// Nyelv beállítások
 const languages = {
     hu: {
         title: "Élő meccsek",
         footer: "Élményt nyújtunk, értéket teremtünk © BetMatchBonus – 2025. Minden jog fenntartva.",
-        live: "Élő",
-        halftime: "Félidő",
+        refresh: "🔄 Frissítés",
+        lastUpdated: "Utolsó frissítés",
         nav: {
             home: "Főoldal",
             live: "Élő",
@@ -17,8 +16,8 @@ const languages = {
     en: {
         title: "Live Games",
         footer: "We provide experience, create value © BetMatchBonus – 2025. All rights reserved.",
-        live: "Live",
-        halftime: "Half Time",
+        refresh: "🔄 Refresh",
+        lastUpdated: "Last updated",
         nav: {
             home: "Home",
             live: "Live",
@@ -30,46 +29,35 @@ const languages = {
     }
 };
 
-// Nyelv váltás függvény
+let currentLang = 'hu';
+
 function changeLanguage(lang) {
-    // Cím frissítése
+    currentLang = lang;
+    
     const titleElement = document.getElementById('elo-title');
-    if (titleElement && languages[lang]) {
+    if (titleElement) {
         titleElement.textContent = languages[lang].title;
     }
     
-    // Footer frissítése
     const footerElement = document.getElementById('footer-text');
-    if (footerElement && languages[lang]) {
+    if (footerElement) {
         footerElement.textContent = languages[lang].footer;
     }
     
-    // "Élő" szövegek frissítése a táblázatban
-    const liveTexts = ['live-text-1', 'live-text-2', 'live-text-3', 'live-text-4'];
-    liveTexts.forEach((id, index) => {
-        const element = document.getElementById(id);
-        if (element) {
-            // Az első két sorban "Élő", a másodikban "Félidő"
-            if (index === 1) {
-                element.textContent = languages[lang].halftime;
-            } else {
-                element.textContent = languages[lang].live;
-            }
-        }
-    });
-    
-    // Navigáció elemek frissítése
     document.querySelectorAll('[data-i18n]').forEach(element => {
         const key = element.getAttribute('data-i18n');
-        if (key && languages[lang] && languages[lang].nav) {
-            const navKey = key.replace('nav.', '');
-            if (languages[lang].nav[navKey]) {
-                element.textContent = languages[lang].nav[navKey];
+        if (key && languages[lang]) {
+            if (key.startsWith('nav.') && languages[lang].nav) {
+                const navKey = key.replace('nav.', '');
+                if (languages[lang].nav[navKey]) {
+                    element.textContent = languages[lang].nav[navKey];
+                }
+            } else if (languages[lang][key]) {
+                element.textContent = languages[lang][key];
             }
         }
     });
     
-    // Gombok állapota
     const huBtn = document.getElementById('lang-hu');
     const enBtn = document.getElementById('lang-en');
     
@@ -88,55 +76,21 @@ function changeLanguage(lang) {
         }
     }
     
-    // HTML nyelv attribútum
     document.documentElement.lang = lang;
-    
-    // Mentés localStorage-ba
     localStorage.setItem('preferred-language', lang);
 }
 
-// Oldal betöltésekor
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Oldal betöltve, JS fájl működik!');
-    
-    // Gombok eseménykezelői
-    const huBtn = document.getElementById('lang-hu');
-    const enBtn = document.getElementById('lang-en');
-    
-    if (huBtn) {
-        huBtn.addEventListener('click', function() {
-            changeLanguage('hu');
-        });
-    }
-    
-    if (enBtn) {
-        enBtn.addEventListener('click', function() {
-            changeLanguage('en');
-        });
-    }
-    
-    // Mentett nyelv betöltése
     const savedLang = localStorage.getItem('preferred-language');
     if (savedLang && (savedLang === 'hu' || savedLang === 'en')) {
-        console.log('Mentett nyelv betöltve:', savedLang);
         changeLanguage(savedLang);
     } else {
-        // Alapértelmezett magyar
-        console.log('Alapértelmezett magyar nyelv');
         changeLanguage('hu');
     }
     
-    // Hibakezelés
-    window.addEventListener('error', function(e) {
-        console.error('Hiba történt:', e.message);
-    });
-});
-
-// Hibakezelés: ha a fájl nem töltődik be
-window.addEventListener('load', function() {
-    const titleElement = document.getElementById('elo-title');
-    if (titleElement && !titleElement.textContent) {
-        console.log('JS fájl nem működik, alapértelmezett cím beállítása');
-        titleElement.textContent = "Élő meccsek";
-    }
+    const huBtn = document.getElementById('lang-hu');
+    const enBtn = document.getElementById('lang-en');
+    
+    if (huBtn) huBtn.addEventListener('click', () => changeLanguage('hu'));
+    if (enBtn) enBtn.addEventListener('click', () => changeLanguage('en'));
 });

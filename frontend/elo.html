@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BetMatchBonus</title>
+    <title>BetMatchBonus - Élő meccsek</title>
     <link rel="stylesheet" href="../css/main.css">
     <style>
         .elo-main {
@@ -26,7 +26,7 @@
             font-size: 32px;
         }
         
-        .elo-table {
+        .matches-table {
             width: 100%;
             border-collapse: collapse;
             background: white;
@@ -36,21 +36,44 @@
             margin: 0 auto;
         }
         
-        .elo-table thead {
+        .matches-table thead {
             background: #2c3e50;
             color: white;
         }
         
-        .elo-table th {
+        .matches-table th {
             padding: 15px;
             text-align: center;
             font-weight: 600;
         }
         
-        .elo-table td {
+        .matches-table td {
             padding: 12px 15px;
             border-bottom: 1px solid #eee;
             text-align: center;
+        }
+        
+        .matches-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .live-badge {
+            color: #e74c3c;
+            font-weight: bold;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+            font-size: 18px;
         }
     </style>
 </head>
@@ -61,7 +84,7 @@
             <a href="./index.html" data-i18n="nav.home">Főoldal</a>
             <a href="./elo.html" data-i18n="nav.live">Élő</a>
             <a href="./bonus.html" data-i18n="nav.bonuses">Bónuszok</a>
-            <a href="../help/help.html" data-i18n="nav.help">Segítség</a>
+            <a href="./help.html" data-i18n="nav.help">Segítség</a>
         </nav>
         <div class="right_side">
             <div class="lang-switcher">
@@ -87,57 +110,11 @@
 
     <div class="elo-main">
         <div class="elo-container">
-            <!-- CÍM - itt már NINCS data-i18n, mert a JS kezeli -->
             <h1 class="elo-title" id="elo-title">Élő meccsek</h1>
             
-            <table class="elo-table">
-                <thead>
-                    <tr>
-                        <th>Bajnokság</th>
-                        <th>Mérkőzés</th>
-                        <th>Eredmény</th>
-                        <th>Állapot</th>
-                        <th>Odds</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Bajnokok Ligája</td>
-                        <td>Manchester City - Real Madrid</td>
-                        <td><strong>2 - 1</strong></td>
-                        <td style="color: red; font-weight: bold;">67' - <span id="live-text-1">Élő</span></td>
-                        <td>1.85 / 3.40 / 4.20</td>
-                    </tr>
-                    <tr>
-                        <td>Premier League</td>
-                        <td>Liverpool - Chelsea</td>
-                        <td><strong>1 - 0</strong></td>
-                        <td style="color: red; font-weight: bold;">45' - <span id="live-text-2">Félidő</span></td>
-                        <td>2.10 / 3.20 / 3.50</td>
-                    </tr>
-                    <tr>
-                        <td>La Liga</td>
-                        <td>Barcelona - Atlético Madrid</td>
-                        <td><strong>0 - 0</strong></td>
-                        <td style="color: blue;">21:00</td>
-                        <td>1.90 / 3.60 / 4.00</td>
-                    </tr>
-                    <tr>
-                        <td>Bundesliga</td>
-                        <td>Bayern München - Dortmund</td>
-                        <td><strong>1 - 1</strong></td>
-                        <td style="color: red; font-weight: bold;">78' - <span id="live-text-3">Élő</span></td>
-                        <td>1.70 / 3.80 / 4.50</td>
-                    </tr>
-                    <tr>
-                        <td>Serie A</td>
-                        <td>Juventus - AC Milan</td>
-                        <td><strong>3 - 2</strong></td>
-                        <td style="color: red; font-weight: bold;">85' - <span id="live-text-4">Élő</span></td>
-                        <td>2.30 / 3.40 / 3.00</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div id="matches-container">
+                <div class="loading">Meccsek betöltése...</div>
+            </div>
         </div>
     </div>
 
@@ -145,7 +122,112 @@
         Élményt nyújtunk, értéket teremtünk © BetMatchBonus – 2025. Minden jog fenntartva.
     </footer>
 
-    <!-- CSAK EZ A SOR MARAD A VÉGÉN, a JS külön fájlban -->
     <script src="../js/elo.js"></script>
+    
+    <!-- SAJÁT API-FOOTBALL KÓD - MŰKÖDIK A KULCSODDAL -->
+    <script>
+        // A TE API KULCSOD
+        const API_KEY = 'a12934fb7f8e9e4cfd3073de92b0994d';
+        
+        // Élő meccsek lekérése
+        async function fetchLiveMatches() {
+            try {
+                const response = await fetch('https://v3.football.api-sports.io/fixtures?live=all&timezone=Europe/Budapest', {
+                    headers: {
+                        'x-rapidapi-host': 'v3.football.api-sports.io',
+                        'x-rapidapi-key': API_KEY
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.response && data.response.length > 0) {
+                    displayMatches(data.response);
+                } else {
+                    document.getElementById('matches-container').innerHTML = 
+                        '<div class="loading">Jelenleg nincs élő meccs</div>';
+                }
+                
+            } catch (error) {
+                console.error('Hiba:', error);
+                document.getElementById('matches-container').innerHTML = 
+                    '<div class="loading" style="color: #e74c3c;">Hiba történt az adatok betöltésekor</div>';
+            }
+        }
+        
+        // Meccsek megjelenítése táblázatban
+        function displayMatches(matches) {
+            let tableHTML = `
+                <table class="matches-table">
+                    <thead>
+                        <tr>
+                            <th>Bajnokság</th>
+                            <th>Mérkőzés</th>
+                            <th>Eredmény</th>
+                            <th>Állapot</th>
+                            <th>Idő</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            matches.forEach(match => {
+                const league = match.league;
+                const teams = match.teams;
+                const goals = match.goals;
+                const status = match.fixture.status;
+                const date = new Date(match.fixture.date);
+                
+                // Státusz szöveg
+                let statusText = '';
+                let statusClass = '';
+                
+                if (status.short === '1H' || status.short === '2H' || status.short === 'HT') {
+                    statusText = `${status.elapsed}'`;
+                    statusClass = 'live-badge';
+                } else if (status.short === 'FT') {
+                    statusText = 'Vége';
+                } else {
+                    statusText = status.long;
+                }
+                
+                // Idő formázás
+                const timeString = date.toLocaleTimeString('hu-HU', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                tableHTML += `
+                    <tr>
+                        <td>${league.name} (${league.country})</td>
+                        <td>${teams.home.name} - ${teams.away.name}</td>
+                        <td><strong>${goals.home} - ${goals.away}</strong></td>
+                        <td class="${statusClass}">${statusText}</td>
+                        <td>${timeString}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button onclick="fetchLiveMatches()" style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        🔄 Frissítés
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('matches-container').innerHTML = tableHTML;
+        }
+        
+        // Oldal betöltésekor
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchLiveMatches();
+            
+            // Automatikus frissítés (60 másodpercenként)
+            setInterval(fetchLiveMatches, 60000);
+        });
+    </script>
 </body>
 </html>
