@@ -22,7 +22,14 @@ body {
   background: #212221;
   color: white;
 }
-
+.mainpage{
+    cursor: pointer;
+    text-decoration: none;
+    color: white;
+}
+.mainpage:hover{
+    text-decoration: underline;
+}
 .logo-box {
   display: flex;
   align-items: center;
