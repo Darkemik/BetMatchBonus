@@ -26,6 +26,44 @@
             font-size: 32px;
         }
         
+        .tabs-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .tab-button {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: #666;
+            transition: all 0.3s ease;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .tab-button:hover {
+            background: #f0f0f0;
+        }
+        
+        .tab-button.active {
+            color: #4CAF50;
+            font-weight: bold;
+            border-bottom: 3px solid #4CAF50;
+            background: #f8f9fa;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
         .matches-table {
             width: 100%;
             border-collapse: collapse;
@@ -51,6 +89,7 @@
             padding: 12px 15px;
             border-bottom: 1px solid #eee;
             text-align: center;
+            vertical-align: middle;
         }
         
         .matches-table tr:hover {
@@ -61,6 +100,28 @@
             color: #e74c3c;
             font-weight: bold;
             animation: pulse 1.5s infinite;
+        }
+        
+        .favorite-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            transition: all 0.3s ease;
+            color: #ccc;
+        }
+        
+        .favorite-btn:hover {
+            transform: scale(1.2);
+        }
+        
+        .favorite-btn.active {
+            color: #ffd700;
+        }
+        
+        .favorite-btn.active:hover {
+            color: #ffed4e;
         }
         
         @keyframes pulse {
@@ -74,6 +135,16 @@
             padding: 50px;
             color: #666;
             font-size: 18px;
+        }
+        
+        .no-matches {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 16px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
     </style>
 </head>
@@ -112,8 +183,19 @@
         <div class="elo-container">
             <h1 class="elo-title" id="elo-title">Élő meccsek</h1>
             
+            <div class="tabs-container">
+                <button class="tab-button active" data-tab="all-matches" id="tab-all">Összes meccs</button>
+                <button class="tab-button" data-tab="favorites" id="tab-favorites">Kedvencek</button>
+            </div>
+            
             <div id="matches-container">
-                <div class="loading">Meccsek betöltése...</div>
+                <div class="tab-content active" id="all-matches">
+                    <div class="loading">Meccsek betöltése...</div>
+                </div>
+                
+                <div class="tab-content" id="favorites">
+                    <div class="loading" id="loading-favorites">Kedvencek betöltése...</div>
+                </div>
             </div>
         </div>
     </div>
@@ -144,15 +226,75 @@
                 if (data.response && data.response.length > 0) {
                     displayMatches(data.response);
                 } else {
-                    document.getElementById('matches-container').innerHTML = 
+                    document.getElementById('all-matches').innerHTML = 
                         '<div class="loading">Jelenleg nincs élő meccs</div>';
                 }
                 
             } catch (error) {
                 console.error('Hiba:', error);
-                document.getElementById('matches-container').innerHTML = 
+                document.getElementById('all-matches').innerHTML = 
                     '<div class="loading" style="color: #e74c3c;">Hiba történt az adatok betöltésekor</div>';
             }
+        }
+        
+        // LocalStorage kezelés a kedvencekhez
+        function getFavorites() {
+            const favorites = localStorage.getItem('favoriteMatches');
+            return favorites ? JSON.parse(favorites) : [];
+        }
+        
+        function saveFavorites(favorites) {
+            localStorage.setItem('favoriteMatches', JSON.stringify(favorites));
+        }
+        
+        function addFavorite(matchId, matchData) {
+            const favorites = getFavorites();
+            if (!favorites.some(fav => fav.fixture.id === matchId)) {
+                favorites.push(matchData);
+                saveFavorites(favorites);
+                return true;
+            }
+            return false;
+        }
+        
+        function removeFavorite(matchId) {
+            const favorites = getFavorites();
+            const newFavorites = favorites.filter(fav => fav.fixture.id !== matchId);
+            saveFavorites(newFavorites);
+            return newFavorites;
+        }
+        
+        function isFavorite(matchId) {
+            const favorites = getFavorites();
+            return favorites.some(fav => fav.fixture.id === matchId);
+        }
+        
+        // Tab kezelés
+        function initTabs() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Összes tab inaktív
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    // Aktív tab
+                    this.classList.add('active');
+                    
+                    // Tab tartalom elrejtése
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    // Aktív tab tartalom mutatása
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // Ha a kedvencek fülre kattintottunk
+                    if (tabId === 'favorites') {
+                        displayFavoriteMatches();
+                    }
+                });
+            });
         }
         
         // Meccsek megjelenítése táblázatban
@@ -166,17 +308,20 @@
                             <th>Eredmény</th>
                             <th>Állapot</th>
                             <th>Idő</th>
+                            <th>Kedvenc</th>
                         </tr>
                     </thead>
                     <tbody>
             `;
             
             matches.forEach(match => {
+                const matchId = match.fixture.id;
                 const league = match.league;
                 const teams = match.teams;
                 const goals = match.goals;
                 const status = match.fixture.status;
                 const date = new Date(match.fixture.date);
+                const isFav = isFavorite(matchId);
                 
                 // Státusz szöveg
                 let statusText = '';
@@ -197,6 +342,9 @@
                     minute: '2-digit'
                 });
                 
+                // Kedvenc gomb címke
+                const favoriteTitle = isFav ? 'Eltávolítás a kedvencekből' : 'Hozzáadás a kedvencekhez';
+                
                 tableHTML += `
                     <tr>
                         <td>${league.name} (${league.country})</td>
@@ -204,6 +352,13 @@
                         <td><strong>${goals.home} - ${goals.away}</strong></td>
                         <td class="${statusClass}">${statusText}</td>
                         <td>${timeString}</td>
+                        <td>
+                            <button class="favorite-btn ${isFav ? 'active' : ''}" 
+                                    data-match-id="${matchId}"
+                                    title="${favoriteTitle}">
+                                ${isFav ? '★' : '☆'}
+                            </button>
+                        </td>
                     </tr>
                 `;
             });
@@ -218,15 +373,181 @@
                 </div>
             `;
             
-            document.getElementById('matches-container').innerHTML = tableHTML;
+            document.getElementById('all-matches').innerHTML = tableHTML;
+            
+            // Kedvenc gombok eseménykezelői
+            setupFavoriteButtons();
+        }
+        
+        // Kedvenc gombok beállítása
+        function setupFavoriteButtons() {
+            const favoriteButtons = document.querySelectorAll('.favorite-btn');
+            
+            favoriteButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const matchId = parseInt(this.getAttribute('data-match-id'));
+                    const isActive = this.classList.contains('active');
+                    
+                    if (isActive) {
+                        // Eltávolítás
+                        removeFavorite(matchId);
+                        this.classList.remove('active');
+                        this.innerHTML = '☆';
+                        this.title = 'Hozzáadás a kedvencekhez';
+                    } else {
+                        // Hozzáadás
+                        // Megkeressük a meccset a DOM-ból
+                        const matchRow = this.closest('tr');
+                        const matchData = {
+                            fixture: {
+                                id: matchId,
+                                date: new Date().toISOString(), // Itt pontosítani kellene
+                                status: {
+                                    short: matchRow.querySelector('.live-badge') ? 'LIVE' : 'FT',
+                                    long: matchRow.querySelector('td:nth-child(4)').textContent
+                                }
+                            },
+                            league: {
+                                name: matchRow.querySelector('td:nth-child(1)').textContent.split(' (')[0],
+                                country: matchRow.querySelector('td:nth-child(1)').textContent.match(/\(([^)]+)\)/)?.[1] || ''
+                            },
+                            teams: {
+                                home: {
+                                    name: matchRow.querySelector('td:nth-child(2)').textContent.split(' - ')[0]
+                                },
+                                away: {
+                                    name: matchRow.querySelector('td:nth-child(2)').textContent.split(' - ')[1]
+                                }
+                            },
+                            goals: {
+                                home: parseInt(matchRow.querySelector('td:nth-child(3) strong').textContent.split(' - ')[0]),
+                                away: parseInt(matchRow.querySelector('td:nth-child(3) strong').textContent.split(' - ')[1])
+                            }
+                        };
+                        
+                        addFavorite(matchId, matchData);
+                        this.classList.add('active');
+                        this.innerHTML = '★';
+                        this.title = 'Eltávolítás a kedvencekből';
+                    }
+                    
+                    // Ha a kedvencek fülön vagyunk, frissítsük
+                    if (document.getElementById('tab-favorites').classList.contains('active')) {
+                        displayFavoriteMatches();
+                    }
+                });
+            });
+        }
+        
+        // Kedvenc meccsek megjelenítése
+        function displayFavoriteMatches() {
+            const favorites = getFavorites();
+            
+            if (favorites.length === 0) {
+                document.getElementById('favorites').innerHTML = 
+                    '<div class="no-matches">Még nincsenek kedvenc meccsek</div>';
+                return;
+            }
+            
+            let tableHTML = `
+                <table class="matches-table">
+                    <thead>
+                        <tr>
+                            <th>Bajnokság</th>
+                            <th>Mérkőzés</th>
+                            <th>Eredmény</th>
+                            <th>Állapot</th>
+                            <th>Idő</th>
+                            <th>Kedvenc</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            favorites.forEach(match => {
+                const matchId = match.fixture.id;
+                const league = match.league;
+                const teams = match.teams;
+                const goals = match.goals;
+                const status = match.fixture.status;
+                const date = new Date(match.fixture.date);
+                
+                // Idő formázás
+                const timeString = date.toLocaleTimeString('hu-HU', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                // Eredmény
+                const homeScore = goals.home !== null ? goals.home : '0';
+                const awayScore = goals.away !== null ? goals.away : '0';
+                
+                tableHTML += `
+                    <tr>
+                        <td>${league.name} ${league.country ? '(' + league.country + ')' : ''}</td>
+                        <td>${teams.home.name} - ${teams.away.name}</td>
+                        <td><strong>${homeScore} - ${awayScore}</strong></td>
+                        <td>${status.long || 'Ismeretlen'}</td>
+                        <td>${timeString}</td>
+                        <td>
+                            <button class="favorite-btn active" 
+                                    data-match-id="${matchId}"
+                                    title="Eltávolítás a kedvencekből">
+                                ★
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button onclick="displayFavoriteMatches()" style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        🔄 Frissítés
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('favorites').innerHTML = tableHTML;
+            
+            // Kedvenc gombok beállítása
+            setupFavoriteButtons();
         }
         
         // Oldal betöltésekor
         document.addEventListener('DOMContentLoaded', function() {
+            // Tabok inicializálása
+            initTabs();
+            
+            // Meccsek betöltése
             fetchLiveMatches();
             
             // Automatikus frissítés (60 másodpercenként)
             setInterval(fetchLiveMatches, 60000);
+            
+            // Nyelvváltás után a tabokat is frissíteni kell
+            const huBtn = document.getElementById('lang-hu');
+            const enBtn = document.getElementById('lang-en');
+            
+            if (huBtn) huBtn.addEventListener('click', function() {
+                setTimeout(() => {
+                    // Ha a kedvencek fülön vagyunk, frissítjük
+                    if (document.getElementById('tab-favorites').classList.contains('active')) {
+                        displayFavoriteMatches();
+                    }
+                }, 100);
+            });
+            
+            if (enBtn) enBtn.addEventListener('click', function() {
+                setTimeout(() => {
+                    // Ha a kedvencek fülön vagyunk, frissítjük
+                    if (document.getElementById('tab-favorites').classList.contains('active')) {
+                        displayFavoriteMatches();
+                    }
+                }, 100);
+            });
         });
     </script>
 </body>

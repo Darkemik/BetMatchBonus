@@ -11,6 +11,18 @@ const languages = {
             help: "Segítség",
             login: "Bejelentkezés",
             register: "Regisztráció"
+        },
+        tabs: {
+            all: "Összes meccs",
+            favorites: "Kedvencek"
+        },
+        tableHeaders: {
+            league: "Bajnokság",
+            match: "Mérkőzés",
+            result: "Eredmény",
+            status: "Állapot",
+            time: "Idő",
+            favorite: "Kedvenc"
         }
     },
     en: {
@@ -25,6 +37,18 @@ const languages = {
             help: "Help",
             login: "Login",
             register: "Register"
+        },
+        tabs: {
+            all: "All Matches",
+            favorites: "Favorites"
+        },
+        tableHeaders: {
+            league: "League",
+            match: "Match",
+            result: "Result",
+            status: "Status",
+            time: "Time",
+            favorite: "Favorite"
         }
     }
 };
@@ -42,6 +66,14 @@ function changeLanguage(lang) {
     const footerElement = document.getElementById('footer-text');
     if (footerElement) {
         footerElement.textContent = languages[lang].footer;
+    }
+    
+    // Tab gombok fordítása
+    const tabAll = document.getElementById('tab-all');
+    const tabFavorites = document.getElementById('tab-favorites');
+    if (tabAll && languages[lang].tabs) {
+        tabAll.textContent = languages[lang].tabs.all;
+        tabFavorites.textContent = languages[lang].tabs.favorites;
     }
     
     document.querySelectorAll('[data-i18n]').forEach(element => {
@@ -78,6 +110,11 @@ function changeLanguage(lang) {
     
     document.documentElement.lang = lang;
     localStorage.setItem('preferred-language', lang);
+    
+    // Táblázat fejlécek frissítése
+    if (typeof displayFavoriteMatches === 'function') {
+        displayFavoriteMatches();
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
