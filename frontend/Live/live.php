@@ -4,150 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BetMatchBonus - Élő meccsek</title>
-    <link rel="stylesheet" href="../css/main.css">
-    <link rel="icon" href="../img/logo.png" type="image/x-icon">
-    <style>
-        .elo-main {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 80vh;
-            padding: 20px;
-        }
-        
-        .elo-container {
-            width: 100%;
-            max-width: 1200px;
-        }
-        
-        .elo-title {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 32px;
-        }
-        
-        .tabs-container {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
-        }
-        
-        .tab-button {
-            padding: 10px 20px;
-            background: none;
-            border: none;
-            font-size: 16px;
-            cursor: pointer;
-            color: #666;
-            transition: all 0.3s ease;
-            border-radius: 5px 5px 0 0;
-        }
-        
-        .tab-button:hover {
-            background: #f0f0f0;
-        }
-        
-        .tab-button.active {
-            color: #4CAF50;
-            font-weight: bold;
-            border-bottom: 3px solid #4CAF50;
-            background: #f8f9fa;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        .matches-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            border-radius: 10px;
-            overflow: hidden;
-            margin: 0 auto;
-        }
-        
-        .matches-table thead {
-            background: #2c3e50;
-            color: white;
-        }
-        
-        .matches-table th {
-            padding: 15px;
-            text-align: center;
-            font-weight: 600;
-        }
-        
-        .matches-table td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #eee;
-            text-align: center;
-            vertical-align: middle;
-        }
-        
-        .matches-table tr:hover {
-            background: #f8f9fa;
-        }
-        
-        .live-badge {
-            color: #e74c3c;
-            font-weight: bold;
-            animation: pulse 1.5s infinite;
-        }
-        
-        .favorite-btn {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 5px;
-            transition: all 0.3s ease;
-            color: #ccc;
-        }
-        
-        .favorite-btn:hover {
-            transform: scale(1.2);
-        }
-        
-        .favorite-btn.active {
-            color: #ffd700;
-        }
-        
-        .favorite-btn.active:hover {
-            color: #ffed4e;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 50px;
-            color: #666;
-            font-size: 18px;
-        }
-        
-        .no-matches {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-            font-size: 16px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-    </style>
+    <link rel="stylesheet" href="../../css/Main/main.css">
+    <link rel="stylesheet" href="../../css/Live/live.css">
+    <link rel="icon" href="../img/logo.png" type="image/x-icon">    
 </head>
 <body>
     <header class="header">
@@ -208,7 +67,8 @@
         Élményt nyújtunk, értéket teremtünk © BetMatchBonus – 2025. Minden jog fenntartva.
     </footer>
 
-    <script src="../js/elo.js"></script>
+    <script src="../../js/Live/live.js"></script>
+
     
     <!-- SAJÁT API-FOOTBALL KÓD - MŰKÖDIK A KULCSODDAL -->
     <script>
