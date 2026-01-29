@@ -15,12 +15,13 @@
     <div class="logo"><a href="../frontend/index.html" class="mainpage">BetMatchBonus</a></div>
   </div>
 
+
   <nav class="nav">
-    <a href="./index.html">Főoldal</a>
-    <a href="./elo.html">Élő</a>
-    <a href="./bonus.html">Bónuszok</a>
-    <a href="../help/help.html">Segítség</a>
-      </nav>
+    <a href="../../frontend/MainMenu/MainMenu.php">Főoldal</a>
+    <a href="../../frontend/Live/live.php">Élő</a>
+    <a href="../../frontend/Bonus/bonus.php">Bónuszok</a>
+    <a href="../../frontend/Help/help.php">Segítség</a>
+  </nav>
   <div class="right_side">
     <button class="loginbtn" onclick="location.href='login.html'">Bejelentkezés</button>
     <button class="registrationbtn" onclick="location.href='../register/register.html'">Regisztráció</button>

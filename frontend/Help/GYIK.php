@@ -16,10 +16,10 @@
   </div>
 
   <nav class="nav">
-    <a href="../frontend/index.html">Főoldal</a>
-    <a href="../frontend/elo.html">Élő</a>
-    <a href="../frontend/bonus.html">Bónuszok</a>
-    <a href="../help/help.html">Segítség</a>
+    <a href="../../frontend/MainMenu/MainMenu.php">Főoldal</a>
+    <a href="../../frontend/Live/live.php">Élő</a>
+    <a href="../../frontend/Bonus/bonus.php">Bónuszok</a>
+    <a href="../../frontend/Help/help.php">Segítség</a>
   </nav>
   <div class="right_side">
     <button class="loginbtn" onclick="location.href='../frontend/login.html'">Bejelentkezés</button>
