@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Tipp oldal – váz</title>
-  <link rel="stylesheet" href="../css/index.css">
-  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../../css/MainMenu/MainMenu.css">
+  <link rel="stylesheet" href="../../css/Main/main.css">
   <link rel="icon" href="../img/logo.png" type="image/x-icon">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=search"/>
 </head>
@@ -13,15 +13,15 @@
 <header class="header">
 
   <div class="logo-box">
-    <a href="../frontend/index.html"><img class="kep" src="../img/logo.png" alt="logo"></a>
+    <a href="../frontend/index.html"><img class="kep" src="../../img/logo.png" alt="logo"></a>
     <div class="logo"><a href="../frontend/index.html" class="mainpage">BetMatchBonus</a></div>
   </div>
 
   <nav class="nav">
-    <a href="./index.html">Főoldal</a>
-    <a href="./elo.html">Élő</a>
-    <a href="./bonus.html">Bónuszok</a>
-    <a href="../help/help.html">Segítség</a>
+    <a href="../../frontend/MainMenu/MainMenu.php">Főoldal</a>
+    <a href="../../frontend/Live/live.php">Élő</a>
+    <a href="../../frontend/Bonus/bonus.php">Bónuszok</a>
+    <a href="../../frontend/Help/help.php">Segítség</a>
   </nav>
 
   <div class="right_side">

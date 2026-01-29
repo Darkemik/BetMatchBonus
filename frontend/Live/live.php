@@ -70,7 +70,7 @@
     <script src="../../js/Live/live.js"></script>
 
     
-    <!-- SAJÁT API-FOOTBALL KÓD - MŰKÖDIK A KULCSODDAL -->
+    
     <script>
         // A TE API KULCSOD
         const API_KEY = 'a12934fb7f8e9e4cfd3073de92b0994d';
