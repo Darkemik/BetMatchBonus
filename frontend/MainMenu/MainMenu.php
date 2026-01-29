@@ -25,8 +25,8 @@
   </nav>
 
   <div class="right_side">
-    <button class="loginbtn" onclick="location.href='login.html'">Bejelentkezés</button>
-    <button class="registrationbtn" onclick="location.href='../register/register.html'">Regisztráció</button>
+    <button class="loginbtn" onclick="location.href='../../frontend/Login/login.php'">Bejelentkezés</button>
+    <button class="registrationbtn" onclick="location.href='../../frontend/Register/register.php'">Regisztráció</button>
   </div>
 
 </header>

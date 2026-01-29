@@ -15,10 +15,10 @@
     <div class="logo"><a href="../frontend/index.html" class="mainpage">BetMatchBonus</a></div>
   </div>
         <nav class="nav">
-            <a href="./index.html" data-i18n="nav.home">Főoldal</a>
-            <a href="./elo.html" data-i18n="nav.live">Élő</a>
-            <a href="./bonus.html" data-i18n="nav.bonuses">Bónuszok</a>
-            <a href="./help.html" data-i18n="nav.help">Segítség</a>
+            <a href="../../frontend/MainMenu/MainMenu.php" data-i18n="nav.home">Főoldal</a>
+            <a href="../../frontend/Live/live.php" data-i18n="nav.live">Élő</a>
+            <a href="../../frontend/Bonus/bonus.php" data-i18n="nav.bonuses">Bónuszok</a>
+            <a href="../../frontend/Help/help.php" data-i18n="nav.help">Segítség</a>
         </nav>
         <div class="right_side">
             <div class="lang-switcher">
@@ -37,8 +37,8 @@
                     </svg>
                 </button>
             </div>
-            <button data-i18n="nav.login">Bejelentkezés</button>
-            <button class="registrationbtn" onclick="location.href='register.html'" data-i18n="nav.register">Regisztráció</button>
+            <button data-i18n="nav.login" onclick="location.href='../../frontend/Login/login.php' ">Bejelentkezés</button>
+            <button class="registrationbtn" onclick="location.href='../../frontend/Register/register.php'" data-i18n="nav.register">Regisztráció</button>
         </div>
     </header>
 
