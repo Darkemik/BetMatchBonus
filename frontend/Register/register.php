@@ -15,15 +15,15 @@
             <input class="inputok" type="text"     name="username" placeholder="Felhasználónév" required>
             <input class="inputok" type="email"    name="email" placeholder="Email" required>
             <input class="inputok" type="password" name="password" placeholder="Jelszó" required>
-            <p>A jelszó nem elég erős</p>
+            <p>A jelszó nem elég erős nem működik vmiért</p>
             <input class="inputok" type="date"     name="age" placeholder="Életkor" required>
 
             <div class="container1">
-                <p>A *-al jelölt mezők kitöltése kötelező!</p>
+                
                 <input type="checkbox" id="terms" name="terms" value="1" required>
                 <label for="terms">
                     Elolvastam és elfogadom a 
-                    <a href="../frontend/help.html">Felhasználási feltételeket*</a>
+                    <a href="../GDPR/gdpr.php">Felhasználási feltételeket*</a>
                 </label>
             </div>
 
