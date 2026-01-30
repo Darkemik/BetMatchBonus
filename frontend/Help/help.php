@@ -4,15 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Segítség | BetMatchBonus</title>
-    <link rel="stylesheet" href="../css/main.css">
-    <link rel="stylesheet" href="../css/help.css">
-    <link rel="icon" href="../img/logo.png" type="image/x-icon">
+    <link rel="stylesheet" href="../../css/Main/main.css">
+    <link rel="stylesheet" href="../../css/Help/help.css">
+    <link rel="stylesheet" href="../../css/Footer/footer.css">
+    <link rel="icon" href="../../img/logo.png" type="image/x-icon">
 </head>
 <body>
     <header class="header">
   <div class="logo-box">
-    <a href="../frontend/index.html"><img class="kep" src="../img/logo.png" alt="logo"></a>
-    <div class="logo"><a href="../frontend/index.html" class="mainpage">BetMatchBonus</a></div>
+    <a href="../../frontend/MainMenu/MainMenu.php"><img class="kep" src="../../img/logo.png" alt="logo"></a>
+    <div class="logo"><a href="../../frontend/MainMenu/MainMenu.php" class="mainpage">BetMatchBonus</a></div>
   </div>
 
 
@@ -23,8 +24,8 @@
     <a href="../../frontend/Help/help.php">Segítség</a>
   </nav>
   <div class="right_side">
-    <button class="loginbtn" onclick="location.href='../frontend/login.html'">Bejelentkezés</button>
-    <button class="registrationbtn" onclick="location.href='../register/register.html'">Regisztráció</button>
+    <button class="loginbtn" onclick="location.href='../../frontend/Login/login.php'">Bejelentkezés</button>
+    <button class="registrationbtn" onclick="location.href='../../frontend/Register/register.php'">Regisztráció</button>
   </div>
 </header>
 
@@ -34,7 +35,7 @@
             <div class="sidebar-section">
                 <h3>INFORMÁCIÓK</h3>
                 <ul>
-                    <li><a href="../help/GYIK.html">GYIK</a></li>
+                    <li><a href="../../frontend/Help/GYIK.php">GYIK</a></li>
                     <li><a href="#">Új funkciók</a></li>
                     <li><a href="#">Sportszabályok</a></li>
                     <li><a href="#">Szótár</a></li>
@@ -78,13 +79,28 @@
         </aside>
     </div>
 
-    <footer class="footer">
-        Élményt nyújtunk, értéket teremtünk © BetMatchBonus – 2026. Minden jog fenntartva. <br>
-        <a href="../frontend/help.html">Adatkezelési Tájékoztató</a> <br>
-        <a href="../frontend/help.html">Részvételi Szabályzat</a> <br>
-        <a href="../frontend/help.html">ugyfelszolgalat@betmatchbonus.com</a> <br>
-        <a href="../frontend/help.html">GYIK</a>
+    <!--Footer-->
+<footer class="simple-footer">
+    <div class="footer-top">
+        <div class="footer-links">
+            <a href="" class="footer-link">ADATKEZELÉSI TÁJÉKOZTATÓ</a>
+            <a href="#" class="footer-link">RÉSZVÉTELI SZABÁLYZAT</a>
+            <a href="#" class="footer-link">FELELŐS JÁTÉKSZERVEZÉS</a>
+            <a href="mailto:ugyfelszolgalat@betmatchbonus.com" class="footer-link">UGYFELSZOLGALAT@BETMATCHBONUS.COM</a>
+            <a href="#" class="footer-link">GYIK</a>
+        </div>
+    </div>
 
-      </footer>
+    <div class="footer-bottom">
+        <div class="footer-content">
+            <div class="responsible-text">
+                <h2>Ajánlott felelős szervező!</h2>
+                <p>Maradjon játék! 18+. A túlzásba vitt szerencsejáték ártalmas, függőséget okozhat! Kérje bejegyzését a játékosvédelmi nyilvántartásba!
+                <a href="../help/jatekosvedelem.html" class="tudjmegtobbeta" target="_blank">Tudj meg többet!</a></p>
+            </div>
+            <p>Élményt nyújtunk, értéket teremtünk © BetMatchBonus – 2026. Minden jog fenntartva.</p>
+        </div>
+    </div>
+</footer>
 </body>
 </html>

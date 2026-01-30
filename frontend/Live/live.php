@@ -7,7 +7,7 @@
     <title>BetMatchBonus - Élő meccsek</title>
     <link rel="stylesheet" href="../../css/Main/main.css">
     <link rel="stylesheet" href="../../css/Live/live.css">
-    <link rel="icon" href="../img/logo.png" type="image/x-icon">
+    <link rel="icon" href="../../img/logo.png" type="image/x-icon">
 </head>
 
 <body>

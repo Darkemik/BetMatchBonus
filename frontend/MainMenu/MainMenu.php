@@ -5,7 +5,7 @@
   <title>Tipp oldal – váz</title>
   <link rel="stylesheet" href="../../css/MainMenu/MainMenu.css">
   <link rel="stylesheet" href="../../css/Main/main.css">
-  <link rel="icon" href="../img/logo.png" type="image/x-icon">
+    <link rel="icon" href="../../img/logo.png" type="image/x-icon">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=search"/>
 </head>
 <body>
@@ -13,8 +13,8 @@
 <header class="header">
 
   <div class="logo-box">
-    <a href="../frontend/index.html"><img class="kep" src="../../img/logo.png" alt="logo"></a>
-    <div class="logo"><a href="../frontend/index.html" class="mainpage">BetMatchBonus</a></div>
+    <a href="../../frontend/MainMenu/MainMenu.php"><img class="kep" src="../../img/logo.png" alt="logo"></a>
+    <div class="logo"><a href="../../frontend/MainMenu/MainMenu.php" class="mainpage">BetMatchBonus</a></div>
   </div>
 
   <nav class="nav">
