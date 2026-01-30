@@ -18,10 +18,6 @@
         </div>
 
         <nav class="nav">
-            <a href="../../frontend/MainMenu/MainMenu.php">Főoldal</a>
-            <a href="../../frontend/Live/live.php">Élő</a>
-            <a href="../../frontend/Bonus/bonus.php">Bónuszok</a>
-            <a href="../../frontend/Help/help.php">Segítség</a>
             <a href="../../frontend/MainMenu/MainMenu.php" data-i18n="nav.home">Főoldal</a>
             <a href="../../frontend/Live/live.php" data-i18n="nav.live">Élő</a>
             <a href="../../frontend/Bonus/bonus.php" data-i18n="nav.bonuses">Bónuszok</a>
