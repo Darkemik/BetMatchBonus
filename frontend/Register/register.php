@@ -23,7 +23,7 @@
                 <input type="checkbox" id="terms" name="terms" value="1" required>
                 <label for="terms">
                     Elolvastam és elfogadom a 
-                    <a href="../GDPR/gdpr.php">Felhasználási feltételeket*</a>
+                    <a href="../T&C../T&C.php">Felhasználási feltételeket*</a>
                 </label>
             </div>
 
