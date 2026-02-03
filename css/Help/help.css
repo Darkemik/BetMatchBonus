@@ -1,6 +1,6 @@
 .help-container {
     display: flex;
-    min-height: calc(100vh - 130px); 
+    min-height: calc(100vh - 130px);
     padding: 20px;
     gap: 20px;
 }
@@ -150,29 +150,62 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
+
 .tobb-info-gomb:hover {
     background: #2980b9;
     color: black;
 }
 
+.accordion-item {
+    border: 1px solid #ccc;
+    margin-bottom: 5px;
+}
+
+.accordion-header {
+    width: 100%;
+    padding: 15px;
+    text-align: left;
+    background: #f0f0f0;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.accordion-header:hover {
+    background: #ddd;
+}
+
+.accordion-content {
+    padding: 0 15px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.accordion-content.active {
+    max-height: 200px;
+    /* Igazítsd a tartalomhoz */
+    padding: 15px;
+}
 
 /* Reszponzív design (ha összecsukod kicsire a main content le esik, kell egy hamburger menü is a navbar helyett ha összecsukom) */
 @media (max-width: 1024px) {
     .help-container {
         flex-wrap: wrap;
     }
-    
+
     .left-sidebar {
         flex: 1 1 100%;
         order: 1;
         margin-bottom: 20px;
     }
-    
+
     .main-content {
         flex: 2 1 300px;
         order: 2;
     }
-    
+
     .right-sidebar {
         flex: 1 1 100%;
         order: 3;
@@ -180,7 +213,7 @@
         flex-wrap: wrap;
         margin-top: 20px;
     }
-    
+
     .promo-card {
         flex: 1 1 calc(33.333% - 20px);
         min-width: 250px;
@@ -193,24 +226,26 @@
         gap: 15px;
         flex-direction: column;
     }
-    
-    .left-sidebar, .main-content, .right-sidebar {
+
+    .left-sidebar,
+    .main-content,
+    .right-sidebar {
         flex: 1 1 100%;
         width: 100%;
     }
-    
+
     .right-sidebar {
         flex-direction: column;
     }
-    
+
     .promo-card {
         flex: 1 1 100%;
     }
-    
+
     .main-content h1 {
         font-size: 20px;
     }
-    
+
     .main-content {
         padding: 20px;
     }
@@ -221,16 +256,18 @@
         padding: 8px;
         gap: 10px;
     }
-    
-    .main-content, .left-sidebar, .promo-card {
+
+    .main-content,
+    .left-sidebar,
+    .promo-card {
         padding: 15px;
     }
-    
+
     .sidebar-section a {
         padding: 6px 10px;
         font-size: 13px;
     }
-    
+
     .details-btn {
         padding: 8px 15px;
         font-size: 13px;

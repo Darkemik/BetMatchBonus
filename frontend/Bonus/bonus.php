@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="hu">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,25 +10,27 @@
     <link rel="stylesheet" href="../../css/Footer/footer.css">
     <link rel="icon" href="../../img/logo.png" type="image/x-icon">
 </head>
+
 <body>
     <header class="header">
-  <div class="logo-box">
-    <a href="../../frontend/MainMenu/MainMenu.php"><img class="kep" src="../../img/logo.png" alt="logo"></a>
-    <div class="logo"><a href="../../frontend/MainMenu/MainMenu.php" class="mainpage">BetMatchBonus</a></div>
-  </div>
+        <div class="logo-box">
+            <a href="../../frontend/MainMenu/MainMenu.php"><img class="kep" src="../../img/logo.png" alt="logo"></a>
+            <div class="logo"><a href="../../frontend/MainMenu/MainMenu.php" class="mainpage">BetMatchBonus</a></div>
+        </div>
 
 
-  <nav class="nav">
-    <a href="../../frontend/MainMenu/MainMenu.php">Főoldal</a>
-    <a href="../../frontend/Live/live.php">Élő</a>
-    <a href="../../frontend/Bonus/bonus.php">Bónuszok</a>
-    <a href="../../frontend/Help/help.php">Segítség</a>
-  </nav>
-  <div class="right_side">
-    <button class="loginbtn" onclick="location.href='../../frontend/Login/login.php'">Bejelentkezés</button>
-    <button class="registrationbtn" onclick="location.href='../../frontend/Register/register.php'">Regisztráció</button>
-  </div>
-</header>
+        <nav class="nav">
+            <a href="../../frontend/MainMenu/MainMenu.php">Főoldal</a>
+            <a href="../../frontend/Live/live.php">Élő</a>
+            <a href="../../frontend/Bonus/bonus.php">Bónuszok</a>
+            <a href="../../frontend/Help/help.php">Segítség</a>
+        </nav>
+        <div class="right_side">
+            <button class="loginbtn" onclick="location.href='../../frontend/Login/login.php'">Bejelentkezés</button>
+            <button class="registrationbtn"
+                onclick="location.href='../../frontend/Register/register.php'">Regisztráció</button>
+        </div>
+    </header>
     <div class="container">
         <div class="row">
             <!-- 1. doboz -->
@@ -44,7 +47,7 @@
                     <a href="#" class="doboz-gomb">BEJELENTKEZÉS / REGISZTRÁCIÓ</a>
                 </div>
             </div>
-            
+
             <!-- 2. doboz ODDS PIRAMISOS KÉP KELL -->
             <div class="doboz">
                 <img src="../../img/oddspiramid.jpeg" alt="Odds Piramis" class="doboz-kep">
@@ -59,7 +62,7 @@
                     <a href="#" class="doboz-gomb">BEJELENTKEZÉS / REGISZTRÁCIÓ</a>
                 </div>
             </div>
-            
+
             <!-- 3. doboz DARTSOS BÓNUSZ KÉP KELL-->
             <div class="doboz">
                 <img src="#" alt="Darts" class="doboz-kep">
@@ -74,7 +77,7 @@
                     <a href="#" class="doboz-gomb">BEJELENTKEZÉS / REGISZTRÁCIÓ</a>
                 </div>
             </div>
-            
+
             <!-- 4. doboz -->
             <div class="doboz">
                 <img src="../../img/oddsspaceship.jpeg" alt="Odds Űrhajó" class="doboz-kep">
@@ -90,7 +93,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="row">
             <!-- 5. doboz INGYEN FOGADÁS BÓNUSZ KÉP KELL-->
             <div class="doboz">
@@ -100,13 +103,14 @@
                     <div class="bonus-feltetel">
                         <strong>2.000 FT ingyen fogadás!</strong>
                     </div>
-                    <p class="doboz-szoveg">Jelentkezzen be most és kapjon azonnal 2.000 FT értékű ingyenes fogadást bármely sporteseményre!</p>
+                    <p class="doboz-szoveg">Jelentkezzen be most és kapjon azonnal 2.000 FT értékű ingyenes fogadást
+                        bármely sporteseményre!</p>
                     <p>részletek:</p>
                     <button class="tobb-info-gomb" id="tobbInfoGomb">Több információ</button>
                     <a href="#" class="doboz-gomb">BEJELENTKEZÉS / REGISZTRÁCIÓ</a>
                 </div>
             </div>
-            
+
             <!-- 6. doboz -->
             <div class="doboz">
                 <img src="../../img/focipalya.jpeg" alt="Focipálya" class="doboz-kep">
@@ -121,7 +125,7 @@
                     <a href="#" class="doboz-gomb">BEJELENTKEZÉS / REGISZTRÁCIÓ</a>
                 </div>
             </div>
-            
+
             <!-- 7. doboz KOSÁRLABDÁS KÉP KELL-->
             <div class="doboz">
                 <img src="../../img/basketballbonus.jpeg" alt="Kosárlabda" class="doboz-kep">
@@ -131,12 +135,13 @@
                     <div class="bonus-feltetel">
                         <strong>Kosárlabda mérkőzéseken extra odds +0.5 minden fogadásra!</strong>
                     </div>
-                    <p class="doboz-szoveg">NBA és EuroLeague mérkőzéseken minden fogadáshoz +0.5 odds bónuszt kap automatikusan!</p>
+                    <p class="doboz-szoveg">NBA és EuroLeague mérkőzéseken minden fogadáshoz +0.5 odds bónuszt kap
+                        automatikusan!</p>
                     <button class="tobb-info-gomb" id="tobbInfoGomb">Több információ</button>
                     <a href="#" class="doboz-gomb">BEJELENTKEZÉS / REGISZTRÁCIÓ</a>
                 </div>
             </div>
-            
+
             <!-- 8. doboz -->
             <div class="doboz">
                 <img src="../../img/cashout.jpeg" alt="Cash out" class="doboz-kep">
@@ -150,28 +155,29 @@
         </div>
     </div>
 
-    <!--Footer-->
-<footer class="simple-footer">
-    <div class="footer-top">
-        <div class="footer-links">
-            <a href="" class="footer-link">ADATKEZELÉSI TÁJÉKOZTATÓ</a>
-            <a href="#" class="footer-link">RÉSZVÉTELI SZABÁLYZAT</a>
-            <a href="#" class="footer-link">FELELŐS JÁTÉKSZERVEZÉS</a>
-            <a href="mailto:ugyfelszolgalat@betmatchbonus.com" class="footer-link">UGYFELSZOLGALAT@BETMATCHBONUS.COM</a>
-            <a href="#" class="footer-link">GYIK</a>
-        </div>
-    </div>
-
-    <div class="footer-bottom">
-        <div class="footer-content">
-            <div class="responsible-text">
-                <h2>Ajánlott felelős szervező!</h2>
-                <p>Maradjon játék! 18+. A túlzásba vitt szerencsejáték ártalmas, függőséget okozhat! Kérje bejegyzését a játékosvédelmi nyilvántartásba!
-                <a href="../help/jatekosvedelem.html" class="tudjmegtobbeta" target="_blank">Tudj meg többet!</a></p>
+    <footer class="simple-footer">
+        <div class="footer-top">
+            <div class="footer-links">
+                <a href="../Help/adatkezelesi_tajékoztatok.php" class="footer-link">ADATKEZELÉSI TÁJÉKOZTATÓ</a>
+                <a href="../Help/reszveteli-szabalyzat.php" class="footer-link">RÉSZVÉTELI SZABÁLYZAT</a>
+                <a href="../Help/kapcsolat.php" class="footer-link">UGYFELSZOLGALAT@BETMATCHBONUS.COM</a>
+                <a href="../Help/GYIK.php" class="footer-link">GYIK</a>
             </div>
-            <p>Élményt nyújtunk, értéket teremtünk © BetMatchBonus – 2026. Minden jog fenntartva.</p>
         </div>
-    </div>
-</footer>
+
+        <div class="footer-bottom">
+            <div class="footer-content">
+                <div class="responsible-text">
+                    <h2>Ajánlott felelős szervező!</h2>
+                    <p>Maradjon játék! 18+. A túlzásba vitt szerencsejáték ártalmas, függőséget okozhat! Kérje
+                        bejegyzését a játékosvédelmi nyilvántartásba!
+                        <a href="../Help/jatekosvedelem.php" class="tudjmegtobbeta" target="_blank">Tudj meg többet!</a>
+                    </p>
+                </div>
+                <p>Élményt nyújtunk, értéket teremtünk © BetMatchBonus – 2026. Minden jog fenntartva.</p>
+            </div>
+        </div>
+    </footer>
 </body>
+
 </html>

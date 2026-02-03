@@ -54,24 +54,7 @@
 
         <!-- Fő tartalom (középső rész)-->
         <main class="main-content">
-            <div class="help-menu-container">
-                <form>
-                    <div class="help-menu">
-                        <details class="level0">
-                            <summary>REGISZTRÁCIÓ, BEJELENTKEZÉS</summary>
 
-                            <details class="level1">
-                                <summary>Hogyan tudom az e-mail címemet hitelesíteni?</summary>
-                                <p>A regisztrációt követően levelet küldünk a megadott email címedre, melyben
-                                    megtalálható az email cím hitelesítésére szolgáló link. A linkre kattintva a
-                                    regisztrációkor megadott email cím hitelesítése megtörténik. Amennyiben az email nem
-                                    érkezett meg, érdemes a spam fiókot is megnézni. Szükség esetén hívd az
-                                    ügyfélszolgálatot!</p>
-                            </details>
-                        </details>
-                    </div>
-                </form>
-            </div>
         </main>
 
         <!-- Jobb oldali sáv -->
@@ -96,7 +79,6 @@
         </aside>
     </div>
 
-    <!--Footer-->
     <footer class="simple-footer">
         <div class="footer-top">
             <div class="footer-links">
@@ -120,7 +102,6 @@
             </div>
         </div>
     </footer>
-    <script src="../../js/help.js"></script>
 </body>
 
 </html>
