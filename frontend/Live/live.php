@@ -40,11 +40,10 @@
                     </svg>
                 </button>
             </div>
-            <button data-i18n="nav.login">Bejelentkezés</button>
-            <button class="registrationbtn" onclick="location.href='../../Frontend/Register/register.php'"
+            <button data-i18n="nav.login"
+                onclick="location.href='../../frontend/Login/login.php' ">Bejelentkezés</button>
+            <button class="registrationbtn" onclick="location.href='../../frontend/Register/register.php'"
                 data-i18n="nav.register">Regisztráció</button>
-            <button data-i18n="nav.login" onclick="location.href='../../frontend/Login/login.php' ">Bejelentkezés</button>
-            <button class="registrationbtn" onclick="location.href='../../frontend/Register/register.php'" data-i18n="nav.register">Regisztráció</button>
         </div>
     </header>
 
