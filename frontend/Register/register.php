@@ -17,20 +17,27 @@
             <input class="inputok" type="text" name="username" placeholder="Felhasználónév" required>
             <input class="inputok" type="email" name="email" placeholder="Email" required>
             <input class="inputok" type="password" name="password" placeholder="Jelszó" required>
-            <p>A jelszó nem elég erős nem működik vmiért</p>
-            <input class="inputok" type="date" name="age" placeholder="Életkor" required>
+
+            <input class="age" type="date" id="date-input" required>
+            <input type="hidden" name="calculated_age" id="calculated_age">
+
+
+            <p id="result"></p>
+
+            
+
 
             <div class="container1">
-
-                <input type="checkbox" id="terms" name="terms" value="1" required>
-                <label for="terms">
+                <input type="checkbox" id="terms_rules" name="terms_rules" value="1" required>
+                <label for="terms_rules">
                     Elolvastam és elfogadom a
                     <a href="../Help/reszveteli-szabalyzat.php">Részvételi szabályzatot</a>
                 </label>
-                <br>
-                <input type="checkbox" id="terms" name="terms" value="1" required>
 
-                <label for="terms">
+                <br>
+
+                <input type="checkbox" id="terms_privacy" name="terms_privacy" value="1" required>
+                <label for="terms_privacy">
                     Elolvastam és elfogadom a
                     <a href="../Help/adatkezelesi_tajekoztatok.php">Adatkezelési tájékoztatóját</a>
                 </label>
@@ -41,8 +48,8 @@
             <p>Már van fiókod?</p>
             <a href="../Login/login.php">Jelentkezz be!</a>
         </form>
-
     </div>
 </body>
+<script src="../../js/Register/register.js"> </script>
 
 </html>

@@ -18,6 +18,7 @@
     <div class="logo"><a href="../../frontend/MainMenu/MainMenu.php" class="mainpage">BetMatchBonus</a></div>
   </div>
 
+  
   <nav class="nav">
     <a href="../../frontend/MainMenu/MainMenu.php" id="fooldalszoveg" 
        style="color: orange;">Főoldal</a>
@@ -128,7 +129,7 @@
             </div>
         </div>
     </footer>
-<script src="../js/main.js"></script>
+<script src="../../js/MainMenu/main.js"></script>
 </body>
 </html>
 

@@ -9,11 +9,11 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 $username = $_POST['username'] ?? null;
 $email    = $_POST['email'] ?? null;
 $password = $_POST['password'] ?? null;
-$age      = $_POST['age'] ?? null;
-$terms    = $_POST['terms'] ?? null;
+$calculated_age = $_POST['calculated_age'] ?? '';
+$terms_rules  = isset($_POST['terms_rules']);
+$terms_privacy = isset($_POST['terms_privacy']);
 
-
-if ($username === '' || $email === '' || $password === '' || $age === '' || !$terms) {
+if ($username === '' || $email === '' || $password === '' || $calculated_age === '' || !$terms_rules || !$terms_privacy) {
   die("Hiányzó adat vagy nincs elfogadva a feltétel.");
   
 }
@@ -33,7 +33,7 @@ if ($username === '' || $email === '' || $password === '' || $age === '' || !$te
 
 <p>Email: <b><?php echo htmlspecialchars($email); ?></b></p>
 <p>Felhasználónév: <b><?php echo htmlspecialchars($username); ?></b></p>
-<p>Születési dátum: <b><?php echo htmlspecialchars($age); ?></b></p>
+<p>Születési dátum: <b><?php echo htmlspecialchars($calculated_age); ?></b></p>
 
 <br>
 
@@ -42,8 +42,7 @@ if ($username === '' || $email === '' || $password === '' || $age === '' || !$te
     <input type="hidden" name="username" value="<?php echo htmlspecialchars($username); ?>">
     <input type="hidden" name="email" value="<?php echo htmlspecialchars($email); ?>">
     <input type="hidden" name="password" value="<?php echo htmlspecialchars($password); ?>">
-    <input type="hidden" name="age" value="<?php echo htmlspecialchars($age); ?>">
-
+    <input type="hidden" name="age" value="<?php echo htmlspecialchars($calculated_age); ?>">
     <button type="submit">Folytatás</button>
 </form>
 
