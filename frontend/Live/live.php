@@ -48,6 +48,12 @@
         </div>
     </header>
 
+    <div class="right-container">
+    <aside class="right-sidebar">
+    <h2>Fogadási szelvény</h2>
+    <p>Itt lesz majd a fogadási blokk.</p>
+  </aside>
+  </div>
     <div class="elo-main">
         <div class="elo-container">
             <h1 class="elo-title" id="elo-title">Élő meccsek</h1>
@@ -67,8 +73,11 @@
                 </div>
             </div>
         </div>
+
+        
     </div>
 
+    
     <footer class="simple-footer">
         <div class="footer-top">
             <div class="footer-links">

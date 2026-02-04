@@ -175,3 +175,14 @@
   #segitsegszoveg:hover{
     color: #ffc89b;
   }
+
+  .right-container{
+    border: 2px solid red;
+    float: right;
+    overflow-y: auto;
+    width: 20%;
+    margin-right: 120px;
+    margin-top: 50px;
+    display: flex;
+    justify-content: center;
+  }
