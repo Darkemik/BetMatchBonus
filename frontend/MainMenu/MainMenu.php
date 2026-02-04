@@ -98,7 +98,7 @@
     <footer class="simple-footer">
         <div class="footer-top">
             <div class="footer-links">
-                <a href="../Help/adatkezelesi_tajékoztatok.php" class="footer-link">ADATKEZELÉSI TÁJÉKOZTATÓ</a>
+                <a href="../Help/adatkezelesi_tajekoztatok.php" class="footer-link">ADATKEZELÉSI TÁJÉKOZTATÓ</a>
                 <a href="../Help/reszveteli-szabalyzat.php" class="footer-link">RÉSZVÉTELI SZABÁLYZAT</a>
                 <a href="../Help/kapcsolat.php" class="footer-link">UGYFELSZOLGALAT@BETMATCHBONUS.COM</a>
                 <a href="../Help/GYIK.php" class="footer-link">GYIK</a>
