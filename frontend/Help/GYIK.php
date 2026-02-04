@@ -58,15 +58,110 @@
                 <form>
                     <div class="help-menu">
                         <details class="level0">
-                            <summary>REGISZTRÁCIÓ, BEJELENTKEZÉS</summary>
+                            <summary class="help-summary">REGISZTRÁCIÓ, BEJELENTKEZÉS</summary>
 
                             <details class="level1">
                                 <summary>Hogyan tudom az e-mail címemet hitelesíteni?</summary>
                                 <p>A regisztrációt követően levelet küldünk a megadott email címedre, melyben
                                     megtalálható az email cím hitelesítésére szolgáló link. A linkre kattintva a
                                     regisztrációkor megadott email cím hitelesítése megtörténik. Amennyiben az email nem
-                                    érkezett meg, érdemes a spam fiókot is megnézni. Szükség esetén hívd az
-                                    ügyfélszolgálatot!</p>
+                                    érkezett meg, érdemes a spam fiókot is megnézni. Szükség esetén írj az
+                                    ügyfélszolgálatnak!</p>
+                            </details>
+                            <details class="level1">
+                                <summary>Regisztrálhatok más adataival?</summary>
+                                <p>Regisztrálni kizárólag csak saját nevedben, az okmányaidban található személyes
+                                    adatokkal lehet.</p>
+                            </details>
+                            <details class="level1">
+                                <summary>Megváltoztathatom a felhasználónevemet?</summary>
+                                <p>Nem, a felhasználónév nem módosítható.</p>
+                            </details>
+                            <details class="level1">
+                                <summary>Mik a regisztráció feltételei?</summary>
+                                <p>A BetMatchBonus oldalon csak 18. életévét betöltött, magyarországi tartózkodási
+                                    hellyel
+                                    és magyarországi bankban vezetett forint alapú bankszámlával rendelkező fogadó
+                                    regisztrálhat. A regisztrációkor minden játékosnak el kell fogadnia a magára nézve
+                                    kötelező BetMatchBonus Részvételi Szabályzatot, valamint az adatvédelmi
+                                    tájékoztatót.
+                                </p>
+                            </details>
+                            <details class="level1">
+                                <summary>Hogyan tudok regisztrálni?</summary>
+                                <p>“Kattints a jobb felső sarokban található Regisztráció gombra!
+                                    A megjelenő űrlapon első lépésként a bejelentkezéshez szükséges adatokat kell
+                                    megadnod: felhasználónevedet, e-mail címedet, valamint jelszót.
+                                    A következő oldalon a személyes adataid megadására van szükség. Kérjük, hogy
+                                    pontosan add meg az lakcímadatokat.
+                                    A jóváhagyást követően a fogadási rendszer a regisztráció során megadott e-mail
+                                    címedre küldi azt az aktiváló linket, melyre kattintva véglegessé válik a
+                                    regisztrációd.</p>
+                            </details>
+                            <details class="level1">
+                                <summary>Mit tehetek, ha a regisztrációkor rossz adatot adtam meg?</summary>
+                                <p>A bejelentkezést követően a Beállítások/Személyes adatok menüponton belül lehetőség
+                                    nyílik adatmódosításra a felhasználónév és a születési adatok kivételével – ezek
+                                    pontosítására a Ügyfélszolgálat segítségével van lehetőséged emailen keresztül.
+                                </p>
+                            </details>
+                            <details class="level1">
+                                <summary>Megváltoztathatom a jelszavamat?</summary>
+                                <p>A jelszavad módosítására a bejelentkezést követően, a jobb felső sarokban a profilra
+                                    kattintva van lehetőség a „Jelszó módosítása” menüpontban, az alábbi módon:
+                                    – a régi jelszavad beírása után van lehetőség megadni az új jelszót.
+                                    – a jelszónak tartalmazni kell legalább 1 kis- és nagybetűt, számot, és különleges
+                                    karaktert
+                                    – amennyiben helyes jelszót adtad meg a régi jelszavad és az új jelszó is megfelel a
+                                    követelményeknek, aktív lesz a Mentés gomb
+                                    – a gomb megnyomását követően a regisztrált email címedre megküldünk egy hat
+                                    számjegyből álló biztonsági kódot
+                                    – ezt a kódot az oldalunkon megjelenő felugró ablakban tudod megadni
+                                    – amennyiben a kód helyes volt, megtörténik a jelszavad módosítása.
+                                    A kapott kód 5 percig érvényes.</p>
+                            </details>
+                            <details class="level1">
+                                <summary>Miről kell nyilatkozni a regisztráció során?</summary>
+                                <p>“A regisztráció során nyilatkoznod kell arról, hogy:
+                                    – a távszerencsejátékban saját nevedben kívánsz részt venni,
+                                    – az adatokat a regisztrációhoz saját nevedben szolgáltatod
+                                    – elfogadod a Részvételi Szabályzatot
+                                    – elfogadod az adatkezelési tájékoztatót.
+                                    A regisztráció során hozzájárulhatsz ahhoz, hogy a Szerencsejáték Zrt. általános és
+                                    személyre szabott ajánlatokkal keressen meg az általad választott kommunikációs
+                                    csatornán. Ezen hozzájárulásokat később módosíthatod.”</p>
+                            </details>
+                            <details class="level1">
+                                <summary>Regisztrálhatok többször?</summary>
+                                <p>Minden játékos csak egy regisztrációt tud létrehozni. Épp ezért ha korábban
+                                    rendelkeztél már regisztrációval, de mégsem tudsz bejelentkezni, kérjük, írj
+                                    ügyfélszolgálatunknak a ugyfelszolgalat@betmatchbonus.com -on!
+                                </p>
+                            </details>
+                            <details class="level1">
+                                <summary>Személyes adataimban változások történtek. Mit tehetek?</summary>
+                                <p>“Adataid módosítására a jogszabály szerint a változást követő 5 napon belül sort kell
+                                    keríteni. Ezt a belépést követően a Beállítások/Személyes adatok menüpontban teheted
+                                    meg.
+                                    Adataid módosítására a Beállítások/Személyes adatok oldalon van lehetőséged. A
+                                    bejelentkezést követően a jobb felső sarokban található Számlám/Fogadásaim menüpont
+                                    belül a Személyes adatok fülre kattintva tudod elérni. Fontos, hogy a változást
+                                    követő 5 napon belül módosítanod szükséges a változott adatokat!
+                                    A nem változó adatok (születési név, édesanyja leánykori neve, születési hely és
+                                    időpont) frissítésében ügyfélszolgálatunk tud segítséget nyújtani, ha a
+                                    regisztrációkor elírás történt. Az ügyfélszolgálaton történő személyes adat
+                                    módosítása kapcsán fenntartjuk a jogot személyazonosító dokumentumok bekéréséhez.”
+                                </p>
+                            </details>
+                        </details>
+
+
+                        <details class="level0">
+                            <summary class="help-summary">HOGYAN FOGADJAK?</summary>
+
+                            <details class="level1">
+                                <summary></summary>
+                                <p></p>
                             </details>
                         </details>
                     </div>

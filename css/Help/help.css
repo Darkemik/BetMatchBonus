@@ -81,7 +81,7 @@
     margin-bottom: 15px;
 }
 
-.main-content p {
+.help-menu-container{
     color: #555;
     font-size: 15px;
     line-height: 1.6;
@@ -92,6 +92,14 @@
     border-left: 4px solid #3498db;
 }
 
+
+.additional-info {
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 10px;
+    background-color: #3ba4f0;
+}
 /* Jobb oldali sáv */
 .right-sidebar {
     flex: 0 0 280px;

@@ -54,7 +54,10 @@
 
         <!-- Fő tartalom (középső rész)-->
         <main class="main-content">
-
+            <h2>DARTS</h2>
+            <h3>Verseny célja:</h3>
+            <p>Minél nagyobb összegű pontot elérni (maximálisan 180). A játékosok felváltva dobnak körönként 3-3 nyilat.
+                A dobás értékét a nyíl által eltalált szektor száma adja meg.</p>
         </main>
 
         <!-- Jobb oldali sáv -->
