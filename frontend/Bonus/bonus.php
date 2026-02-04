@@ -20,11 +20,21 @@
 
 
         <nav class="nav">
-            <a href="../../frontend/MainMenu/MainMenu.php">Főoldal</a>
-            <a href="../../frontend/Live/live.php">Élő</a>
-            <a href="../../frontend/Bonus/bonus.php">Bónuszok</a>
-            <a href="../../frontend/Help/help.php">Segítség</a>
-        </nav>
+    <a href="../../frontend/MainMenu/MainMenu.php" id="fooldalszoveg" 
+       onmouseover="this.style.color='#ffc89b'" 
+       onmouseout="this.style.color=''">Főoldal</a>
+       
+    <a href="../../frontend/Live/live.php" id="eloszoveg"
+       onmouseover="this.style.color='#ffc89b'"
+       onmouseout="this.style.color=''">Élő</a>
+       
+    <a href="../../frontend/Bonus/bonus.php" id="bonuszszoveg" 
+       style="color: orange;">Bónuszok</a>
+       
+    <a href="../../frontend/Help/help.php" id="segitsegszoveg"
+       onmouseover="this.style.color='#ffc89b'"
+       onmouseout="this.style.color=''">Segítség</a>
+</nav>
         <div class="right_side">
             <button class="loginbtn" onclick="location.href='../../frontend/Login/login.php'">Bejelentkezés</button>
             <button class="registrationbtn"

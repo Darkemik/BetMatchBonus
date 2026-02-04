@@ -273,3 +273,19 @@
         font-size: 13px;
     }
 }
+
+#segitsegszoveg{
+    color: orange;
+}
+
+  #bonuszszoveg:hover{
+    color: #ffc89b;
+  }
+
+  #fooldalszoveg:hover{
+    color: #ffc89b;
+  }
+
+  #eloszoveg:hover{
+    color: #ffc89b;
+  }

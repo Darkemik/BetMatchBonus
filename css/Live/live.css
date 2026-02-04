@@ -159,3 +159,19 @@
     text-align: center;
     margin-top: 20px;
 }
+
+#eloszoveg{
+    color: orange;
+}
+
+  #bonuszszoveg:hover{
+    color: #ffc89b;
+  }
+
+  #fooldalszoveg:hover{
+    color: #ffc89b;
+  }
+
+  #segitsegszoveg:hover{
+    color: #ffc89b;
+  }

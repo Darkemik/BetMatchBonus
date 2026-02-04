@@ -19,10 +19,10 @@
         </div>
 
         <nav class="nav">
-            <a href="../../frontend/MainMenu/MainMenu.php" data-i18n="nav.home">Főoldal</a>
+            <a href="../../frontend/MainMenu/MainMenu.php" data-i18n="nav.home" id="fooldalszoveg">Főoldal</a>
             <a href="../../frontend/Live/live.php" data-i18n="nav.live" id="eloszoveg">Élő</a>
-            <a href="../../frontend/Bonus/bonus.php" data-i18n="nav.bonuses">Bónuszok</a>
-            <a href="../../frontend/Help/help.php" data-i18n="nav.help">Segítség</a>
+            <a href="../../frontend/Bonus/bonus.php" data-i18n="nav.bonuses" id="bonuszszoveg">Bónuszok</a>
+            <a href="../../frontend/Help/help.php" data-i18n="nav.help" id="segitsegszoveg">Segítség</a>
         </nav>
         <div class="right_side">
             <div class="lang-switcher">
@@ -441,7 +441,6 @@
             });
         });
 
-        document.getElementById('eloszoveg').style.color = 'orange';
     </script>
 </body>
 
