@@ -20,7 +20,7 @@
 
         <nav class="nav">
             <a href="../../frontend/MainMenu/MainMenu.php" data-i18n="nav.home">Főoldal</a>
-            <a href="../../frontend/Live/live.php" data-i18n="nav.live">Élő</a>
+            <a href="../../frontend/Live/live.php" data-i18n="nav.live" id="eloszoveg">Élő</a>
             <a href="../../frontend/Bonus/bonus.php" data-i18n="nav.bonuses">Bónuszok</a>
             <a href="../../frontend/Help/help.php" data-i18n="nav.help">Segítség</a>
         </nav>
@@ -440,6 +440,8 @@
                 }, 100);
             });
         });
+
+        document.getElementById('eloszoveg').style.color = 'orange';
     </script>
 </body>
 

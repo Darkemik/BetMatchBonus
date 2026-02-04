@@ -57,17 +57,17 @@ let currentLang = 'hu';
 
 function changeLanguage(lang) {
     currentLang = lang;
-    
+
     const titleElement = document.getElementById('elo-title');
     if (titleElement) {
         titleElement.textContent = languages[lang].title;
     }
-    
+
     const footerElement = document.getElementById('footer-text');
     if (footerElement) {
         footerElement.textContent = languages[lang].footer;
     }
-    
+
     // Tab gombok fordítása
     const tabAll = document.getElementById('tab-all');
     const tabFavorites = document.getElementById('tab-favorites');
@@ -75,7 +75,7 @@ function changeLanguage(lang) {
         tabAll.textContent = languages[lang].tabs.all;
         tabFavorites.textContent = languages[lang].tabs.favorites;
     }
-    
+
     document.querySelectorAll('[data-i18n]').forEach(element => {
         const key = element.getAttribute('data-i18n');
         if (key && languages[lang]) {
@@ -89,14 +89,14 @@ function changeLanguage(lang) {
             }
         }
     });
-    
+
     const huBtn = document.getElementById('lang-hu');
     const enBtn = document.getElementById('lang-en');
-    
+
     if (huBtn && enBtn) {
         huBtn.classList.remove('active');
         enBtn.classList.remove('active');
-        
+
         if (lang === 'hu') {
             huBtn.classList.add('active');
             huBtn.title = "Magyar";
@@ -107,10 +107,10 @@ function changeLanguage(lang) {
             enBtn.title = "English";
         }
     }
-    
+
     document.documentElement.lang = lang;
     localStorage.setItem('preferred-language', lang);
-    
+
     // Táblázat fejlécek frissítése
     if (typeof displayFavoriteMatches === 'function') {
         displayFavoriteMatches();
@@ -124,10 +124,10 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         changeLanguage('hu');
     }
-    
+
     const huBtn = document.getElementById('lang-hu');
     const enBtn = document.getElementById('lang-en');
-    
+
     if (huBtn) huBtn.addEventListener('click', () => changeLanguage('hu'));
     if (enBtn) enBtn.addEventListener('click', () => changeLanguage('en'));
 });
