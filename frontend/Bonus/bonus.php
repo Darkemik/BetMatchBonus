@@ -43,9 +43,9 @@
     </header>
     <div class="container">
         <div class="row">
-            <!-- 1. doboz -->
+            <!-- 1. doboz DAILY BONUS -->
             <div class="doboz">
-                <img src="#" alt="Feltöltési bónusz" class="doboz-kep">
+                <img src="../../img/dailybonus.jpeg" alt="Feltöltési bónusz" class="doboz-kep">
                 <div class="doboz-tartalom">
                     <p class="doboz-cim">BÓNUSZ HÉTKÖZNAP</p>
                     <div class="bonus-osszeg">5 000 FT BÓNUSZT</div>
@@ -58,31 +58,30 @@
                 </div>
             </div>
 
-            <!-- 2. doboz ODDS PIRAMISOS KÉP KELL -->
+            <!-- 2. doboz ODDS PIRAMISOS -->
             <div class="doboz">
                 <img src="../../img/oddspiramid.jpeg" alt="Odds Piramis" class="doboz-kep">
                 <div class="doboz-tartalom">
-                    <p class="doboz-cim">Odds Piramis</p>
-                    <div class="bonus-osszeg"></div>
+                    <p class="doboz-cim">ODDS PIRAMIS</p>
                     <div class="bonus-feltetel">
-                        <strong></strong>
+                        <strong>Fogadjon legalább 5-ös kötésben és kapjon extra szorzót a kötésére</strong>
                     </div>
-                    <p class="doboz-szoveg"></p>
+                    <p class="doboz-szoveg">A szelvény piacai szorzói minimum legyen fejenként 1.3 (Így ha például 5 ös kötésben 5*1,3 akkor mi ehhez hozzá teszünk még 1,3-as oddsot a végső odds: 7,8!)</p>
                     <button class="tobb-info-gomb" id="tobbInfoGomb">Több információ</button>
                     <a href="#" class="doboz-gomb">BEJELENTKEZÉS / REGISZTRÁCIÓ</a>
                 </div>
             </div>
 
-            <!-- 3. doboz DARTSOS BÓNUSZ KÉP KELL-->
+            <!-- 3. doboz DARTSOS BÓNUSZ-->
             <div class="doboz">
-                <img src="#" alt="Darts" class="doboz-kep">
+                <img src="../../img/dartsbonus.jpeg" alt="Darts" class="doboz-kep">
                 <div class="doboz-tartalom">
-                    <p class="doboz-cim"></p>
+                    <p class="doboz-cim">DARTS BÓNUSZ</p>
                     <div class="bonus-osszeg">10 000 FORINT</div>
                     <div class="bonus-feltetel">
-                        <strong></strong>
+                        <strong>Fogadjon 2-es kötésben és a szelvénye eredő oddsa legyen 2.</strong>
                     </div>
-                    <p class="doboz-szoveg"></p>
+                    <p class="doboz-szoveg">Kapjon 10.000FT ingyenes fogadást melyet bármire tehet.</p>
                     <button class="tobb-info-gomb" id="tobbInfoGomb">Több információ</button>
                     <a href="#" class="doboz-gomb">BEJELENTKEZÉS / REGISZTRÁCIÓ</a>
                 </div>
@@ -92,10 +91,10 @@
             <div class="doboz">
                 <img src="../../img/oddsspaceship.jpeg" alt="Odds Űrhajó" class="doboz-kep">
                 <div class="doboz-tartalom">
-                    <p class="doboz-cim">Odds Űrhajó</p>
+                    <p class="doboz-cim">ODDS ŰRHAJÓ</p>
                     <div class="bonus-osszeg"></div>
                     <div class="bonus-feltetel">
-                        <strong></strong>
+                        <strong>Speciális fogadások amelyeket mi teszünk ki, minden nap fixen 1-et!</strong>
                     </div>
                     <p class="doboz-szoveg"></p>
                     <button class="tobb-info-gomb" id="tobbInfoGomb">Több információ</button>
@@ -107,15 +106,13 @@
         <div class="row">
             <!-- 5. doboz INGYEN FOGADÁS BÓNUSZ KÉP KELL-->
             <div class="doboz">
-                <img src="#" alt="Fogadás" class="doboz-kep">
+                <img src="../../img/superodds.jpeg" alt="Fogadás" class="doboz-kep">
                 <div class="doboz-tartalom">
-                    <p class="doboz-cim">BEJELENTKEZÉSI BÓNUSZ</p>
+                    <p class="doboz-cim">SZUPER ODDS</p>
                     <div class="bonus-feltetel">
-                        <strong>2.000 FT ingyen fogadás!</strong>
+                        <strong>A nap legfontosabb foci mérkőzésére az 1X2 piacra megnöveljük a szorzót!</strong>
                     </div>
-                    <p class="doboz-szoveg">Jelentkezzen be most és kapjon azonnal 2.000 FT értékű ingyenes fogadást
-                        bármely sporteseményre!</p>
-                    <p>részletek:</p>
+                    <p class="doboz-szoveg"></p>
                     <button class="tobb-info-gomb" id="tobbInfoGomb">Több információ</button>
                     <a href="#" class="doboz-gomb">BEJELENTKEZÉS / REGISZTRÁCIÓ</a>
                 </div>
@@ -125,12 +122,12 @@
             <div class="doboz">
                 <img src="../../img/focipalya.jpeg" alt="Focipálya" class="doboz-kep">
                 <div class="doboz-tartalom">
-                    <p class="doboz-cim">Első Regisztrációs bónusz</p>
+                    <p class="doboz-cim">ELSŐ REGISZTRÁCIÓS BÓNUSZ</p>
                     <div class="bonus-osszeg">5000FT</div>
                     <div class="bonus-feltetel">
                         <strong>2-es szorzó, 2-es kötés</strong>
                     </div>
-                    <p class="doboz-szoveg"></p>
+                    <p class="doboz-szoveg">Töltsön fel 5000FT-ot és mi azt megduplázzuk!</p>
                     <button class="tobb-info-gomb" id="tobbInfoGomb">Több információ</button>
                     <a href="#" class="doboz-gomb">BEJELENTKEZÉS / REGISZTRÁCIÓ</a>
                 </div>
@@ -156,9 +153,10 @@
             <div class="doboz">
                 <img src="../../img/cashout.jpeg" alt="Cash out" class="doboz-kep">
                 <div class="doboz-tartalom">
-                    <p class="doboz-cim">Cash out - azonnali kifizetés</p>
+                    <p class="doboz-cim">CASH OUT - AZONNALI KIFIZETÉS</p>
+                        <strong>Fogadásának mérkőzésektől függően pénzt vehet ki!</strong>
+                        <p class="doboz-szoveg">Amennyiben a meccs/meccsek még nem indultak el 80%ban kiveheti azt. Ha a szelvénye bukásfelé áll ez már csak 20%, viszont ha a szelvény nyerésre áll azt kiveheti 130%os profittal.</p>
                     <button class="tobb-info-gomb" id="tobbInfoGomb">Több információ</button>
-                    <br><br>
                     <a href="#" class="doboz-gomb">BEJELENTKEZÉS / REGISZTRÁCIÓ</a>
                 </div>
             </div>
