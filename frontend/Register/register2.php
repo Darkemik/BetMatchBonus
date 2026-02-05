@@ -33,7 +33,7 @@ if ($username === '' || $email === '' || $password === '' || $calculated_age ===
 
 <p>Email: <b><?php echo htmlspecialchars($email); ?></b></p>
 <p>Felhasználónév: <b><?php echo htmlspecialchars($username); ?></b></p>
-<p>Születési dátum: <b><?php echo htmlspecialchars($calculated_age); ?></b></p>
+<p>Életkor: <b><?php echo htmlspecialchars($calculated_age); ?></b></p>
 
 <br>
 

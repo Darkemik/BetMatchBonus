@@ -15,8 +15,13 @@
             <h1>Regisztráljon hozzánk!</h1>
 
             <input class="inputok" type="text" name="username" placeholder="Felhasználónév" required>
-            <input class="inputok" type="email" name="email" placeholder="Email" required>
-            <input class="inputok" type="password" name="password" placeholder="Jelszó" required>
+            <input class="inputok" type="email" id="email" name="email" placeholder="Email" required>
+            <input class="inputok" type="email" id="email2" placeholder="Email Újra" required>
+            <input class="inputok" type="password" id="password" name="password" placeholder="Jelszó" required>
+            
+            <input class="inputok" type="password" id="password2" placeholder="Jelszó Újra" required>
+
+            <p id="error" style="color:red; font-weight:bold;"></p>
 
             <input class="age" type="date" id="date-input" required>
             <input type="hidden" name="calculated_age" id="calculated_age">
@@ -24,7 +29,7 @@
 
             <p id="result"></p>
 
-            
+
 
 
             <div class="container1">
@@ -44,7 +49,8 @@
             </div>
 
             <button class="regisztraciobtn" type="submit" id="regisztracio">Folytatás</button>
-
+            
+            
             <p>Már van fiókod?</p>
             <a href="../Login/login.php">Jelentkezz be!</a>
         </form>
