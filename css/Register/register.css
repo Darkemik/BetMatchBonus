@@ -38,7 +38,7 @@ body{
     justify-content: left;
     align-items: center;
     border: 1px solid blue;
-    background: linear-gradient(90deg, rgb(65, 201, 247) 50%, white 50%);
+   
 }
 
 .container form{
