@@ -60,7 +60,7 @@
 
             <div class="tabs-container">
                 <button class="tab-button active" data-tab="all-matches" id="tab-all">Összes meccs</button>
-                <button class="tab-button" data-tab="favorites" id="tab-favorites">Kedvencek</button>
+                <button class="tab-button" data-tab="favorites" id="tab-favorites">Kedvenc csapatok</button>
             </div>
 
             <div id="matches-container">
@@ -69,7 +69,7 @@
                 </div>
 
                 <div class="tab-content" id="favorites">
-                    <div class="loading" id="loading-favorites">Kedvencek betöltése...</div>
+                    <div class="loading" id="loading-favorites">Kedvenc csapatok betöltése...</div>
                 </div>
             </div>
         </div>
@@ -108,23 +108,19 @@
 
 
     <script>
-        // A TE API KULCSOD
-        const API_KEY = 'a12934fb7f8e9e4cfd3073de92b0994d';
+        // DEMO meccsek tárolása (JSON adatok)
+        let allMatches = [];
 
-        // Élő meccsek lekérése
+        // Demo meccsek betöltése JSON fájlból
         async function fetchLiveMatches() {
             try {
-                const response = await fetch('https://v3.football.api-sports.io/fixtures?live=all&timezone=Europe/Budapest', {
-                    headers: {
-                        'x-rapidapi-host': 'v3.football.api-sports.io',
-                        'x-rapidapi-key': API_KEY
-                    }
-                });
-
+                // JSON fájl betöltése (helyezd el a megfelelő mappába!)
+                const response = await fetch('../../data/demo_matches.json');
                 const data = await response.json();
 
-                if (data.response && data.response.length > 0) {
-                    displayMatches(data.response);
+                if (data.matches && data.matches.length > 0) {
+                    allMatches = data.matches;
+                    displayMatches(data.matches);
                 } else {
                     document.getElementById('all-matches').innerHTML =
                         '<div class="loading">Jelenleg nincs élő meccs</div>';
@@ -132,41 +128,166 @@
 
             } catch (error) {
                 console.error('Hiba:', error);
-                document.getElementById('all-matches').innerHTML =
-                    '<div class="loading" style="color: #e74c3c;">Hiba történt az adatok betöltésekor</div>';
+                // Ha a JSON fájl nem található, használjunk beépített demo adatokat
+                loadHardcodedMatches();
             }
         }
 
-        // LocalStorage kezelés a kedvencekhez
-        function getFavorites() {
-            const favorites = localStorage.getItem('favoriteMatches');
+        // Beépített demo adatok (ha a JSON fájl nem érhető el) - CSAK ÉLŐ MECCSEK, NINCS REAL MADRID-BARCELONA
+        function loadHardcodedMatches() {
+            allMatches = [
+                {
+                    fixture: {
+                        id: 1001,
+                        date: "2026-02-06T19:45:00+01:00",
+                        status: { short: "1H", long: "Első félidő", elapsed: 23 }
+                    },
+                    league: { name: "Premier League", country: "Anglia" },
+                    teams: { 
+                        home: { id: 2001, name: "Manchester United" }, 
+                        away: { id: 2002, name: "Liverpool" } 
+                    },
+                    goals: { home: 1, away: 2 }
+                },
+                {
+                    fixture: {
+                        id: 1003,
+                        date: "2026-02-06T19:30:00+01:00",
+                        status: { short: "HT", long: "Félidő", elapsed: 45 }
+                    },
+                    league: { name: "Bundesliga", country: "Németország" },
+                    teams: { 
+                        home: { id: 2005, name: "Bayern München" }, 
+                        away: { id: 2006, name: "Borussia Dortmund" } 
+                    },
+                    goals: { home: 2, away: 2 }
+                },
+                {
+                    fixture: {
+                        id: 1004,
+                        date: "2026-02-06T20:15:00+01:00",
+                        status: { short: "2H", long: "Második félidő", elapsed: 67 }
+                    },
+                    league: { name: "Serie A", country: "Olaszország" },
+                    teams: { 
+                        home: { id: 2007, name: "Juventus" }, 
+                        away: { id: 2008, name: "Inter Milan" } 
+                    },
+                    goals: { home: 1, away: 0 }
+                },
+                {
+                    fixture: {
+                        id: 1006,
+                        date: "2026-02-06T19:00:00+01:00",
+                        status: { short: "2H", long: "Második félidő", elapsed: 58 }
+                    },
+                    league: { name: "Eredivisie", country: "Hollandia" },
+                    teams: { 
+                        home: { id: 2011, name: "Ajax Amsterdam" }, 
+                        away: { id: 2012, name: "PSV Eindhoven" } 
+                    },
+                    goals: { home: 2, away: 1 }
+                },
+                {
+                    fixture: {
+                        id: 1007,
+                        date: "2026-02-06T20:30:00+01:00",
+                        status: { short: "1H", long: "Első félidő", elapsed: 15 }
+                    },
+                    league: { name: "NB I", country: "Magyarország" },
+                    teams: { 
+                        home: { id: 2013, name: "Ferencváros" }, 
+                        away: { id: 2014, name: "Debrecen" } 
+                    },
+                    goals: { home: 0, away: 0 }
+                },
+                {
+                    fixture: {
+                        id: 1008,
+                        date: "2026-02-06T19:15:00+01:00",
+                        status: { short: "2H", long: "Második félidő", elapsed: 72 }
+                    },
+                    league: { name: "Premier League", country: "Anglia" },
+                    teams: { 
+                        home: { id: 2015, name: "Arsenal" }, 
+                        away: { id: 2016, name: "Chelsea" } 
+                    },
+                    goals: { home: 2, away: 2 }
+                },
+                {
+                    fixture: {
+                        id: 1009,
+                        date: "2026-02-06T21:00:00+01:00",
+                        status: { short: "1H", long: "Első félidő", elapsed: 5 }
+                    },
+                    league: { name: "La Liga", country: "Spanyolország" },
+                    teams: { 
+                        home: { id: 2017, name: "Atletico Madrid" }, 
+                        away: { id: 2018, name: "Sevilla" } 
+                    },
+                    goals: { home: 0, away: 0 }
+                },
+                {
+                    fixture: {
+                        id: 1011,
+                        date: "2026-02-06T19:45:00+01:00",
+                        status: { short: "2H", long: "Második félidő", elapsed: 63 }
+                    },
+                    league: { name: "Ligue 1", country: "Franciaország" },
+                    teams: { 
+                        home: { id: 2019, name: "Paris Saint-Germain" }, 
+                        away: { id: 2020, name: "Lyon" } 
+                    },
+                    goals: { home: 1, away: 1 }
+                },
+                {
+                    fixture: {
+                        id: 1012,
+                        date: "2026-02-06T20:00:00+01:00",
+                        status: { short: "1H", long: "Első félidő", elapsed: 31 }
+                    },
+                    league: { name: "Serie A", country: "Olaszország" },
+                    teams: { 
+                        home: { id: 2021, name: "AC Milan" }, 
+                        away: { id: 2022, name: "Napoli" } 
+                    },
+                    goals: { home: 0, away: 1 }
+                }
+            ];
+            
+            displayMatches(allMatches);
+        }
+
+        // LocalStorage kezelés a CSAPAT kedvencekhez
+        function getFavoriteTeams() {
+            const favorites = localStorage.getItem('favoriteTeams');
             return favorites ? JSON.parse(favorites) : [];
         }
 
-        function saveFavorites(favorites) {
-            localStorage.setItem('favoriteMatches', JSON.stringify(favorites));
+        function saveFavoriteTeams(favorites) {
+            localStorage.setItem('favoriteTeams', JSON.stringify(favorites));
         }
 
-        function addFavorite(matchId, matchData) {
-            const favorites = getFavorites();
-            if (!favorites.some(fav => fav.fixture.id === matchId)) {
-                favorites.push(matchData);
-                saveFavorites(favorites);
+        function addFavoriteTeam(teamId, teamName) {
+            const favorites = getFavoriteTeams();
+            if (!favorites.some(fav => fav.id === teamId)) {
+                favorites.push({ id: teamId, name: teamName });
+                saveFavoriteTeams(favorites);
                 return true;
             }
             return false;
         }
 
-        function removeFavorite(matchId) {
-            const favorites = getFavorites();
-            const newFavorites = favorites.filter(fav => fav.fixture.id !== matchId);
-            saveFavorites(newFavorites);
+        function removeFavoriteTeam(teamId) {
+            const favorites = getFavoriteTeams();
+            const newFavorites = favorites.filter(fav => fav.id !== teamId);
+            saveFavoriteTeams(newFavorites);
             return newFavorites;
         }
 
-        function isFavorite(matchId) {
-            const favorites = getFavorites();
-            return favorites.some(fav => fav.fixture.id === matchId);
+        function isFavoriteTeam(teamId) {
+            const favorites = getFavoriteTeams();
+            return favorites.some(fav => fav.id === teamId);
         }
 
         // Tab kezelés
@@ -191,7 +312,7 @@
 
                     // Ha a kedvencek fülre kattintottunk
                     if (tabId === 'favorites') {
-                        displayFavoriteMatches();
+                        displayFavoriteTeamMatches();
                     }
                 });
             });
@@ -204,24 +325,26 @@
                     <thead>
                         <tr>
                             <th>Bajnokság</th>
-                            <th>Mérkőzés</th>
+                            <th>Hazai csapat</th>
+                            <th>Vendég csapat</th>
                             <th>Eredmény</th>
                             <th>Állapot</th>
                             <th>Idő</th>
-                            <th>Kedvenc</th>
                         </tr>
                     </thead>
                     <tbody>
             `;
 
             matches.forEach(match => {
-                const matchId = match.fixture.id;
                 const league = match.league;
-                const teams = match.teams;
+                const homeTeam = match.teams.home;
+                const awayTeam = match.teams.away;
                 const goals = match.goals;
                 const status = match.fixture.status;
                 const date = new Date(match.fixture.date);
-                const isFav = isFavorite(matchId);
+
+                const isHomeFav = isFavoriteTeam(homeTeam.id);
+                const isAwayFav = isFavoriteTeam(awayTeam.id);
 
                 // Státusz szöveg
                 let statusText = '';
@@ -230,8 +353,6 @@
                 if (status.short === '1H' || status.short === '2H' || status.short === 'HT') {
                     statusText = `${status.elapsed}'`;
                     statusClass = 'live-badge';
-                } else if (status.short === 'FT') {
-                    statusText = 'Vége';
                 } else {
                     statusText = status.long;
                 }
@@ -242,36 +363,34 @@
                     minute: '2-digit'
                 });
 
-                // Kedvenc gomb címke
-                const favoriteTitle = isFav ? 'Eltávolítás a kedvencekből' : 'Hozzáadás a kedvencekhez';
-
                 tableHTML += `
                     <tr>
                         <td>${league.name} (${league.country})</td>
-                        <td>${teams.home.name} - ${teams.away.name}</td>
+                        <td>
+                            ${homeTeam.name}
+                            <button class="favorite-btn ${isHomeFav ? 'active' : ''}" 
+                                    data-team-id="${homeTeam.id}"
+                                    data-team-name="${homeTeam.name}"
+                                    title="${isHomeFav ? 'Eltávolítás a kedvencekből' : 'Hozzáadás a kedvencekhez'}">
+                                ${isHomeFav ? '★' : '☆'}
+                            </button>
+                        </td>
+                        <td>
+                            ${awayTeam.name}
+                            <button class="favorite-btn ${isAwayFav ? 'active' : ''}" 
+                                    data-team-id="${awayTeam.id}"
+                                    data-team-name="${awayTeam.name}"
+                                    title="${isAwayFav ? 'Eltávolítás a kedvencekből' : 'Hozzáadás a kedvencekhez'}">
+                                ${isAwayFav ? '★' : '☆'}
+                            </button>
+                        </td>
                         <td><strong>${goals.home} - ${goals.away}</strong></td>
                         <td class="${statusClass}">${statusText}</td>
                         <td>${timeString}</td>
-                        <td>
-                            <button class="favorite-btn ${isFav ? 'active' : ''}" 
-                                    data-match-id="${matchId}"
-                                    title="${favoriteTitle}">
-                                ${isFav ? '★' : '☆'}
-                            </button>
-                        </td>
                     </tr>
                 `;
             });
 
-            tableHTML += `
-                    </tbody>
-                </table>
-                <div style="text-align: center; margin-top: 20px;">
-                    <button onclick="fetchLiveMatches()" style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                        🔄 Frissítés
-                    </button>
-                </div>
-            `;
 
             document.getElementById('all-matches').innerHTML = tableHTML;
 
@@ -284,48 +403,22 @@
             const favoriteButtons = document.querySelectorAll('.favorite-btn');
 
             favoriteButtons.forEach(button => {
-                button.addEventListener('click', function () {
-                    const matchId = parseInt(this.getAttribute('data-match-id'));
+                button.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    
+                    const teamId = parseInt(this.getAttribute('data-team-id'));
+                    const teamName = this.getAttribute('data-team-name');
                     const isActive = this.classList.contains('active');
 
                     if (isActive) {
                         // Eltávolítás
-                        removeFavorite(matchId);
+                        removeFavoriteTeam(teamId);
                         this.classList.remove('active');
                         this.innerHTML = '☆';
                         this.title = 'Hozzáadás a kedvencekhez';
                     } else {
                         // Hozzáadás
-                        // Megkeressük a meccset a DOM-ból
-                        const matchRow = this.closest('tr');
-                        const matchData = {
-                            fixture: {
-                                id: matchId,
-                                date: new Date().toISOString(), // Itt pontosítani kellene
-                                status: {
-                                    short: matchRow.querySelector('.live-badge') ? 'LIVE' : 'FT',
-                                    long: matchRow.querySelector('td:nth-child(4)').textContent
-                                }
-                            },
-                            league: {
-                                name: matchRow.querySelector('td:nth-child(1)').textContent.split(' (')[0],
-                                country: matchRow.querySelector('td:nth-child(1)').textContent.match(/\(([^)]+)\)/)?.[1] || ''
-                            },
-                            teams: {
-                                home: {
-                                    name: matchRow.querySelector('td:nth-child(2)').textContent.split(' - ')[0]
-                                },
-                                away: {
-                                    name: matchRow.querySelector('td:nth-child(2)').textContent.split(' - ')[1]
-                                }
-                            },
-                            goals: {
-                                home: parseInt(matchRow.querySelector('td:nth-child(3) strong').textContent.split(' - ')[0]),
-                                away: parseInt(matchRow.querySelector('td:nth-child(3) strong').textContent.split(' - ')[1])
-                            }
-                        };
-
-                        addFavorite(matchId, matchData);
+                        addFavoriteTeam(teamId, teamName);
                         this.classList.add('active');
                         this.innerHTML = '★';
                         this.title = 'Eltávolítás a kedvencekből';
@@ -333,19 +426,32 @@
 
                     // Ha a kedvencek fülön vagyunk, frissítsük
                     if (document.getElementById('tab-favorites').classList.contains('active')) {
-                        displayFavoriteMatches();
+                        displayFavoriteTeamMatches();
                     }
                 });
             });
         }
 
-        // Kedvenc meccsek megjelenítése
-        function displayFavoriteMatches() {
-            const favorites = getFavorites();
+        // Kedvenc csapatok meccseinek megjelenítése
+        function displayFavoriteTeamMatches() {
+            const favoriteTeams = getFavoriteTeams();
 
-            if (favorites.length === 0) {
+            if (favoriteTeams.length === 0) {
                 document.getElementById('favorites').innerHTML =
-                    '<div class="no-matches">Még nincsenek kedvenc meccsek</div>';
+                    '<div class="no-matches">Még nincsenek kedvenc csapatok. Kattints a ★ gombra egy csapat neve mellett!</div>';
+                return;
+            }
+
+            // Szűrjük a meccseket - csak azok, ahol van kedvenc csapat
+            const favoriteMatches = allMatches.filter(match => {
+                const homeTeamId = match.teams.home.id;
+                const awayTeamId = match.teams.away.id;
+                return favoriteTeams.some(fav => fav.id === homeTeamId || fav.id === awayTeamId);
+            });
+
+            if (favoriteMatches.length === 0) {
+                document.getElementById('favorites').innerHTML =
+                    '<div class="no-matches">Jelenleg nincs élő meccs a kedvenc csapataidnak.</div>';
                 return;
             }
 
@@ -354,23 +460,37 @@
                     <thead>
                         <tr>
                             <th>Bajnokság</th>
-                            <th>Mérkőzés</th>
+                            <th>Hazai csapat</th>
+                            <th>Vendég csapat</th>
                             <th>Eredmény</th>
                             <th>Állapot</th>
                             <th>Idő</th>
-                            <th>Kedvenc</th>
                         </tr>
                     </thead>
                     <tbody>
             `;
 
-            favorites.forEach(match => {
-                const matchId = match.fixture.id;
+            favoriteMatches.forEach(match => {
                 const league = match.league;
-                const teams = match.teams;
+                const homeTeam = match.teams.home;
+                const awayTeam = match.teams.away;
                 const goals = match.goals;
                 const status = match.fixture.status;
                 const date = new Date(match.fixture.date);
+
+                const isHomeFav = isFavoriteTeam(homeTeam.id);
+                const isAwayFav = isFavoriteTeam(awayTeam.id);
+
+                // Státusz szöveg
+                let statusText = '';
+                let statusClass = '';
+
+                if (status.short === '1H' || status.short === '2H' || status.short === 'HT') {
+                    statusText = `${status.elapsed}'`;
+                    statusClass = 'live-badge';
+                } else {
+                    statusText = status.long;
+                }
 
                 // Idő formázás
                 const timeString = date.toLocaleTimeString('hu-HU', {
@@ -378,37 +498,34 @@
                     minute: '2-digit'
                 });
 
-                // Eredmény
-                const homeScore = goals.home !== null ? goals.home : '0';
-                const awayScore = goals.away !== null ? goals.away : '0';
-
                 tableHTML += `
                     <tr>
-                        <td>${league.name} ${league.country ? '(' + league.country + ')' : ''}</td>
-                        <td>${teams.home.name} - ${teams.away.name}</td>
-                        <td><strong>${homeScore} - ${awayScore}</strong></td>
-                        <td>${status.long || 'Ismeretlen'}</td>
-                        <td>${timeString}</td>
-                        <td>
+                        <td>${league.name} (${league.country})</td>
+                        <td ${isHomeFav ? 'style="font-weight: bold; color: #4CAF50;"' : ''}>
+                            ${homeTeam.name}
                             <button class="favorite-btn active" 
-                                    data-match-id="${matchId}"
+                                    data-team-id="${homeTeam.id}"
+                                    data-team-name="${homeTeam.name}"
                                     title="Eltávolítás a kedvencekből">
                                 ★
                             </button>
                         </td>
+                        <td ${isAwayFav ? 'style="font-weight: bold; color: #4CAF50;"' : ''}>
+                            ${awayTeam.name}
+                            <button class="favorite-btn ${isAwayFav ? 'active' : ''}" 
+                                    data-team-id="${awayTeam.id}"
+                                    data-team-name="${awayTeam.name}"
+                                    title="${isAwayFav ? 'Eltávolítás a kedvencekből' : 'Hozzáadás a kedvencekhez'}">
+                                ${isAwayFav ? '★' : '☆'}
+                            </button>
+                        </td>
+                        <td><strong>${goals.home} - ${goals.away}</strong></td>
+                        <td class="${statusClass}">${statusText}</td>
+                        <td>${timeString}</td>
                     </tr>
                 `;
             });
 
-            tableHTML += `
-                    </tbody>
-                </table>
-                <div style="text-align: center; margin-top: 20px;">
-                    <button onclick="displayFavoriteMatches()" style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                        🔄 Frissítés
-                    </button>
-                </div>
-            `;
 
             document.getElementById('favorites').innerHTML = tableHTML;
 
@@ -424,9 +541,6 @@
             // Meccsek betöltése
             fetchLiveMatches();
 
-            // Automatikus frissítés (60 másodpercenként)
-            setInterval(fetchLiveMatches, 60000);
-
             // Nyelvváltás után a tabokat is frissíteni kell
             const huBtn = document.getElementById('lang-hu');
             const enBtn = document.getElementById('lang-en');
@@ -435,7 +549,7 @@
                 setTimeout(() => {
                     // Ha a kedvencek fülön vagyunk, frissítjük
                     if (document.getElementById('tab-favorites').classList.contains('active')) {
-                        displayFavoriteMatches();
+                        displayFavoriteTeamMatches();
                     }
                 }, 100);
             });
@@ -444,7 +558,7 @@
                 setTimeout(() => {
                     // Ha a kedvencek fülön vagyunk, frissítjük
                     if (document.getElementById('tab-favorites').classList.contains('active')) {
-                        displayFavoriteMatches();
+                        displayFavoriteTeamMatches();
                     }
                 }, 100);
             });
