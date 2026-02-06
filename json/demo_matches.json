@@ -1,0 +1,265 @@
+{
+    "matches": [
+      {
+        "fixture": {
+          "id": 1001,
+          "date": "2026-02-06T19:45:00+01:00",
+          "status": {
+            "short": "1H",
+            "long": "Első félidő",
+            "elapsed": 23
+          }
+        },
+        "league": {
+          "name": "Premier League",
+          "country": "Anglia"
+        },
+        "teams": {
+          "home": {
+            "id": 2001,
+            "name": "Manchester United"
+          },
+          "away": {
+            "id": 2002,
+            "name": "Liverpool"
+          }
+        },
+        "goals": {
+          "home": 1,
+          "away": 2
+        }
+      },
+      {
+        "fixture": {
+          "id": 1003,
+          "date": "2026-02-06T19:30:00+01:00",
+          "status": {
+            "short": "HT",
+            "long": "Félidő",
+            "elapsed": 45
+          }
+        },
+        "league": {
+          "name": "Bundesliga",
+          "country": "Németország"
+        },
+        "teams": {
+          "home": {
+            "id": 2005,
+            "name": "Bayern München"
+          },
+          "away": {
+            "id": 2006,
+            "name": "Borussia Dortmund"
+          }
+        },
+        "goals": {
+          "home": 2,
+          "away": 2
+        }
+      },
+      {
+        "fixture": {
+          "id": 1004,
+          "date": "2026-02-06T20:15:00+01:00",
+          "status": {
+            "short": "2H",
+            "long": "Második félidő",
+            "elapsed": 67
+          }
+        },
+        "league": {
+          "name": "Serie A",
+          "country": "Olaszország"
+        },
+        "teams": {
+          "home": {
+            "id": 2007,
+            "name": "Juventus"
+          },
+          "away": {
+            "id": 2008,
+            "name": "Inter Milan"
+          }
+        },
+        "goals": {
+          "home": 1,
+          "away": 0
+        }
+      },
+      {
+        "fixture": {
+          "id": 1006,
+          "date": "2026-02-06T19:00:00+01:00",
+          "status": {
+            "short": "2H",
+            "long": "Második félidő",
+            "elapsed": 58
+          }
+        },
+        "league": {
+          "name": "Eredivisie",
+          "country": "Hollandia"
+        },
+        "teams": {
+          "home": {
+            "id": 2011,
+            "name": "Ajax Amsterdam"
+          },
+          "away": {
+            "id": 2012,
+            "name": "PSV Eindhoven"
+          }
+        },
+        "goals": {
+          "home": 2,
+          "away": 1
+        }
+      },
+      {
+        "fixture": {
+          "id": 1007,
+          "date": "2026-02-06T20:30:00+01:00",
+          "status": {
+            "short": "1H",
+            "long": "Első félidő",
+            "elapsed": 15
+          }
+        },
+        "league": {
+          "name": "NB I",
+          "country": "Magyarország"
+        },
+        "teams": {
+          "home": {
+            "id": 2013,
+            "name": "Ferencváros"
+          },
+          "away": {
+            "id": 2014,
+            "name": "Debrecen"
+          }
+        },
+        "goals": {
+          "home": 0,
+          "away": 0
+        }
+      },
+      {
+        "fixture": {
+          "id": 1008,
+          "date": "2026-02-06T19:15:00+01:00",
+          "status": {
+            "short": "2H",
+            "long": "Második félidő",
+            "elapsed": 72
+          }
+        },
+        "league": {
+          "name": "Premier League",
+          "country": "Anglia"
+        },
+        "teams": {
+          "home": {
+            "id": 2015,
+            "name": "Arsenal"
+          },
+          "away": {
+            "id": 2016,
+            "name": "Chelsea"
+          }
+        },
+        "goals": {
+          "home": 2,
+          "away": 2
+        }
+      },
+      {
+        "fixture": {
+          "id": 1009,
+          "date": "2026-02-06T21:00:00+01:00",
+          "status": {
+            "short": "1H",
+            "long": "Első félidő",
+            "elapsed": 5
+          }
+        },
+        "league": {
+          "name": "La Liga",
+          "country": "Spanyolország"
+        },
+        "teams": {
+          "home": {
+            "id": 2017,
+            "name": "Atletico Madrid"
+          },
+          "away": {
+            "id": 2018,
+            "name": "Sevilla"
+          }
+        },
+        "goals": {
+          "home": 0,
+          "away": 0
+        }
+      },
+      {
+        "fixture": {
+          "id": 1011,
+          "date": "2026-02-06T19:45:00+01:00",
+          "status": {
+            "short": "2H",
+            "long": "Második félidő",
+            "elapsed": 63
+          }
+        },
+        "league": {
+          "name": "Ligue 1",
+          "country": "Franciaország"
+        },
+        "teams": {
+          "home": {
+            "id": 2019,
+            "name": "Paris Saint-Germain"
+          },
+          "away": {
+            "id": 2020,
+            "name": "Lyon"
+          }
+        },
+        "goals": {
+          "home": 1,
+          "away": 1
+        }
+      },
+      {
+        "fixture": {
+          "id": 1012,
+          "date": "2026-02-06T20:00:00+01:00",
+          "status": {
+            "short": "1H",
+            "long": "Első félidő",
+            "elapsed": 31
+          }
+        },
+        "league": {
+          "name": "Serie A",
+          "country": "Olaszország"
+        },
+        "teams": {
+          "home": {
+            "id": 2021,
+            "name": "AC Milan"
+          },
+          "away": {
+            "id": 2022,
+            "name": "Napoli"
+          }
+        },
+        "goals": {
+          "home": 0,
+          "away": 1
+        }
+      }
+    ]
+  }
