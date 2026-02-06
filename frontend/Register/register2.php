@@ -38,12 +38,12 @@ if ($username === '' || $email === '' || $password === '' || $calculated_age ===
 <br>
 
 
-<form action="save.php" method="POST">
+<form action="register3.php" method="POST">
     <input type="hidden" name="username" value="<?php echo htmlspecialchars($username); ?>">
     <input type="hidden" name="email" value="<?php echo htmlspecialchars($email); ?>">
     <input type="hidden" name="password" value="<?php echo htmlspecialchars($password); ?>">
-    <input type="hidden" name="age" value="<?php echo htmlspecialchars($calculated_age); ?>">
-    <button type="submit">Folytatás</button>
+    <input type="hidden" name="calculated_age" value="<?php echo htmlspecialchars($calculated_age); ?>">
+    <button type="submit" onclick="location.href='registe3.php'">Folytatás</button>
 </form>
 
 <br>
