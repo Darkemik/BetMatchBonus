@@ -17,8 +17,12 @@ body{
     border: none;
     border-radius: 20px;
 }
-#preview{
-    max-width: 200px; 
-    display: none; 
-    margin-top:10px;
+#id_preview_first{
+    max-width: 200px;
+    
+    height: 150px;
+}
+.personal_info{
+    display: flex;
+    flex-direction: column;
 }

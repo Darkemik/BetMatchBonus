@@ -43,20 +43,21 @@ if ($username === '' || $email === '' || $password === '' || !$terms_rules || !$
   <input type="hidden" name="email" value="<?php echo htmlspecialchars($email); ?>">
   <input type="hidden" name="password" value="<?php echo htmlspecialchars($password); ?>">
 
+  <div class="personal_info">
   <input type="file" id="id_image_first" accept="image/*" required>
   
-  <img id="preview">
+  <img id="id_preview_first">
 
   <input type="file" id="id_image_second" accept="image/*" required>
   
-  <img id="preview">
+  <img id="id_preview_second">
 
 
 
-  <input type="file" id="address_image_first" accept="image/*" required>
+  <input type="file" id="address_image" accept="image/*" required>
 
-  <img id="preview">
-
+  <img id="address_preview">
+</div>
 
   
   <label for="date-input">Születési dátum:</label><br>

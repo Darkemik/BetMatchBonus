@@ -4,6 +4,22 @@ const result = document.getElementById("result");
 
 const originalBtnText = submitBtn.textContent;
 
+function previewImage(inputId, imgId) {
+    const fileInput = document.getElementById(inputId);
+    const img = document.getElementById(imgId);
+  
+    fileInput.addEventListener("change", function () {
+      const file = this.files[0];
+      if (file) {
+        img.src = URL.createObjectURL(file);
+      }
+    });
+  }
+  
+  previewImage("id_image_first", "id_preview_first");
+  previewImage("id_image_second", "id_preview_second");
+  previewImage("address_image", "address_preview");
+  
 // 🔒 Gépelés tiltása
 dateInput.addEventListener("keydown", (e) => e.preventDefault());
 
@@ -13,42 +29,8 @@ dateInput.addEventListener("click", () => {
 });
 
 // 📅 Max = mai nap
-const today = new Date().toISOString().split("T")[0];
-dateInput.max = today;
 
-// ✅ KÉP ELŐNÉZET — KÜLÖN!
-function bindPreview(inputId, previewId) {
-    const input = document.getElementById(inputId);
-    const preview = document.getElementById(previewId);
-  
-    if (!input || !preview) return;
-  
-    input.addEventListener("change", function () {
-      const file = this.files[0];
-  
-      if (!file) {
-        preview.src = "";
-        preview.style.display = "none";
-        return;
-      }
-  
-      if (!file.type.startsWith("image/")) {
-        alert("Csak képfájlt tölthetsz fel!");
-        this.value = "";
-        preview.src = "";
-        preview.style.display = "none";
-        return;
-      }
-  
-      preview.src = URL.createObjectURL(file);
-      preview.style.display = "block";
-    });
-  }
-  
-  bindPreview("id_image_first", "preview_id_first");
-  bindPreview("id_image_second", "preview_id_second");
-  bindPreview("address_image_first", "preview_address");
-  
+
 // ✔️ Életkor ellenőrzés
 dateInput.addEventListener("change", function () {
   if (!this.value) {
