@@ -17,3 +17,8 @@ body{
     border: none;
     border-radius: 20px;
 }
+#preview{
+    max-width: 200px; 
+    display: none; 
+    margin-top:10px;
+}

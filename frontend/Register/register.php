@@ -21,17 +21,7 @@
 
             <input class="inputok" type="password" id="password2" placeholder="Jelszó Újra" required>
 
-            <p id="error" style="color:red; font-weight:bold;"></p>
-
-            <input class="age" type="date" id="date-input" required>
-            <input type="hidden" name="calculated_age" id="calculated_age">
-
-
-
-            <p id="result"></p>
-
-
-
+            <p id="result" style="color:red; font-weight:bold;"></p>
 
             <div class="container1">
                 <input type="checkbox" id="terms_rules" name="terms_rules" value="1" required>
