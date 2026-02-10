@@ -3,7 +3,7 @@
     justify-content: center;
     align-items: center;
     min-height: 80vh;
-    padding-bottom: 20px;
+    padding-bottom: 20px !important;
     border: 2px solid red;
     margin-bottom: 0%;
     border-bottom: none;
@@ -196,10 +196,6 @@
     display: flex;
     justify-content: center;
     height: max-content;
-}
-
-.matches-head:hover {
-    background-color: #c4b32d;
 }
 
 .lang-switcher {
