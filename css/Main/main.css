@@ -3,8 +3,8 @@
     ;
 }
 :root{
-    --site-bg: rgb(181, 228, 174);
-    --container-bg: rgb(160, 243, 157);
+    --site-bg: rgb(135, 163, 135);
+    --container-bg: rgb(100, 128, 100);
 }
 * {
     box-sizing: border-box;
@@ -28,6 +28,7 @@ body {
     background: var(--container-bg);
     color: white;
     box-shadow: 0 0 10px 1px black;
+    margin-bottom: 20px;
 }
 
 .mainpage {
