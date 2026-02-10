@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../../css/Live/live.css">
     <link rel="stylesheet" href="../../css/Footer/footer.css">
     <link rel="icon" href="../../img/logo.png" type="image/x-icon">
+    
 </head>
 
 <body>
@@ -26,21 +27,25 @@
         </nav>
         <div class="right_side">
             <div class="lang-switcher">
-                <button class="lang-btn active" id="lang-hu" title="Magyar">
+                <button class="lang-btn active" id="lang-current">
                     <svg viewBox="0 0 9 6" xmlns="http://www.w3.org/2000/svg">
                         <rect width="9" height="2" y="0" fill="#c8102e" />
                         <rect width="9" height="2" y="2" fill="#ffffff" />
                         <rect width="9" height="2" y="4" fill="#436f4d" />
                     </svg>
                 </button>
-                <button class="lang-btn" id="lang-en" title="English">
-                    <svg viewBox="0 0 9 6" xmlns="http://www.w3.org/2000/svg">
-                        <rect width="9" height="6" fill="#ffffff" />
-                        <rect x="4" width="1" height="6" fill="#c8102e" />
-                        <rect y="2.5" width="9" height="1" fill="#c8102e" />
-                    </svg>
-                </button>
+
+                <div class="lang-dropdown">
+                    <button class="lang-btn" data-lang="en" title="English">
+                        <svg viewBox="0 0 9 6" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="9" height="6" fill="#ffffff" />
+                            <rect x="4" width="1" height="6" fill="#c8102e" />
+                            <rect y="2.5" width="9" height="1" fill="#c8102e" />
+                        </svg>
+                    </button>
+                </div>
             </div>
+
             <button data-i18n="nav.login"
                 onclick="location.href='../../frontend/Login/login.php' ">Bejelentkezés</button>
             <button class="registrationbtn" onclick="location.href='../../frontend/Register/register.php'"
@@ -49,11 +54,11 @@
     </header>
 
     <div class="right-container">
-    <aside class="right-sidebar">
-    <h2>Fogadási szelvény</h2>
-    <p>Itt lesz majd a fogadási blokk.</p>
-  </aside>
-  </div>
+        <aside class="right-sidebar">
+            <h2>Fogadási szelvény</h2>
+            <p>Itt lesz majd a fogadási blokk.</p>
+        </aside>
+    </div>
     <div class="elo-main">
         <div class="elo-container">
             <h1 class="elo-title" id="elo-title">Élő meccsek</h1>
@@ -74,10 +79,10 @@
             </div>
         </div>
 
-        
+
     </div>
 
-    
+
     <footer class="simple-footer">
         <div class="footer-top">
             <div class="footer-links">
@@ -143,9 +148,9 @@
                         status: { short: "1H", long: "Első félidő", elapsed: 23 }
                     },
                     league: { name: "Premier League", country: "Anglia" },
-                    teams: { 
-                        home: { id: 2001, name: "Manchester United" }, 
-                        away: { id: 2002, name: "Liverpool" } 
+                    teams: {
+                        home: { id: 2001, name: "Manchester United" },
+                        away: { id: 2002, name: "Liverpool" }
                     },
                     goals: { home: 1, away: 2 }
                 },
@@ -156,9 +161,9 @@
                         status: { short: "HT", long: "Félidő", elapsed: 45 }
                     },
                     league: { name: "Bundesliga", country: "Németország" },
-                    teams: { 
-                        home: { id: 2005, name: "Bayern München" }, 
-                        away: { id: 2006, name: "Borussia Dortmund" } 
+                    teams: {
+                        home: { id: 2005, name: "Bayern München" },
+                        away: { id: 2006, name: "Borussia Dortmund" }
                     },
                     goals: { home: 2, away: 2 }
                 },
@@ -169,9 +174,9 @@
                         status: { short: "2H", long: "Második félidő", elapsed: 67 }
                     },
                     league: { name: "Serie A", country: "Olaszország" },
-                    teams: { 
-                        home: { id: 2007, name: "Juventus" }, 
-                        away: { id: 2008, name: "Inter Milan" } 
+                    teams: {
+                        home: { id: 2007, name: "Juventus" },
+                        away: { id: 2008, name: "Inter Milan" }
                     },
                     goals: { home: 1, away: 0 }
                 },
@@ -182,9 +187,9 @@
                         status: { short: "2H", long: "Második félidő", elapsed: 58 }
                     },
                     league: { name: "Eredivisie", country: "Hollandia" },
-                    teams: { 
-                        home: { id: 2011, name: "Ajax Amsterdam" }, 
-                        away: { id: 2012, name: "PSV Eindhoven" } 
+                    teams: {
+                        home: { id: 2011, name: "Ajax Amsterdam" },
+                        away: { id: 2012, name: "PSV Eindhoven" }
                     },
                     goals: { home: 2, away: 1 }
                 },
@@ -195,9 +200,9 @@
                         status: { short: "1H", long: "Első félidő", elapsed: 15 }
                     },
                     league: { name: "NB I", country: "Magyarország" },
-                    teams: { 
-                        home: { id: 2013, name: "Ferencváros" }, 
-                        away: { id: 2014, name: "Debrecen" } 
+                    teams: {
+                        home: { id: 2013, name: "Ferencváros" },
+                        away: { id: 2014, name: "Debrecen" }
                     },
                     goals: { home: 0, away: 0 }
                 },
@@ -208,9 +213,9 @@
                         status: { short: "2H", long: "Második félidő", elapsed: 72 }
                     },
                     league: { name: "Premier League", country: "Anglia" },
-                    teams: { 
-                        home: { id: 2015, name: "Arsenal" }, 
-                        away: { id: 2016, name: "Chelsea" } 
+                    teams: {
+                        home: { id: 2015, name: "Arsenal" },
+                        away: { id: 2016, name: "Chelsea" }
                     },
                     goals: { home: 2, away: 2 }
                 },
@@ -221,9 +226,9 @@
                         status: { short: "1H", long: "Első félidő", elapsed: 5 }
                     },
                     league: { name: "La Liga", country: "Spanyolország" },
-                    teams: { 
-                        home: { id: 2017, name: "Atletico Madrid" }, 
-                        away: { id: 2018, name: "Sevilla" } 
+                    teams: {
+                        home: { id: 2017, name: "Atletico Madrid" },
+                        away: { id: 2018, name: "Sevilla" }
                     },
                     goals: { home: 0, away: 0 }
                 },
@@ -234,9 +239,9 @@
                         status: { short: "2H", long: "Második félidő", elapsed: 63 }
                     },
                     league: { name: "Ligue 1", country: "Franciaország" },
-                    teams: { 
-                        home: { id: 2019, name: "Paris Saint-Germain" }, 
-                        away: { id: 2020, name: "Lyon" } 
+                    teams: {
+                        home: { id: 2019, name: "Paris Saint-Germain" },
+                        away: { id: 2020, name: "Lyon" }
                     },
                     goals: { home: 1, away: 1 }
                 },
@@ -247,14 +252,14 @@
                         status: { short: "1H", long: "Első félidő", elapsed: 31 }
                     },
                     league: { name: "Serie A", country: "Olaszország" },
-                    teams: { 
-                        home: { id: 2021, name: "AC Milan" }, 
-                        away: { id: 2022, name: "Napoli" } 
+                    teams: {
+                        home: { id: 2021, name: "AC Milan" },
+                        away: { id: 2022, name: "Napoli" }
                     },
                     goals: { home: 0, away: 1 }
                 }
             ];
-            
+
             displayMatches(allMatches);
         }
 
@@ -323,7 +328,7 @@
             let tableHTML = `
                 <table class="matches-table">
                     <thead>
-                        <tr>
+                        <tr class="matches-head">
                             <th>Bajnokság</th>
                             <th>Hazai csapat</th>
                             <th>Vendég csapat</th>
@@ -405,7 +410,7 @@
             favoriteButtons.forEach(button => {
                 button.addEventListener('click', function (e) {
                     e.stopPropagation();
-                    
+
                     const teamId = parseInt(this.getAttribute('data-team-id'));
                     const teamName = this.getAttribute('data-team-name');
                     const isActive = this.classList.contains('active');
@@ -458,7 +463,7 @@
             let tableHTML = `
                 <table class="matches-table">
                     <thead>
-                        <tr>
+                        <tr class="matches-head">
                             <th>Bajnokság</th>
                             <th>Hazai csapat</th>
                             <th>Vendég csapat</th>
@@ -545,24 +550,39 @@
             const huBtn = document.getElementById('lang-hu');
             const enBtn = document.getElementById('lang-en');
 
-            if (huBtn) huBtn.addEventListener('click', function () {
-                setTimeout(() => {
-                    // Ha a kedvencek fülön vagyunk, frissítjük
-                    if (document.getElementById('tab-favorites').classList.contains('active')) {
-                        displayFavoriteTeamMatches();
-                    }
-                }, 100);
-            });
+            
+        });
 
-            if (enBtn) enBtn.addEventListener('click', function () {
-                setTimeout(() => {
-                    // Ha a kedvencek fülön vagyunk, frissítjük
-                    if (document.getElementById('tab-favorites').classList.contains('active')) {
-                        displayFavoriteTeamMatches();
-                    }
-                }, 100);
+        const switcher = document.querySelector('.lang-switcher');
+        const currentBtn = document.getElementById('lang-current');
+
+        currentBtn.addEventListener('click', () => {
+            switcher.classList.toggle('open');
+        });
+
+        document.querySelectorAll('.lang-dropdown .lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const lang = btn.dataset.lang;
+
+                // 🔁 Google Translate váltás
+                const select = document.querySelector('select.goog-te-combo');
+                if (select) {
+                    select.value = lang;
+                    select.dispatchEvent(new Event('change'));
+                }
+
+                switcher.classList.remove('open');
             });
         });
+
+        // kattintás oldalra → bezár
+        document.addEventListener('click', e => {
+            if (!switcher.contains(e.target)) {
+                switcher.classList.remove('open');
+            }
+        });
+
+
 
     </script>
 </body>

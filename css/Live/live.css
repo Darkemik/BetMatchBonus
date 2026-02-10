@@ -3,7 +3,10 @@
     justify-content: center;
     align-items: center;
     min-height: 80vh;
-    padding: 20px;
+    padding-bottom: 20px;
+    border: 2px solid red;
+    margin-bottom: 0%;
+    border-bottom: none;
 }
 
 .elo-container {
@@ -60,7 +63,7 @@
     width: 100%;
     border-collapse: collapse;
     background: white;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
     overflow: hidden;
     margin: 0 auto;
@@ -84,9 +87,7 @@
     vertical-align: middle;
 }
 
-.matches-table tr:hover {
-    background: #f8f9fa;
-}
+
 
 .live-badge {
     color: #e74c3c;
@@ -117,9 +118,17 @@
 }
 
 @keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.7; }
-    100% { opacity: 1; }
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }
 
 .loading {
@@ -136,7 +145,7 @@
     font-size: 16px;
     background: white;
     border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .refresh-btn {
@@ -160,29 +169,66 @@
     margin-top: 20px;
 }
 
-#eloszoveg{
+#eloszoveg {
     color: orange;
 }
 
-  #bonuszszoveg:hover{
+#bonuszszoveg:hover {
     color: #ffc89b;
-  }
+}
 
-  #fooldalszoveg:hover{
+#fooldalszoveg:hover {
     color: #ffc89b;
-  }
+}
 
-  #segitsegszoveg:hover{
+#segitsegszoveg:hover {
     color: #ffc89b;
-  }
+}
 
-  .right-container{
+.right-container {
     border: 2px solid red;
+    border-left: none;
     float: right;
     overflow-y: auto;
     width: 20%;
-    margin-right: 120px;
-    margin-top: 50px;
+    margin-right: auto;
+    padding-top: 50px;
     display: flex;
     justify-content: center;
-  }
+    height: max-content;
+}
+
+.matches-head:hover {
+    background-color: #c4b32d;
+}
+
+.lang-switcher {
+    position: relative;
+}
+
+.lang-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.lang-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    display: none;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 6px;
+    margin-top: 6px;
+}
+
+.lang-switcher.open .lang-dropdown {
+    display: block;
+}
+
+.simple-footer{
+    border: 2px solid red;
+    margin-top: 0px !important;
+}
