@@ -2,15 +2,21 @@
     display: none;
     ;
 }
-
+:root{
+    --site-bg: rgb(181, 228, 174);
+    --container-bg: rgb(160, 243, 157);
+}
 * {
     box-sizing: border-box;
     font-family: Arial, sans-serif;
 }
 
 body {
+    height: 100vh;
+    display: flex;
     margin: 0;
-    background: #f4f4f4;
+    background: var(--site-bg);
+    flex-direction: column;
 }
 
 .header {
@@ -19,8 +25,9 @@ body {
     justify-content: space-between;
     padding: 0 20px;
     height: 70px;
-    background: #212221;
+    background: var(--container-bg);
     color: white;
+    box-shadow: 0 0 10px 1px black;
 }
 
 .mainpage {
@@ -46,7 +53,7 @@ body {
 }
 
 .nav a {
-    color: white;
+    color: rgb(79, 150, 168);
     margin: 0 10px;
     text-decoration: none;
     font-size: large;
@@ -55,7 +62,7 @@ body {
 .registrationbtn {
     color: black;
     border-radius: 10px;
-    background-color: rgb(221, 221, 24);
+    background-color: rgb(221, 24, 24);
     height: 35px;
     border: none;
     font-weight: bold;
@@ -83,7 +90,7 @@ body {
 .lang-btn {
     width: 40px;
     height: 40px;
-    border: 2px solid red;
+    /* border: 2px solid red; */
     border-radius: 8px;
     cursor: pointer;
     display: flex;

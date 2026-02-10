@@ -63,7 +63,7 @@
 
 
             <details class="level1">
-              <summary>⚽ Foci</summary>
+              <summary>&#x26BD; Foci</summary>
 
               <details class="level2">
                 <summary>NB I</summary>
@@ -91,6 +91,9 @@
           </div>
 
         </form>
+      </div>
+      <div class="temp_cont">
+
       </div>
     </aside>
 
@@ -138,6 +141,10 @@
     <aside class="right-sidebar">
       <h2>Fogadós rész</h2>
       <p>Itt lesz majd a fogadási blokk.</p>
+
+      <div class="temp_cont">
+
+      </div>
     </aside>
 
   </div>
