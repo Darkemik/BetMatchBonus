@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="../../css/Live/live.css">
     <link rel="stylesheet" href="../../css/Footer/footer.css">
     <link rel="icon" href="../../img/logo.png" type="image/x-icon">
-    
+
 </head>
 
 <body>
@@ -53,32 +53,34 @@
         </div>
     </header>
 
-    <div class="right-container">
-        <aside class="right-sidebar">
-            <h2>Fogadási szelvény</h2>
-            <p>Itt lesz majd a fogadási blokk.</p>
-        </aside>
-    </div>
-    <div class="elo-main">
-        <div class="elo-container">
-            <h1 class="elo-title" id="elo-title">Élő meccsek</h1>
-
-            <div class="tabs-container">
-                <button class="tab-button active" data-tab="all-matches" id="tab-all">Összes meccs</button>
-                <button class="tab-button" data-tab="favorites" id="tab-favorites">Kedvenc csapatok</button>
-            </div>
-
-            <div id="matches-container">
-                <div class="tab-content active" id="all-matches">
-                    <div class="loading">Meccsek betöltése...</div>
-                </div>
-
-                <div class="tab-content" id="favorites">
-                    <div class="loading" id="loading-favorites">Kedvenc csapatok betöltése...</div>
-                </div>
-            </div>
+    <div class="content-parent">
+        <div class="right-container">
+            <aside class="right-sidebar">
+                <h2>Fogadási szelvény</h2>
+                <p>Itt lesz majd a fogadási blokk.</p>
+            </aside>
         </div>
+        <div class="elo-main">
+            <div class="elo-container">
+                <h1 class="elo-title" id="elo-title">Élő meccsek</h1>
 
+                <div class="tabs-container">
+                    <button class="tab-button active" data-tab="all-matches" id="tab-all">Összes meccs</button>
+                    <button class="tab-button" data-tab="favorites" id="tab-favorites">Kedvenc csapatok</button>
+                </div>
+
+                <div id="matches-container">
+                    <div class="tab-content active" id="all-matches">
+                        <div class="loading">Meccsek betöltése...</div>
+                    </div>
+
+                    <div class="tab-content" id="favorites">
+                        <div class="loading" id="loading-favorites">Kedvenc csapatok betöltése...</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
 
     </div>
 
@@ -550,7 +552,7 @@
             const huBtn = document.getElementById('lang-hu');
             const enBtn = document.getElementById('lang-en');
 
-            
+
         });
 
         const switcher = document.querySelector('.lang-switcher');
