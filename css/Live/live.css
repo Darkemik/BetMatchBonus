@@ -228,3 +228,8 @@
     border: 2px solid red;
     margin-top: 0px !important;
 }
+
+header{
+    padding-top: 15px !important; 
+    padding-bottom: 15px !important;
+}
