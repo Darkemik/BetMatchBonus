@@ -81,7 +81,7 @@
     margin-bottom: 15px;
 }
 
-.help-menu-container{
+.help-menu-container {
     color: #555;
     font-size: 15px;
     line-height: 1.6;
@@ -92,6 +92,63 @@
     border-left: 4px solid #3498db;
 }
 
+.help-summary {
+    list-style: none;
+}
+
+.help-summary:hover {
+    color: #1eff00;
+    cursor: pointer;
+    transform: translateY(-2px);
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    background-color: #f9f9f9;
+    padding: 8px 12px;
+}
+
+details.level1 summary:hover {
+    color: #1eff00;
+    cursor: pointer;
+    transform: translateY(-2px);
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    background-color: #f9f9f9;
+    padding: 8px 12px;
+}
+
+details.level1[open] summary+* p {
+    font-size: 14px;
+    max-height: 500px;
+    opacity: 1;
+    transform: scaleY(1);
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f5f9ff;
+}
+
+details.level1 {
+    margin-bottom: 8px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+}
+
+details.level1 summary {
+    color: #000000;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 5px 0;
+    list-style: none;
+    position: relative;
+    cursor: pointer;
+}
+
+details.level1 summary:after {
+    position: absolute;
+    right: 10px;
+    font-weight: bold;
+    font-size: 18px;
+    color: #3498db;
+}
 
 .additional-info {
     margin-bottom: 15px;
@@ -100,6 +157,7 @@
     padding: 10px;
     background-color: #3ba4f0;
 }
+
 /* Jobb oldali sáv */
 .right-sidebar {
     flex: 0 0 280px;
@@ -282,23 +340,18 @@
     }
 }
 
-#segitsegszoveg{
+#segitsegszoveg {
     color: orange;
 }
 
-  #bonuszszoveg:hover{
+#bonuszszoveg:hover {
     color: #ffc89b;
-  }
+}
 
-  #fooldalszoveg:hover{
+#fooldalszoveg:hover {
     color: #ffc89b;
-  }
+}
 
-  #eloszoveg:hover{
+#eloszoveg:hover {
     color: #ffc89b;
-  }
-
-  header{
-    padding-top: 15px !important; 
-    padding-bottom: 15px !important;
 }
