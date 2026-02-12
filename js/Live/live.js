@@ -110,11 +110,6 @@ function changeLanguage(lang) {
 
     document.documentElement.lang = lang;
     localStorage.setItem('preferred-language', lang);
-
-    // Táblázat fejlécek frissítése
-    if (typeof displayFavoriteMatches === 'function') {
-        displayFavoriteMatches();
-    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
