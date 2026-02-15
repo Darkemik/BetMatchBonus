@@ -46,7 +46,7 @@
                 </div>
             </div>
 
-            <button data-i18n="nav.login"
+            <button data-i18n="loginbtn" class="loginbtn"
                 onclick="location.href='../../frontend/Login/login.php' ">Bejelentkezés</button>
             <button class="registrationbtn" onclick="location.href='../../frontend/Register/register.php'"
                 data-i18n="nav.register">Regisztráció</button>

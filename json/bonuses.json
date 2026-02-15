@@ -1,0 +1,66 @@
+[
+    {
+        "title": "BÓNUSZ HÉTKÖZNAP",
+        "image": "../../img/dailybonus.jpeg",
+        "amount": "5 000 FT BÓNUSZT",
+        "condition": "Töltsön fel minimum 5000 FT ÉRTÉKBEN ÉS DUPLÁZZA MEG A BEFIZETETT ÖSSZEGÉT",
+        "description": "",
+        "buttonText": "BEJELENTKEZÉS / REGISZTRÁCIÓ"
+    },
+    {
+        "title": "ODDS PIRAMIS",
+        "image": "../../img/oddspiramid.jpeg",
+        "amount": "",
+        "condition": "Fogadjon legalább 5-ös kötésben és kapjon extra szorzót a kötésére",
+        "description": "A szelvény piacai szorzói minimum legyen fejenként 1.3 (Így ha például 5 ös kötésben 5*1,3 akkor mi ehhez hozzá teszünk még 1,3-as oddsot a végső odds: 7,8!)",
+        "buttonText": "BEJELENTKEZÉS / REGISZTRÁCIÓ"
+    },
+    {
+        "title": "DARTS BÓNUSZ",
+        "image": "../../img/dartsbonus.jpeg",
+        "amount": "10 000 FORINT",
+        "condition": "Fogadjon 2-es kötésben és a szelvénye eredő oddsa legyen 2.",
+        "description": "Kapjon 10.000FT ingyenes fogadást melyet bármire tehet.",
+        "buttonText": "BEJELENTKEZÉS / REGISZTRÁCIÓ"
+    },
+    {
+        "title": "ODDS ŰRHAJÓ",
+        "image": "../../img/oddsspaceship.jpeg",
+        "amount": "",
+        "condition": "Speciális fogadások amelyeket mi teszünk ki, minden nap fixen 1-et!",
+        "description": "",
+        "buttonText": "BEJELENTKEZÉS / REGISZTRÁCIÓ"
+    },
+    {
+        "title": "SZUPER ODDS",
+        "image": "../../img/superodds.jpeg",
+        "amount": "",
+        "condition": "A nap legfontosabb foci mérkőzésére az 1X2 piacra megnöveljük a szorzót!",
+        "description": "",
+        "buttonText": "BEJELENTKEZÉS / REGISZTRÁCIÓ"
+    },
+    {
+        "title": "ELSŐ REGISZTRÁCIÓS BÓNUSZ",
+        "image": "../../img/focipalya.jpeg",
+        "amount": "5000FT",
+        "condition": "2-es szorzó, 2-es kötés",
+        "description": "Töltsön fel 5000FT-ot és mi azt megduplázzuk!",
+        "buttonText": "BEJELENTKEZÉS / REGISZTRÁCIÓ"
+    },
+    {
+        "title": "KOSÁRLABDA SPECIAL",
+        "image": "../../img/basketballbonus.jpeg",
+        "amount": "+0.5 ODDS EXTRA",
+        "condition": "Kosárlabda mérkőzéseken extra odds +0.5 minden fogadásra!",
+        "description": "NBA és EuroLeague mérkőzéseken minden fogadáshoz +0.5 odds bónuszt kap automatikusan!",
+        "buttonText": "BEJELENTKEZÉS / REGISZTRÁCIÓ"
+    },
+    {
+        "title": "CASH OUT - AZONNALI KIFIZETÉS",
+        "image": "../../img/cashout.jpeg",
+        "amount": "",
+        "condition": "Fogadásának mérkőzésektől függően pénzt vehet ki!",
+        "description": "Amennyiben a meccs/meccsek még nem indultak el 80%ban kiveheti azt. Ha a szelvénye bukásfelé áll ez már csak 20%, viszont ha a szelvény nyerésre áll azt kiveheti 130%os profittal.",
+        "buttonText": "BEJELENTKEZÉS / REGISZTRÁCIÓ"
+    }
+]

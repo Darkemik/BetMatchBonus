@@ -47,6 +47,11 @@ body {
     gap: 8px;
 }
 
+.logo-box:hover{
+    color: inherit !important;
+    text-decoration: underline !important;
+}
+
 .kep {
     height: 40px;
     width: 40px;
@@ -60,33 +65,17 @@ body {
     font-size: large;
 }
 
-.registrationbtn {
-    color: black;
-    border-radius: 10px;
-    background-color: rgb(221, 24, 24);
-    height: 35px;
-    border: none;
-    font-weight: bold;
-    cursor: pointer;
-    transition: opacity 0.5s;
-}
-
-.registrationbtn:hover {
-    opacity: 0.8;
-}
-
-
 .right_side {
     display: flex;
     align-items: center;
     gap: 15px;
+    font-size: 13.3px !important;
 }
 
 .lang-switcher {
     display: flex;
     gap: 8px;
 }
-
 
 .lang-btn {
     width: 40px;
@@ -174,6 +163,10 @@ body {
 
 .registrationbtn:hover {
     background-color: #3d8b40 !important;
+}
+.header {
+    padding-top: 15px !important;
+    padding-bottom: 15px !important;
 }
 
 @media (max-width: 900px) {
