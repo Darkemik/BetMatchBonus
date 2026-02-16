@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="../../css/Footer/footer.css">
     <link rel="icon" href="../../img/logo.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
 </head>
 
 <body>
@@ -69,29 +71,69 @@
                 </div>
 
                 <div class="sports-nav-wrapper">
-        <nav class="sports-nav">
-            <a href="#" class="sport-item active">
-                <div class="sport-icon">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 3.1c2.7.4 4.9 2.2 5.8 4.6l-2.1.4c-.6-1.6-1.9-2.8-3.7-3.2V3.1zM11 3.1v3.8C9.2 7.3 7.9 8.5 7.3 10l-2.1-.4c.9-2.4 3.1-4.2 5.8-4.5zM4.3 13c-.1-.3-.1-.7-.1-1s0-.7.1-1l2.2.1c0 .3-.1.6-.1.9s0 .6.1.9l-2.2.1zm2.4 5.4c-1-1.4-1.6-3.1-1.7-4.9l2.2-.1c.1 1.3.5 2.5 1.2 3.5l-1.7 1.5zM11 20.9c-2.5-.3-4.6-1.8-5.7-4l1.9-1c.8 1.5 2.3 2.6 4.1 2.9l-.3 2.1zm1 0v-2.1c1.8-.3 3.3-1.4 4.1-2.9l1.9 1c-1.1 2.2-3.2 3.7-5.7 4zm5.9-5.5l-1.7-1.5c.7-1 1.1-2.2 1.2-3.5l2.2.1c-.1 1.8-.7 3.5-1.7 4.9zm1.8-6.4l-2.2-.1c0-.3.1-.6.1-.9s0-.6-.1-.9l2.2-.1c.1.3.1.7.1 1s0 .7-.1 1z"/>
-                    </svg>
+                    <nav class="sports-nav">
+                        <a href="#" class="sport-item active">
+                            <div class="sport-icon">
+                                <i class="fas fa-futbol"></i> <!-- Football ikon -->
+                            </div>
+                            <span class="sport-name">Football</span>
+                        </a>
+                        <a href="#" class="sport-item">
+                            <div class="sport-icon">
+                                <i class="fas fa-basketball-ball"></i> <!-- Basketball ikon -->
+                            </div>
+                            <span class="sport-name">Basketball</span>
+                        </a>
+                        <a href="#" class="sport-item">
+                            <div class="sport-icon">
+                                <i class="fas fa-bullseye"></i> <!-- Darts ikon -->
+                            </div>
+                            <span class="sport-name">Darts</span>
+                        </a>
+                        <a href="#" class="sport-item">
+                            <div class="sport-icon">
+                                <i class="fas fa-swimmer"></i> <!-- Vizilabda ikon -->
+                            </div>
+                            <span class="sport-name">Vizilabda</span>
+                        </a>
+                        <a href="#" class="sport-item">
+                            <div class="sport-icon">
+                                <i class="fas fa-hand-rock"></i> <!-- Kézilabda ikon -->
+                            </div>
+                            <span class="sport-name">Kézilabda</span>
+                        </a>
+                        <a href="#" class="sport-item">
+                            <div class="sport-icon">
+                                <i class="fas fa-hockey-puck"></i> <!-- Jégkorong ikon -->
+                            </div>
+                            <span class="sport-name">Jégkorong</span>
+                        </a>
+                        <a href="#" class="sport-item">
+                            <div class="sport-icon">
+                                <i class="fas fa-gamepad"></i> <!-- eSport ikon -->
+                            </div>
+                            <span class="sport-name">eSport</span>
+                        </a>
+                        <a href="#" class="sport-item">
+                            <div class="sport-icon">
+                                <i class="fas fa-table-tennis"></i> <!-- Pingpong ikon -->
+                            </div>
+                            <span class="sport-name">Pingpong</span>
+                        </a>
+                    </nav>
                 </div>
-                <span class="sport-name">Football</span>
-            </a>
-        </nav>
-    </div>
 
                 <div id="matches-container">
-                    
-                    </div>
 
-                    <div class="tab-content" id="favorites">
-                        
-                    </div>
+                </div>
+
+                <div class="tab-content" id="favorites">
+
                 </div>
             </div>
-
         </div>
+
+    </div>
 
     </div>
 
@@ -125,7 +167,7 @@
 
 
 
-        <script>
+    <script>
         const switcher = document.querySelector('.lang-switcher');
         const currentBtn = document.getElementById('lang-current');
 
