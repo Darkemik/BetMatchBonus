@@ -22,7 +22,31 @@ body{
     
     height: 150px;
 }
-.personal_info{
+#id_preview_second{
+    max-width: 200px;
+    
+    height: 150px;
+}
+#address_preview{
+    max-width: 200px;
+    
+    height: 150px;
+}
+.personal_img{
     display: flex;
     flex-direction: column;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+}
+.left-side{
+    width: 20%;
+    border: 2px solid red;
+}
+.personal-info{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+   
 }
