@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="../../css/Main/layout.css">
     <link rel="stylesheet" href="../../css/Help/help.css">
     <link rel="stylesheet" href="../../css/RootColor/root.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
     <link rel="icon" href="../../img/logo.png" type="image/x-icon">
 </head>
 
@@ -19,13 +20,13 @@
         </div>
 
         <nav class="nav">
-        <a href="../../frontend/MainMenu/MainMenu.php" data-i18n="nav.home" id="fooldalszoveg">Főoldal</a>
-            <a href="../../frontend/Live/live.php" data-i18n="nav.live" id="eloszoveg">Élő</a>
-            <a href="../../frontend/Bonus/bonus.php" data-i18n="nav.bonuses" id="bonuszszoveg">Bónuszok</a>
-            <a href="../../frontend/Help/help.php" data-i18n="nav.help" id="segitsegszoveg">Segítség</a>
+        <a href="../../frontend/MainMenu/MainMenu.php" data-i18n="nav.home">Főoldal</a>
+            <a href="../../frontend/Live/live.php" data-i18n="nav.live">Élő</a>
+            <a href="../../frontend/Bonus/bonus.php" data-i18n="nav.bonuses">Bónuszok</a>
+            <a href="../../frontend/Help/help.php" data-i18n="nav.help" class="active">Segítség</a>
         </nav>
         <div class="right_side">
-            <button class="loginbtn" onclick="location.href='../../frontend/Login/login.php'">Bejelentkezés</button>
+            <button class="loginbtn" data-bs-toggle="modal" data-bs-target="#loginModal">Bejelentkezés</button>
             <button class="registrationbtn"
                 onclick="location.href='../../frontend/Register/register.php'">Regisztráció</button>
         </div>
@@ -105,6 +106,28 @@
             </div>
         </div>
     </footer>
+        <div class="modal fade" id="loginModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 10px;">
+                <div class="modal-header">
+                    <h5 class="modal-title d-flex align-items-center gap-2"> <a
+                            href="../../frontend/MainMenu/MainMenu.php">
+                            <img src="../../img/logo.png" alt="logo" style="height: 28px; cursor: pointer;"></a>Bejelentkezés</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body"> <label class="form-label">Felhasználónév vagy e-mail cím</label> <input
+                        type="text" class="form-control mb-3"> <label class="form-label">Jelszó</label> <input
+                        type="password" class="form-control mb-2"> <a href="#" class="small"
+                        style="color:#3498db;">Elfelejtettem a jelszavam</a> </div>
+                <div class="modal-footer d-flex flex-column"> <button
+                        class="btn btn-success w-100 mb-2">Bejelentkezés</button>
+                    <p class="m-0"> Még nincs fiókod? <a href="../../frontend/Register/register.php"
+                            style="color:#3498db;">Regisztrálj!</a> </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
