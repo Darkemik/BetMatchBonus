@@ -229,103 +229,41 @@
     margin-top: 0px !important;
 }
 
-.sports-nav-wrapper {
-    background-color: #1a1a1a;
-    border-bottom: 1px solid #2a2a2a;
-    overflow-x: auto;
-    padding: 0;
-}
 
-.sports-nav-wrapper::-webkit-scrollbar {
-    height: 4px;
-}
-
-.sports-nav-wrapper::-webkit-scrollbar-track {
-    background: #1a1a1a;
-}
-
-.sports-nav-wrapper::-webkit-scrollbar-thumb {
-    background: #3a3a3a;
-    border-radius: 2px;
-}
-
+/* A sports-nav elemek közötti távolság csökkentése */
 .sports-nav {
     display: flex;
-    align-items: center;
-    min-width: max-content;
-    padding: 0 16px;
+    flex-wrap: wrap; /* Ha sok sport van, tördelje új sorba */
+    gap: 10px; /* Távolság a sportok között */
+    padding: 0; /* Eltávolítja a belső margót */
+    margin: 0; /* Eltávolítja a külső margót */
 }
 
+/* Egyes sport-item elemek stílusa */
 .sport-item {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    padding: 12px 16px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-decoration: none;
-    color: #b0b0b0;
-    min-width: 70px;
-    position: relative;
+    align-items: center; /* Ikon és szöveg középre igazítása */
+    padding: 5px 10px; /* Csökkentett belső margó */
+    text-decoration: none; /* Link aláhúzás eltávolítása */
+    color: #000; /* Szöveg színe */
+    background-color: transparent; /* Háttér eltávolítása */
+    border-radius: 5px; /* Lekerekített sarkok */
+    transition: background-color 0.3s ease; /* Animáció hover-re */
 }
 
+/* Hover effekt a sport-item elemekre */
 .sport-item:hover {
-    background-color: #252525;
-    color: #ffffff;
+    background-color: #f0f0f0; /* Hover állapot színe */
 }
 
-.sport-item.active {
-    color: #ffffff;
+/* Sport ikonok méretének beállítása */
+.sport-icon i {
+    font-size: 20px; /* Ikon mérete */
+    margin-right: 8px; /* Távolság az ikon és a szöveg között */
 }
 
-.sport-item.active::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background-color: #6366f1;
-}
-
-.sport-icon {
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.sport-icon svg {
-    width: 24px;
-    height: 24px;
-    fill: currentColor;
-}
-
+/* Sport nevek stílusa */
 .sport-name {
-    font-size: 12px;
-    font-weight: 500;
-    white-space: nowrap;
-}
-
-@media (max-width: 768px) {
-    .sport-item {
-        padding: 10px 12px;
-        min-width: 60px;
-    }
-
-    .sport-icon {
-        width: 28px;
-        height: 28px;
-    }
-
-    .sport-icon svg {
-        width: 20px;
-        height: 20px;
-    }
-
-    .sport-name {
-        font-size: 11px;
-    }
+    font-size: 16px; /* Szöveg mérete */
+    font-weight: bold; /* Félkövér szöveg */
 }
