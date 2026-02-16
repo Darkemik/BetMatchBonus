@@ -20,7 +20,7 @@
         </div>
 
         <nav class="nav">
-        <a href="../../frontend/MainMenu/MainMenu.php" data-i18n="nav.home">Főoldal</a>
+            <a href="../../frontend/MainMenu/MainMenu.php" data-i18n="nav.home">Főoldal</a>
             <a href="../../frontend/Live/live.php" data-i18n="nav.live">Élő</a>
             <a href="../../frontend/Bonus/bonus.php" data-i18n="nav.bonuses">Bónuszok</a>
             <a href="../../frontend/Help/help.php" data-i18n="nav.help" class="active">Segítség</a>
@@ -58,30 +58,11 @@
 
         </main>
 
-        <!-- Jobb oldali sáv -->
-        <aside class="right-sidebar">
-            <div class="promo-kartya">
-                <h3>ODDSŰRHAJÓ!</h3>
-                <p>A legjobb szorzók, kizárólag nálunk!</p>
-                <button class="tobb-info-gomb">RÉSZLETEK</button>
-            </div>
-
-            <div class="promo-kartya">
-                <h3>ODDSPIRAMIS</h3>
-                <p>Növelnéd a nyereményed? Keress aktuális ajánlatunkat a promóciók között!</p>
-                <button class="tobb-info-gomb">RÉSZLETEK</button>
-            </div>
-
-            <div class="promo-kartya">
-                <h3>BETMATCHBONUS MAGAZIN</h3>
-                <p>Esélyek, információk, nyeremények - olvasd el aktuális bejegyzéseinket!</p>
-                <button class="tobb-info-gomb">ELOLVASOM</button>
-            </div>
-        </aside>
+        <?php include '../../frontend/Components/promokartya.php'; ?>
     </div>
 
-    <?php include '../../frontend/Components/footer.php';?>
-    <?php include '../../frontend/Components/modal.php';?>
+    <?php include '../../frontend/Components/footer.php'; ?>
+    <?php include '../../frontend/Components/modal.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
