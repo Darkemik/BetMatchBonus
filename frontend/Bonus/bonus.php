@@ -7,9 +7,9 @@
     <title>Bónuszok | BetMatchBonus</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <link rel="stylesheet" href="../../css/Main/main.css">
+    <link rel="stylesheet" href="../../css/Main/layout.css">
     <link rel="stylesheet" href="../../css/Bonus/bonus.css">
-    <link rel="stylesheet" href="../../css/Footer/footer.css">
+    <link rel="stylesheet" href="../../css/RootColor/root.css">
     <link rel="icon" href="../../img/logo.png" type="image/x-icon">
 </head>
 
