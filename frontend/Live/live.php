@@ -66,23 +66,19 @@
             <div class="elo-container">
                 <h1 class="elo-title" id="elo-title">Élő meccsek</h1>
 
-                <div class="tabs-container">
-                    <button class="tab-button active" data-tab="all-matches" id="tab-all">Összes meccs</button>
-                </div>
-
                 <div class="sports-nav-wrapper">
                     <nav class="sports-nav">
                         <a href="#" class="sport-item active">
                             <div class="sport-icon">
                                 <i class="fas fa-futbol"></i> <!-- Football ikon -->
                             </div>
-                            <span class="sport-name">Football</span>
+                            <span class="sport-name">Labdarúgás</span>
                         </a>
                         <a href="#" class="sport-item">
                             <div class="sport-icon">
                                 <i class="fas fa-basketball-ball"></i> <!-- Basketball ikon -->
                             </div>
-                            <span class="sport-name">Basketball</span>
+                            <span class="sport-name">Kosárlabda</span>
                         </a>
                         <a href="#" class="sport-item">
                             <div class="sport-icon">
@@ -94,7 +90,7 @@
                             <div class="sport-icon">
                                 <i class="fas fa-swimmer"></i> <!-- Vizilabda ikon -->
                             </div>
-                            <span class="sport-name">Vizilabda</span>
+                            <span class="sport-name">Vízilabda</span>
                         </a>
                         <a href="#" class="sport-item">
                             <div class="sport-icon">
@@ -122,6 +118,12 @@
                         </a>
                     </nav>
                 </div>
+                <br>
+
+                <div class="tabs-container">
+                    <button class="tab-button active" data-tab="all-matches" id="tab-all">Összes meccs</button>
+                </div>
+
 
                 <div id="matches-container">
 
