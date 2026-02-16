@@ -10,7 +10,8 @@
   <link rel="icon" href="../../img/logo.png" type="image/x-icon">
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=search" />
-</head>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+  </head>
 
 <body>
 
@@ -22,7 +23,7 @@
     </div>
 
 
-    <nav class="nav">
+    <!-- <nav class="nav">
       <a href="../../frontend/MainMenu/MainMenu.php" id="fooldalszoveg" style="color: orange;">Főoldal</a>
 
       <a href="../../frontend/Live/live.php" id="eloszoveg" onmouseover="this.style.color='#ffc89b'"
@@ -33,7 +34,56 @@
 
       <a href="../../frontend/Help/help.php" id="segitsegszoveg" onmouseover="this.style.color='#ffc89b'"
         onmouseout="this.style.color=''">Segítség</a>
-    </nav>
+    </nav> -->
+    <nav class="navbar navbar-expand-lg p-0">
+
+  <!-- Hamburger BAL OLDALON -->
+  <button class="navbar-toggler me-auto" type="button"
+    data-bs-toggle="collapse"
+    data-bs-target="#mainNavbar"
+    aria-controls="mainNavbar"
+    aria-expanded="false"
+    aria-label="Menü">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <!-- Menü -->
+  <div class="collapse navbar-collapse" id="mainNavbar">
+    <ul class="navbar-nav flex-column flex-lg-row gap-lg-4">
+
+      <li class="nav-item">
+        <a class="nav-link active text-warning"
+           href="../../frontend/MainMenu/MainMenu.php">
+           Főoldal
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link"
+           href="../../frontend/Live/live.php">
+           Élő
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link"
+           href="../../frontend/Bonus/bonus.php">
+           Bónuszok
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link"
+           href="../../frontend/Help/help.php">
+           Segítség
+        </a>
+      </li>
+
+    </ul>
+  </div>
+
+</nav>
+
 
     <div class="right_side">
       <button class="loginbtn" onclick="location.href='../../frontend/Login/login.php'">Bejelentkezés</button>

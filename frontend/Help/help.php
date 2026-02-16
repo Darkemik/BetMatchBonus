@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../../css/Help/help.css">
     <link rel="stylesheet" href="../../css/Footer/footer.css">
     <link rel="icon" href="../../img/logo.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
 </head>
 
 <body>

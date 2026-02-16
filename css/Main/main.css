@@ -1,11 +1,8 @@
 ::-webkit-scrollbar {
     display: none;
-    ;
+    
 }
-:root{
-    --site-bg: rgb(135, 163, 135);
-    --container-bg: rgb(100, 128, 100);
-}
+
 * {
     box-sizing: border-box;
     font-family: Arial, sans-serif;
@@ -29,6 +26,8 @@ body {
     color: white;
     box-shadow: 0 0 10px 1px black;
     margin-bottom: 20px;
+    padding-top: 15px ;
+    padding-bottom: 15px ;
 }
 
 .mainpage {
@@ -157,17 +156,14 @@ body {
 }
 
 .registrationbtn {
-    background-color: #4CAF50 !important;
-    color: white !important;
+    background-color: #4CAF50 ;
+    color: white ;
 }
 
 .registrationbtn:hover {
-    background-color: #3d8b40 !important;
+    background-color: #3d8b40 ;
 }
-.header {
-    padding-top: 15px !important;
-    padding-bottom: 15px !important;
-}
+
 
 @media (max-width: 900px) {
     .right_side {
