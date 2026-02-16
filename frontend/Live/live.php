@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BetMatchBonus - Élő meccsek</title>
-    <link rel="stylesheet" href="../../css/Main/main.css">
+    <title>BetMatchBonus | Élő meccsek</title>
+    <link rel="stylesheet" href="../../css/Main/layout.css">
     <link rel="stylesheet" href="../../css/Live/live.css">
-    <link rel="stylesheet" href="../../css/Footer/footer.css">
+    <link rel="stylesheet" href="../../css/RootColor/root.css">
     <link rel="icon" href="../../img/logo.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">

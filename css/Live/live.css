@@ -87,8 +87,6 @@
     vertical-align: middle;
 }
 
-
-
 .live-badge {
     color: #e74c3c;
     font-weight: bold;
@@ -202,13 +200,6 @@
     position: relative;
 }
 
-.lang-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px;
-}
-
 .lang-dropdown {
     position: absolute;
     top: 100%;
@@ -223,12 +214,6 @@
 .lang-switcher.open .lang-dropdown {
     display: block;
 }
-
-.simple-footer {
-    border: 2px solid red;
-    margin-top: 0px !important;
-}
-
 
 /* A sports-nav elemek közötti távolság csökkentése */
 .sports-nav {

@@ -5,9 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Segítség | BetMatchBonus</title>
-    <link rel="stylesheet" href="../../css/Main/main.css">
+    <link rel="stylesheet" href="../../css/Main/layout.css">
     <link rel="stylesheet" href="../../css/Help/help.css">
-    <link rel="stylesheet" href="../../css/Footer/footer.css">
+    <link rel="stylesheet" href="../../css/RootColor/root.css">
     <link rel="icon" href="../../img/logo.png" type="image/x-icon">
 </head>
 
