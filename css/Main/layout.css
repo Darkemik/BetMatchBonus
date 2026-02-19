@@ -5,6 +5,82 @@
 ::-webkit-scrollbar {
     display: none;
 }
+/* Hamburger alapból rejtve */
+.navbar-toggler {
+    display: none;
+}
+
+/* Desktop */
+@media (min-width: 769px) {
+    .header-top-row {
+        display: contents;
+    }
+
+    .logo-box { order: 1; }
+    
+    #mainNavbar { 
+        order: 2; 
+        flex: 1; 
+        justify-content: center; 
+        display: flex !important; 
+        flex-direction: row; 
+    }
+    
+    .right_side { order: 3; }
+    
+    .navbar-toggler { 
+        display: none !important; 
+    }
+}
+
+/* Mobil */
+@media (max-width: 768px) {
+    .logo {
+        display: none !important;
+    }
+
+    .navbar-toggler {
+        display: block;
+    }
+
+    .header {
+        flex-direction: column !important;
+        height: auto !important;
+        padding: 0 !important;
+        align-items: stretch !important;
+    }
+
+    .header-top-row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start !important;
+        padding: 10px 15px;
+        width: 100%;
+        gap: 10px;
+    }
+
+    #mainNavbar {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        background: var(--nav-bg);
+        padding: 5px 0;
+    }
+
+    #mainNavbar.show {
+        display: flex !important;
+    }
+
+    #mainNavbar a {
+        margin: 0 !important;
+        padding: 12px 20px !important;
+        font-size: 17px !important;
+        width: 100%;
+    }
+    .right_side{
+        margin-left: auto;
+    }
+}
 body {
     min-height: 100vh;
     height: auto;

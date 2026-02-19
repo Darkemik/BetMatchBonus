@@ -15,18 +15,23 @@
 </head>
 
 <body>
-    <header class="header">
+<header class="header">
+    <div class="header-top-row">
+        <button class="navbar-toggler navbar-dark" type="button"
+                data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+                aria-controls="mainNavbar" aria-expanded="false" aria-label="Menü">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
         <div class="logo-box">
-            <a href="../frontend/index.html"><img class="kep" src="../../img/logo.png" alt="logo"></a>
-            <div class="logo"><a href="../frontend/index.html" class="mainpage">BetMatchBonus</a></div>
+            <a href="../frontend/index.html">
+                <img class="kep" src="../../img/logo.png" alt="logo">
+            </a>
+            <div class="logo">
+                <a href="../frontend/index.html" class="mainpage">BetMatchBonus</a>
+            </div>
         </div>
 
-        <nav class="nav">
-            <a href="../../frontend/MainMenu/MainMenu.php" data-i18n="nav.home">Főoldal</a>
-            <a href="../../frontend/Live/live.php" data-i18n="nav.live" class="active">Élő</a>
-            <a href="../../frontend/Bonus/bonus.php" data-i18n="nav.bonuses">Bónuszok</a>
-            <a href="../../frontend/Help/help.php" data-i18n="nav.help">Segítség</a>
-        </nav>
         <div class="right_side">
             <div class="lang-switcher">
                 <button class="lang-btn active" id="lang-current">
@@ -36,7 +41,6 @@
                         <rect width="9" height="2" y="4" fill="#436f4d" />
                     </svg>
                 </button>
-
                 <div class="lang-dropdown">
                     <button class="lang-btn" data-lang="en" title="English">
                         <svg viewBox="0 0 9 6" xmlns="http://www.w3.org/2000/svg">
@@ -47,13 +51,22 @@
                     </button>
                 </div>
             </div>
-
             <button data-i18n="loginbtn" class="loginbtn"
                 data-bs-toggle="modal" data-bs-target="#loginModal">Bejelentkezés</button>
-            <button class="registrationbtn" onclick="location.href='../../frontend/Register/register.php'"
+            <button class="registrationbtn" 
+                onclick="location.href='../../frontend/Register/register.php'"
                 data-i18n="nav.register">Regisztráció</button>
         </div>
-    </header>
+    </div>
+
+    <!-- Nav KÍVÜL a header-top-row-on -->
+    <nav class="nav collapse navbar-collapse" id="mainNavbar">
+        <a href="../../frontend/MainMenu/MainMenu.php">Főoldal</a>
+        <a href="../../frontend/Live/live.php" class="active">Élő</a>
+        <a href="../../frontend/Bonus/bonus.php">Bónuszok</a>
+        <a href="../../frontend/Help/help.php">Segítség</a>
+    </nav>
+</header>
 
     <div class="content-parent">
         <div class="right-container">
