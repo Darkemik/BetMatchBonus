@@ -1,0 +1,51 @@
+[
+  {
+    "category": "REGISZTRÁCIÓ, BEJELENTKEZÉS",
+    "questions": [
+      {
+        "question": "Hogyan tudom az e-mail címemet hitelesíteni?",
+        "answer": "A regisztrációt követően levelet küldünk a megadott email címedre, melyben megtalálható az email cím hitelesítésére szolgáló link. A linkre kattintva a regisztrációkor megadott email cím hitelesítése megtörténik. Amennyiben az email nem érkezett meg, érdemes a spam fiókot is megnézni. Szükség esetén írj az ügyfélszolgálatnak!"
+      },
+      {
+        "question": "Regisztrálhatok más adataival?",
+        "answer": "Regisztrálni kizárólag csak saját nevedben, az okmányaidban található személyes adatokkal lehet."
+      },
+      {
+        "question": "Megváltoztathatom a felhasználónevemet?",
+        "answer": "Nem, a felhasználónév nem módosítható."
+      },
+      {
+        "question": "Mik a regisztráció feltételei?",
+        "answer": "A BetMatchBonus oldalon csak 18. életévét betöltött, magyarországi tartózkodási hellyel és magyarországi bankban vezetett forint alapú bankszámlával rendelkező fogadó regisztrálhat. A regisztrációkor minden játékosnak el kell fogadnia a Részvételi Szabályzatot és az adatvédelmi tájékoztatót."
+      },
+      {
+        "question": "Hogyan tudok regisztrálni?",
+        "answer": "Kattints a jobb felső sarokban található Regisztráció gombra, majd add meg a szükséges adatokat. A regisztráció végén aktiváló linket küldünk az email címedre."
+      },
+      {
+        "question": "Mit tehetek, ha a regisztrációkor rossz adatot adtam meg?",
+        "answer": "A bejelentkezést követően a Beállítások/Személyes adatok menüpontban módosíthatod az adataidat, kivéve a felhasználónevet és a születési adatokat. Ezeket ügyfélszolgálat tudja javítani."
+      },
+      {
+        "question": "Megváltoztathatom a jelszavamat?",
+        "answer": "A jelszó módosítása a profil menüben érhető el. A régi jelszó megadása után új jelszót kell beállítani, majd emailben kapott kóddal jóváhagyni."
+      },
+      {
+        "question": "Miről kell nyilatkozni a regisztráció során?",
+        "answer": "Nyilatkoznod kell arról, hogy saját nevedben veszel részt, saját adataidat adod meg, elfogadod a Részvételi Szabályzatot és az adatkezelési tájékoztatót."
+      },
+      {
+        "question": "Regisztrálhatok többször?",
+        "answer": "Nem, minden játékos csak egy regisztrációt hozhat létre. Ha gond van a belépéssel, írj ügyfélszolgálatunknak."
+      },
+      {
+        "question": "Személyes adataimban változások történtek. Mit tehetek?",
+        "answer": "A változásokat 5 napon belül módosítanod kell a Beállítások/Személyes adatok menüpontban. A születési adatokat csak ügyfélszolgálat tudja javítani."
+      }
+    ]
+  },
+  {
+    "category": "HOGYAN FOGADJAK?",
+    "questions": []
+  }
+]

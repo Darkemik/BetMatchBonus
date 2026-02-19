@@ -177,6 +177,15 @@ details.level1 summary:after {
     transform: translateY(-3px);
 }
 
+.promo-kartya img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    display: block;
+}
+
 .promo-kartya h3 {
     color: #1a1a1a;
     font-size: 18px;

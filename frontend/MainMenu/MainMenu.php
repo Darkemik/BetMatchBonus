@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Tipp oldal – váz</title>
+  <title>Online fogadás | BetMatchBonus</title>
   <link rel="stylesheet" href="../../css/MainMenu/MainMenu.css">
   <link rel="stylesheet" href="../../css/Main/layout.css">
   <link rel="stylesheet" href="../../css/RootColor/root.css">
@@ -24,16 +24,13 @@
 
 
     <!-- <nav class="nav">
-      <a href="../../frontend/MainMenu/MainMenu.php" id="fooldalszoveg" style="color: orange;">Főoldal</a>
+      <a href="../../frontend/MainMenu/MainMenu.php" class="active">Főoldal</a>
 
-      <a href="../../frontend/Live/live.php" id="eloszoveg" onmouseover="this.style.color='#ffc89b'"
-        onmouseout="this.style.color=''">Élő</a>
+      <a href="../../frontend/Live/live.php">Élő</a>
 
-      <a href="../../frontend/Bonus/bonus.php" id="bonuszszoveg" onmouseover="this.style.color='#ffc89b'"
-        onmouseout="this.style.color=''">Bónuszok</a>
+      <a href="../../frontend/Bonus/bonus.php">Bónuszok</a>
 
-      <a href="../../frontend/Help/help.php" id="segitsegszoveg" onmouseover="this.style.color='#ffc89b'"
-        onmouseout="this.style.color=''">Segítség</a>
+      <a href="../../frontend/Help/help.php">Segítség</a>
     </nav> -->
     <nav class="navbar navbar-expand-lg p-0">
 
@@ -86,7 +83,7 @@
 
 
     <div class="right_side">
-      <button class="loginbtn" onclick="location.href='../../frontend/Login/login.php'">Bejelentkezés</button>
+      <button class="loginbtn" data-bs-toggle="modal" data-bs-target="#loginModal">Bejelentkezés</button>
       <button class="registrationbtn"
         onclick="location.href='../../frontend/Register/register.php'">Regisztráció</button>
     </div>
@@ -161,29 +158,7 @@
 
       </div>
 
-        <footer class="simple-footer">
-    <div class="footer-top">
-      <div class="footer-links">
-        <a href="../Help/adatkezelesi_tajekoztatok.php" class="footer-link">ADATKEZELÉSI TÁJÉKOZTATÓ</a>
-        <a href="../Help/reszveteli-szabalyzat.php" class="footer-link">RÉSZVÉTELI SZABÁLYZAT</a>
-        <a href="../Help/kapcsolat.php" class="footer-link">UGYFELSZOLGALAT@BETMATCHBONUS.COM</a>
-        <a href="../Help/GYIK.php" class="footer-link">GYIK</a>
-      </div>
-    </div>
-
-    <div class="footer-bottom">
-      <div class="footer-content">
-        <div class="responsible-text">
-          <h2>Ajánlott felelős szervező!</h2>
-          <p>Maradjon játék! 18+. A túlzásba vitt szerencsejáték ártalmas, függőséget okozhat! Kérje
-            bejegyzését a játékosvédelmi nyilvántartásba!
-            <a href="../Help/jatekosvedelem.php" class="tudjmegtobbeta" target="_blank">Tudj meg többet!</a>
-          </p>
-        </div>
-        <p>Élményt nyújtunk, értéket teremtünk © BetMatchBonus – 2026. Minden jog fenntartva.</p>
-      </div>
-    </div>
-  </footer>
+        <?php include '../../frontend/Components/footer.php';?>
 
     </main>
 
@@ -199,7 +174,8 @@
 
   </div>
 
-
+  <?php include '../../frontend/Components/modal.php';?>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../../js/MainMenu/main.js"></script>
 </body>
 

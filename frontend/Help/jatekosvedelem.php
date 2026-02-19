@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="../../css/Main/layout.css">
     <link rel="stylesheet" href="../../css/Help/help.css">
     <link rel="stylesheet" href="../../css/RootColor/root.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
     <link rel="icon" href="../../img/logo.png" type="image/x-icon">
 </head>
 
@@ -19,13 +20,13 @@
         </div>
 
         <nav class="nav">
-        <a href="../../frontend/MainMenu/MainMenu.php" data-i18n="nav.home" id="fooldalszoveg">Főoldal</a>
-            <a href="../../frontend/Live/live.php" data-i18n="nav.live" id="eloszoveg">Élő</a>
-            <a href="../../frontend/Bonus/bonus.php" data-i18n="nav.bonuses" id="bonuszszoveg">Bónuszok</a>
-            <a href="../../frontend/Help/help.php" data-i18n="nav.help" id="segitsegszoveg">Segítség</a>
+            <a href="../../frontend/MainMenu/MainMenu.php" data-i18n="nav.home">Főoldal</a>
+            <a href="../../frontend/Live/live.php" data-i18n="nav.live">Élő</a>
+            <a href="../../frontend/Bonus/bonus.php" data-i18n="nav.bonuses">Bónuszok</a>
+            <a href="../../frontend/Help/help.php" data-i18n="nav.help" class="active">Segítség</a>
         </nav>
         <div class="right_side">
-            <button class="loginbtn" onclick="location.href='../../frontend/Login/login.php'">Bejelentkezés</button>
+            <button class="loginbtn" data-bs-toggle="modal" data-bs-target="#loginModal">Bejelentkezés</button>
             <button class="registrationbtn"
                 onclick="location.href='../../frontend/Register/register.php'">Regisztráció</button>
         </div>
@@ -57,51 +58,11 @@
 
         </main>
 
-        <!-- Jobb oldali sáv -->
-        <aside class="right-sidebar">
-            <div class="promo-kartya">
-                <h3>ODDSŰRHAJÓ!</h3>
-                <p>A legjobb szorzók, kizárólag nálunk!</p>
-                <button class="tobb-info-gomb">RÉSZLETEK</button>
-            </div>
-
-            <div class="promo-kartya">
-                <h3>ODDSPIRAMIS</h3>
-                <p>Növelnéd a nyereményed? Keress aktuális ajánlatunkat a promóciók között!</p>
-                <button class="tobb-info-gomb">RÉSZLETEK</button>
-            </div>
-
-            <div class="promo-kartya">
-                <h3>BETMATCHBONUS MAGAZIN</h3>
-                <p>Esélyek, információk, nyeremények - olvasd el aktuális bejegyzéseinket!</p>
-                <button class="tobb-info-gomb">ELOLVASOM</button>
-            </div>
-        </aside>
+        <?php include '../../frontend/Components/promokartya.php'; ?>
     </div>
-
-    <footer class="simple-footer">
-        <div class="footer-top">
-            <div class="footer-links">
-                <a href="../Help/adatkezelesi_tajekoztatok.php" class="footer-link">ADATKEZELÉSI TÁJÉKOZTATÓ</a>
-                <a href="../Help/reszveteli-szabalyzat.php" class="footer-link">RÉSZVÉTELI SZABÁLYZAT</a>
-                <a href="../Help/kapcsolat.php" class="footer-link">UGYFELSZOLGALAT@BETMATCHBONUS.COM</a>
-                <a href="../Help/GYIK.php" class="footer-link">GYIK</a>
-            </div>
-        </div>
-
-        <div class="footer-bottom">
-            <div class="footer-content">
-                <div class="responsible-text">
-                    <h2>Ajánlott felelős szervező!</h2>
-                    <p>Maradjon játék! 18+. A túlzásba vitt szerencsejáték ártalmas, függőséget okozhat! Kérje
-                        bejegyzését a játékosvédelmi nyilvántartásba!
-                        <a href="../Help/jatekosvedelem.php" class="tudjmegtobbeta" target="_blank">Tudj megtöbbet!</a>
-                    </p>
-                </div>
-                <p>Élményt nyújtunk, értéket teremtünk © BetMatchBonus – 2026. Minden jog fenntartva.</p>
-            </div>
-        </div>
-    </footer>
+    <?php include '../../frontend/Components/footer.php'; ?>
+    <?php include '../../frontend/Components/modal.php'; ?>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

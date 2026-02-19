@@ -6,7 +6,8 @@
     display: none;
 }
 body {
-    height: 100vh;
+    min-height: 100vh;
+    height: auto;
     display: flex;
     margin: 0;
     flex-direction: column;
@@ -36,6 +37,14 @@ body {
 .mainpage:hover {
     text-decoration: underline;
 }
+.modal-title a img {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.modal-title a img:hover {
+    transform: scale(1.08);
+    opacity: 0.85;
+}
 
 .logo-box {
     display: flex;
@@ -59,6 +68,15 @@ body {
     margin: 0 10px;
     text-decoration: none;
     font-size: large;
+    transition: color 0.2s ease;
+}
+
+.nav a:hover {
+    color: #ffc89b !important;
+}
+
+.nav a.active { 
+    color: orange !important; 
 }
 
 .right_side {

@@ -24,10 +24,12 @@ fetch("../../json/bonuses.json")
                     <p class="doboz-szoveg">${bonus.description}</p>
 
                     <div class="doboz-gombok">
-                        <a href="#" class="doboz-gomb">BEJELENTKEZÉS / REGISZTRÁCIÓ</a>
+                        <button class="doboz-gomb" data-bs-toggle="modal" data-bs-target="#loginModal">
+                            BEJELENTKEZÉS / REGISZTRÁCIÓ
+                        </button>
 
-                        <button class="tobb-info-gomb" 
-                                data-bs-toggle="offcanvas" 
+                        <button class="tobb-info-gomb"
+                                data-bs-toggle="offcanvas"
                                 data-bs-target="#${offcanvasId}">
                             Több információ
                         </button>

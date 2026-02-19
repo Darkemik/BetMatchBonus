@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BetMatchBonus | Élő meccsek</title>
+    <title>Élő meccsek | BetMatchBonus</title>
     <link rel="stylesheet" href="../../css/Main/layout.css">
     <link rel="stylesheet" href="../../css/Live/live.css">
     <link rel="stylesheet" href="../../css/RootColor/root.css">
@@ -22,10 +22,10 @@
         </div>
 
         <nav class="nav">
-            <a href="../../frontend/MainMenu/MainMenu.php" data-i18n="nav.home" id="fooldalszoveg">Főoldal</a>
-            <a href="../../frontend/Live/live.php" data-i18n="nav.live" id="eloszoveg">Élő</a>
-            <a href="../../frontend/Bonus/bonus.php" data-i18n="nav.bonuses" id="bonuszszoveg">Bónuszok</a>
-            <a href="../../frontend/Help/help.php" data-i18n="nav.help" id="segitsegszoveg">Segítség</a>
+            <a href="../../frontend/MainMenu/MainMenu.php" data-i18n="nav.home">Főoldal</a>
+            <a href="../../frontend/Live/live.php" data-i18n="nav.live" class="active">Élő</a>
+            <a href="../../frontend/Bonus/bonus.php" data-i18n="nav.bonuses">Bónuszok</a>
+            <a href="../../frontend/Help/help.php" data-i18n="nav.help">Segítség</a>
         </nav>
         <div class="right_side">
             <div class="lang-switcher">
@@ -49,7 +49,7 @@
             </div>
 
             <button data-i18n="loginbtn" class="loginbtn"
-                onclick="location.href='../../frontend/Login/login.php' ">Bejelentkezés</button>
+                data-bs-toggle="modal" data-bs-target="#loginModal">Bejelentkezés</button>
             <button class="registrationbtn" onclick="location.href='../../frontend/Register/register.php'"
                 data-i18n="nav.register">Regisztráció</button>
         </div>
@@ -66,23 +66,19 @@
             <div class="elo-container">
                 <h1 class="elo-title" id="elo-title">Élő meccsek</h1>
 
-                <div class="tabs-container">
-                    <button class="tab-button active" data-tab="all-matches" id="tab-all">Összes meccs</button>
-                </div>
-
                 <div class="sports-nav-wrapper">
                     <nav class="sports-nav">
                         <a href="#" class="sport-item active">
                             <div class="sport-icon">
                                 <i class="fas fa-futbol"></i> <!-- Football ikon -->
                             </div>
-                            <span class="sport-name">Football</span>
+                            <span class="sport-name">Labdarúgás</span>
                         </a>
                         <a href="#" class="sport-item">
                             <div class="sport-icon">
                                 <i class="fas fa-basketball-ball"></i> <!-- Basketball ikon -->
                             </div>
-                            <span class="sport-name">Basketball</span>
+                            <span class="sport-name">Kosárlabda</span>
                         </a>
                         <a href="#" class="sport-item">
                             <div class="sport-icon">
@@ -94,7 +90,7 @@
                             <div class="sport-icon">
                                 <i class="fas fa-swimmer"></i> <!-- Vizilabda ikon -->
                             </div>
-                            <span class="sport-name">Vizilabda</span>
+                            <span class="sport-name">Vízilabda</span>
                         </a>
                         <a href="#" class="sport-item">
                             <div class="sport-icon">
@@ -122,6 +118,12 @@
                         </a>
                     </nav>
                 </div>
+                <br>
+
+                <div class="tabs-container">
+                    <button class="tab-button active" data-tab="all-matches" id="tab-all">Összes meccs</button>
+                </div>
+
 
                 <div id="matches-container">
 
@@ -138,31 +140,8 @@
     </div>
 
 
-    <footer class="simple-footer">
-        <div class="footer-top">
-            <div class="footer-links">
-                <a href="../Help/adatkezelesi_tajekoztatok.php" class="footer-link">ADATKEZELÉSI TÁJÉKOZTATÓ</a>
-                <a href="../Help/reszveteli-szabalyzat.php" class="footer-link">RÉSZVÉTELI SZABÁLYZAT</a>
-                <a href="../Help/kapcsolat.php" class="footer-link">UGYFELSZOLGALAT@BETMATCHBONUS.COM</a>
-                <a href="../Help/GYIK.php" class="footer-link">GYIK</a>
-            </div>
-        </div>
-
-        <div class="footer-bottom">
-            <div class="footer-content">
-                <div class="responsible-text">
-                    <h2>Ajánlott felelős szervező!</h2>
-                    <p>Maradjon játék! 18+. A túlzásba vitt szerencsejáték ártalmas, függőséget okozhat! Kérje
-                        bejegyzését a játékosvédelmi nyilvántartásba!
-                        <a href="../Help/jatekosvedelem.php" class="tudjmegtobbeta" target="_blank">Tudj meg többet!</a>
-                    </p>
-                </div>
-                <p>Élményt nyújtunk, értéket teremtünk © BetMatchBonus – 2026. Minden jog fenntartva.</p>
-            </div>
-        </div>
-    </footer>
-
-
+    <?php include '../../frontend/Components/footer.php';?>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../../js/Live/live.js"></script>
 
 
@@ -200,6 +179,7 @@
 
 
     </script>
+    <?php include '../../frontend/Components/modal.php';?>
 </body>
 
 </html>
