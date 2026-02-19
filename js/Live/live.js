@@ -1,128 +1,126 @@
-const languages = {
-    hu: {
-        title: "Élő meccsek",
-        footer: "Élményt nyújtunk, értéket teremtünk © BetMatchBonus – 2025. Minden jog fenntartva.",
-        refresh: "🔄 Frissítés",
-        lastUpdated: "Utolsó frissítés",
-        nav: {
-            home: "Főoldal",
-            live: "Élő",
-            bonuses: "Bónuszok",
-            help: "Segítség",
-            login: "Bejelentkezés",
-            register: "Regisztráció"
-        },
-        tabs: {
-            all: "Összes meccs",
-            favorites: "Kedvencek"
-        },
-        tableHeaders: {
-            league: "Bajnokság",
-            match: "Mérkőzés",
-            result: "Eredmény",
-            status: "Állapot",
-            time: "Idő",
-            favorite: "Kedvenc"
-        }
-    },
-    en: {
-        title: "Live Games",
-        footer: "We provide experience, create value © BetMatchBonus – 2025. All rights reserved.",
-        refresh: "🔄 Refresh",
-        lastUpdated: "Last updated",
-        nav: {
-            home: "Home",
-            live: "Live",
-            bonuses: "Bonuses",
-            help: "Help",
-            login: "Login",
-            register: "Register"
-        },
-        tabs: {
-            all: "All Matches",
-            favorites: "Favorites"
-        },
-        tableHeaders: {
-            league: "League",
-            match: "Match",
-            result: "Result",
-            status: "Status",
-            time: "Time",
-            favorite: "Favorite"
-        }
-    }
-};
+const apiKey = "7QmRda4MADvUC4jJI2IV9WEYJzct3xAWOFXpKsQYn7cEu4YyY1jtJQQJ99CBACPV0roXJ3w3AAAbACOG627C";
+const endpoint = "https://api.cognitive.microsofttranslator.com/";
+const region = "germanywestcentral";
 
 let currentLang = 'hu';
 
-function changeLanguage(lang) {
-    currentLang = lang;
+const SKIP_SELECTORS = [
+    '.logo',
+    '.lang-switcher',
+];
 
-    const titleElement = document.getElementById('elo-title');
-    if (titleElement) {
-        titleElement.textContent = languages[lang].title;
-    }
+function shouldSkip(element) {
+    if (!element) return true;
+    return SKIP_SELECTORS.some(sel => element.closest(sel));
+}
 
-    const footerElement = document.getElementById('footer-text');
-    if (footerElement) {
-        footerElement.textContent = languages[lang].footer;
-    }
-
-    // Tab gombok fordítása
-    const tabAll = document.getElementById('tab-all');
-    const tabFavorites = document.getElementById('tab-favorites');
-    if (tabAll && languages[lang].tabs) {
-        tabAll.textContent = languages[lang].tabs.all;
-        tabFavorites.textContent = languages[lang].tabs.favorites;
-    }
-
-    document.querySelectorAll('[data-i18n]').forEach(element => {
-        const key = element.getAttribute('data-i18n');
-        if (key && languages[lang]) {
-            if (key.startsWith('nav.') && languages[lang].nav) {
-                const navKey = key.replace('nav.', '');
-                if (languages[lang].nav[navKey]) {
-                    element.textContent = languages[lang].nav[navKey];
-                }
-            } else if (languages[lang][key]) {
-                element.textContent = languages[lang][key];
+function getAllTextNodes(root) {
+    const textNodes = [];
+    const walker = document.createTreeWalker(
+        root,
+        NodeFilter.SHOW_TEXT,
+        {
+            acceptNode(node) {
+                if (!node.textContent.trim()) return NodeFilter.FILTER_REJECT;
+                if (shouldSkip(node.parentElement)) return NodeFilter.FILTER_REJECT;
+                return NodeFilter.FILTER_ACCEPT;
             }
+        }
+    );
+    let node;
+    while ((node = walker.nextNode())) {
+        textNodes.push(node);
+    }
+    return textNodes;
+}
+
+async function changeLanguage(lang) {
+    const textNodes = getAllTextNodes(document.body);
+    const texts = textNodes.map(node => ({ Text: node.textContent.trim() }));
+    if (texts.length === 0) return;
+
+    const url = `${endpoint}/translate?api-version=3.0&to=${lang}`;
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Ocp-Apim-Subscription-Key': apiKey,
+                'Ocp-Apim-Subscription-Region': region,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(texts)
+        });
+
+        if (!response.ok) {
+            const err = await response.text();
+            console.error("API hiba:", err);
+            return;
+        }
+
+        const data = await response.json();
+        console.log("Fordítás sikeres, elemek:", data.length);
+
+        data.forEach((result, i) => {
+            textNodes[i].textContent = result.translations[0].text;
+        });
+
+        currentLang = lang;
+
+    } catch (error) {
+        console.error("Fordítási hiba:", error);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const mainBtn = document.getElementById('btn-hu');
+    const dropdown = document.getElementById('lang-dropdown');
+    const enBtn = document.getElementById('btn-en');
+    const huBtn = document.getElementById('btn-hu-switch');
+
+    const svgHU = `<svg viewBox="0 0 9 6" xmlns="http://www.w3.org/2000/svg">
+        <rect width="9" height="2" y="0" fill="#c8102e" />
+        <rect width="9" height="2" y="2" fill="#ffffff" />
+        <rect width="9" height="2" y="4" fill="#436f4d" />
+    </svg>`;
+
+    const svgEN = `<svg viewBox="0 0 9 6" xmlns="http://www.w3.org/2000/svg">
+        <rect width="9" height="6" fill="#ffffff" />
+        <rect x="4" width="1" height="6" fill="#c8102e" />
+        <rect y="2.5" width="9" height="1" fill="#c8102e" />
+    </svg>`;
+
+    if (mainBtn && dropdown) {
+        mainBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle('open');
+        });
+    }
+
+    document.addEventListener('click', (e) => {
+        if (!dropdown) return;
+        if (!dropdown.contains(e.target) && e.target !== mainBtn) {
+            dropdown.classList.remove('open');
         }
     });
 
-    const huBtn = document.getElementById('lang-hu');
-    const enBtn = document.getElementById('lang-en');
-
-    if (huBtn && enBtn) {
-        huBtn.classList.remove('active');
-        enBtn.classList.remove('active');
-
-        if (lang === 'hu') {
-            huBtn.classList.add('active');
-            huBtn.title = "Magyar";
-            enBtn.title = "Angol";
-        } else {
-            enBtn.classList.add('active');
-            huBtn.title = "Hungarian";
-            enBtn.title = "English";
-        }
+    if (enBtn) {
+        enBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.classList.remove('open');
+            if (currentLang !== 'en') {
+                changeLanguage('en');
+                mainBtn.innerHTML = svgEN; // fő gomb angol zászlóra vált
+            }
+        });
     }
 
-    document.documentElement.lang = lang;
-    localStorage.setItem('preferred-language', lang);
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    const savedLang = localStorage.getItem('preferred-language');
-    if (savedLang && (savedLang === 'hu' || savedLang === 'en')) {
-        changeLanguage(savedLang);
-    } else {
-        changeLanguage('hu');
+    if (huBtn) {
+        huBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.classList.remove('open');
+            if (currentLang !== 'hu') {
+                location.reload(); // reload visszaállítja a magyar zászlót is
+            }
+        });
     }
-
-    const huBtn = document.getElementById('lang-hu');
-    const enBtn = document.getElementById('lang-en');
-
-    if (huBtn) huBtn.addEventListener('click', () => changeLanguage('hu'));
-    if (enBtn) enBtn.addEventListener('click', () => changeLanguage('en'));
 });
