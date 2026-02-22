@@ -16,6 +16,31 @@
         </div>
 
         <div class="right_side">
+            <div class="lang-switcher">
+                    <button class="translateBtn" id="btn-hu">
+                        <svg viewBox="0 0 9 6" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="9" height="2" y="0" fill="#c8102e" />
+                            <rect width="9" height="2" y="2" fill="#ffffff" />
+                            <rect width="9" height="2" y="4" fill="#436f4d" />
+                        </svg>
+                    </button>
+                    <div class="lang-dropdown" id="lang-dropdown">
+                        <button class="lang-btn" id="btn-hu-switch" title="Magyar">
+                            <svg viewBox="0 0 9 6" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="9" height="2" y="0" fill="#c8102e" />
+                                <rect width="9" height="2" y="2" fill="#ffffff" />
+                                <rect width="9" height="2" y="4" fill="#436f4d" />
+                            </svg>
+                        </button>
+                        <button class="lang-btn" id="btn-en" title="English">
+                            <svg viewBox="0 0 9 6" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="9" height="6" fill="#ffffff" />
+                                <rect x="4" width="1" height="6" fill="#c8102e" />
+                                <rect y="2.5" width="9" height="1" fill="#c8102e" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
             <button class="loginbtn" data-bs-toggle="modal" data-bs-target="#loginModal">Bejelentkezés</button>
             <button class="registrationbtn" onclick="location.href='../../frontend/Register/register.php'">Regisztráció</button>
         </div>

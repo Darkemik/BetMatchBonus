@@ -12,60 +12,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 
-    <style>
-        /* Nyelváltó dropdown stílusok – közvetlenül itt hogy biztosan betöltődjön */
-        .lang-switcher {
-            position: relative;
-            display: inline-block;
-        }
-
-        .lang-dropdown {
-            display: none;
-            position: absolute;
-            top: calc(100% + 6px);
-            right: 0;
-            background: #2a2a2a;
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-            padding: 6px;
-            flex-direction: column;
-            gap: 6px;
-            z-index: 9999;
-        }
-
-        .lang-dropdown.open {
-            display: flex;
-        }
-
-        .translateBtn {
-            width: 36px;
-            height: 24px;
-            border: none;
-            cursor: pointer;
-            padding: 0;
-            border-radius: 3px;
-            overflow: hidden;
-            background: transparent;
-        }
-
-        .lang-btn {
-            width: 36px;
-            height: 24px;
-            border: none;
-            cursor: pointer;
-            padding: 0;
-            border-radius: 3px;
-            overflow: hidden;
-            background: transparent;
-        }
-
-        .translateBtn svg,
-        .lang-btn svg {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-    </style>
 </head>
 
 <body>
@@ -204,6 +150,7 @@
 
     <?php include '../../frontend/Components/footer.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../js/Main/layout.js"></script>
     <script src="../../js/Live/live.js"></script>
     <?php include '../../frontend/Components/modal.php'; ?>
 </body>
