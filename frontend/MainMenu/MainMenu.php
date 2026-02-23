@@ -1,3 +1,24 @@
+<?php
+require_once "../../backend/ApiRequest/api.php";
+require_once "../../backend/DateBase/bettingdb.sql";   // ⬅️ EZT ADD HOZZÁ
+
+// Meccsek lekérdezése (ország + bajnokság + meccs)
+$sql = "
+SELECT 
+    m.name        AS match_name,
+    m.start_utc,
+    m.is_live,
+    m.live_time,
+    c.name        AS country_name,
+    ch.name       AS championship_name
+FROM Matches m
+JOIN Championships ch ON m.championship_id = ch.id
+JOIN Countries c ON ch.country_code = c.code
+ORDER BY m.start_utc
+";
+
+$matchesResult = $mysqli->query($sql);
+?>
 <!DOCTYPE html>
 <html lang="hu">
 
@@ -138,6 +159,36 @@
       <div class="temp_cont">
 
       </div>
+      <h2 class="text-center mb-4">Mai meccsek (teszt)</h2>
+
+    <?php if ($matchesResult && $matchesResult->num_rows > 0): ?>
+        <table class="table table-striped table-bordered w-75 mx-auto">
+            <thead class="table-dark">
+                <tr>
+                    <th>Ország</th>
+                    <th>Bajnokság</th>
+                    <th>Meccs</th>
+                    <th>Kezdés (UTC)</th>
+                    <th>Élő?</th>
+                    <th>Élő idő</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php while ($row = $matchesResult->fetch_assoc()): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($row['country_name']) ?></td>
+                        <td><?= htmlspecialchars($row['championship_name']) ?></td>
+                        <td><?= htmlspecialchars($row['match_name']) ?></td>
+                        <td><?= htmlspecialchars($row['start_utc']) ?></td>
+                        <td><?= $row['is_live'] ? 'Igen' : 'Nem' ?></td>
+                        <td><?= htmlspecialchars($row['live_time']) ?></td>
+                    </tr>
+                <?php endwhile; ?>
+            </tbody>
+        </table>
+    <?php else: ?>
+        <p class="text-center">Jelenleg nincs megjeleníthető meccs az adatbázisban.</p>
+    <?php endif; ?>
 
         <?php include '../../frontend/Components/footer.php';?>
 
