@@ -2,7 +2,7 @@ const apiKey = "7QmRda4MADvUC4jJI2IV9WEYJzct3xAWOFXpKsQYn7cEu4YyY1jtJQQJ99CBACPV
 const endpoint = "https://api.cognitive.microsofttranslator.com/";
 const region = "germanywestcentral";
 
-let currentLang = 'hu';
+let currentLang = localStorage.getItem('lang') || 'hu';
 
 const SKIP_SELECTORS = [
     '.logo',
@@ -65,6 +65,7 @@ async function changeLanguage(lang) {
         });
 
         currentLang = lang;
+        localStorage.setItem('lang', lang);
 
     } catch (error) {
         console.error("Fordítási hiba:", error);
@@ -89,6 +90,12 @@ document.addEventListener('DOMContentLoaded', () => {
         <rect y="2.5" width="9" height="1" fill="#c8102e" />
     </svg>`;
 
+    // Oldal betöltésekor automatikusan alkalmazza az elmentett nyelvet
+    if (currentLang === 'en') {
+        if (mainBtn) mainBtn.innerHTML = svgEN;
+        changeLanguage('en');
+    }
+
     if (mainBtn && dropdown) {
         mainBtn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -109,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dropdown.classList.remove('open');
             if (currentLang !== 'en') {
                 changeLanguage('en');
-                mainBtn.innerHTML = svgEN; // fő gomb angol zászlóra vált
+                mainBtn.innerHTML = svgEN;
             }
         });
     }
@@ -119,7 +126,8 @@ document.addEventListener('DOMContentLoaded', () => {
             e.stopPropagation();
             dropdown.classList.remove('open');
             if (currentLang !== 'hu') {
-                location.reload(); // reload visszaállítja a magyar zászlót is
+                localStorage.setItem('lang', 'hu');
+                location.reload();
             }
         });
     }
