@@ -46,6 +46,216 @@
   },
   {
     "category": "HOGYAN FOGADJAK?",
-    "questions": []
+    "questions": [
+      {
+        "question": "Használhatok mesterséges intelligenciát fogadásaim során?",
+        "answer": "A BetMatchBonus tiltja mindenféle mesterséges intelligencia használatát, így bármely olyan eszköz, szoftver vagy szolgáltatás fogadó általi igénybevételét, amely többek között emberi beavatkozás nélkül játszik, vagy csökkenti az emberi döntéshozatal szükségességét, vagy automatizált döntést hoz, vagy valós idejű tanácsadást biztosít („botok”), és minden lépést megtesz az ilyen eszközök használatának megelőzése és felfedése érdekében."
+      },
+      {
+        "question": "Mit tegyek, ha a fogadásom lezárták, de a nyereményt nem írták jóvá?",
+        "answer": "Amennyiben egy nyertes fogadás lezárása már megtörtént, de a nyeremény nem került be a „Nyereményegyenlegbe”, akkor emailes ügyfélszolgálatunk tud segíteni a kérdésben."
+      },
+      {
+        "question": "Egy fogadásnál hány eseményt köthetek össze?",
+        "answer": "Egy fogadáson belül legalább 1, de legfeljebb 50 fogadási esemény fogadható meg."
+      },
+      {
+        "question": "Mi a kötésszám?",
+        "answer": "A kötésszám azt mutatja meg, hogy a fogadó által megfogadott egységnyi fogadás hány darab megfogadott kimenetelt tartalmaz."
+      },
+      {
+        "question": "Mi az a többes kötés?",
+        "answer": "Többes kötésnek azt nevezzük, ha egyszerre több sportesemény kimenetelére történik tippelés egy szelvényen. Ekkor a nyereményszorzók összeszorzódnak. Példa: Egy fogadó 1.000 Ft-ot tesz meg 3 eseményre, ahol mindhárom esetben a hazai csapat győzelmére tippel. Barcelona – Real Madrid (H – 1,35), Ferencváros – Újpest (H – 1,40), Bologna – Milan (H – 2,45) Ha mindegyik eseménynél a hazai csapat nyer, akkor 1,35 × 1,40 × 2,45 = 4,63-szoros nyereményt ér el, azaz 4 630 Ft kerül be „Nyereményegyenlegébe”."
+      },
+      {
+        "question": "Egy mérkőzésre vonatkozó több fogadási lehetőség minden esetben megfogadható kötésben?",
+        "answer": "A fogadási ajánlatban szereplő fogadási lehetőségek közül az ugyanahhoz a sporteseményhez tartozó fogadási lehetőségek egymással kötésben történő fogadása tiltásra kerülhet."
+      },
+      {
+        "question": "Módosulhatnak a nyereményszorzók?",
+        "answer": "Bármely fogadási eseményhez tartozó bármely megfogadható kimenetel nyereményszorzója változtatható. Ilyen esetben az adott fogadási esemény lehetséges kimeneteleire a nyereményszorzó-módosítás(ok) előtt megtett fogadásoknál a fogadás megtételekor érvényes nyereményszorzók, a nyereményszorzó-módosítás(ok) után megtett fogadásoknál a módosított nyereményszorzók az érvényesek. Élő fogadás során a sportesemény helyzetei, szituációi, történései alapján a nyereményszorzók folyamatosan változnak."
+      },
+      {
+        "question": "Mennyi ideig tart a fogadások kiértékelése?",
+        "answer": "A megfogadott események befejezését, azok hivatalos eredményközlését és ellenőrzését követően igyekszünk a lehető leghamarabb kiértékelni a fogadásokat. Az eredménymegállapítás végső időpontja a fogadással érintett utolsóként véget érő fogadási esemény befejezését követő 48. óra."
+      },
+      {
+        "question": "Hogyan tudom meg, hogy nyertem?",
+        "answer": "Belépést követően a „Napló” menüpont alatt megtekinthetőek a nyitott és a lezárt fogadások is. Amennyiben egy lezárt fogadás nyertes, akkor ahhoz kapcsolódóan látható a nyereményösszeg is."
+      },
+      {
+        "question": "Van-e maximum nyeremény?",
+        "answer": "Igen. Az egy egységnyi fogadással megnyerhető legnagyobb nyeremény összege a jogszabályban előírt mérték, azaz 2.000.000 Ft."
+      },
+      {
+        "question": "Van-e maximum tét?",
+        "answer": "Igen. A legnagyobb tét összege a mindenkor hatályos jogszabályban előírt mérték, de egységnyi fogadásonként legfeljebb 100.000 Ft."
+      },
+      {
+        "question": "Visszavonható-e a fogadás, ha meggondoltam magam?",
+        "answer": "Nem. A már játékba küldött fogadásokat nem lehet sem visszavonni, módosítani. Ezért minden esetben még a fogadás jóváhagyása előtt meg kell győződnöd arról, hogy a megjátszani kívánt eseményt és nyereményszorzót választottad-e ki. A cash out funkcióval viszont a fogadás megtétele után, de még az események vége előtt kiszállhatsz a fogadásodból – amennyiben a cash out elérhető a fogadásodhoz."
+      },
+      {
+        "question": "Van-e minimum tét?",
+        "answer": "Igen. Egy fogadás során megfogadható legkisebb tétösszeg normál és kombinált fogadás esetén is 100 Ft."
+      },
+      {
+        "question": "Hogyan tudok fogadni?",
+        "answer": "Belépést követően a kívánt sportág, majd a kívánt sportesemény kiválasztását követően, a nyereményszorzóra szükséges kattintani. A tipp, vagy tippek a képernyő jobb oldalán, a „Szelvényen” lesznek láthatóak. Ekkor írd be az összeget, amit tétként szeretnél megjátszani. Ha ez megvan, a „Fogadok” gomb megnyomásával tudod játékba küldeni a szelvényedet."
+      },
+      {
+        "question": "Hogyan tudok élőben fogadni?",
+        "answer": "Belépést követően a képernyő tetején található „ÉLŐ” fülre kattintva érhetőek el az élőben fogadható események. A sportág, azon belül a sportesemény kiválasztását követően, a nyereményszorzóra szükséges kattintani. A tipp, vagy tippek a képernyő jobb oldalán lesznek láthatóak a „Szelvényen”. Ekkor írd be az összeget, amit tétként szeretnél megjátszani. Ha ez megvan, a „Fogadok” gomb megnyomásával tudod játékba küldeni a szelvényedet."
+      },
+      {
+        "question": "Hol látom a fogadásaimat?",
+        "answer": "Belépést követően a „Napló” menüponton belül tudod megnézni és visszakeresni a fogadásaidat. A „Több” gombra kattintással még több részletet találhatsz a nyitott vagy kiértékelt fogadásodból. A kiértékelt fogadásoknál a keresés elindítható előre meghatározott időtávra is. A fogadások játékba küldési időrendben találhatóak a fogadási naplóban."
+      }
+    ]
+  },
+  {
+    "category": "MILYEN FOGADÁSI LEHETŐSÉGEK (PIACOK) VANNAK?",
+    "questions": [
+      {
+        "question": "Mindkét csapat szerez gólt",
+        "answer": "Egy olyan fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy a fogadásban érintett mind a két csapat szerez-e legalább egy-egy gólt a mérkőzésen. <br> Ennél a fogadási lehetőségnél az alábbi két kimenetel kerül feltüntetésre: <br> – Igen – Nyertessé akkor válik a fogadás, ha a mérkőzésen mind a két csapat szerez legalább egy-egy gólt. <br> – Nem – Nyertessé akkor válik a fogadás, ha a két csapat közül bármelyik nem szerez gólt, illetve a mérkőzésen egyáltalán nem esik gól."
+      },
+      {
+        "question": "Mindkét csapat szerez gólt vagy több, mint 2,5 gól lesz",
+        "answer": "Ennél a fogadási piacnál az „Igen” kimenetel akkor válik nyertessé, ha a lehetőségként feltüntetett két állítás közül valamelyik, esetleg mindkettő megvalósul. Amennyiben a két állítás közül egyik sem valósul meg, akkor a „Nem” kimenetel lesz a nyertes. <br> Az „Igen” kimenetel válik nyertessé, ha <br> – mindkét csapat szerez gólt a találkozón, <br> – több mint 2,5 gól lesz a találkozón, <br> – mindkét csapat szerez gólt és több mint 2,5 gól lesz a találkozón. <br> Minden más esetben a „Nem” kimenetel válik nyertessé."
+      },
+      {
+        "question": "Nyertes különbség",
+        "answer": "Egy olyan összetett fogadási lehetőség, ahol a fogadónak azt kell egyidejűleg megtippelnie, hogy a fogadásban érintett két csapat közül a párosításban elsőként szereplő (hazai), vagy a második helyen szereplő (vendég) fél nyeri meg a mérkőzést, illetve a találkozó döntetlenre végződik, továbbá amennyiben eldől a találkozó még azt is, hogy a győztes csapat mekkora gólkülönbséggel nyer. <br> Ennél a fogadási lehetőségnél kézilabda esetében az alábbi hét kimenetel kerül feltüntetésre: <br> – Döntetlen – Nyertessé akkor válik a fogadás, ha a mérkőzés döntetlen eredménnyel zárul.<br> – Hazai csapat 10-nél több góllal nyer – Nyertessé akkor válik a fogadás, ha a hazai csapat nyeri meg a mérkőzést oly módon, hogy legalább 11 góllal többet ér el ellenfelénél. <br> – Hazai csapat 6-10 góllal nyer – Nyertessé akkor válik a fogadás, ha a hazai csapat nyeri meg a mérkőzést oly módon, hogy legalább 6, de legfeljebb 10 góllal ér el többet ellenfelénél. <br> – Hazai csapat 1-5 góllal nyer – Nyertessé akkor válik a fogadás, ha a hazai csapat nyeri meg a mérkőzést oly módon, hogy legfeljebb 5 góllal ér el többet ellenfelénél. <br> – Vendégcsapat 1-5 góllal nyer – Nyertessé akkor válik a fogadás, ha a vendégcsapat nyeri meg a mérkőzést oly módon, hogy legfeljebb 5 góllal ér el többet ellenfelénél. <br> – Vendégcsapat 6-10 góllal nyer – Nyertessé akkor válik a fogadás, ha a vendégcsapat nyeri meg a mérkőzést oly módon, hogy legalább 6, de legfeljebb 10 góllal ér el többet ellenfelénél. <br> – Vendégcsapat 10-nél több góllal nyer – Nyertessé akkor válik a fogadás, ha a vendégcsapat nyeri meg a mérkőzést oly módon, hogy legalább 11 góllal ér el többet ellenfelénél."
+      },
+      {
+        "question": "Nyertes különbség (kosárlabda esetén)",
+        "answer": "Egy olyan összetett fogadási lehetőség, ahol a fogadónak azt kell egyidejűleg megtippelnie, hogy a fogadásban érintett két csapat közül a párosításban elsőként szereplő (hazai), vagy a második helyen szereplő (vendég) fél nyeri meg a mérkőzést, továbbá még azt is, hogy a győztes csapat mekkora pontkülönbséggel nyer. (Kosárlabda esetében vannak olyan fogadási lehetőségek, amelyeknél döntetlen eredmény esetén hosszabbítás dönt a mérkőzés győztesének a kilétéről.) <br> Ennél a fogadási lehetőségnél az alábbi hat kimenetel kerül feltüntetésre: <br> – Hazai csapat 10-nél több ponttal nyer – Nyertessé akkor válik a fogadás, ha a hazai csapat nyeri meg a mérkőzést oly módon, hogy legalább 11 ponttal többet ér el ellenfelénél. <br> – Hazai csapat 6-10 ponttal nyer – Nyertessé akkor válik a fogadás, ha a hazai csapat nyeri meg a mérkőzést oly módon, hogy legalább 6, de legfeljebb 10 ponttal ér el többet ellenfelénél. <br> – Hazai csapat 1-5 ponttal nyer – Nyertessé akkor válik a fogadás, ha a hazai csapat nyeri meg a mérkőzést oly módon, hogy legfeljebb 5 ponttal ér el többet ellenfelénél.<br> – Vendégcsapat 1-5 ponttal nyer – Nyertessé akkor válik a fogadás, ha a vendégcsapat nyeri meg a mérkőzést oly módon, hogy legfeljebb 5 ponttal ér el többet ellenfelénél. <br> – Vendégcsapat 6-10 ponttal nyer – Nyertessé akkor válik a fogadás, ha a vendégcsapat nyeri meg a mérkőzést oly módon, hogy legalább 6, de legfeljebb 10 ponttal ér el többet ellenfelénél. <br> – Vendégcsapat 10-nél több ponttal nyer – Nyertessé akkor válik a fogadás, ha a vendégcsapat nyeri meg a mérkőzést oly módon, hogy legalább 11 ponttal ér el többet ellenfelénél."
+      },
+      {
+        "question": "Összpontszám (több/kevesebb) fogadási lehetőség",
+        "answer": "Egy olyan fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy az adott mérkőzésen a két résztvevő összesített pontjainak a száma egy meghatározott érték feletti (több), vagy alatti (kevesebb) lesz. Például: „Pontszám 154,5” <br> Ennél a fogadási lehetőségnél az alábbi két kimenetel kerül feltüntetésre: <br>– Kevesebb, mint 154,5 – Nyertessé akkor válik a fogadás, ha 154, vagy kevesebb, mint 154 pont születik a mérkőzésen. <br> – Több mint 154,5 – Nyertessé akkor válik a fogadás, ha 155, vagy több pont születik a mérkőzésen."
+      },
+      {
+        "question": "Pontos eredmény",
+        "answer": "Egy olyan összetett fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy a fogadásban érintett két résztvevő közül a párosításban elsőként szereplő, vagy a másodikként szereplő csapat szempontjából pontosan (számszerűen) milyen eredménnyel zárul a mérkőzés, illetőleg amennyiben a találkozó döntetlenre végződik, akkor pontosan (számszerűen) mennyi lesz az eredmény. A fogadásra felajánlott kimenetelek között nem kerül feltüntetésre valamennyi lehetséges (számszerű) eredmény-kimenetel, ezért ezekre oly módon lehet együttesen tippelni, hogy a „Más” kimenetelt kell választani. <br> Az ilyen típusú fogadási lehetőség (a Bayern München – Juventus mérkőzés esetében) például a következő formában kerülhet feltüntetésre: <br> „Pontos végeredmény” <br> – Bayern München 1:0 <br> – Bayern München 2:0 <br> – Bayern München 2:1 <br> – Bayern München 3:0 <br> – Bayern München 3:1 <br> – Bayern München 3:2 <br> – Bayern München 4:0 <br> – Bayern München 4:1 <br> – Bayern München 4:2 <br> – Bayern München 5:0 <br> – Bayern München 5:1 <br> – Bayern München 6:0 <br> – Döntetlen 0:0 <br> – Döntetlen 1:1 <br> – Döntetlen 2:2 <br> – Döntetlen 3:3 <br> – Juventus 1:0 <br> – Juventus 2:0 <br> – Juventus 2:1 <br> – Juventus 3:0 <br> – Juventus 3:1<br> – Juventus 3:2 <br> – Juventus 4:0 <br> – Juventus 4:1 <br>– Juventus 4:2 <br> – Juventus 5:0 <br> – Juventus 5:1 <br> – Juventus 6:0 <br>– Más"
+      },
+      {
+        "question": "Pontos eredmény – 1. félidő/Végeredmény",
+        "answer": "Egy olyan összetett fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy milyen eredménnyel zárul az 1. félidő, továbbá azt, hogy maga a mérkőzés (rendes játékidőben) milyen eredménnyel zárul. A fogadásra felajánlott kimenetelek között nem kerül feltüntetésre valamennyi lehetséges (számszerű) eredmény-kimenetel, ezért ezekre oly módon lehet együttesen tippelni, hogy a „4+” kimenetelt kell választani. Az ilyen típusú fogadási lehetőség (a Brazília – Horvátország mérkőzés esetében) például a következő formában kerülhet feltüntetésre: „ Pontos eredmény – 1. félidő/Végeredmény” <br> Döntetlen 0:0/Döntetlen 0:0 <br> Döntetlen 0:0/Brazília 1:0 <br> Döntetlen 0:0/Brazília 2:0 <br> Döntetlen 0:0/Brazília 2:1 <br> Döntetlen 0:0/Brazília 3:0 <br> Döntetlen 0:0/Döntetlen 1:1 <br> Döntetlen 0:0/Horvátország 1:0 <br> Döntetlen 0:0/Horvátország 2:0 <br> Döntetlen 0:0/Horvátország 2:1 <br> Döntetlen 0:0/Horvátország 3:0 <br> Döntetlen 0:0/4+ Brazília <br> 1:0/Brazília 1:0 Brazília <br> 1:0/Brazília 2:0 Brazília <br> 1:0/Brazília 2:1 Brazília <br> 1:0/Brazília 3:0 Brazília <br> 1:0/Döntetlen 1:1 Brazília <br> 1:0/Horvátország 2:1 Brazília <br> 1:0/4+ Brazília 2:0/Brazília <br> 2:1 Brazília 2:0/Brazília 3:0 Brazília <br> 2:0/4+Brazília 2:1/Brazília <br> 2:1 Brazília 2:1/4+ Brazília <br> 3:0/Brazília 3:0 Brazília <br> 3:0/4+ Döntetlen 1:1/Döntetlen <br> 1:1 Döntetlen 1:1/Brazília <br> 2:1 Döntetlen 1:1/Horvátország <br> 2:1 Döntetlen 1:1/4+ Horvátország <br> 1:0/Horvátország 1:0 Horvátország <br> 1:0/Horvátország 2:0 Horvátország <br> 1:0/Horvátország 2:1 Horvátország <br> 1:0/Horvátország 3:0 Horvátország <br> 1:0/Döntetlen 1:1 Horvátország <br> 1:0/Brazília 2:1 Horvátország <br> 1:0/4+ Horvátország 2:0/Horvátország <br> 2:1 Horvátország 2:0/Horvátország 3:0 Horvátország <br> 2:0/4+Horvátország 2:1/Horvátország <br> 2:1 Horvátország 2:1/4+ Horvátország <br> 3:0/Horvátország 3:0 Horvátország <br> 3:0/4+ 4+/4+ Nyertessé ezek a kimenetelek közül az válik, amelyik együttesen tartalmazza az 1. félidőt megnyerő csapat nevét és a pontos eredményt, illetőleg amennyiben a találkozó az 1. játékrészt követően döntetlenre áll, akkor is a pontos eredményt, továbbá a mérkőzést megnyerő csapat nevét és a pontos eredményt, illetőleg amennyiben döntetlennel zárul a találkozó, akkor is a pontos eredményt, a következő mondatban leírtak figyelembevétele mellett. Abban az esetekben, amikor valaki az 1. félidő, vagy a mérkőzés eredményére vonatkozóan a „4+” lehetőséget választotta, akkor válik nyertessé, ha a választott időszakban (1. félidő, vagy a mérkőzés végén) – függetlenül a gólok megoszlásától – négy, vagy több gól született. (Például a „4+” kell jelölni, ha valaki 2-2-ös döntetlent, vagy akár 5-2-es győzelmet szeretne megfogadni.)"
+      },
+      {
+        "question": "Vendégcsapat góljainak a száma",
+        "answer": "Egy olyan fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy a fogadásban érintett két csapat közül a párosításban másodikként szereplő csapat összességében hány gólt szerez a mérkőzésen. <br> Ennél a fogadási lehetőségnél labdarúgás esetében az alábbi négy kimenetel kerül feltüntetésre: <br> – 0 – Nyertessé akkor válik a fogadás, ha a fogadásban érintett két csapat közül a párosításban másodikként szereplő csapat a mérkőzésen nem szerez gólt. <br> – 1 – Nyertessé akkor válik a fogadás, ha a fogadásban érintett két csapat közül a párosításban másodikként szereplő csapat a mérkőzésen csak 1 gólt szerez. <br> – 2 – Nyertessé akkor válik a fogadás, ha a fogadásban érintett két csapat közül a párosításban másodikként szereplő csapat a mérkőzésen pontosan 2 gólt szerez. <br>– 3+ – Nyertessé akkor válik a fogadás, ha a fogadásban érintett két csapat közül a párosításban másodikként szereplő csapat a mérkőzésen legalább 3 gólt szerez."
+      },
+      {
+        "question": "Vendégcsapat kapott gól nélkül játssza le a mérkőzést",
+        "answer": "Egy olyan fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy a fogadásban érintett két résztvevő közül a párosításban másodikként szereplő csapat kap-e legalább egy gólt a mérkőzésen, vagy sem. <br> Ennél a fogadási lehetőségnél az alábbi két kimenetel kerül feltüntetésre: <br> – Igen – Nyertessé akkor válik a fogadás, ha a fogadásban érintett két résztvevő közül a párosításban másodikként szereplő csapat a mérkőzésen egyetlen gólt sem kap. <br> – Nem – Nyertessé akkor válik a fogadás, ha a fogadásban érintett két résztvevő közül a párosításban másodikként szereplő csapat a mérkőzésen (bármennyi) gólt kap."
+      },
+      {
+        "question": "Melyik negyedben lesz több pont?",
+        "answer": "Egy olyan fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy a kosárlabdamérkőzés melyik negyedében – az elsőben, a másodikban, a harmadikban, vagy a negyedikben – esik a legtöbb pont, illetőleg arra is lehet fogadni, hogy bármelyik két negyedben azonos számú lesz a két mérkőző fél által együttesen szerzett pontok száma, miközben mindkét további játékrészben az abban a kettőben elértnél kevesebb születik, illetve hogy bármelyik három negyedben azonos számú lesz a két mérkőző fél által együttesen szerzett pontok száma, miközben a további játékrészben az abban a háromban elértnél kevesebb születik, továbbá még arra is, hogy mind a négy játékrészben azonos számú pont esik, illetve a találkozó pont nélküli döntetlennel zárul. <br> Ennél a fogadási lehetőségnél az alábbi öt kimenetel kerül feltüntetésre: <br> – 1. negyed – Nyertessé akkor válik a fogadás, ha a mérkőzés 1. negyedében több pont esik, mint a másodikban, a harmadikban, illetve a negyedikben. <br> – 2. negyed – Nyertessé akkor válik a fogadás, ha a mérkőzés 2. negyedében több pont esik, mint az elsőben, a harmadikban, illetve a negyedikben. <br> – 3. negyed – Nyertessé akkor válik a fogadás, ha a mérkőzés 3. negyedében több pont esik, mint az elsőben, a másodikban, illetve a negyedikben. <br> – 4. negyed – Nyertessé akkor válik a fogadás, ha a mérkőzés 4. negyedében több pont esik, mint az elsőben, a másodikban, illetve a harmadikban. <br> – több azonos negyed – Nyertessé akkor válik a fogadás, ha bármely két negyedben azonos számú pont esik, miközben a további két játékrészben az abban a kettőben külön-külön elértnél kevesebb, illetve, ha bármely három negyedben azonos számú pont esik, miközben a további játékrészben az abban a háromban külön-külön elértnél kevesebb, esetleg mind a négy negyedben azonos számú pontot ér el együttesen a két mérkőző fél, vagy egyáltalán nem esik pont."
+      },
+      {
+        "question": "1X2",
+        "answer": "Egy olyan fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy a fogadásban érintett két résztvevő közül a párosításban elsőként szereplő (1), vagy a második helyen szereplő (2) fél nyeri meg a mérkőzést, illetve a találkozó nem dől el, döntetlenre végződik (X)."
+      },
+      {
+        "question": "Ázsiai gólszám",
+        "answer": "Az ázsiai gólszám hasonlít a hagyományos gólszám típusú fogadásokhoz, azzal a különbséggel, hogy itt előfordulhat olyan eredmény, amelynek következtében a fogadás 1-es szorzóval kerül figyelembevételre, vagy a fogadás részben lesz nyertes vagy vesztes. A normál ázsiai gólszámnál megkülönböztetünk egész, illetve fél számos ázsiai gólszámot. A hagyományos gólszámnál egy fogadás vagy nyertes, vagy vesztes. Ezzel szemben az ázsiai gólszámnál bizonyos eredmények esetén a fogadás 1-es nyereményszorzóval kerül figyelembevételre. A dupla ázsiai gólszám esetében a fogadás egy egész és egy fél számos ázsiai gólszámból tevődik össze, mintha mindkét érték fele-fele téttel került volna megfogadásra. A megjelölése minden esetben negyedgólos (…,25-re vagy ….,75-re végződő) attól függően, hogy mely fél illetve egész szám közé esik a felkínált különbség. További információk a részvételi szabályzat 3. sz. melléklet B (2) pontjában. A megadott határértékek lehetnek egész, fél vagy negyed gólszámok: • Egész számos ázsiai gólszámok (2, 3, 4): Ha a mérkőzésen pontosan annyi gól esik, mint a megadott szám a tét visszajár. • Fél számos ázsiai gólszámok (2,5, 3,5): Nincs lehetőség visszatérítésre, a fogadás csak nyertes vagy vesztes lehet. • Negyedgólos ászai gólszámok (2,25, 2,75): A tét két részre oszlik, és a fogadás lehet részben nyertes vagy részben vesztes. Példák: • Több mint 2 gól: A fogadás nyer, ha a több mint 2 gól esik; a tét visszajár, ha pontosan 2 gól esik; veszít, ha kevesebb mint 2 gól esik. • Több mint 2,5 gól: A fogadás nyer, ha legalább 3 gól esik; veszít, ha 2 vagy kevesebb gól születik.• Több mint 2,25 gól: A tét fele a „több mint 2 gól”, a másik fele a „több mint 2,5 gól” fogadásra kerül. Ha 2 gól esik, a tét fele visszajár, a másik fele vesztes; ha 3 vagy több gól esik, a teljes tét nyer; ha kevesebb mint 2 gól esik, a teljes tét vesztes."
+      },
+      {
+        "question": "Ázsiai hendikep",
+        "answer": "Ázsiai hendikep esetében az egyik csapat virtuális előnyből indul a másik csapattal szemben a fogadás során. Az ázsiai hendikepnek csak két kimenetele van, döntetlen kimenetel nincs. A normál ázsiai hendikepnél megkülönböztetünk egész, illetve fél (0,5) számos ázsiai hendikepet. Amíg a hagyományos hendikepnél egy fogadás vagy nyertes, vagy vesztes, addig az ázsiai hendikepnél bizonyos eredmények esetén a fogadás 1-es szorzóval kerül figyelembevételre. A dupla ázsiai hendikep esetében a fogadás egy egész és egy fél számos ázsiai hendikepből tevődik össze úgy, mintha mindkét érték fele-fele téttel került volna megfogadásra. A megjelölése minden esetben negyedgólos (…,25-re vagy ….,75-re végződő) attól függően, hogy mely fél, illetve egész szám közé esik a felkínált különbség. További információk a részvételi szabályzat 3. sz. melléklet B (2) pontjában."
+      },
+      {
+        "question": "Félidő 1X2",
+        "answer": "Egy olyan fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy a fogadásban érintett két résztvevő közül a párosításban elsőként szereplő (1), vagy a második helyen szereplő (2) fél vezetésével zárul-e az 1. félidő, illetve döntetlenre áll-e ekkor (X) a mérkőzés."
+      },
+      {
+        "question": "Kétesély",
+        "answer": "Egy olyan fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy a mérkőzés milyen eredménnyel (1X2) zárul, azzal a könnyítéssel, hogy ebben az esetben egy-egy kimenetelhez kétféle eredmény tartozik. <br> Ennél a fogadási lehetőségnél az alábbi három kimenetel kerül feltüntetésre (Bayern München – Juventus mérkőzés esetében): <br> – Bayern München vagy Döntetlen – Nyertessé akkor válik a fogadás, ha a Bayern München nyeri meg a mérkőzést, illetőleg, ha a találkozó döntetlen eredménnyel zárul. <br> – Bayern München vagy Juventus – Nyertessé akkor válik a fogadás, ha a két résztvevő valamelyike megnyeri a mérkőzést. (Tehát a mérkőzés nem döntetlen eredménnyel zárul.) <br>– Juventus vagy Döntetlen – Nyertessé akkor válik a fogadás, ha a Juventus nyeri meg a mérkőzést, illetőleg, ha a találkozó döntetlen eredménnyel zárul."
+      },
+      {
+        "question": "Félidő kétesély",
+        "answer": "Egy olyan fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy a mérkőzés fogadásban megjelölt félideje milyen eredménnyel (1X2) zárul, azzal a könnyítéssel, hogy ebben az esetben egy-egy kimenetelhez kétféle eredmény tartozik. <br> Ennél a fogadási lehetőségnél az alábbi három kimenetel kerül feltüntetésre (Bayern München – Juventus mérkőzés esetében): <br> – Bayern München vagy Döntetlen – Nyertessé akkor válik a fogadás, ha a Bayern München nyeri meg a jelzett félidőt, illetőleg, ha a találkozó döntetlenre áll ekkor. <br> – Bayern München vagy Juventus – Nyertessé akkor válik a fogadás, ha a két résztvevő valamelyike nyeri meg a jelzett félidőt. (Tehát a mérkőzés nem döntetlenre áll ekkor.) <br> – Juventus vagy Döntetlen – Nyertessé akkor válik a fogadás, ha a Juventus nyeri meg a jelzett félidőt, illetőleg, ha a találkozó döntetlenre áll ekkor."
+      },
+      {
+        "question": "Melyik félidőben lesz több gól?",
+        "answer": "Egy olyan fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy a mérkőzés első, vagy a második félidejében esik-e több gól, illetőleg mind a két játékrészben azonos számú gól születik-e. <br> Ennél a fogadási lehetőségnél az alábbi három kimenetel kerül feltüntetésre: <br> – 1. félidőben – Nyertessé akkor válik a fogadás, ha a fogadásban érintett két résztvevő csapat együttesen több gólt ér el a mérkőzés első félidejében, mint a másodikban. <br> – Ugyanannyi – Nyertessé akkor válik a fogadás, ha a fogadásban érintett két résztvevő csapat együttesen pontosan ugyanannyi gólt ér el a mérkőzés első félidejében, mint a másodikban. <br> – 2. félidőben – Nyertessé akkor válik a fogadás, ha a fogadásban érintett két résztvevő csapat együttesen több gólt ér el a mérkőzés második félidejében, mint az elsőben."
+      },
+      {
+        "question": "Gólszám (több/kevesebb) típusú fogadási lehetőség",
+        "answer": "Egy olyan fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy a fogadásban érintett két résztvevő összesített góljaiknak a száma egy meghatározott érték feletti (több), vagy alatti (kevesebb) lesz. Például: „Gólszám 2,5”. Ennél a fogadási lehetőségnél az alábbi két kimenetel kerül feltüntetésre: – Kevesebb, mint 2,5 – Nyertessé akkor válik a fogadás, ha 1, vagy 2 gól születik, illetve, ha nem esik gól a mérkőzésen. – Több, mint 2,5 – Nyertessé akkor válik a fogadás, ha 3, vagy több gól születik a mérkőzésen."
+      },
+      {
+        "question": "Gólszám típusú (hat kimeneteles) fogadási lehetőség",
+        "answer": "Egy olyan fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy a fogadásban érintett két résztvevő összesített góljaiknak a száma pontosan mennyi lesz a mérkőzésen. Ennél a fogadási lehetőségnél labdarúgás esetében az alábbi hat kimenetel kerül feltüntetésre: <br> – 0 – Nyertessé akkor válik a fogadás, ha a mérkőzésen nem esik gól.<br> – 1 – Nyertessé akkor válik a fogadás, ha pontosan 1 gól születik a mérkőzésen. <br> – 2 – Nyertessé akkor válik a fogadás, ha – bármilyen megoszlásban – pontosan 2 gól születik a mérkőzésen. <br> – 3 – Nyertessé akkor válik a fogadás, ha – bármilyen megoszlásban – pontosan 3 gól születik a mérkőzésen. <br> – 4 – Nyertessé akkor válik a fogadás, ha – bármilyen megoszlásban – pontosan 4 gól születik a mérkőzésen. <br> – 5 – Nyertessé akkor válik a fogadás, ha – bármilyen megoszlásban – pontosan 5 gól születik a mérkőzésen. <br> – 6+ – Nyertessé akkor válik a fogadás, ha – bármilyen megoszlásban – legalább 6 gól születik a mérkőzésen."
+      },
+      {
+        "question": "Gólszám típusú (négy kimeneteles) fogadási lehetőség",
+        "answer": "Egy olyan fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy a fogadásban érintett két résztvevő összesített góljaiknak a száma pontosan mennyi lesz a mérkőzésen, azzal a könnyítéssel, hogy ebben az esetben egy-egy kimenetelhez legalább két gólszám tartozik. <br> Ennél a fogadási lehetőségnél labdarúgás esetében az alábbi négy kimenetel kerül feltüntetésre: <br> – 0-1 – Nyertessé akkor válik a fogadás, ha a mérkőzésen nem esik gól, illetőleg, ha pontosan 1 gól születik. <br> – 2-3 – Nyertessé akkor válik a fogadás, ha – bármilyen megoszlásban – 2, vagy 3 gól születik a mérkőzésen. <br> – 4-5 – Nyertessé akkor válik a fogadás, ha – bármilyen megoszlásban – 4, vagy 5 gól születik a mérkőzésen. <br> – 6+ – Nyertessé akkor válik a fogadás, ha – bármilyen megoszlásban – legalább 6 gól születik a mérkőzésen."
+      },
+      {
+        "question": "Félidő gólszám típusú (három kimeneteles) fogadási lehetőség",
+        "answer": "Egy olyan fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy a fogadásban érintett két résztvevő összesített góljaiknak a száma pontosan mennyi lesz a fogadásban megjelölt félidőben. <br> Ennél a fogadási lehetőségnél labdarúgás esetében az alábbi három kimenetel kerül feltüntetésre: <br> – 0 – Nyertessé akkor válik a fogadás, ha nem születik gól a fogadásban megjelölt félidőben. <br> – 1 – Nyertessé akkor válik a fogadás, ha pontosan 1 gól születik a fogadásban megjelölt félidőben. <br> – 2+ – Nyertessé akkor válik a fogadás, ha – bármilyen megoszlásban – legalább 2 gól születik a fogadásban megjelölt félidőben."
+      },
+      {
+        "question": "Büntetőlapok száma",
+        "answer": "A büntetőlapok száma az adott mérkőzésen kiosztott sárga lap(ok) és piros lap(ok) száma alapján határozható meg. Ha egy játékos sárga lapot kap, az egy büntetőlapnak számít. Ha egy játékos piros lapot kap, az kettő büntetőlapnak számít. Ha egy játékos egy sárga és egy piros lapot kap, az összesen három büntetőlapnak számít. Amennyiben egy játékos két sárga lapot követően kap piros lapot, összesen az is három büntetőlapnak számít. Fontos tudnivaló tehát az, hogy egy játékos egy mérkőzés során legfeljebb három büntetőlapot kaphat. <br> A mérkőzésen, csak a rendes játékidő során, a pályán lévő játékosoknak kiosztott büntetőlapok számítanak bele az eredmény megállapításába. Kivéve az első félidőt követő szünetben – a mérkőzés első félidejének lefújásakor pályán lévő játékosoknak – kiosztott büntetőlapok, amelyeket a 2. félidőhöz kell számítani."
+      },
+      {
+        "question": "Melyik csapat szerzi az első gólt?",
+        "answer": "Egy olyan fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy a fogadásban érintett két csapat közül a párosításban elsőként szereplő, vagy a második helyen szereplő fél szerzi meg az első gólt a mérkőzésen. <br> Ennél a fogadási lehetőségnél az alábbi három kimenetel kerül feltüntetésre (Bayern München – Juventus mérkőzés esetében): <br> – Bayern München – Nyertessé akkor válik a fogadás, ha a mérkőzés első gólját a Bayern München szerzi. <br> – Nem lesz gól – Nyertessé akkor válik a fogadás, ha a mérkőzésen nem esik gól, vagyis 0-0-s eredménnyel zárul. <br> – Juventus – Nyertessé akkor válik a fogadás, ha a mérkőzés első gólját a Juventus szerzi."
+      },
+      {
+        "question": "Melyik csapat szerzi az utolsó gólt?",
+        "answer": "Egy olyan fogadási lehetőség, ahol a fogadónak azt kell megtippelni, hogy a fogadásban érintett két csapat közül a párosításban elsőként szereplő, vagy a második helyen szereplő fél szerzi meg az időben utolsó gólt a mérkőzésen. <br> Ennél a fogadási lehetőségnél az alábbi három kimenetel kerül feltüntetésre (Bayern München – Juventus mérkőzés esetében): <br> – Bayern München – Nyertessé akkor válik a fogadás, ha a mérkőzés utolsó gólját a Bayern München szerzi. <br> – Nem lesz gól – Nyertessé akkor válik a fogadás, ha a mérkőzésen nem esik gól, vagyis 0-0-s eredménnyel zárul. <br> – Juventus – Nyertessé akkor válik a fogadás, ha a mérkőzés utolsó gólját a Juventus szerzi."
+      },
+      {
+        "question": "Hazai csapat góljainak a száma",
+        "answer": "Egy olyan fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy a fogadásban érintett két csapat közül a párosításban elsőként szereplő csapat összességében hány gólt szerez a mérkőzésen. <br> Ennél a fogadási lehetőségnél labdarúgás esetében az alábbi négy kimenetel kerül feltüntetésre: <br> – 0 – Nyertessé akkor válik a fogadás, ha a fogadásban érintett két csapat közül a párosításban elsőként szereplő csapat a mérkőzésen nem szerez gólt. <br> – 1 – Nyertessé akkor válik a fogadás, ha a fogadásban érintett két csapat közül a párosításban elsőként szereplő csapat a mérkőzésen csak 1 gólt szerez. <br> – 2 – Nyertessé akkor válik a fogadás, ha a fogadásban érintett két csapat közül a párosításban elsőként szereplő csapat a mérkőzésen pontosan 2 gólt szerez. <br> – 3+ – Nyertessé akkor válik a fogadás, ha a fogadásban érintett két csapat közül a párosításban elsőként szereplő csapat a mérkőzésen legalább 3 gólt szerez."
+      },
+      {
+        "question": "Hazai csapat kapott gól nélkül játssza le a mérkőzést",
+        "answer": "Egy olyan fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy a fogadásban érintett két résztvevő közül a párosításban elsőként szereplő csapat kap-e legalább egy gólt a mérkőzésen, vagy sem. <br> Ennél a fogadási lehetőségnél az alábbi két kimenetel kerül feltüntetésre: <br> – Igen – Nyertessé akkor válik a fogadás, ha a fogadásban érintett két résztvevő közül a párosításban elsőként szereplő csapat a mérkőzésen egyetlen gólt sem kap. <br> – Nem – Nyertessé akkor válik a fogadás, ha a fogadásban érintett két résztvevő közül a párosításban elsőként szereplő csapat a mérkőzésen (bármennyi) gólt kap."
+      },
+      {
+        "question": "1. félidő – Pontos eredmény",
+        "answer": "Egy olyan összetett fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy a fogadásban érintett két résztvevő közül a párosításban elsőként szereplő, vagy a másodikként szereplő csapat szempontjából pontosan (számszerűen) milyen eredménnyel zárul az 1. félidő, illetőleg amennyiben az 1. játékrész döntetlenre végződik, akkor pontosan (számszerűen) mennyi lesz az eredmény. A fogadásra felajánlott kimenetelek között nem kerül feltüntetésre valamennyi lehetséges (számszerű) eredmény-kimenetel, ezért ezekre oly módon lehet együttesen tippelni, hogy a „Más” kimenetelt kell választani. <br> Az ilyen típusú fogadási lehetőség (a Bayern München – Juventus mérkőzés esetében) például a következő formában kerülhet feltüntetésre: <br> „1. félidő – Pontos eredmény” <br> – Bayern München 1:0 <br> – Bayern München 2:0 <br>– Bayern München 2:1 <br> – Döntetlen 0:0 <br> – Döntetlen 1:1 <br> – Döntetlen 2:2 <br> – Juventus 1:0 <br> – Juventus 2:0<br> – Juventus 2:1 <br> – Más <br> Nyertessé ezek a kimenetelek közül az válik, amelyik együttesen tartalmazza az 1. félidőt megnyerő csapat nevét és a pontos (számszerű) eredményt, illetőleg amennyiben eldöntetlen a találkozó az 1. játékrészt követően, akkor is a pontos (számszerű) eredményt. Minden olyan esetben, amikor a mérkőzés 1. félideje olyan eredménnyel zárul, ami nincs a fogadási lehetőségben részletezve – tehát a fogadásra felajánlott kimenetelek között nem található olyan, amelyik tartalmazza a győztes csapat nevét, vagy a döntetlen megnevezést és ehhez kapcsolódóan a pontos (számszerű) eredményt egyszerre -, akkor a „Más” kimenetel válik nyertessé. (Ebben a példában a három-három különböző Bayern München és Juventus győzelem, illetőleg döntetlen is szerepel, de amennyiben a Bayern München 3:1-re, vagy a Juventus 4:0-ra nyerné az 1. félidőt, vagy 3:3-al fejeződik be az 1. játékrész, akkor az utóbbi három esetben egyaránt a „Más” kimenetel válik nyertessé.) Nem nyertes az a fogadási kimenetel, amelyiknél csak az 1. félidőt megnyerő csapat neve, illetőleg a döntetlen megnevezés szerepel, de a pontos (számszerű) eredmény nem egyezik a ténylegessel. Hasonlóan nem nyertes az a fogadási kimenetel, amelyiknél a pontos (számszerű) eredmény ugyan szerepel, viszont a nyertes csapat neve nem egyezik a ténylegessel."
+      },
+      {
+        "question": "Outright típusú fogadási lehetőség",
+        "answer": "Egy olyan fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy egy hosszabb, összetettebb sportversenyt, sportversenysorozatot, e-sport versenyt, e-sport versenysorozatot (több mérkőzésből, futamból, fordulóból stb. álló bajnokság, tornát, bajnoki fordulót), illetve egyéb eseményt, eseménysorozatot (pl. filmekkel, zenével kapcsolatos díjak, stb…) ki nyer meg. <br> Így például lehet fogadni labdarúgó-bajnokságok, tenisztornák győztesére akár már a fordulók, selejtező-mérkőzések során is, stb.) Nyertessé a fogadásra felajánlott kimenetelek közül az válik, amelyik tartalmazza a győztes megnevezését. <br> Amennyiben a fogadásra felajánlott kimenetelek között nincs külön nevesítve valamennyi lehetséges győztes, akkor erre a kimenetelre oly módon lehet tippelni, hogy a „Más” kimenetelt kell választani."
+      },
+      {
+        "question": "Játékrész eredménye + pontszám (több/kevesebb) fogadási lehetőség",
+        "answer": "Egy olyan fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy mi lesz az adott játékrész eredménye és a két résztvevő összesített pontjainak a száma egy meghatározott érték feletti (több) vagy alatti (kevesebb) lesz. Például: „A játékrész eredménye + Pontszám 94,5 – 1. félidő” Ha a játékrész időtartama (pl. negyed, harmad, félidő) nem kerül külön feltüntetésre a fogadási lehetőségnél, akkor a fogadás a teljes mérkőzésre vonatkozik. Pl. ennél a fogadási lehetőségnél, ha a fogadó a “Hazai és több, mint 94,5” kimenetelt választja, akkor fogadása abban az esetben lesz nyertes, ha az 1. félidőt a hazai csapat nyeri, és a két csapat összesen legalább 95 pontot szerez. "
+      },
+      {
+        "question": "Hendikep típusú (két kimeneteles) fogadási lehetőség",
+        "answer": "Egy olyan fogadási lehetőség, amelynek során a fogadásban érintett két résztvevő közül az egyik – az adott fogadásra vonatkoztatva – előnnyel indul a másikkal szemben. A meghatározott előny nagysága, mértéke előzetesen feltüntetésre kerül. Például: „Hendikep – 7,5” <br> Ennél a fogadási lehetőségnél az alábbi két kimenetel kerül feltüntetésre (Virtus Bologna – Avellino mérkőzés esetében): <br> – Virtus Bologna -7,5 – Nyertessé akkor válik a fogadás, ha a Virtus Bologna legalább 8 góllal nyeri meg a mérkőzést. <br> – Avellino +7,5 – Nyertessé akkor válik a fogadás, ha a Virtus Bologna legfeljebb 7 góllal nyeri meg a mérkőzést, illetőleg minden olyan esetben, amikor nem nyer."
+      },
+      {
+        "question": "Hendikep típusú (három kimeneteles) fogadási lehetőség",
+        "answer": "Egy olyan fogadási lehetőség, amelynek során a fogadásban érintett két résztvevő közül az egyik – az adott fogadásra vonatkoztatva – előnnyel indul a másikkal szemben. A meghatározott előny nagysága, mértéke előzetesen feltüntetésre kerül. Például: „Hendikep 0:2” <br> Ennél a fogadási lehetőségnél az alábbi három kimenetel kerül feltüntetésre (Bayern München – Juventus mérkőzés esetében): <br> – Bayern München – Nyertessé akkor válik a fogadás, ha a Bayern München 3 góllal, vagy nagyobb különbséggel nyeri meg a mérkőzést. <br> – Döntetlen – Nyertessé akkor válik a fogadás, ha a Bayern München pontosan 2 gól különbséggel nyeri meg a mérkőzést. <br>– Juventus – Nyertessé akkor válik a fogadás, ha a Bayern München 1 gól különbséggel nyeri meg a mérkőzést, illetőleg minden olyan esetben, amikor nem nyer."
+      },
+      {
+        "question": "1. félidő – Hendikep típusú (két kimeneteles) fogadási lehetőség",
+        "answer": "Egy olyan fogadási lehetőség, amelynek során a fogadásban érintett két résztvevő közül az egyik – az adott fogadási lehetőségre vonatkoztatva – előnnyel indul a másikkal szemben az 1. félidő eredményének tekintetében. A meghatározott előny nagysága, mértéke előzetesen feltüntetésre kerül. Például: „1. félidő – Hendikep -0,5” <br> Ennél a fogadási lehetőségnél az alábbi két kimenetel kerül feltüntetésre (Washington – Chicago mérkőzés esetében): <br> – Washington -0,5 – Nyertessé akkor válik a fogadás, ha a Washington legalább 1 ponttal megnyeri a mérkőzés 1. félidejét. <br>– Chicago +0,5 – Nyertessé akkor válik a fogadás, ha a Chicago legalább 1 ponttal megnyeri a mérkőzés 1. félidejét, illetőleg, ha a találkozó döntetlenre áll ekkor."
+      },
+      {
+        "question": "A 2. félidőre vonatkozó fogadási események",
+        "answer": "Az 2. félidőhöz tartozó fogadási események kizárólag a második játékrészben elért eredményre, történésekre vonatkoznak és nem a teljes mérkőzésre. <br> Példa: Az „1X2 – 2. félidő” fogadási eseménynél, ha a mérkőzés 2-1-gyel ért véget, ebből az első félidő 2-1 volt, a második félidő pedig 0-0, akkor ennél a fogadási eseménynél a nyertes kimenetel a „döntetlen” lesz."
+      },
+      {
+        "question": "Melyik harmadban lesz több gól?",
+        "answer": "Egy olyan fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy a jégkorongmérkőzés melyik harmadában – az elsőben, a másodikban, vagy a harmadikban – esik a legtöbb gól, illetőleg arra is lehet fogadni, hogy bármelyik két harmadban azonos számú lesz a két mérkőző fél által együttesen szerzett gólok száma, miközben a további játékrészben az abban a kettőben elértnél kevesebb születik, továbbá még arra is, hogy mind a három játékrészben azonos számú gól esik, illetve a találkozó gól nélküli döntetlennel zárul. <br> Ennél a fogadási lehetőségnél az alábbi négy kimenetel kerül feltüntetésre: <br> – 1. harmad Nyertessé akkor válik a fogadás, ha a mérkőzés 1. harmadában több gól esik, mint a másodikban, illetve a harmadikban. <br> – 2. harmad Nyertessé akkor válik a fogadás, ha a mérkőzés 2. harmadában több gól esik, mint az elsőben, illetve a harmadikban. <br> – 3. harmad Nyertessé akkor válik a fogadás, ha a mérkőzés 3. harmadában több gól esik, mint az elsőben, illetve a másodikban. <br> – több azonos harmad Nyertessé akkor válik a fogadás, ha bármely két harmadban azonos számú gól esik, miközben a további játékrészben az abban a kettőben külön-külön elértnél kevesebb, esetleg mind a három harmadban azonos számú gólt ér el együttesen a két mérkőző fél, vagy egyáltalán nem esik gól."
+      },
+      {
+        "question": "Statisztikai adatokhoz kapcsolódó fogadási események Pl. Kapura tartó gólszerzési kísérlet / Kaput eltaláló lövés / les / szabálytalanságok / öngól, gólpassz, gólszerzők:",
+        "answer": "Az eredménymegállapítás folyamatában a statisztikai adatokkal foglalkozó szervezetek, cégek, esemény szervezők határozzák meg azt, hogy mi számít kapura tartó gólszerzési kísérletnek, kaput eltaláló lövésnek, lesnek, szabálytalanságnak, öngólnak, gólpassznak vagy gólszerzőnek."
+      }
+    ]
   }
 ]
