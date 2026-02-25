@@ -5,7 +5,6 @@
     gap: 20px;
 }
 
-/* Bal oldali menü sáv */
 .left-sidebar {
     flex: 0 0 250px;
     background-color: #fff;
@@ -55,7 +54,6 @@
     padding-left: 15px;
 }
 
-/* Középső tartalom */
 .main-content {
     flex: 1;
     background-color: #fff;
@@ -96,16 +94,7 @@
     list-style: none;
 }
 
-.help-summary:hover {
-    color: #1eff00;
-    cursor: pointer;
-    transform: translateY(-2px);
-    text-transform: uppercase;
-    transition: all 0.3s ease;
-    background-color: #f9f9f9;
-    padding: 8px 12px;
-}
-
+.help-summary:hover,
 details.level1 summary:hover {
     color: #1eff00;
     cursor: pointer;
@@ -133,7 +122,7 @@ details.level1 {
 }
 
 details.level1 summary {
-    color: #000000;
+    color: #000;
     font-size: 14px;
     font-weight: 600;
     padding: 5px 0;
@@ -158,7 +147,6 @@ details.level1 summary:after {
     background-color: #3ba4f0;
 }
 
-/* Jobb oldali sáv */
 .right-sidebar {
     flex: 0 0 280px;
     display: flex;
@@ -190,8 +178,7 @@ details.level1 summary:after {
     color: #1a1a1a;
     font-size: 18px;
     font-weight: 700;
-    margin-top: 0;
-    margin-bottom: 15px;
+    margin: 0 0 15px;
     padding-bottom: 10px;
     border-bottom: 2px solid #e74c3c;
 }
@@ -260,11 +247,9 @@ details.level1 summary:after {
 
 .accordion-content.active {
     max-height: 200px;
-    /* Igazítsd a tartalomhoz */
     padding: 15px;
 }
 
-/* Reszponzív design (ha összecsukod kicsire a main content le esik, kell egy hamburger menü is a navbar helyett ha összecsukom) */
 @media (max-width: 1024px) {
     .help-container {
         flex-wrap: wrap;
@@ -353,14 +338,8 @@ details.level1 summary:after {
     color: orange;
 }
 
-#bonuszszoveg:hover {
-    color: #ffc89b;
-}
-
-#fooldalszoveg:hover {
-    color: #ffc89b;
-}
-
+#bonuszszoveg:hover,
+#fooldalszoveg:hover,
 #eloszoveg:hover {
     color: #ffc89b;
 }

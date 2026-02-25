@@ -5,7 +5,7 @@
     min-height: 80vh;
     padding-bottom: 20px !important;
     border: 2px solid red;
-    margin-bottom: 0%;
+    margin-bottom: 0;
     border-bottom: none;
 }
 
@@ -116,16 +116,14 @@
 }
 
 @keyframes pulse {
-    0% {
+
+    0%,
+    100% {
         opacity: 1;
     }
 
     50% {
         opacity: 0.7;
-    }
-
-    100% {
-        opacity: 1;
     }
 }
 
@@ -171,14 +169,8 @@
     color: orange;
 }
 
-#bonuszszoveg:hover {
-    color: #ffc89b;
-}
-
-#fooldalszoveg:hover {
-    color: #ffc89b;
-}
-
+#bonuszszoveg:hover,
+#fooldalszoveg:hover,
 #segitsegszoveg:hover {
     color: #ffc89b;
 }
@@ -196,41 +188,35 @@
     height: max-content;
 }
 
-
-/* A sports-nav elemek közötti távolság csökkentése */
 .sports-nav {
     display: flex;
-    flex-wrap: wrap; /* Ha sok sport van, tördelje új sorba */
-    gap: 10px; /* Távolság a sportok között */
-    padding: 0; /* Eltávolítja a belső margót */
-    margin: 0; /* Eltávolítja a külső margót */
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 0;
+    margin: 0;
 }
 
-/* Egyes sport-item elemek stílusa */
 .sport-item {
     display: flex;
-    align-items: center; /* Ikon és szöveg középre igazítása */
-    padding: 5px 10px; /* Csökkentett belső margó */
-    text-decoration: none; /* Link aláhúzás eltávolítása */
-    color: #000; /* Szöveg színe */
-    background-color: transparent; /* Háttér eltávolítása */
-    border-radius: 5px; /* Lekerekített sarkok */
-    transition: background-color 0.3s ease; /* Animáció hover-re */
+    align-items: center;
+    padding: 5px 10px;
+    text-decoration: none;
+    color: #000;
+    background-color: transparent;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
 }
 
-/* Hover effekt a sport-item elemekre */
 .sport-item:hover {
-    background-color: #f0f0f0; /* Hover állapot színe */
+    background-color: #f0f0f0;
 }
 
-/* Sport ikonok méretének beállítása */
 .sport-icon i {
-    font-size: 20px; /* Ikon mérete */
-    margin-right: 8px; /* Távolság az ikon és a szöveg között */
+    font-size: 20px;
+    margin-right: 8px;
 }
 
-/* Sport nevek stílusa */
 .sport-name {
-    font-size: 16px; /* Szöveg mérete */
-    font-weight: bold; /* Félkövér szöveg */
+    font-size: 16px;
+    font-weight: bold;
 }

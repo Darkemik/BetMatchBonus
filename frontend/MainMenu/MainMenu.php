@@ -27,6 +27,7 @@ $matchesResult = $mysqli->query($sql);
   <title>Online fogadás | BetMatchBonus</title>
   <link rel="stylesheet" href="../../css/MainMenu/MainMenu.css">
   <link rel="stylesheet" href="../../css/Main/layout.css">
+  <link rel="stylesheet" href="../../css/Betslip/betslip.css">
   <link rel="stylesheet" href="../../css/RootColor/root.css">
   <link rel="icon" href="../../img/logo.png" type="image/x-icon">
   <link rel="stylesheet"
@@ -196,8 +197,7 @@ $matchesResult = $mysqli->query($sql);
 
 
     <aside class="right-sidebar">
-      <h2>Fogadós rész</h2>
-      <p>Itt lesz majd a fogadási blokk.</p>
+      <?php include '../../frontend/Components/betslip.php'; ?>
 
       <div class="temp_cont">
 
@@ -209,6 +209,7 @@ $matchesResult = $mysqli->query($sql);
   <?php include '../../frontend/Components/modal.php';?>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../../js/Main/layout.js"></script>
+  <script src="../../js/Betslip/betslip.js"></script>
   <script src="../../js/MainMenu/main.js"></script>
 </body>
 

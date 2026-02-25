@@ -5,9 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Segítség | BetMatchBonus</title>
+    <link rel="stylesheet" href="../../css/Main/layout.css">
     <link rel="stylesheet" href="../../css/Help/help.css">
     <link rel="stylesheet" href="../../css/RootColor/root.css">
-    <link rel="stylesheet" href="../../css/Main/layout.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
     <link rel="icon" href="../../img/logo.png" type="image/x-icon">
 </head>

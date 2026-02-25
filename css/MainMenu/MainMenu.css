@@ -16,9 +16,6 @@
   padding: 5px;
   overflow-y: auto;
   border: 2px solid red;
-  /* box-shadow:
-          inset 10px 0 10px -5px black,   
-          inset -10px 0 10px -5px black;   */
 }
 
 .temp_cont {
@@ -53,7 +50,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 12px;
+  padding: 12px;
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, .10);
   background: rgba(0, 0, 0, .22);
@@ -73,23 +70,17 @@
 }
 
 .search-input {
+  flex: 1;
   width: 100%;
   border: 0;
   outline: 0;
-  background: transparent;
-  color: var(--text);
+  background: none;
+  color: #fff;
   font-size: 14px;
 }
 
 .search-input::placeholder {
   color: rgba(255, 255, 255, .45);
-}
-
-.search-input {
-  flex: 1;
-  background: none;
-  border: 0;
-  color: #fff;
 }
 
 .sports-menu summary {
@@ -99,7 +90,7 @@
   color: #706f6f;
   display: flex;
   justify-content: space-between;
-  background-color: #e2e2e2
+  background-color: #e2e2e2;
 }
 
 .sports-menu summary::after {
@@ -128,7 +119,7 @@
   align-items: center;
   gap: 10px;
   transition: .15s;
-  text-decoration: none;
+  text-decoration: none !important;
 }
 
 .level3 a::before {
@@ -142,8 +133,4 @@
 .level3 a:hover {
   transform: translateY(-1px);
   background: rgba(93, 214, 255, .15);
-}
-
-.level3 a {
-  text-decoration: none !important;
 }

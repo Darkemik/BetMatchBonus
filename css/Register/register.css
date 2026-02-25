@@ -1,17 +1,18 @@
-*{
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-body{
+body {
     background: linear-gradient(white, rgb(158, 158, 158));
     max-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
 }
-.regisztraciobtn{
+
+.regisztraciobtn {
     height: 50px;
     width: 130px;
     border-radius: 25px;
@@ -21,39 +22,38 @@ body{
     cursor: pointer;
     transition: 2s;
 }
-.btn:hover{
+
+.btn:hover {
     background-color: antiquewhite;
-    
 }
 
-.inputok{
+.inputok {
     height: 30px;
     width: 250px;
     padding-left: 10px;
     text-align: left;
     background-color: white;
 }
-.container{
+
+.container {
     display: flex;
     justify-content: left;
     align-items: center;
     border: 1px solid blue;
-   
 }
 
-.container form{
+.container form {
     display: flex;
     flex-direction: column;
     border: 1px solid red;
     width: 400px;
     height: 600px;
-    display: flex;
     justify-content: center;
     align-items: center;
     background-color: transparent;
     gap: 20px;
 }
 
-input{
+input {
     border: 1px solid green;
 }

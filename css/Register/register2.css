@@ -1,15 +1,17 @@
-body{
+body {
     background-color: gray;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
 }
-.btn{
+
+.btn {
     height: 50px;
     cursor: pointer;
 }
-.btnback{
+
+.btnback {
     width: 80px;
     height: 40px;
     cursor: pointer;
@@ -17,38 +19,30 @@ body{
     border: none;
     border-radius: 20px;
 }
-#id_preview_first{
+
+#id_preview_first,
+#id_preview_second,
+#address_preview {
     max-width: 200px;
-    
     height: 150px;
 }
-#id_preview_second{
-    max-width: 200px;
-    
-    height: 150px;
-}
-#address_preview{
-    max-width: 200px;
-    
-    height: 150px;
-}
-.personal_img{
+
+.personal_img {
     display: flex;
     flex-direction: column;
     text-align: center;
     justify-content: center;
     align-items: center;
 }
-.left-side{
+
+.left-side {
     width: 20%;
     border: 2px solid red;
 }
-.personal-info{
+
+.personal-info {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
-
-    
-   
 }

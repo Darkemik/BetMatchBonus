@@ -7,6 +7,7 @@
     <title>Élő meccsek | BetMatchBonus</title>
     <link rel="stylesheet" href="../../css/Main/layout.css">
     <link rel="stylesheet" href="../../css/Live/live.css">
+    <link rel="stylesheet" href="../../css/Betslip/betslip.css">
     <link rel="stylesheet" href="../../css/RootColor/root.css">
     <link rel="icon" href="../../img/logo.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
@@ -75,10 +76,7 @@
 
     <div class="content-parent">
         <div class="right-container">
-            <aside class="right-sidebar">
-                <h2>Fogadási szelvény</h2>
-                <p>Itt lesz majd a fogadási blokk.</p>
-            </aside>
+            <?php include '../../frontend/Components/betslip.php'; ?>
         </div>
         <div class="elo-main">
             <div class="elo-container">
@@ -151,6 +149,7 @@
     <?php include '../../frontend/Components/footer.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../../js/Main/layout.js"></script>
+    <script src="../../js/Betslip/betslip.js"></script>
     <script src="../../js/Live/live.js"></script>
     <?php include '../../frontend/Components/modal.php'; ?>
 </body>
