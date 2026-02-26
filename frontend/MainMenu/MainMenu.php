@@ -1,16 +1,14 @@
 <?php
-require_once "../../backend/ApiRequest/api.php";
-require_once "../../backend/DateBase/bettingdb.sql";   // ⬅️ EZT ADD HOZZÁ
+require_once "../../backend/ApiRequest/connect.php";            
 
-// Meccsek lekérdezése (ország + bajnokság + meccs)
 $sql = "
 SELECT 
-    m.name        AS match_name,
+    m.name AS match_name,
     m.start_utc,
     m.is_live,
     m.live_time,
-    c.name        AS country_name,
-    ch.name       AS championship_name
+    c.name AS country_name,
+    ch.name AS championship_name
 FROM Matches m
 JOIN Championships ch ON m.championship_id = ch.id
 JOIN Countries c ON ch.country_code = c.code
