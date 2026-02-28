@@ -27,6 +27,7 @@ $matchesResult = $mysqli->query($sql);
   <link rel="stylesheet" href="../../css/Main/layout.css">
   <link rel="stylesheet" href="../../css/Betslip/betslip.css">
   <link rel="stylesheet" href="../../css/RootColor/root.css">
+  <link rel="stylesheet" href="../../css/Modal/modal.css">
   <link rel="icon" href="../../img/logo.png" type="image/x-icon">
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=search" />
@@ -79,7 +80,7 @@ $matchesResult = $mysqli->query($sql);
                     </div>
                 </div>
             <button class="loginbtn" data-bs-toggle="modal" data-bs-target="#loginModal">Bejelentkezés</button>
-            <button class="registrationbtn" onclick="location.href='../../frontend/Register/register.php'">Regisztráció</button>
+            <button class="registrationbtn" data-bs-toggle="modal" data-bs-target="#registerModal">Regisztráció</button>
         </div>
     </div>
 
@@ -204,8 +205,13 @@ $matchesResult = $mysqli->query($sql);
 
   </div>
 
-  <?php include '../../frontend/Components/modal.php';?>
+  <?php include '../../frontend/Components/loginmodal.php';?>
+  <?php include '../../frontend/Components/registermodal.php';?>
+    <?php include '../../frontend/Components/registermodal2.php'; ?>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../../js/Login/loginmodal.js"></script>
+  <script src="../../js/Register/registermodal.js"></script>
+  <script src="../../js/Register/registermodal2.js"></script>
   <script src="../../js/Main/layout.js"></script>
   <script src="../../js/Betslip/betslip.js"></script>
   <script src="../../js/MainMenu/main.js"></script>

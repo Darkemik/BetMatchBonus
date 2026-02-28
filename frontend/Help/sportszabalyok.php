@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="../../css/Main/layout.css">
     <link rel="stylesheet" href="../../css/Help/help.css">
     <link rel="stylesheet" href="../../css/RootColor/root.css">
+    <link rel="stylesheet" href="../../css/Modal/modal.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
     <link rel="icon" href="../../img/logo.png" type="image/x-icon">
 </head>
@@ -30,8 +31,13 @@
     </div>
 
     <?php include '../../frontend/Components/footer.php'; ?>
-    <?php include '../../frontend/Components/modal.php'; ?>
+    <?php include '../../frontend/Components/loginmodal.php'; ?>
+    <?php include '../../frontend/Components/registermodal.php'; ?>
+    <?php include '../../frontend/Components/registermodal2.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../js/Login/loginmodal.js"></script>
+    <script src="../../js/Register/registermodal.js"></script>
+    <script src="../../js/Register/registermodal2.js"></script>
     <script src="../../js/Main/layout.js"></script>
 </body>
 

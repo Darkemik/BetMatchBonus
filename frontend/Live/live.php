@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../../css/Live/live.css">
     <link rel="stylesheet" href="../../css/Betslip/betslip.css">
     <link rel="stylesheet" href="../../css/RootColor/root.css">
+    <link rel="stylesheet" href="../../css/Modal/modal.css">
     <link rel="icon" href="../../img/logo.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
@@ -61,7 +62,7 @@
                 <button data-i18n="loginbtn" class="loginbtn"
                     data-bs-toggle="modal" data-bs-target="#loginModal">Bejelentkezés</button>
                 <button class="registrationbtn"
-                    onclick="location.href='../../frontend/Register/register.php'"
+                    data-bs-toggle="modal" data-bs-target="#registerModal"
                     data-i18n="nav.register">Regisztráció</button>
             </div>
         </div>
@@ -148,10 +149,15 @@
 
     <?php include '../../frontend/Components/footer.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../js/Login/loginmodal.js"></script>
+    <script src="../../js/Register/registermodal.js"></script>
+    <script src="../../js/Register/registermodal2.js"></script>
     <script src="../../js/Main/layout.js"></script>
     <script src="../../js/Betslip/betslip.js"></script>
     <script src="../../js/Live/live.js"></script>
-    <?php include '../../frontend/Components/modal.php'; ?>
+    <?php include '../../frontend/Components/loginmodal.php'; ?>
+    <?php include '../../frontend/Components/registermodal.php'; ?>
+    <?php include '../../frontend/Components/registermodal2.php'; ?>
 </body>
 
 </html>

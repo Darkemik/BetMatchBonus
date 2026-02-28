@@ -257,5 +257,70 @@
         "answer": "Az eredménymegállapítás folyamatában a statisztikai adatokkal foglalkozó szervezetek, cégek, esemény szervezők határozzák meg azt, hogy mi számít kapura tartó gólszerzési kísérletnek, kaput eltaláló lövésnek, lesnek, szabálytalanságnak, öngólnak, gólpassznak vagy gólszerzőnek."
       }
     ]
+  },
+  {
+    "category": "BÓNUSZAJÁNLAT",
+    "questions": [
+      {
+        "question": "Egyszerre több bónuszajánlatot is igénybe tudok venni?",
+        "answer": "Igen, amennyiben a részvételi feltételek nem határozzák meg, hogy kettő vagy több egyidejű bónusz közül csak egyet igényelhetsz azonos időszakban. Fontos tudni, hogy a bónuszok teljesítése az igénylés sorrendjében történik, így ha egy fogadásoddal több bónusz feltételeit teljesítenéd, mindig az időben legkorábban igényelt bónusz forgatásához fog számítani."
+      },
+      {
+        "question": "Hogyan tudom igényleni a feltöltési bónuszomat?",
+        "answer": "A feltöltési bónuszt a Befizetés aloldalon a bónuszkód beírásával, vagy az ajándékdoboz-ikonra kattintva a bónusz kiválasztásával tudod aktiválni. Bármelyik módot választod, a bónusz a befizetéseddel aktiválódik."
+      },
+      {
+        "question": "Miért nem sikerült megigényelnem a bónuszt?",
+        "answer": "Előfordulhat, hogy rosszul írtad be a bónuszkódot és emiatt nem tudod megigényelni."
+      },
+      {
+        "question": "Mi történik, ha törlöm a bónuszomat?",
+        "answer": "Ha törlöd a bónuszt, akkor a bónuszegyenlegeden szereplő teljes összeget, tehát az esetlegesen elért nyereményedet is elveszíted. Egy bónuszt csak egyszer lehet igényelni, törlést követően nincs lehetőség visszaállítani."
+      },
+      {
+        "question": "Miért nem tudok a bónuszomból minden eseményre fogadni?",
+        "answer": "Vannak olyan bónuszok, amelyeket egy adott eseményre vagy egy adott bajnokságra tudod felhasználni. A részvételi feltételekben megtalálod."
+      },
+      {
+        "question": "Mit jelent a forgatási követelmény?",
+        "answer": "A forgatási követelmény azt jelenti, hogy a bónuszodat hány alkalommal kell megforgatnod, hogy a nyereményed átkerüljön a nyereményegyenlegedre. Ha 1.000 Ft bónuszban részesültél és 2x-es a forgatási követelmény, akkor összesen 2.000 Ft értékben kell megforgatnod a bónuszodat, hogy teljesítsd ezt a feltételt."
+      },
+      {
+        "question": "Az igénylést követően azonnal meg kell forgatnom a bónuszomat?",
+        "answer": "Nem szükséges, a bónusz igénylésének, illetve a forgatási követelmények teljesítésének határidejéről az adott bónuszajánlat részvételi feltételei adnak tájékoztatást."
+      },
+      {
+        "question": "A bónuszt egyösszegben kell megforgatnom?",
+        "answer": "A forgatási követelményeket mindig a részvételi feltételek tartalmazzák, az adott bónuszajánlat teljesítését a Bónuszaim menüpontban tudod nyomon követni."
+      },
+      {
+        "question": "Egyidőben több fogadásra is fel tudom úgy használni a bónuszomat, hogy az beleszámítódjon a forgatási feltételekbe?",
+        "answer": "Nem, eseményenként csak az első megtett fogadás számít bele a forgatási feltételek teljesítésébe."
+      },
+      {
+        "question": "Csak bónuszból tudok fogadni vagy felhasználhatom hozzá a saját egyenlegemet is?",
+        "answer": "Fogadhatsz bónuszból és saját egyenlegből is, viszont azt ne feledd, hogy ez a forgatási feltételek teljesítésébe csak az adott bónusz összegéig számít bele. Ez azt jelenti, ha kapsz egy 2.500 Ft-os bónuszt hiába teszel meg egy 3.000 Ft értékű fogadást, a forgatási feltételek teljesítésébe 2.500 Ft-ig számít bele."
+      },
+      {
+        "question": "Ha bónuszból szeretnék fogadni, akkor a forgatási feltételekbe bármekkora összeg beleszámítódik?",
+        "answer": "Nem, a forgatási feltételek teljesítésébe mindig az adott bónusz összegéig számítódik bele. Tehát, ha kapsz egy 1.000 Ft-os bónuszt hiába teszel meg egy 3.000 Ft értékű fogadást, a forgatási feltételek teljesítésébe 1.000 Ft-ig számít bele."
+      },
+      {
+        "question": "Ha bónuszból szeretnék fogadni, miért kaphatok olyan üzenetet, hogy nincs elegendő pénz az egyenlegemen?",
+        "answer": "Ebben az esetben valamelyik forgatási követelmény nem teljesül, ezért a fogadás a befizetett egyenleged terhére kerülne játékba – ez azonban nem elegendő. Ilyen eset például, ha a forgatási követelményekben megadott oddsfeltétel nem teljesül vagy a szelvényed egy olyan eseményt tartalmaz, amire már fogadtál."
+      },
+      {
+        "question": "Hogyan fordulhat elő, hogy a nyereményem egy része a bónuszegyenlegemre került, másik része pedig a nyereményegyenlegemre?",
+        "answer": "Ennek oka, hogy a bónuszegyenlegből megtett fogadáson keletkezett nyeremény a bónuszegyenlegre, a befizetett és nyereményegyenlegről megtett fogadáson elért nyeremény a nyereményegyenlegre kerül. Ebben az esetben a fogadásodat nem csak bónuszegyenlegből tetted meg (mivel nem állt rendelkezésre azon akkora összeg, amennyiért fogadtál). Nincs lehetőséged eldönteni, hogy bónusz- vagy befizetett és/vagy nyereményegyenlegből szeretnél fogadni. Amennyiben a megtett fogadásod megfelel a bónuszajánlat részvételi feltételeinek, elsődlegesen a bónuszegyenlegedből fogja levonni a rendszer a fogadás árát."
+      },
+      {
+        "question": "Miért nem került át a teljes nyereményem a nyereményegyenlegemre?",
+        "answer": "Minden bónusznál van egy limit, hogy mekkora összeg kerülhet át a nyereményegyenlegedre, ezt minden esetben megtalálod a részvételi feltételekben."
+      },
+      {
+        "question": "Mi történik akkor a nyereményemmel, ha bónuszból fogadtam és egy fogadásomat először vesztesként lett kiértékelve és utána nyertesre módosítanak?",
+        "answer": "Ebben az esetben utólag nem adódik a nyeremény a teljesített bónusz összeghez."
+      }
+    ]
   }
 ]

@@ -1,0 +1,32 @@
+#loginModal .modal-content,
+#registerModal .modal-content,
+#registerModal2 .modal-content {
+    border-radius: 10px;
+}
+
+.modal-title img {
+    height: 28px;
+    cursor: pointer;
+}
+.modal-logo{
+    height: 28px;
+    cursor: pointer;
+}
+.modal-link {
+    color: #3498db;
+}
+
+.eye-slash-icon {
+    display: none;
+}
+
+#registerModalResult,
+#registerModal2Result {
+    color: red;
+    font-weight: bold;
+}
+
+.modal-img-preview {
+    max-height: 120px;
+    display: none;
+}

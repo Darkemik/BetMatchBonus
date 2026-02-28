@@ -42,7 +42,7 @@
                     </div>
                 </div>
             <button class="loginbtn" data-bs-toggle="modal" data-bs-target="#loginModal">Bejelentkezés</button>
-            <button class="registrationbtn" onclick="location.href='../../frontend/Register/register.php'">Regisztráció</button>
+            <button class="registrationbtn" data-bs-toggle="modal" data-bs-target="#registerModal">Regisztráció</button>
         </div>
     </div>
 
