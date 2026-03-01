@@ -21,10 +21,7 @@
 
         <!-- Fő tartalom (középső rész)-->
         <main class="main-content">
-            <h2>DARTS</h2>
-            <h3>Verseny célja:</h3>
-            <p>Minél nagyobb összegű pontot elérni (maximálisan 180). A játékosok felváltva dobnak körönként 3-3 nyilat.
-                A dobás értékét a nyíl által eltalált szektor száma adja meg.</p>
+            <div class="help-menu" id="sportszabalyokContainer"></div>
         </main>
 
         <?php include '../../frontend/Components/promokartya.php'; ?>
@@ -39,6 +36,7 @@
     <script src="../../js/Register/registermodal.js"></script>
     <script src="../../js/Register/registermodal2.js"></script>
     <script src="../../js/Main/layout.js"></script>
+    <script src="../../js/Help/sportszabalyok.js"></script>
 </body>
 
 </html>
