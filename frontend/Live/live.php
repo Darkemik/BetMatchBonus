@@ -164,8 +164,33 @@ if (!$liveResult) {
                     <button class="tab-button active">Élő meccsek</button>
                 </div>
 
-                <div id="matches-container"></div>
-                <div class="tab-content" id="favorites"></div>
+                <?php if ($liveResult && $liveResult->num_rows > 0): ?>
+                    <table class="table table-striped table-bordered w-100 mx-auto">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Ország</th>
+                                <th>Bajnokság</th>
+                                <th>Meccs</th>
+                                <th>Kezdés (UTC)</th>
+                                <th>Élő idő</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while ($row = $liveResult->fetch_assoc()): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($row['country_name']) ?></td>
+                                    <td><?= htmlspecialchars($row['championship_name']) ?></td>
+                                    <td><?= htmlspecialchars($row['match_name']) ?></td>
+                                    <td><?= htmlspecialchars($row['start_utc']) ?></td>
+                                    <td><?= htmlspecialchars($row['live_time'] ?? '-') ?></td>
+                                </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                <?php else: ?>
+                    <p class="text-center">Jelenleg nincs élő mérkőzés.</p>
+                <?php endif; ?>
+
             </div>
         </div>
     </div>
