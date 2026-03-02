@@ -1,6 +1,12 @@
 -- A BetMatchBonus projekt adatbázis sémája
 -- DATABASE: betmatchbonusbeta
 
+CREATE DATABASE IF NOT EXISTS betmatchbonusb​eta
+  DEFAULT CHARACTER SET utf8mb4
+  COLLATE utf8mb4_hungarian_ci;
+
+USE betmatchbonusb​eta;
+
 CREATE TABLE Countries (
   id INT AUTO_INCREMENT PRIMARY KEY,
   code VARCHAR(3) NOT NULL UNIQUE,

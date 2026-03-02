@@ -1,3 +1,26 @@
+<?php
+require_once "../../backend/ApiRequest/connect.php";
+
+$sql = "
+SELECT 
+    m.name AS match_name,
+    m.start_utc,
+    m.live_time,
+    c.name AS country_name,
+    ch.name AS championship_name
+FROM Matches m
+JOIN Championships ch ON m.championship_id = ch.id
+JOIN Countries c ON ch.country_code = c.code
+WHERE m.sport_id = 66        -- csak foci
+  AND m.is_live = 1          -- csak élő meccsek
+ORDER BY m.start_utc
+";
+
+$liveResult = $conn->query($sql);
+if (!$liveResult) {
+    die('Lekérdezés hiba: ' . $conn->error);
+}
+?>
 <!DOCTYPE html>
 <html lang="hu">
 
@@ -85,7 +108,7 @@
 
                 <div class="sports-nav-wrapper">
                     <nav class="sports-nav">
-                        <a href="#" class="sport-item active">
+                        <a href="#" id="btn-soccer" class="sport-item active">
                             <div class="sport-icon">
                                 <i class="fas fa-futbol"></i>
                             </div>

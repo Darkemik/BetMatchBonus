@@ -20,11 +20,13 @@ if (!is_array($data)) {
     die("API HIBA: nem tömb érkezett.");
 }
 
-$stmtFindChamp = $mysqli->prepare("
+// Championship keresése (api_id alapján)
+$stmtFindChamp = $conn->prepare("
     SELECT id FROM Championships WHERE api_id = ?
 ");
 
-$stmtUpsertMatch = $mysqli->prepare("
+// Meccs beszúrása / frissítése
+$stmtUpsertMatch = $conn->prepare("
     INSERT INTO Matches (api_id, sport_id, championship_id, name, start_utc, is_live, live_time)
     VALUES (?, ?, ?, ?, ?, ?, ?)
     ON DUPLICATE KEY UPDATE
@@ -38,32 +40,68 @@ $stmtUpsertMatch = $mysqli->prepare("
 
 foreach ($data as $match) {
     $apiMatchId   = $match['id'];
-    $sportId      = $match['sportId'];
+    $sportFromApi = $match['sportId'];
     $leagueId     = $match['leagueId'];
     $name         = $match['name'];
     $startUtcStr  = $match['startDateUtc'];
     $isLive       = $match['isLive'] ? 1 : 0;
     $liveTime     = $match['liveTime'] ?? null;
 
+    // Championship ID lekérése
     $stmtFindChamp->bind_param("i", $leagueId);
     $stmtFindChamp->execute();
     $resultChamp = $stmtFindChamp->get_result();
     $champRow = $resultChamp->fetch_assoc();
 
+    // Ha hiányzik a bajnokság → automatikusan létrehozzuk INT/International-lal
     if (!$champRow) {
-        continue;
+        $countryCode = "INT";
+        $countryName = "International";
+
+        // Ország upsert
+        $stmtCountry = $conn->prepare("
+            INSERT INTO Countries (code, name)
+            VALUES (?, ?)
+            ON DUPLICATE KEY UPDATE name = VALUES(name)
+        ");
+        $stmtCountry->bind_param("ss", $countryCode, $countryName);
+        $stmtCountry->execute();
+        $stmtCountry->close();
+
+        $champName = "Ismeretlen bajnokság (ID: {$leagueId})";
+
+        $stmtInsertChamp = $conn->prepare("
+            INSERT INTO Championships (api_id, sport_id, country_code, name)
+            VALUES (?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE name = VALUES(name)
+        ");
+        $stmtInsertChamp->bind_param("iiss", $leagueId, $sportFromApi, $countryCode, $champName);
+        $stmtInsertChamp->execute();
+        $stmtInsertChamp->close();
+
+        // újra lekérjük
+        $stmtFindChamp->bind_param("i", $leagueId);
+        $stmtFindChamp->execute();
+        $resultChamp = $stmtFindChamp->get_result();
+        $champRow = $resultChamp->fetch_assoc();
+
+        if (!$champRow) {
+            continue;
+        }
     }
 
     $championshipId = (int)$champRow['id'];
 
+    // startDateUtc → MySQL DATETIME (UTC)
     $dt = new DateTime($startUtcStr);
     $dt->setTimezone(new DateTimeZone('UTC'));
     $startUtcMysql = $dt->format('Y-m-d H:i:s');
 
+    // upsert
     $stmtUpsertMatch->bind_param(
         "iiissis",
         $apiMatchId,
-        $sportId,
+        $sportFromApi,
         $championshipId,
         $name,
         $startUtcMysql,
@@ -72,5 +110,9 @@ foreach ($data as $match) {
     );
     $stmtUpsertMatch->execute();
 }
+
+// nem kötelező, de szép
+$stmtFindChamp->close();
+$stmtUpsertMatch->close();
 
 echo "Napi meccsek importja kész.\n";

@@ -14,41 +14,45 @@ curl_close($ch);
 // JSON decode
 $data = json_decode($response, true);
 
-
 if (!is_array($data)) {
     die("API HIBA: nem tömb érkezett.");
 }
 
-
 foreach ($data as $champ) {
-    $api_id = $champ['id'];
-    $sport_id = $champ['sportId'];
-    $countryCode = $champ['countryCode'];
-    $name = $champ['name'];
 
-    if (!$countryCode) {
-        continue; 
+    $api_id      = $champ['id'];
+    $sport_id    = $champ['sportId'];
+    $countryCode = $champ['countryCode'];
+    $name        = $champ['name'];
+
+    // 🔹 Ha nincs countryCode → legyen "INT" / "International"
+    if (!$countryCode || trim($countryCode) === "") {
+        $countryCode = "INT";
+        $countryName = "International";
+    } else {
+        // Ha van kód, egyelőre a kódot tesszük névnek is (később cserélhető valódi névre)
+        $countryName = $countryCode;
     }
 
-  
-    $countryName = $countryCode;
-
-    $stmtCountry = $mysqli->prepare("
+    // 1) Ország beszúrása / frissítése
+    $stmtCountry = $conn->prepare("
         INSERT INTO Countries (code, name)
         VALUES (?, ?)
         ON DUPLICATE KEY UPDATE name = VALUES(name)
     ");
     $stmtCountry->bind_param("ss", $countryCode, $countryName);
     $stmtCountry->execute();
+    $stmtCountry->close();
 
-    // 2) Bajnokság beszúrása
-    $stmt = $mysqli->prepare("
+    // 2) Bajnokság beszúrása / frissítése
+    $stmt = $conn->prepare("
         INSERT INTO Championships (api_id, sport_id, country_code, name)
         VALUES (?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE name = VALUES(name)
     ");
     $stmt->bind_param("iiss", $api_id, $sport_id, $countryCode, $name);
     $stmt->execute();
+    $stmt->close();
 }
 
-?>
+echo "Championships import kész!";

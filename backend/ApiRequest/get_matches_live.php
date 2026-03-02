@@ -2,7 +2,7 @@
 require_once "connect.php";
 
 // 0) A Matches táblában csak az aktuális élő focimeccsek legyenek
-$mysqli->query("TRUNCATE TABLE Matches");
+$conn->query("TRUNCATE TABLE Matches");
 
 // 1) Csak foci (sportId = 66)
 $sportId = 66;
@@ -27,14 +27,14 @@ if (!is_array($data)) {
 // 3) Prepared statementek
 
 // Bajnokság keresése api_id alapján
-$stmtFindChamp = $mysqli->prepare("
+$stmtFindChamp = $conn->prepare("
     SELECT id 
     FROM Championships 
     WHERE api_id = ?
 ");
 
 // Meccs beszúrása / frissítése
-$stmtUpsertMatch = $mysqli->prepare("
+$stmtUpsertMatch = $conn->prepare("
     INSERT INTO Matches (api_id, sport_id, championship_id, name, start_utc, is_live, live_time)
     VALUES (?, ?, ?, ?, ?, ?, ?)
     ON DUPLICATE KEY UPDATE
@@ -67,10 +67,43 @@ foreach ($data as $match) {
     $resultChamp = $stmtFindChamp->get_result();
     $champRow = $resultChamp->fetch_assoc();
 
+    // Ha nincs ilyen bajnokság az adatbázisban, automatikusan létrehozzuk
     if (!$champRow) {
-        // DEBUG: ideiglenesen kiírjuk, melyik liga hiányzik
-        echo "Hiányzó championship az adatbázisban, leagueId = {$leagueId}<br>";
-        continue;
+        $countryCode = "INT";
+        $countryName = "International";
+
+        // Ország upsert
+        $stmtCountry = $conn->prepare("
+            INSERT INTO Countries (code, name)
+            VALUES (?, ?)
+            ON DUPLICATE KEY UPDATE name = VALUES(name)
+        ");
+        $stmtCountry->bind_param("ss", $countryCode, $countryName);
+        $stmtCountry->execute();
+        $stmtCountry->close();
+
+        // Bajnokság név – amíg nincs rendes név az API-ban, egy alap név
+        $champName = "Ismeretlen bajnokság (ID: {$leagueId})";
+
+        $stmtInsertChamp = $conn->prepare("
+            INSERT INTO Championships (api_id, sport_id, country_code, name)
+            VALUES (?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE name = VALUES(name)
+        ");
+        $stmtInsertChamp->bind_param("iiss", $leagueId, $sportFromApi, $countryCode, $champName);
+        $stmtInsertChamp->execute();
+        $stmtInsertChamp->close();
+
+        // Újra megpróbáljuk lekérni az ID-t
+        $stmtFindChamp->bind_param("i", $leagueId);
+        $stmtFindChamp->execute();
+        $resultChamp = $stmtFindChamp->get_result();
+        $champRow = $resultChamp->fetch_assoc();
+
+        // Ha még így sincs, akkor lépjünk tovább
+        if (!$champRow) {
+            continue;
+        }
     }
 
     $championshipId = (int)$champRow['id'];
@@ -93,5 +126,9 @@ foreach ($data as $match) {
     );
     $stmtUpsertMatch->execute();
 }
+
+// statementek lezárása (nem kötelező, de szép)
+$stmtFindChamp->close();
+$stmtUpsertMatch->close();
 
 echo "Élő focimeccsek frissítve.";

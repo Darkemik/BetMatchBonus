@@ -15,7 +15,12 @@ JOIN Countries c ON ch.country_code = c.code
 ORDER BY m.start_utc
 ";
 
-$matchesResult = $mysqli->query($sql);
+// Itt eddig: $matchesResult = $mysqli->query($sql);
+$matchesResult = $conn->query($sql);
+
+if (!$matchesResult) {
+    die("Lekérdezés hiba: " . $conn->error);
+}
 ?>
 <!DOCTYPE html>
 <html lang="hu">

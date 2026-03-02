@@ -1,14 +1,11 @@
 <?php
 $host = "localhost";
-$user = "root";      // XAMPP alapértelmezett
-$pass = "";          // ha nincs jelszó
+$user = "root";
+$pass = "";
 $db   = "betmatchbonusbeta";
 
-$mysqli = new mysqli($host, $user, $pass, $db);
-
-if ($mysqli->connect_error) {
-    die("Adatbázis hiba: " . $mysqli->connect_error);
+$conn = new mysqli($host, $user, $pass, $db);
+if ($conn->connect_error) {
+    die("Kapcsolódási hiba: " . $conn->connect_error);
 }
-
-$mysqli->set_charset("utf8mb4");
-?>
+$conn->set_charset("utf8mb4");
