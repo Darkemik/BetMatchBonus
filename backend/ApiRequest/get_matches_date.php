@@ -1,7 +1,7 @@
 <?php
 require_once "connect.php";
 
-$sportId = 67; // pl. Kosárlabda
+$sportId = 66; // pl. Kosárlabda
 $date = date('Y-m-d'); // mai nap
 
 $url = "http://localhost:5000/api/matches/date?sportId={$sportId}&date={$date}";
@@ -92,9 +92,9 @@ foreach ($data as $match) {
 
     $championshipId = (int)$champRow['id'];
 
-    // startDateUtc → MySQL DATETIME (UTC)
+    // startDateUtc → MySQL DATETIME (magyar idő)
     $dt = new DateTime($startUtcStr);
-    $dt->setTimezone(new DateTimeZone('UTC'));
+    $dt->setTimezone(new DateTimeZone('Europe/Budapest'));
     $startUtcMysql = $dt->format('Y-m-d H:i:s');
 
     // upsert
