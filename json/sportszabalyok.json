@@ -1,0 +1,246 @@
+[
+    {
+        "category": "Amerikai Foci",
+        "rules": [
+            "Verseny célja: A kezdőrúgást követően a fogadó csapat visszafutó embere addig fut a labdával, ameddig csak tud, és attól a helytől indul a támadás. A csapat támadóegységének maximum négy lehetőségből minimum 10 yardot kell előrejuttatnia a labdát.",
+            "Versenyzők száma: Két, egyenként 11 fős csapat játssza, de a játék sajátosságai miatt a keretek 53 főből állnak, támadásban és védekezésben külön egységek váltják egymást.",
+            "Mérkőzés időtartama: 4×15 perc, félidőnként 3 időkérési lehetőséggel.",
+            "Győztes megállapítása: A mérkőzés időtartama alatt több pontot elérő csapat szerzi meg a győzelmet, amennyiben a négy negyedet követően egyenlő a pontszám, hosszabbítás következik.",
+            "Touchdown (6 pont): Akkor következik be, ha valaki a játékosok közül az ellenfél célterületére viszi be a labdát.",
+            "Mezőnygól (3 pont): Akkor kerül rá sor, ha a támadó csapat három kísérletből nem tesz meg 10 yardot és negyedikre a kapura lövést választják.",
+            "Safety (2 pont): A védőcsapat akkor éri el, ha a támadóegység labdás emberét annak saját célterületén szerelik.",
+            "Speciális fogadási lehetőségek: Hendikep +/- X, Pontszám X"
+        ]
+    },
+    {
+        "category": "Aussie Rules",
+        "rules": [
+            "Verseny célja: Gólra játsszák. A gólt a labdának az ellenfél kapuja középső két léce közé rúgása jelenti.",
+            "Versenyzők száma: Két 18 játékosból álló csapat játszik, csapatonként négy cserejátékossal.",
+            "Mérkőzés időtartama: 4×20 perc tiszta játékidő.",
+            "Győztes megállapítása: A győztes az a csapat, amelyik a negyedik negyed végére magasabb pontszámot ér el.",
+            "Pontszerzési lehetőségek: A gól (6 pont) az, amikor a két hosszabb belső kapufa közé megy a labda. A mögérúgás (1 pont) – amikor egy belső és a rövidebb külső kapufa közt megy ki a labda.",
+            "Speciális fogadási lehetőségek: Pontszám X"
+        ]
+    },
+    {
+        "category": "Asztalitenisz",
+        "rules": [
+            "Verseny célja: Pontot az a játékos ér el, aki utoljára tette át szabályos ütőfelülettel a labdát az ellenfél térfelére.",
+            "Versenyzők száma: Kettő (egyéni játék) vagy négy játékos (páros játék).",
+            "Mérkőzés időtartama: Versenykiírás szerinti nyert játszmáig.",
+            "Győztes megállapítása: A győztes az a versenyző, aki előbb éri el a versenykiírásban előírt megnyert játszmaszámot.",
+            "Szabályok: Egy játszma 11 pontig tart, kettő szervánként van szervacsere. A fogadónak végig kell látnia a szervát nyitott tenyérből.",
+            "Páros játszmában adogatásnál kell csak a fogadó térfelére ütni a labdát. Párosban a játékosok felváltva adogatnak."
+        ]
+    },
+    {
+        "category": "Baseball",
+        "rules": [
+            "Verseny célja: A támadó csapat célja, hogy az ütőjátékos a pályát körbefutva beszaladjon a negyedik, hazai bázisra. A védekező csapat feladata ennek megállítása.",
+            "Versenyzők száma: Két kilencfős csapat játszik egymás ellen.",
+            "Mérkőzés időtartama: Egy mérkőzés kilenc játékrészből (inningből) áll, döntetlen esetén hosszabbítás következhet.",
+            "Győztes megállapítása: Az a csapat nyer, amelyik a kilenc inning végén több pontot szerez.",
+            "Pontszerzési lehetőségek: Az a csapat szerez pontot, amelynek játékosa körbefutott a pályán, és a harmadik bázisról beszalad a negyedik, hazai bázisra.",
+            "Szabályok: A játéktéren négy bázis található. A játékot kilenc játékrészben (inning) játsszák. A csapatok akkor cserélnek helyet, ha a védő csapat az ütő csapat három játékosát kiejtette."
+        ]
+    },
+    {
+        "category": "Curling",
+        "rules": [
+            "Verseny célja: Az a csapat szerez pontot, amelynek kövei a játékrészek végén a legközelebb esnek a kijelölt kör középpontjához.",
+            "Versenyzők száma: Két négyfős csapat, vegyes párosban kétfős csapatok.",
+            "Mérkőzés időtartama: Egy mérkőzés tíz endből (játékrészből) állhat.",
+            "Győztes megállapítása: Az a csapat győz, amelyik az utolsó end végén több ponttal rendelkezik. Ha az állás döntetlen, a mérkőzést egy extra end lejátszásával döntik el.",
+            "Pontszerzési lehetőségek: A csapat annyi pontot kap, ahány köve van közelebb a középponthoz, mint az ellenfél legközelebbi köve.",
+            "Szabályok: Egy end 8–8 kő csúsztatásából áll. Minden end végén térfélcsere következik."
+        ]
+    },
+    {
+        "category": "Darts",
+        "rules": [
+            "Verseny célja: Minél nagyobb összegű pontot elérni (maximálisan 180). A játékosok felváltva dobnak körönként 3-3 nyilat.",
+            "Versenyzők száma: Két játékos egymás ellen, páros verseny esetén csapatonként két játékos.",
+            "Mérkőzés időtartama: A dartsban legeket, és szetteket kell nyerni (egy leg általában 501 pontról indul).",
+            "Győztes megállapítása: Az előre meghatározott számú szettet nyerő játékos nyeri a mérkőzést.",
+            "Pontszerzési lehetőségek: A tábla 20 egyenlő sávra van felosztva, 1-től 20-ig, dupla és tripla sávval. A leg megnyeréséhez általában dupla kiszálló szükséges.",
+            "Speciális fogadási lehetőségek: 180-ak száma X, Melyik játékos ér el több 180-at?"
+        ]
+    },
+    {
+        "category": "Floorball",
+        "rules": [
+            "Verseny célja: A floorball egy jégkoronghoz hasonló labdajáték, a csapatok célja a mérkőzés során a gólszerzés.",
+            "Versenyzők száma: Minden csapatból öt mezőnyjátékos és egy kapus van a pályán.",
+            "Mérkőzés időtartama: Egy mérkőzés 20 perces harmadokból áll tiszta játékidővel, köztük 10 perces szünetekkel.",
+            "Győztes megállapítása: A több gólt szerző csapat nyeri a mérkőzést.",
+            "Pontszerzési lehetőségek: Gólszerzés, a labda kapuba juttatásával.",
+            "Speciális fogadási lehetőségek: Gólszám X"
+        ]
+    },
+    {
+        "category": "Forma-1",
+        "rules": [
+            "Verseny célja: Az adott versenytávot leggyorsabban teljesíteni.",
+            "Versenyzők száma: Jelenleg 10 csapat versenyez a sorozatban, csapatonként 2 versenyzővel.",
+            "Mérkőzés időtartama: A versenyhétvége két pénteki szabadedzésből, egy szombati szabadedzésből, időmérő edzésből és a vasárnapi futamból áll.",
+            "Győztes megállapítása: A futamot leggyorsabban teljesítő versenyző nyeri az adott nagydíjat.",
+            "Pontszerzési lehetőségek: Az első 10 hely valamelyikének elérése.",
+            "Speciális fogadási lehetőségek: Hány versenyző ér el helyezést a futamon?"
+        ]
+    },
+    {
+        "category": "Futsal",
+        "rules": [
+            "Verseny célja: A csapatok célja a mérkőzés során a gólszerzés.",
+            "Versenyzők száma: Egy csapat négy mezőnyjátékosból és egy kapusból áll, maximum 7 cserejátékos lehet.",
+            "Mérkőzés időtartama: A mérkőzés két, egyenként 20 perces, tiszta játékidővel mért félidőből áll.",
+            "Győztes megállapítása: Az a csapat nyeri a mérkőzést, amelyik a játékidő során több gólt szerez.",
+            "Pontszerzési lehetőségek: Gólszerzés, a labdának az ellenfél kapujába juttatásával.",
+            "Szabályok: A labdát 4 mp-en belül játékba kell hoznia az arra jogosult csapatnak. Nincs bedobás, csak oldalberúgás."
+        ]
+    },
+    {
+        "category": "Gyeplabda",
+        "rules": [
+            "Verseny célja: A csapatok célja a mérkőzés során a gólszerzés.",
+            "Versenyzők száma: A gyeplabdában két 11 fős csapat (egy kapus és 10 mezőnyjátékos) játszik egymás ellen.",
+            "Mérkőzés időtartama: A szabadtéri gyeplabda játékideje kétszer 35 perc, 5 perc szünettel.",
+            "Győztes megállapítása: Az a csapat nyeri a mérkőzést, amelyik a játékidő során több gólt szerez.",
+            "Pontszerzési lehetőségek: Gólszerzés, a labdának az ellenfél kapujába juttatásával.",
+            "Szabályok: A labdához a mezőnyjátékosok kizárólag az ütővel érhetnek. A kapus a labdához bármely testrészével hozzáérhet."
+        ]
+    },
+    {
+        "category": "Jégkorong",
+        "rules": [
+            "Verseny célja: A csapatok célja a mérkőzés során a gólszerzés.",
+            "Versenyzők száma: Egy csapatból egyszerre 5 mezőnyjátékos, illetve egy kapus van a pályán.",
+            "Mérkőzés időtartama: A mérkőzés három, egyenként 20 perces harmadból áll.",
+            "Győztes megállapítása: A mérkőzést az a csapat nyeri, amelyik a játékidő során több gólt szerez.",
+            "Pontszerzési lehetőségek: Gólszerzés, a korongnak az ellenfél kapujába juttatásával.",
+            "Szabályok: A játékosok egy ütő segítségével irányítják a korongot a jégen. Érvényes gólt csak az ütővel lehet szerezni."
+        ]
+    },
+    {
+        "category": "Kézilabda",
+        "rules": [
+            "Verseny célja: A csapatok célja a mérkőzés során a gólszerzés.",
+            "Versenyzők száma: Egy csapatból egyszerre 6 mezőnyjátékos, illetve egy kapus van a pályán.",
+            "Mérkőzés időtartama: A mérkőzés két 30 perces félidőből áll.",
+            "Győztes megállapítása: A mérkőzést az a csapat nyeri, amelyik a játékidő során több gólt szerez.",
+            "Pontszerzési lehetőségek: Gólszerzés, a labdának az ellenfél kapujába juttatásával.",
+            "Szabályok: A játékosok térd fölött bármely testrészükkel érinthetik a labdát. A labdát birtokolni csak úgy szabad, hogy három lépésenként vagy három másodpercenként le kell pattintani."
+        ]
+    },
+    {
+        "category": "Kosárlabda",
+        "rules": [
+            "Verseny célja: A csapatok célja a mérkőzés során a labdának az ellenfél kosarába juttatása.",
+            "Versenyzők száma: Egy csapatból egyszerre 5 játékos van a pályán.",
+            "Mérkőzés időtartama: Egy mérkőzés az NBA-ban négy, egyenként 12 perces negyedből áll.",
+            "Győztes megállapítása: A mérkőzést az a csapat nyeri, amelyik a játékidő során több pontot szerez.",
+            "Pontszerzési lehetőségek: Két pontos mezőnykosár, 3 pontos dobás, illetve egy pontos büntetődobás.",
+            "Szabályok: A kosárlabda lepattintása nélkül a labdával nem lehet egy lépésnél többet haladni."
+        ]
+    },
+    {
+        "category": "Labdarúgás",
+        "rules": [
+            "Verseny célja: A csapatok célja a mérkőzés során a gólszerzés.",
+            "Versenyzők száma: Egy csapatból egyszerre 10 mezőnyjátékos, illetve egy kapus van a pályán.",
+            "Mérkőzés időtartama: A mérkőzés két, egyenként 45 perces félidőből áll.",
+            "Győztes megállapítása: A mérkőzést az a csapat nyeri, amelyik a játékidő során több gólt szerez.",
+            "Pontszerzési lehetőségek: Gólszerzés, a labdának az ellenfél kapujába juttatásával.",
+            "Szabályok: Egy csapatból legfeljebb tizenegy játékos lehet egyszerre a játéktéren. Gólnak számít, amikor a labda teljes terjedelmével áthalad a kapuvonalon."
+        ]
+    },
+    {
+        "category": "Rögbi",
+        "rules": [
+            "Verseny célja: Mind a két csapat megpróbál a labda vitelével, passzolásával, rúgásával és lehelyezésével minél több pontot szerezni.",
+            "Versenyzők száma: Az uniós változatban 15 fős csapatok küzdenek egymás ellen, a ligarögbi változatban 13 fős csapatok mérkőznek.",
+            "Mérkőzés időtartama: A játékidő két, egyenként 40 perces félidőből áll.",
+            "Győztes megállapítása: A mérkőzést az a csapat nyeri, amelyik a játékidő során több pontot szerez.",
+            "Pontszerzési lehetőségek: Céltéritás (5 pont), jutalomrúgás (2 pont), drop rúgás (3 pont), büntetőrúgás (3 pont).",
+            "Szabályok: A labdát csak hátrafelé lehet passzolni, előre csak vinni vagy rúgni szabad."
+        ]
+    },
+    {
+        "category": "Röplabda",
+        "rules": [
+            "Verseny célja: A csapatok célja a mérkőzés során, hogy a labdát úgy juttassák át a másik csapat térfelére, hogy a másik csapat játékosai ne tudják azt visszaütni.",
+            "Versenyzők száma: Egy csapatból egyszerre hat játékos van a pályán.",
+            "Mérkőzés időtartama: A mérkőzés három nyert játszmáig tart. Egy játszma megnyeréséhez 25 pontot kell szerezni.",
+            "Győztes megállapítása: A mérkőzést az a csapat nyeri, amelyik előbb nyer 3 játszmát.",
+            "Pontszerzési lehetőségek: Ha a labda leesik valamelyik térfélen, az ellenfél pontot kap.",
+            "Szabályok: Mindkét csapat háromszor érintheti meg a labdát mielőtt továbbítja azt a másik térfélre."
+        ]
+    },
+    {
+        "category": "Snooker",
+        "rules": [
+            "Verseny célja: A játékosok célja az asztalon lévő golyók elhelyezése a zsebekbe, így minél több pont gyűjtése.",
+            "Versenyzők száma: Egy mérkőzést két játékos vagy ritkább esetben két csapat játssza egymás ellen.",
+            "Mérkőzés időtartama: Egy mérkőzés a versenykiírástól függő, előre meghatározott számú frame megnyeréséig tart.",
+            "Győztes megállapítása: Aki több frame-et nyeri, az a mérkőzés győztese.",
+            "Pontszerzési lehetőségek: Piros golyó egy pont értékben, színes golyók kettőtől hétig terjedő pontértékkel.",
+            "Szabályok: Az első lökést úgy kell elvégezni, hogy a kezdőjátékos a D-mezőben helyezi el a fehér golyót."
+        ]
+    },
+    {
+        "category": "Strandfoci",
+        "rules": [
+            "Verseny célja: A csapatok célja a mérkőzés során a gólszerzés.",
+            "Versenyzők száma: Egy csapat 4 mezőnyjátékosból, illetve egy kapusból áll.",
+            "Mérkőzés időtartama: A játékidő háromszor 12 perc, a szünet nem lehet több 1 percnél.",
+            "Győztes megállapítása: A mérkőzést az a csapat nyeri, amelyik a játékidő során több gólt szerez.",
+            "Pontszerzési lehetőségek: Gólszerzés, a labdának az ellenfél kapujába juttatásával.",
+            "Szabályok: Csak közvetlen szabadrúgás van. A büntetőrúgást 8 méterről kell elvégezni."
+        ]
+    },
+    {
+        "category": "Strandröplabda",
+        "rules": [
+            "Verseny célja: A csapatok célja a mérkőzés során, hogy a labdát úgy juttassák át a másik csapat térfelére, hogy a másik csapat játékosai ne tudják visszaütni.",
+            "Versenyzők száma: A strandröplabdában 2, kétfős csapat játszik egymás ellen.",
+            "Mérkőzés időtartama: Egy mérkőzés maximum 3 játszmából áll. A játszmákat 21 pontig játsszák, az utolsót azonban csak 15-ig.",
+            "Győztes megállapítása: A mérkőzést az a csapat nyeri, amelyik előbb nyer 2 játszmát.",
+            "Pontszerzési lehetőségek: A labda átjuttatása a másik csapat térfelére, az ellenfél hibára kényszerítése.",
+            "Szabályok: A csapatok nem érhetnek háromnál többször a labdába, valamint egymás után kétszer ugyanaz az ember nem üthet a labdába."
+        ]
+    },
+    {
+        "category": "Tenisz",
+        "rules": [
+            "Verseny célja: A játék célja pályán tartani a labdát, lehetőleg úgy, hogy az ellenfél erre ne legyen képes.",
+            "Versenyzők száma: A teniszben két játékos (egyéni), vagy két-két játékos (páros) játszik egymás ellen.",
+            "Mérkőzés időtartama: Egy egyéni meccs tarthat két vagy három nyert szettig.",
+            "Győztes megállapítása: A mérkőzést az a játékos vagy páros nyeri, amelyik előbb éri el a szabályok által előírt mennyiségű megnyert szettet.",
+            "Pontszerzési lehetőségek: A labda átjuttatása a másik játékos térfelére, úgy, hogy a másik játékos ne tudja visszaütni.",
+            "Szabályok: Egy teniszmeccs labdamenetekből, játékokból (game), játszmákból (szett) áll. A game megnyeréséhez legalább négy labdamenetet meg kell nyernie."
+        ]
+    },
+    {
+        "category": "Tollaslabda",
+        "rules": [
+            "Verseny célja: Az adogatónak úgy kell megütnie a labdát, hogy az beavatkozás nélkül a fogadóterületre essen.",
+            "Versenyzők száma: A tollaslabdában két játékos (egyéni), vagy két-két játékos (páros) játszik egymás ellen.",
+            "Mérkőzés időtartama: Minden játszmát 21 pontig játszanak, a mérkőzést két nyert játszmáig játsszák.",
+            "Győztes megállapítása: Az a játékos/páros nyeri a mérkőzést, aki előbb éri el a két nyert játszmát.",
+            "Pontszerzési lehetőségek: A labda földet ér az ellenfél térfelén, vagy ha az ellenfél hibát követ el.",
+            "Szabályok: Adogatáskor a labdát derékvonal alatt kell megütni, a labdát nem szabad feldobni."
+        ]
+    },
+    {
+        "category": "Vízilabda",
+        "rules": [
+            "Verseny célja: A csapatok célja a mérkőzés során a gólszerzés.",
+            "Versenyzők száma: Két, 7–7 fős csapat (hat mezőnyjátékos + egy kapus) mérkőzik egymás ellen.",
+            "Mérkőzés időtartama: A mérkőzés 8 perces, tiszta játékidővel mért negyedekből áll.",
+            "Győztes megállapítása: A több gólt szerző csapat nyeri a mérkőzést.",
+            "Pontszerzési lehetőségek: Gólt dobni akcióból bárhonnan lehet, illetve rögzített helyzetben kapuskidobásból vagy 5 méteren kívülről.",
+            "Szabályok: A labdát a test bármely részével meg szabad érinteni. Egy csapatnak 30 másodperce van arra, hogy támadjon."
+        ]
+    }
+]
