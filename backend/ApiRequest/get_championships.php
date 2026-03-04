@@ -1,58 +1,76 @@
 <?php
-require_once "connect.php"; 
+require_once "connect.php";
 
-// API endpoint
-$url = "http://localhost:5000/api/sports/championships";
+// 1) ÖSSZES sport lekérése az API-ból
+$urlSports = "http://localhost:5000/api/sports";
 
-// cURL indítása
-$ch = curl_init($url);
+$ch = curl_init($urlSports);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-$response = curl_exec($ch);
+$sportsResponse = curl_exec($ch);
+if ($sportsResponse === false) {
+    die("cURL hiba (sports): " . curl_error($ch));
+}
 curl_close($ch);
 
-// JSON decode
-$data = json_decode($response, true);
-
-if (!is_array($data)) {
-    die("API HIBA: nem tömb érkezett.");
+$sports = json_decode($sportsResponse, true);
+if (!is_array($sports)) {
+    die("API HIBA: sports nem tömb.");
 }
 
-foreach ($data as $champ) {
+// 2) Prepared statement a bajnokság upsert-re
+$stmtUpsertChamp = $conn->prepare("
+    INSERT INTO Championships (api_id, sport_id, country_code, name)
+    VALUES (?, ?, ?, ?)
+    ON DUPLICATE KEY UPDATE
+        sport_id = VALUES(sport_id),
+        country_code = VALUES(country_code),
+        name = VALUES(name)
+");
 
-    $api_id      = $champ['id'];
-    $sport_id    = $champ['sportId'];
-    $countryCode = $champ['countryCode'];
-    $name        = $champ['name'];
+// 3) Minden sporthoz: bajnokságok importja
+foreach ($sports as $sport) {
+    $sportId   = $sport['id'];   // pl. 66 foci, 67 kosár, 70 jégkorong...
+    $sportName = $sport['name'];
 
-    // 🔹 Ha nincs countryCode → legyen "INT" / "International"
-    if (!$countryCode || trim($countryCode) === "") {
-        $countryCode = "INT";
-        $countryName = "International";
-    } else {
-        // Ha van kód, egyelőre a kódot tesszük névnek is (később cserélhető valódi névre)
-        $countryName = $countryCode;
+    // Ha akarsz, itt szűrhetsz csak bizonyos sportokra
+    // if ($sportId != 66 && $sportId != 67) continue;
+
+    $urlChamps = "http://localhost:5000/api/sports/championships?sportId=" . $sportId;
+
+    $ch = curl_init($urlChamps);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $champsResponse = curl_exec($ch);
+
+    if ($champsResponse === false) {
+        echo "cURL hiba sportId=$sportId ($sportName): " . curl_error($ch) . "\n";
+        continue;
+    }
+    curl_close($ch);
+
+    $champs = json_decode($champsResponse, true);
+    if (!is_array($champs)) {
+        echo "API HIBA: championships nem tömb sportId=$sportId ($sportName)\n";
+        continue;
     }
 
-    // 1) Ország beszúrása / frissítése
-    $stmtCountry = $conn->prepare("
-        INSERT INTO Countries (code, name)
-        VALUES (?, ?)
-        ON DUPLICATE KEY UPDATE name = VALUES(name)
-    ");
-    $stmtCountry->bind_param("ss", $countryCode, $countryName);
-    $stmtCountry->execute();
-    $stmtCountry->close();
+    foreach ($champs as $champ) {
+        $apiChampId  = $champ['id'];          // API-beli leagueId
+        $countryCode = $champ['countryCode'] ?: null;
+        $champName   = $champ['name'];
 
-    // 2) Bajnokság beszúrása / frissítése
-    $stmt = $conn->prepare("
-        INSERT INTO Championships (api_id, sport_id, country_code, name)
-        VALUES (?, ?, ?, ?)
-        ON DUPLICATE KEY UPDATE name = VALUES(name)
-    ");
-    $stmt->bind_param("iiss", $api_id, $sport_id, $countryCode, $name);
-    $stmt->execute();
-    $stmt->close();
+        $stmtUpsertChamp->bind_param(
+            "iiss",
+            $apiChampId,
+            $sportId,
+            $countryCode,
+            $champName
+        );
+        $stmtUpsertChamp->execute();
+    }
+
+    echo "Importálva: sportId=$sportId ($sportName) bajnokságai.\n";
 }
 
-echo "Championships import kész!";
+$stmtUpsertChamp->close();
+
+echo "Minden sport bajnokságai frissítve.\n";

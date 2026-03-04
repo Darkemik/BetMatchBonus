@@ -1,3 +1,25 @@
+<?php
+
+
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+  header("Location: registermodal.php");
+  exit;
+}
+
+$username = $_POST['username'] ?? null;
+$email = $_POST['email'] ?? null;
+$password = $_POST['password'] ?? null;
+$terms_rules = isset($_POST['terms_rules']);
+$terms_privacy = isset($_POST['terms_privacy']);
+
+if ($username === '' || $email === '' || $password === '' || !$terms_rules || !$terms_privacy) {
+  die("Hiányzó adat vagy nincs elfogadva a feltétel.");
+
+}
+?>
+
+
+
 <div class="modal fade" id="registerModal2" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -13,7 +35,7 @@
             </div>
 
             <div class="modal-body">
-                <form id="registerModal2Form">
+            <form id="registerModalForm" action="../../frontend/Components/registermodal2.php" method="POST">
                     <div class="row">
                         <div class="col-md-6">
                             <label class="form-label">Előnév (ha van)</label>

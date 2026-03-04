@@ -11,9 +11,9 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-
+            
             <div class="modal-body">
-                <form id="registerModalForm">
+                <form id="registerModalForm" action="../../frontend/Components/registermodal2.php" method="POST">
                     <label class="form-label">Felhasználónév</label>
                     <input type="text" name="username" class="form-control mb-3" placeholder="Felhasználónév" required>
 
