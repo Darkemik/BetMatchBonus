@@ -1,3 +1,4 @@
+<!-- ⚡ NINCS PHP rész a tetején – tiszta HTML modal -->
 <div class="modal fade" id="registerModal2" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">

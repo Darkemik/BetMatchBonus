@@ -1,66 +1,126 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const form = document.getElementById('registerModalForm');
-    const result = document.getElementById('registerModalResult');
+    var dateInput = document.getElementById('modal2-date-input');
+    var ageResult = document.getElementById('modal2-age-result');
+    var calcAge = document.getElementById('modal2-calculated_age');
+    var form = document.getElementById('registerModal2Form');
+    var result = document.getElementById('registerModal2Result');
 
-    var switchToLogin = document.getElementById('switchToLogin');
-    if (switchToLogin) {
-        switchToLogin.addEventListener('click', function (e) {
+    // Dátum gépelés tiltása
+    dateInput.addEventListener('keydown', function (e) { e.preventDefault(); });
+    dateInput.addEventListener('click', function () {
+        if (dateInput.showPicker) dateInput.showPicker();
+    });
+
+    // Kor számítás
+    dateInput.addEventListener('change', function () {
+        if (!this.value) {
+            ageResult.textContent = '';
+            calcAge.value = '';
+            return;
+        }
+        var birth = new Date(this.value);
+        var now = new Date();
+        var age = now.getFullYear() - birth.getFullYear();
+        var m = now.getMonth() - birth.getMonth();
+        if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+        calcAge.value = age;
+        ageResult.textContent = 'Életkor: ' + age;
+
+        if (age < 18) {
+            result.textContent = '18 éves kor alatt nem lehet regisztrálni!';
+            result.style.color = 'red';
+        } else {
+            result.textContent = '';
+        }
+    });
+
+    // Kép előnézet
+    function setupPreview(inputId, imgId) {
+        var fileInput = document.getElementById(inputId);
+        var img = document.getElementById(imgId);
+        fileInput.addEventListener('change', function () {
+            if (this.files[0]) {
+                img.src = URL.createObjectURL(this.files[0]);
+                img.style.display = 'block';
+            }
+        });
+    }
+    setupPreview('modal2-id_image_first', 'modal2-id_preview_first');
+    setupPreview('modal2-id_image_second', 'modal2-id_preview_second');
+    setupPreview('modal2-address_image', 'modal2-address_preview');
+
+    // Vissza gomb
+    var backBtn = document.getElementById('backToRegister1');
+    if (backBtn) {
+        backBtn.addEventListener('click', function (e) {
             e.preventDefault();
-            var regModal = bootstrap.Modal.getInstance(document.getElementById('registerModal'));
-            if (regModal) regModal.hide();
-            var loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
-            loginModal.show();
+            var reg2 = bootstrap.Modal.getInstance(document.getElementById('registerModal2'));
+            if (reg2) reg2.hide();
+            var reg1 = new bootstrap.Modal(document.getElementById('registerModal'));
+            reg1.show();
         });
     }
 
-    document.querySelectorAll('#registerModal .toggle-password').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            const input = document.getElementById(btn.getAttribute('data-target'));
-            const isPassword = input.type === 'password';
-            input.type = isPassword ? 'text' : 'password';
-            btn.querySelector('.eye-icon').style.display = isPassword ? 'none' : 'inline';
-            btn.querySelector('.eye-slash-icon').style.display = isPassword ? 'inline' : 'none';
-        });
-    });
-
+    // ⚡ REGISZTRÁCIÓ KÜLDÉS – AJAX-szal a backendnek
     form.addEventListener('submit', function (e) {
-        const username = form.querySelector('input[name="username"]').value.trim();
-        const email = document.getElementById('modal-email').value.trim();
-        const email2 = document.getElementById('modal-email2').value.trim();
-        const pass = document.getElementById('modal-password').value;
-        const pass2 = document.getElementById('modal-password2').value;
-
-        if (username.length < 2) {
-            e.preventDefault();
-            result.textContent = 'A felhasználónév legalább 2 karakter legyen!';
-            return;
-        }
-
-        if (email !== email2) {
-            e.preventDefault();
-            result.textContent = 'A két email cím nem egyezik!';
-            return;
-        }
-
-        if (pass.length < 7) {
-            e.preventDefault();
-            result.textContent = 'A jelszó legalább 7 karakter legyen!';
-            return;
-        }
-
-        if (pass !== pass2) {
-            e.preventDefault();
-            result.textContent = 'A két jelszó nem egyezik!';
-            return;
-        }
-
-        result.textContent = '';
-
-        // If validation passes, open step 2 modal
         e.preventDefault();
-        var regModal = bootstrap.Modal.getInstance(document.getElementById('registerModal'));
-        if (regModal) regModal.hide();
-        var regModal2 = new bootstrap.Modal(document.getElementById('registerModal2'));
-        regModal2.show();
+
+        var age = parseInt(calcAge.value);
+        if (isNaN(age) || age < 18) {
+            result.textContent = '18 éves kor alatt nem lehet regisztrálni!';
+            result.style.color = 'red';
+            return;
+        }
+
+        // Ellenőrzés: 1. lépés adatai megvannak-e
+        if (!window.registerStep1Data) {
+            result.textContent = 'Hiba: Kérlek kezdd újra a regisztrációt!';
+            result.style.color = 'red';
+            return;
+        }
+
+        // Összes adat összegyűjtése FormData-ba
+        var formData = new FormData();
+
+        // 1. lépés adatai (memóriából)
+        formData.append('username', window.registerStep1Data.username);
+        formData.append('email', window.registerStep1Data.email);
+        formData.append('password', window.registerStep1Data.password);
+        formData.append('terms_rules', window.registerStep1Data.terms_rules);
+        formData.append('terms_privacy', window.registerStep1Data.terms_privacy);
+
+        // 2. lépés adatai (formból)
+        formData.append('pre_name', form.querySelector('input[name="Pre_name"]').value.trim());
+        formData.append('family_name', form.querySelector('input[name="family_name"]').value.trim());
+        formData.append('sure_name', form.querySelector('input[name="Sure_name"]').value.trim());
+        formData.append('mother_full_name', form.querySelector('input[name="mother_full_name"]').value.trim());
+        formData.append('birthplace', form.querySelector('input[name="birthplace"]').value.trim());
+        formData.append('birthdate', dateInput.value);
+        formData.append('calculated_age', calcAge.value);
+
+        // Küldés a backendnek
+        result.textContent = 'Regisztráció folyamatban...';
+        result.style.color = '#666';
+
+        fetch('../../backend/Auth/register.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (data.success) {
+                result.style.color = 'green';
+                result.textContent = data.message;
+                setTimeout(function () { location.reload(); }, 1500);
+            } else {
+                result.style.color = 'red';
+                result.textContent = data.message;
+            }
+        })
+        .catch(function (err) {
+            result.style.color = 'red';
+            result.textContent = 'Hiba történt a regisztráció során.';
+            console.error(err);
+        });
     });
 });

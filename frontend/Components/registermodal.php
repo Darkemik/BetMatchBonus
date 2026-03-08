@@ -13,6 +13,7 @@
             </div>
 
             <div class="modal-body">
+                
                 <form id="registerModalForm">
                     <label class="form-label">Felhasználónév</label>
                     <input type="text" name="username" class="form-control mb-3" placeholder="Felhasználónév" required>
