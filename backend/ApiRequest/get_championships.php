@@ -55,7 +55,8 @@ foreach ($sports as $sport) {
 
     foreach ($champs as $champ) {
         $apiChampId  = $champ['id'];          // API-beli leagueId
-        $countryCode = $champ['countryCode'] ?: null;
+        $countryCode = !empty($champ['countryCode']) ? $champ['countryCode'] : 'INT';
+
         $champName   = $champ['name'];
 
         $stmtUpsertChamp->bind_param(
