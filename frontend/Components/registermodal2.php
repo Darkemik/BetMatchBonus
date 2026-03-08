@@ -14,7 +14,7 @@
             </div>
 
             <div class="modal-body">
-            <form id="registerModalForm" action="../../frontend/Components/registermodal2.php" method="POST">
+            <form id="registerModal2Form">
                     <div class="row">
                         <div class="col-md-6">
                             <label class="form-label">Előnév (ha van)</label>
