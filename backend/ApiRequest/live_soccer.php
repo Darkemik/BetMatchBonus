@@ -1,3 +1,4 @@
+
 <?php
 require_once "connect.php";
 
@@ -25,4 +26,4 @@ while ($row = $res->fetch_assoc()) {
 }
 
 header('Content-Type: application/json; charset=utf-8');
-echo json_encode($matches);
+echo json_encode($matches); 
