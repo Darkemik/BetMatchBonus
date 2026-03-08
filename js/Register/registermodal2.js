@@ -63,14 +63,71 @@ document.addEventListener('DOMContentLoaded', function () {
     // Form submit
     form.addEventListener('submit', function (e) {
         e.preventDefault();
+
         var age = parseInt(calcAge.value);
         if (isNaN(age) || age < 18) {
             result.textContent = '18 éves kor alatt nem lehet regisztrálni!';
+            result.style.color = 'red';
             return;
         }
-        result.textContent = '';
-        alert('Regisztráció sikeres!');
-        var reg2 = bootstrap.Modal.getInstance(document.getElementById('registerModal2'));
-        if (reg2) reg2.hide();
+
+        // Ellenőrzés: 1. lépés adatai megvannak-e
+        if (!window.registerStep1Data) {
+            result.textContent = 'Hiba: Kérlek kezdd újra a regisztrációt!';
+            result.style.color = 'red';
+            return;
+        }
+
+        // Összes adat összegyűjtése FormData-ba
+        var formData = new FormData();
+
+        // 1. lépés adatai (memóriából)
+        formData.append('username', window.registerStep1Data.username);
+        formData.append('email', window.registerStep1Data.email);
+        formData.append('password', window.registerStep1Data.password);
+        formData.append('terms_rules', window.registerStep1Data.terms_rules);
+        formData.append('terms_privacy', window.registerStep1Data.terms_privacy);
+
+        // 2. lépés adatai (formból)
+        formData.append('pre_name', form.querySelector('input[name="Pre_name"]').value.trim());
+        formData.append('family_name', form.querySelector('input[name="family_name"]').value.trim());
+        formData.append('sure_name', form.querySelector('input[name="Sure_name"]').value.trim());
+        formData.append('mother_full_name', form.querySelector('input[name="mother_full_name"]').value.trim());
+        formData.append('birthplace', form.querySelector('input[name="birthplace"]').value.trim());
+        formData.append('birthdate', dateInput.value);
+        formData.append('calculated_age', calcAge.value);
+
+        // Fájlok csatolása
+        var idFirst = document.getElementById('modal2-id_image_first');
+        var idSecond = document.getElementById('modal2-id_image_second');
+        var addressImg = document.getElementById('modal2-address_image');
+        if (idFirst.files[0]) formData.append('id_image_first', idFirst.files[0]);
+        if (idSecond.files[0]) formData.append('id_image_second', idSecond.files[0]);
+        if (addressImg.files[0]) formData.append('address_image', addressImg.files[0]);
+
+        // Küldés a backendnek
+        result.textContent = 'Regisztráció folyamatban...';
+        result.style.color = '#666';
+
+        fetch('../../backend/Auth/register.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (data.success) {
+                result.style.color = 'green';
+                result.textContent = data.message;
+                setTimeout(function () { location.reload(); }, 1500);
+            } else {
+                result.style.color = 'red';
+                result.textContent = data.message;
+            }
+        })
+        .catch(function (err) {
+            result.style.color = 'red';
+            result.textContent = 'Hiba történt a regisztráció során.';
+            console.error(err);
+        });
     });
 });
