@@ -1,8 +1,11 @@
 <?php
 require_once "connect.php";
 
-// 0) A Matches táblában csak az aktuális élő meccsek legyenek (minden sportágból)
-$conn->query("TRUNCATE TABLE Matches");
+// score oszlop hozzáadása ha még nincs
+$conn->query("ALTER TABLE Matches ADD COLUMN IF NOT EXISTS score VARCHAR(20) DEFAULT NULL");
+
+// Csak az élő meccseket töröljük, a napi (nem élő) meccsek maradnak
+$conn->query("DELETE FROM Matches WHERE is_live = 1");
 
 // 1) API hívás – ÖSSZES élő meccs, minden sport
 $url = "http://localhost:5000/api/matches/live";
@@ -32,15 +35,16 @@ $stmtFindChamp = $conn->prepare("
 
 // Meccs beszúrása / frissítése
 $stmtUpsertMatch = $conn->prepare("
-    INSERT INTO Matches (api_id, sport_id, championship_id, name, start_utc, is_live, live_time)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO Matches (api_id, sport_id, championship_id, name, start_utc, is_live, live_time, score)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     ON DUPLICATE KEY UPDATE
         sport_id = VALUES(sport_id),
         championship_id = VALUES(championship_id),
         name = VALUES(name),
         start_utc = VALUES(start_utc),
         is_live = VALUES(is_live),
-        live_time = VALUES(live_time)
+        live_time = VALUES(live_time),
+        score = VALUES(score)
 ");
 
 // 3) Végigmegyünk az összes élő meccsen (minden sport)
@@ -52,6 +56,12 @@ foreach ($data as $match) {
     $startUtcStr  = $match['startDateUtc'];
     $isLive       = $match['isLive'] ? 1 : 0;
     $liveTime     = $match['liveTime'] ?? null;
+    
+    // Score kezelése
+    $scoreArr = $match['score'] ?? [];
+    $scoreStr = (!empty($scoreArr) && count($scoreArr) >= 2) 
+        ? $scoreArr[0] . ' - ' . $scoreArr[1] 
+        : null;
 
     // biztos, ami biztos: csak élő
     if (!$isLive) {
@@ -108,19 +118,20 @@ foreach ($data as $match) {
 
     // 3/b) startDateUtc konvertálása MySQL DATETIME-ra (UTC-ben)
     $dt = new DateTime($startUtcStr);
-    $dt->setTimezone(new DateTimeZone('UTC'));
+    $dt->setTimezone(new DateTimeZone('CET')); // Magyar időzóna
     $startUtcMysql = $dt->format('Y-m-d H:i:s');
 
     // 3/c) Meccs beszúrása / frissítése
     $stmtUpsertMatch->bind_param(
-        "iiissis",
+        "iiississ",
         $apiMatchId,
         $sportFromApi,
         $championshipId,
         $name,
         $startUtcMysql,
         $isLive,
-        $liveTime
+        $liveTime,
+        $scoreStr
     );
     $stmtUpsertMatch->execute();
 }

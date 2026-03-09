@@ -1,26 +1,42 @@
-/*fetch("../../json/sportszabalyok.json")
+fetch("../../json/sportszabalyok.json")
     .then(res => res.json())
     .then(data => {
         const container = document.getElementById("sportszabalyokContainer");
 
         data.forEach(category => {
-            const cat = document.createElement("details");
-            cat.classList.add("level0");
+            const card = document.createElement("div");
+            card.classList.add("sport-card");
 
-            cat.innerHTML = `
-                <summary class="help-summary">${category.category}</summary>
-            `;
+            const header = document.createElement("button");
+            header.classList.add("sport-card-header");
+            header.textContent = category.category;
+            header.setAttribute("aria-expanded", "false");
+
+            const body = document.createElement("div");
+            body.classList.add("sport-card-body");
+            body.hidden = true;
+
+            const list = document.createElement("ol");
+            list.classList.add("sport-rules-list");
 
             category.rules.forEach(rule => {
-                const ruleEl = document.createElement("p");
-                ruleEl.classList.add("rule-text");
-                ruleEl.textContent = rule;
-
-                cat.appendChild(ruleEl);
+                const item = document.createElement("li");
+                item.textContent = rule;
+                list.appendChild(item);
             });
 
-            container.appendChild(cat);
+            body.appendChild(list);
+
+            header.addEventListener("click", () => {
+                const isOpen = !body.hidden;
+                body.hidden = isOpen;
+                header.setAttribute("aria-expanded", String(!isOpen));
+                header.classList.toggle("open", !isOpen);
+            });
+
+            card.appendChild(header);
+            card.appendChild(body);
+            container.appendChild(card);
         });
     })
     .catch(err => console.error("Sportszabályok JSON betöltési hiba:", err));
- */

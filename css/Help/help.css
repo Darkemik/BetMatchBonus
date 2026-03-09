@@ -218,38 +218,6 @@ details.level1 summary:after {
     color: black;
 }
 
-.accordion-item {
-    border: 1px solid #ccc;
-    margin-bottom: 5px;
-}
-
-.accordion-header {
-    width: 100%;
-    padding: 15px;
-    text-align: left;
-    background: #f0f0f0;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-}
-
-.accordion-header:hover {
-    background: #ddd;
-}
-
-.accordion-content {
-    padding: 0 15px;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease-out;
-}
-
-.accordion-content.active {
-    max-height: 200px;
-    padding: 15px;
-}
-
 @media (max-width: 1024px) {
     .help-container {
         flex-wrap: wrap;
@@ -274,10 +242,6 @@ details.level1 summary:after {
         margin-top: 20px;
     }
 
-    .promo-card {
-        flex: 1 1 calc(33.333% - 20px);
-        min-width: 250px;
-    }
 }
 
 @media (max-width: 768px) {
@@ -298,10 +262,6 @@ details.level1 summary:after {
         flex-direction: column;
     }
 
-    .promo-card {
-        flex: 1 1 100%;
-    }
-
     .main-content h1 {
         font-size: 20px;
     }
@@ -318,8 +278,7 @@ details.level1 summary:after {
     }
 
     .main-content,
-    .left-sidebar,
-    .promo-card {
+    .left-sidebar {
         padding: 15px;
     }
 
@@ -328,18 +287,131 @@ details.level1 summary:after {
         font-size: 13px;
     }
 
-    .details-btn {
-        padding: 8px 15px;
-        font-size: 13px;
-    }
 }
 
-#segitsegszoveg {
-    color: orange;
+.sport-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    overflow: hidden;
 }
 
-#bonuszszoveg:hover,
-#fooldalszoveg:hover,
-#eloszoveg:hover {
-    color: #ffc89b;
+.sport-card-header {
+    width: 100%;
+    text-align: left;
+    background-color: #f5f9ff;
+    border: none;
+    padding: 12px 16px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s ease;
+}
+
+.sport-card-header::after {
+    content: "+";
+    font-size: 20px;
+    font-weight: bold;
+    color: #3498db;
+    transition: transform 0.2s ease;
+}
+
+.sport-card-header.open {
+    background-color: #e8f3fc;
+    border-bottom: 2px solid #3498db;
+}
+
+.sport-card-header.open::after {
+    content: "−";
+}
+
+.sport-card-header:hover {
+    background-color: #dceefb;
+}
+
+.sport-card-body {
+    padding: 14px 18px;
+    background-color: #fff;
+}
+
+.sport-rules-list {
+    margin: 0;
+    padding-left: 20px;
+    color: #444;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.sport-rules-list li {
+    margin-bottom: 8px;
+    padding-left: 4px;
+}
+
+/* Szótár */
+.szotar-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.szotar-nav-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    background-color: #f5f9ff;
+    border: 1px solid #c8dff5;
+    border-radius: 4px;
+    color: #2c6eaf;
+    font-weight: 700;
+    font-size: 14px;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.szotar-nav-btn:hover {
+    background-color: #3498db;
+    color: #fff;
+    border-color: #3498db;
+}
+
+.szotar-section {
+    margin-bottom: 28px;
+}
+
+.szotar-letter {
+    font-size: 20px;
+    font-weight: 700;
+    color: #3498db;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 4px;
+    margin-bottom: 12px;
+}
+
+.szotar-list {
+    margin: 0;
+}
+
+.szotar-term {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-top: 12px;
+    margin-bottom: 4px;
+}
+
+.szotar-def {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.6;
+    margin-left: 0;
+    padding: 10px 14px;
+    background-color: #f9f9f9;
+    border-left: 3px solid #3498db;
+    border-radius: 0 4px 4px 0;
 }

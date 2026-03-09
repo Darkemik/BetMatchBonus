@@ -1,12 +1,10 @@
 .elo-main {
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     min-height: 80vh;
-    padding-bottom: 20px !important;
-    border: 2px solid red;
+    padding: 20px 10px 20px 10px !important;
     margin-bottom: 0;
-    border-bottom: none;
 }
 
 .elo-container {
@@ -16,16 +14,19 @@
 
 .elo-title {
     text-align: center;
-    color: #333;
+    color: #e0e0e0;
     margin-bottom: 30px;
-    font-size: 32px;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 1px;
 }
 
+/* ===== TABS ===== */
 .tabs-container {
     display: flex;
     gap: 10px;
     margin-bottom: 20px;
-    border-bottom: 2px solid #eee;
+    border-bottom: 2px solid rgba(255,255,255,0.08);
     padding-bottom: 10px;
 }
 
@@ -35,20 +36,21 @@
     border: none;
     font-size: 16px;
     cursor: pointer;
-    color: #666;
+    color: #aaa;
     transition: all 0.3s ease;
     border-radius: 5px 5px 0 0;
 }
 
 .tab-button:hover {
-    background: #f0f0f0;
+    background: rgba(255,255,255,0.05);
+    color: #fff;
 }
 
 .tab-button.active {
     color: #4CAF50;
     font-weight: bold;
     border-bottom: 3px solid #4CAF50;
-    background: #f8f9fa;
+    background: rgba(76,175,80,0.08);
 }
 
 .tab-content {
@@ -59,71 +61,159 @@
     display: block;
 }
 
+/* ===== TÁBLA ===== */
 .matches-table {
     width: 100%;
-    border-collapse: collapse;
-    background: white;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: #1a2233;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    border-radius: 14px;
     overflow: hidden;
     margin: 0 auto;
 }
 
 .matches-table thead {
-    background: #2c3e50;
-    color: white;
+    background: linear-gradient(135deg, #1e3a2f 0%, #1a2e25 100%);
 }
 
-.matches-table th {
-    padding: 15px;
+.matches-table thead th {
+    padding: 16px 18px;
     text-align: center;
     font-weight: 600;
+    font-size: 14px;
+    color: #8ccfaa;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    border-bottom: 2px solid rgba(76,175,80,0.25);
+    white-space: nowrap;
+}
+
+.matches-table thead th i {
+    margin-right: 6px;
+    font-size: 13px;
+    opacity: 0.7;
+}
+
+.matches-table tbody tr {
+    transition: background 0.2s ease;
+}
+
+.matches-table tbody tr:nth-child(even) {
+    background: rgba(255,255,255,0.02);
+}
+
+.matches-table tbody tr:hover {
+    background: rgba(76,175,80,0.08);
+    cursor: pointer;
 }
 
 .matches-table td {
-    padding: 12px 15px;
-    border-bottom: 1px solid #eee;
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
     text-align: center;
     vertical-align: middle;
+    color: #d0d8e0;
+    font-size: 14px;
 }
 
-.live-badge {
+.matches-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Ország */
+.country-name {
+    font-weight: 500;
+    color: #90a4ae;
+    font-size: 13px;
+}
+
+/* Bajnokság */
+.league-name {
+    font-weight: 600;
+    color: #b0bec5;
+    font-size: 13px;
+}
+
+/* Meccs cella */
+.match-cell {
+    white-space: nowrap;
+}
+
+.team {
+    font-weight: 600;
+    color: #ecf0f1;
+    font-size: 14px;
+}
+
+.home-team {
+    color: #fff;
+}
+
+.away-team {
+    color: #cfd8dc;
+}
+
+.vs {
+    display: inline-block;
+    margin: 0 8px;
+    color: #4CAF50;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.7;
+}
+
+/* Kezdés idő */
+.start-time {
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 600;
+    font-size: 14px;
+    color: #78909c;
+    background: rgba(255,255,255,0.04);
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+
+/* ===== ÉLŐ IDŐ CELLA ===== */
+.live-time-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.live-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #e74c3c;
+    box-shadow: 0 0 8px rgba(231, 76, 60, 0.7);
+    animation: pulseDot 1.4s ease-in-out infinite;
+    flex-shrink: 0;
+}
+
+.live-time-value {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 16px;
+    font-weight: 700;
     color: #e74c3c;
-    font-weight: bold;
-    animation: pulse 1.5s infinite;
+    letter-spacing: 1px;
+    min-width: 52px;
+    text-align: left;
 }
 
-.favorite-btn {
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    padding: 5px;
-    transition: all 0.3s ease;
-    color: #ccc;
-}
-
-.favorite-btn:hover {
-    transform: scale(1.2);
-}
-
-.favorite-btn.active {
-    color: #ffd700;
-}
-
-.favorite-btn.active:hover {
-    color: #ffed4e;
-}
-
-@keyframes pulse {
-
-    0%,
-    100% {
+@keyframes pulseDot {
+    0%, 100% {
         opacity: 1;
+        transform: scale(1);
     }
-
     50% {
-        opacity: 0.7;
+        opacity: 0.4;
+        transform: scale(0.75);
     }
 }
 
@@ -134,14 +224,15 @@
     font-size: 18px;
 }
 
+/* ===== NINCS MECCS ===== */
 .no-matches {
     text-align: center;
-    padding: 40px;
-    color: #666;
+    padding: 50px 20px;
+    color: #78909c;
     font-size: 16px;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    background: #1a2233;
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
 }
 
 .refresh-btn {
@@ -175,17 +266,20 @@
     color: #ffc89b;
 }
 
+/* ===== JOBB OLDALI BETSLIP KONTÉNER ===== */
 .right-container {
-    border: 2px solid red;
-    border-left: none;
     float: right;
     overflow-y: auto;
     width: 20%;
     margin-right: auto;
-    padding-top: 50px;
     display: flex;
     justify-content: center;
     height: max-content;
+}
+
+/* ===== SPORT NAV ===== */
+.sports-nav-wrapper {
+    margin-bottom: 10px;
 }
 
 .sports-nav {
@@ -199,24 +293,315 @@
 .sport-item {
     display: flex;
     align-items: center;
-    padding: 5px 10px;
+    padding: 6px 14px;
     text-decoration: none;
-    color: #000;
-    background-color: transparent;
-    border-radius: 5px;
-    transition: background-color 0.3s ease;
+    color: #aaa;
+    background: rgba(255,255,255,0.04);
+    border-radius: 8px;
+    transition: all 0.25s ease;
+    border: 1px solid transparent;
 }
 
 .sport-item:hover {
-    background-color: #f0f0f0;
+    background: rgba(76,175,80,0.1);
+    color: #8ccfaa;
+    border-color: rgba(76,175,80,0.2);
+}
+
+.sport-item.active {
+    background: rgba(76,175,80,0.15);
+    color: #4CAF50;
+    border-color: rgba(76,175,80,0.3);
+    font-weight: 600;
 }
 
 .sport-icon i {
-    font-size: 20px;
+    font-size: 18px;
     margin-right: 8px;
 }
 
 .sport-name {
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* ===== HIBA SZÖVEG ===== */
+#matches-container .text-center {
+    color: #aaa;
+}
+
+/* ===== RESZPONZÍV ===== */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+@media (max-width: 900px) {
+    .matches-table thead th,
+    .matches-table td {
+        padding: 10px 8px;
+        font-size: 12px;
+    }
+
+    .live-time-value {
+        font-size: 14px;
+    }
+
+    .team {
+        font-size: 12px;
+    }
+
+    .vs {
+        margin: 0 4px;
+    }
+}
+
+@media (max-width: 600px) {
+    .matches-table thead th:nth-child(1),
+    .matches-table td:nth-child(1) {
+        display: none;
+    }
+
+    .matches-table thead th:nth-child(4),
+    .matches-table td:nth-child(4) {
+        display: none;
+    }
+
+    .matches-table td {
+        padding: 8px 6px;
+    }
+}
+
+/* ===== KATTINTHATÓ MECCS SOROK ===== */
+.match-row.clickable {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.match-row.clickable:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.match-score {
+    font-weight: 700;
+    color: #f5c518;
+    font-size: 1.05rem;
+}
+
+/* ===== LOADING & ERROR ===== */
+.loading-details, .error-msg {
+    text-align: center;
+    padding: 60px 20px;
+    color: #aaa;
+    font-size: 1.1rem;
+}
+.loading-details i, .error-msg i {
+    margin-right: 8px;
+}
+.error-msg {
+    color: #e74c3c;
+}
+
+/* ===== VISSZA GOMB ===== */
+.back-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    padding: 8px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+    transition: background 0.2s, border-color 0.2s;
+}
+.back-btn:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.4);
+}
+.back-btn i {
+    margin-right: 6px;
+}
+
+/* ===== MECCS FEJLÉC KÁRTYA ===== */
+.match-header-card {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 28px;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.match-meta {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+.meta-item {
+    color: #aab;
+    font-size: 0.9rem;
+}
+.meta-item i {
+    margin-right: 5px;
+    color: #f5c518;
+}
+
+/* ===== EREDMÉNYJELZŐ ===== */
+.match-scoreboard {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+}
+.team-side {
+    flex: 1;
+    text-align: center;
+}
+.team-name-big {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #fff;
+    word-break: break-word;
+}
+.score-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 100px;
+}
+.score-big {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: #f5c518;
+    letter-spacing: 4px;
+}
+.live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    background: rgba(231, 76, 60, 0.15);
+    padding: 4px 14px;
+    border-radius: 20px;
+}
+.live-dot-big {
+    width: 10px;
+    height: 10px;
+    background: #e74c3c;
+    border-radius: 50%;
+    animation: livePulse 1.2s infinite;
+}
+@keyframes livePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.3); }
+}
+.live-time-big {
+    color: #e74c3c;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+/* ===== FOGADÁSI PIACOK CÍM ===== */
+.markets-title {
+    color: #fff;
+    font-size: 1.2rem;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.markets-title i {
+    margin-right: 8px;
+    color: #f5c518;
+}
+
+/* ===== PIAC KÁRTYA ===== */
+.markets-container {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.market-card {
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.08);
+    overflow: hidden;
+}
+.market-header {
+    background: rgba(255, 255, 255, 0.06);
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.market-name {
+    color: #ddd;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+/* ===== FOGADÁSI GOMBOK ===== */
+.market-selections {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 16px;
+}
+.selection-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 100px;
+    flex: 1;
+    max-width: 200px;
+    padding: 10px 14px;
+    background: rgba(245, 197, 24, 0.08);
+    border: 1px solid rgba(245, 197, 24, 0.2);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #fff;
+}
+.selection-btn:hover {
+    background: rgba(245, 197, 24, 0.2);
+    border-color: #f5c518;
+    transform: translateY(-2px);
+}
+.selection-name {
+    font-size: 0.82rem;
+    color: #bbb;
+    margin-bottom: 4px;
+    text-align: center;
+    word-break: break-word;
+}
+.selection-odd {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #f5c518;
+}
+
+.no-markets {
+    text-align: center;
+    padding: 40px;
+    color: #888;
+    font-size: 1rem;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
+    .match-scoreboard {
+        flex-direction: column;
+        gap: 12px;
+    }
+    .team-name-big {
+        font-size: 1rem;
+    }
+    .score-big {
+        font-size: 1.8rem;
+    }
+    .selection-btn {
+        min-width: 80px;
+        max-width: 150px;
+    }
 }
