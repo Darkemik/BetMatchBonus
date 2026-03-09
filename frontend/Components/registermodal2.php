@@ -1,3 +1,4 @@
+<!-- ⚡ NINCS PHP rész a tetején – tiszta HTML modal -->
 <div class="modal fade" id="registerModal2" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -13,7 +14,7 @@
             </div>
 
             <div class="modal-body">
-                <form id="registerModal2Form">
+            <form id="registerModal2Form">
                     <div class="row">
                         <div class="col-md-6">
                             <label class="form-label">Előnév (ha van)</label>

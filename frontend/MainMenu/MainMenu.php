@@ -173,7 +173,7 @@ if (!$matchesResult) {
                     <th>Ország</th>
                     <th>Bajnokság</th>
                     <th>Meccs</th>
-                    <th>Kezdés</th>
+                    <th>Kezdés (UTC)</th>
                     <th>Élő?</th>
                     <th>Élő idő</th>
                 </tr>
@@ -201,7 +201,8 @@ if (!$matchesResult) {
 
 
     <aside class="right-sidebar">
-      <?php include '../../frontend/Components/betslip.php'; ?>
+      <?php include '../../frontend/Components/betslip.php'; ?>,
+      ,
 
       <div class="temp_cont">
 

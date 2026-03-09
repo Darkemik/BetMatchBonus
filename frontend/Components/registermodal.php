@@ -11,8 +11,9 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-
+            
             <div class="modal-body">
+                
                 <form id="registerModalForm">
                     <label class="form-label">Felhasználónév</label>
                     <input type="text" name="username" class="form-control mb-3" placeholder="Felhasználónév" required>

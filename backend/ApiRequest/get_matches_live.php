@@ -1,14 +1,11 @@
 <?php
 require_once "connect.php";
 
-// 0) A Matches táblában csak az aktuális élő focimeccsek legyenek
+// 0) A Matches táblában csak az aktuális élő meccsek legyenek (minden sportágból)
 $conn->query("TRUNCATE TABLE Matches");
 
-// 1) Csak foci (sportId = 66)
-$sportId = 66;
-
-// 2) API hívás – élő focimeccsek
-$url = "http://localhost:5000/api/matches/live?sportId=" . $sportId;
+// 1) API hívás – ÖSSZES élő meccs, minden sport
+$url = "http://localhost:5000/api/matches/live";
 
 $ch = curl_init($url);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -24,7 +21,7 @@ if (!is_array($data)) {
     die("API HIBA: nem tömb érkezett.");
 }
 
-// 3) Prepared statementek
+// 2) Prepared statementek
 
 // Bajnokság keresése api_id alapján
 $stmtFindChamp = $conn->prepare("
@@ -46,11 +43,11 @@ $stmtUpsertMatch = $conn->prepare("
         live_time = VALUES(live_time)
 ");
 
-// 4) Végigmegyünk az összes élő focimeccsen
+// 3) Végigmegyünk az összes élő meccsen (minden sport)
 foreach ($data as $match) {
-    $apiMatchId   = $match['id'];          // BIGINT az adatbázisban
-    $sportFromApi = $match['sportId'];     // elvileg 66
-    $leagueId     = $match['leagueId'];    // Championship.api_id
+    $apiMatchId   = $match['id'];             // BIGINT az adatbázisban
+    $sportFromApi = $match['sportId'];        // sport az API-ból (nem csak 66)
+    $leagueId     = $match['leagueId'];       // Championship.api_id
     $name         = $match['name'];
     $startUtcStr  = $match['startDateUtc'];
     $isLive       = $match['isLive'] ? 1 : 0;
@@ -61,7 +58,7 @@ foreach ($data as $match) {
         continue;
     }
 
-    // 4/a) Championship ID kikeresése
+    // 3/a) Championship ID kikeresése
     $stmtFindChamp->bind_param("i", $leagueId);
     $stmtFindChamp->execute();
     $resultChamp = $stmtFindChamp->get_result();
@@ -69,6 +66,7 @@ foreach ($data as $match) {
 
     // Ha nincs ilyen bajnokság az adatbázisban, automatikusan létrehozzuk
     if (!$champRow) {
+        // Itt most egy default országot használunk, amíg nincs rendes adat az API-ból
         $countryCode = "INT";
         $countryName = "International";
 
@@ -108,12 +106,12 @@ foreach ($data as $match) {
 
     $championshipId = (int)$champRow['id'];
 
-    // 4/b) startDateUtc konvertálása MySQL DATETIME-ra (UTC-ben)
+    // 3/b) startDateUtc konvertálása MySQL DATETIME-ra (UTC-ben)
     $dt = new DateTime($startUtcStr);
     $dt->setTimezone(new DateTimeZone('CET')); // Magyar időzóna
     $startUtcMysql = $dt->format('Y-m-d H:i:s');
 
-    // 4/c) Meccs beszúrása / frissítése
+    // 3/c) Meccs beszúrása / frissítése
     $stmtUpsertMatch->bind_param(
         "iiissis",
         $apiMatchId,
@@ -127,8 +125,8 @@ foreach ($data as $match) {
     $stmtUpsertMatch->execute();
 }
 
-// statementek lezárása (nem kötelező, de szép)
+// statementek lezárása
 $stmtFindChamp->close();
 $stmtUpsertMatch->close();
 
-echo "Élő focimeccsek frissítve.";
+echo "Összes élő meccs frissítve (minden sportág).";
