@@ -1,43 +1,56 @@
 async function refreshAuthUI() {
-  const authButtons = document.getElementById("authButtons");
-  const userMenu = document.getElementById("userMenu");
+  const loginBtn = document.querySelector('.loginbtn');
+  const regBtn = document.querySelector('.registrationbtn');
+  const userMenu = document.getElementById('userMenu');
 
-  if (!authButtons || !userMenu) return;
+  if (!userMenu) return;
 
   try {
-    const res = await fetch("../../backend/Auth/me.php", { cache: "no-store" });
+    // ABSZOLÚT útvonal, így minden frontend oldalról működik
+    const res = await fetch('/BetMatchBonus/backend/Auth/me.php', { cache: 'no-store' });
     const data = await res.json();
 
     if (!data.loggedIn) {
-      authButtons.style.display = "";
-      userMenu.style.display = "none";
+      if (loginBtn) loginBtn.style.display = '';
+      if (regBtn) regBtn.style.display = '';
+      userMenu.style.display = 'none';
       return;
     }
 
-    authButtons.style.display = "none";
-    userMenu.style.display = "";
+    if (loginBtn) loginBtn.style.display = 'none';
+    if (regBtn) regBtn.style.display = 'none';
+    userMenu.style.display = '';
 
-    document.getElementById("userMenuUsername").textContent = data.user.username || "Fiókom";
-    document.getElementById("userFullName").textContent = data.user.full_name || data.user.username || "-";
-    document.getElementById("userEmail").textContent = data.user.email || "-";
+    const u = data.user || {};
+    const usernameEl = document.getElementById('userMenuUsername');
+    const fullNameEl = document.getElementById('userFullName');
+    const emailEl = document.getElementById('userEmail');
+
+    if (usernameEl) usernameEl.textContent = u.username || 'Fiókom';
+    if (fullNameEl) fullNameEl.textContent = u.full_name || u.username || '-';
+    if (emailEl) emailEl.textContent = u.email || '-';
   } catch (e) {
-    console.error("me.php hiba:", e);
-    // ha valamiért nem elérhető, ne törjük el a UI-t
+    console.error('refreshAuthUI error:', e);
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener('DOMContentLoaded', () => {
   refreshAuthUI();
 
-  document.addEventListener("auth:changed", () => {
+  // login/register után ezt hívjuk
+  document.addEventListener('auth:changed', () => {
     refreshAuthUI();
   });
 
-  const logoutBtn = document.getElementById("logoutBtn");
+  const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) {
-    logoutBtn.addEventListener("click", async () => {
-      await fetch("../../backend/Auth/logout.php", { method: "POST" });
-      document.dispatchEvent(new CustomEvent("auth:changed"));
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await fetch('/BetMatchBonus/backend/Auth/logout.php', { method: 'POST' });
+      } catch (e) {
+        console.error(e);
+      }
+      document.dispatchEvent(new CustomEvent('auth:changed'));
     });
   }
 });

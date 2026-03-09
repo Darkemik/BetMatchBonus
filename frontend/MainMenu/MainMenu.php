@@ -228,6 +228,7 @@ if (!$matchesResult) {
   <?php include '../../frontend/Components/loginmodal.php';?>
   <?php include '../../frontend/Components/registermodal.php';?>
     <?php include '../../frontend/Components/registermodal2.php'; ?>
+    <script src="../../js/Main/auth_ui.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../../js/Login/loginmodal.js"></script>
   <script src="../../js/Register/registermodal.js"></script>
@@ -235,7 +236,7 @@ if (!$matchesResult) {
   <script src="../../js/Main/layout.js"></script>
   <script src="../../js/Betslip/betslip.js"></script>
   <script src="../../js/MainMenu/main.js"></script>
-  <script src="../../js/Main/auth_ui.js"></script>
+  
 </body>
 
 </html>
