@@ -37,7 +37,7 @@ if (!$matchRow) {
 }
 
 // API hívás az odds/markets adatokért
-$url = "http://localhost:5000/api/matches/event?eventId=" . $eventId;
+$url = "http://localhost:5000/api/matches/" . $eventId;
 
 $ch = curl_init($url);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
