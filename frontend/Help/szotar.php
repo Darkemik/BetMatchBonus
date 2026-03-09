@@ -21,7 +21,8 @@
 
         <!-- Fő tartalom (középső rész)-->
         <main class="main-content">
-
+            <h1>Szótár</h1>
+            <div id="szotarContainer"></div>
         </main>
 
         <?php include '../../frontend/Components/promokartya.php'; ?>
@@ -36,6 +37,7 @@
     <script src="../../js/Register/registermodal.js"></script>
     <script src="../../js/Register/registermodal2.js"></script>
     <script src="../../js/Main/layout.js"></script>
+    <script src="../../js/Help/szotar.js"></script>
 </body>
 
 </html>
