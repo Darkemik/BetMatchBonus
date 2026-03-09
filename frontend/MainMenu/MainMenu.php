@@ -173,7 +173,7 @@ if (!$matchesResult) {
                     <th>Ország</th>
                     <th>Bajnokság</th>
                     <th>Meccs</th>
-                    <th>Kezdés (UTC)</th>
+                    <th>Kezdés</th>
                     <th>Élő?</th>
                     <th>Élő idő</th>
                 </tr>

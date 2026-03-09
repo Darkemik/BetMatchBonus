@@ -1,25 +1,5 @@
 <?php
 require_once "../../backend/ApiRequest/connect.php";
-
-$sql = "
-SELECT 
-    m.name AS match_name,
-    m.start_utc,
-    m.live_time,
-    c.name AS country_name,
-    ch.name AS championship_name
-FROM Matches m
-JOIN Championships ch ON m.championship_id = ch.id
-JOIN Countries c ON ch.country_code = c.code
-WHERE m.sport_id = 66        -- csak foci
-  AND m.is_live = 1          -- csak élő meccsek
-ORDER BY m.start_utc
-";
-
-$liveResult = $conn->query($sql);
-if (!$liveResult) {
-    die('Lekérdezés hiba: ' . $conn->error);
-}
 ?>
 <!DOCTYPE html>
 <html lang="hu">
@@ -164,32 +144,9 @@ if (!$liveResult) {
                     <button class="tab-button active">Élő meccsek</button>
                 </div>
 
-                <?php if ($liveResult && $liveResult->num_rows > 0): ?>
-                    <table class="table table-striped table-bordered w-100 mx-auto">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Ország</th>
-                                <th>Bajnokság</th>
-                                <th>Meccs</th>
-                                <th>Kezdés (UTC)</th>
-                                <th>Élő idő</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php while ($row = $liveResult->fetch_assoc()): ?>
-                                <tr>
-                                    <td><?= htmlspecialchars($row['country_name']) ?></td>
-                                    <td><?= htmlspecialchars($row['championship_name']) ?></td>
-                                    <td><?= htmlspecialchars($row['match_name']) ?></td>
-                                    <td><?= htmlspecialchars($row['start_utc']) ?></td>
-                                    <td><?= htmlspecialchars($row['live_time'] ?? '-') ?></td>
-                                </tr>
-                            <?php endwhile; ?>
-                        </tbody>
-                    </table>
-                <?php else: ?>
-                    <p class="text-center">Jelenleg nincs élő mérkőzés.</p>
-                <?php endif; ?>
+                <div id="matches-container">
+                    <?php include '../../backend/ApiRequest/live_table.php'; ?>
+                </div>
 
             </div>
         </div>

@@ -110,7 +110,7 @@ foreach ($data as $match) {
 
     // 4/b) startDateUtc konvertálása MySQL DATETIME-ra (UTC-ben)
     $dt = new DateTime($startUtcStr);
-    $dt->setTimezone(new DateTimeZone('UTC'));
+    $dt->setTimezone(new DateTimeZone('CET')); // Magyar időzóna
     $startUtcMysql = $dt->format('Y-m-d H:i:s');
 
     // 4/c) Meccs beszúrása / frissítése
