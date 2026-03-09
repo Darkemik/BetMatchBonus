@@ -3,9 +3,11 @@ require_once "connect.php";
 
 $sql = "
 SELECT 
+    m.api_id,
     m.name AS match_name,
     m.start_utc,
     m.live_time,
+    m.score,
     c.name AS country_name,
     ch.name AS championship_name
 FROM Matches m
@@ -29,6 +31,7 @@ if (!$res || $res->num_rows === 0) {
             <th><i class="fas fa-globe-europe"></i> Ország</th>
             <th><i class="fas fa-trophy"></i> Bajnokság</th>
             <th><i class="fas fa-futbol"></i> Meccs</th>
+            <th><i class="fas fa-star"></i> Állás</th>
             <th><i class="fas fa-clock"></i> Kezdés</th>
             <th><i class="fas fa-stopwatch"></i> Élő idő</th>
         </tr>
@@ -43,8 +46,10 @@ if (!$res || $res->num_rows === 0) {
             $away = isset($matchParts[1]) ? htmlspecialchars($matchParts[1]) : '';
 
             $startFormatted = date('H:i', strtotime($row['start_utc']));
+            $scoreDisplay = !empty($row['score']) ? htmlspecialchars($row['score']) : '0 - 0';
+            $apiId = (int)$row['api_id'];
         ?>
-            <tr>
+            <tr class="match-row clickable" data-match-id="<?= $apiId ?>">
                 <td>
                     <span class="country-name"><?= htmlspecialchars($row['country_name']) ?></span>
                 </td>
@@ -59,6 +64,9 @@ if (!$res || $res->num_rows === 0) {
                     <?php else: ?>
                         <span class="team"><?= $home ?></span>
                     <?php endif; ?>
+                </td>
+                <td>
+                    <span class="match-score"><?= $scoreDisplay ?></span>
                 </td>
                 <td>
                     <span class="start-time"><?= $startFormatted ?></span>

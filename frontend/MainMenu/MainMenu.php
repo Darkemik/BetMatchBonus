@@ -201,8 +201,8 @@ if (!$matchesResult) {
 
 
     <aside class="right-sidebar">
-      <?php include '../../frontend/Components/betslip.php'; ?>,
-      ,
+      <?php include '../../frontend/Components/betslip.php'; ?>
+      
 
       <div class="temp_cont">
 

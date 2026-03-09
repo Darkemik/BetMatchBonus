@@ -375,3 +375,233 @@
         padding: 8px 6px;
     }
 }
+
+/* ===== KATTINTHATÓ MECCS SOROK ===== */
+.match-row.clickable {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.match-row.clickable:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.match-score {
+    font-weight: 700;
+    color: #f5c518;
+    font-size: 1.05rem;
+}
+
+/* ===== LOADING & ERROR ===== */
+.loading-details, .error-msg {
+    text-align: center;
+    padding: 60px 20px;
+    color: #aaa;
+    font-size: 1.1rem;
+}
+.loading-details i, .error-msg i {
+    margin-right: 8px;
+}
+.error-msg {
+    color: #e74c3c;
+}
+
+/* ===== VISSZA GOMB ===== */
+.back-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    padding: 8px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+    transition: background 0.2s, border-color 0.2s;
+}
+.back-btn:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.4);
+}
+.back-btn i {
+    margin-right: 6px;
+}
+
+/* ===== MECCS FEJLÉC KÁRTYA ===== */
+.match-header-card {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 28px;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.match-meta {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+.meta-item {
+    color: #aab;
+    font-size: 0.9rem;
+}
+.meta-item i {
+    margin-right: 5px;
+    color: #f5c518;
+}
+
+/* ===== EREDMÉNYJELZŐ ===== */
+.match-scoreboard {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+}
+.team-side {
+    flex: 1;
+    text-align: center;
+}
+.team-name-big {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #fff;
+    word-break: break-word;
+}
+.score-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 100px;
+}
+.score-big {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: #f5c518;
+    letter-spacing: 4px;
+}
+.live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    background: rgba(231, 76, 60, 0.15);
+    padding: 4px 14px;
+    border-radius: 20px;
+}
+.live-dot-big {
+    width: 10px;
+    height: 10px;
+    background: #e74c3c;
+    border-radius: 50%;
+    animation: livePulse 1.2s infinite;
+}
+@keyframes livePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.3); }
+}
+.live-time-big {
+    color: #e74c3c;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+/* ===== FOGADÁSI PIACOK CÍM ===== */
+.markets-title {
+    color: #fff;
+    font-size: 1.2rem;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.markets-title i {
+    margin-right: 8px;
+    color: #f5c518;
+}
+
+/* ===== PIAC KÁRTYA ===== */
+.markets-container {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.market-card {
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.08);
+    overflow: hidden;
+}
+.market-header {
+    background: rgba(255, 255, 255, 0.06);
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.market-name {
+    color: #ddd;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+/* ===== FOGADÁSI GOMBOK ===== */
+.market-selections {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 16px;
+}
+.selection-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 100px;
+    flex: 1;
+    max-width: 200px;
+    padding: 10px 14px;
+    background: rgba(245, 197, 24, 0.08);
+    border: 1px solid rgba(245, 197, 24, 0.2);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #fff;
+}
+.selection-btn:hover {
+    background: rgba(245, 197, 24, 0.2);
+    border-color: #f5c518;
+    transform: translateY(-2px);
+}
+.selection-name {
+    font-size: 0.82rem;
+    color: #bbb;
+    margin-bottom: 4px;
+    text-align: center;
+    word-break: break-word;
+}
+.selection-odd {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #f5c518;
+}
+
+.no-markets {
+    text-align: center;
+    padding: 40px;
+    color: #888;
+    font-size: 1rem;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
+    .match-scoreboard {
+        flex-direction: column;
+        gap: 12px;
+    }
+    .team-name-big {
+        font-size: 1rem;
+    }
+    .score-big {
+        font-size: 1.8rem;
+    }
+    .selection-btn {
+        min-width: 80px;
+        max-width: 150px;
+    }
+}

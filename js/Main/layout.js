@@ -34,6 +34,38 @@ function getAllTextNodes(root) {
     return textNodes;
 }
 
+// Csak egy adott konténer szövegeit fordítja le (AJAX frissítéshez)
+async function changeLanguageForContainer(container, lang) {
+    const textNodes = getAllTextNodes(container);
+    const texts = textNodes.map(node => ({ Text: node.textContent.trim() }));
+    if (texts.length === 0) return;
+
+    const url = `${endpoint}/translate?api-version=3.0&to=${lang}`;
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Ocp-Apim-Subscription-Key': apiKey,
+                'Ocp-Apim-Subscription-Region': region,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(texts)
+        });
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+        data.forEach((result, i) => {
+            textNodes[i].textContent = result.translations[0].text;
+        });
+    } catch (error) {
+        console.error("Fordítási hiba (konténer):", error);
+    }
+}
+
+// Globálisan elérhetővé tesszük
+window.changeLanguageForContainer = changeLanguageForContainer;
+
 async function changeLanguage(lang) {
     const textNodes = getAllTextNodes(document.body);
     const texts = textNodes.map(node => ({ Text: node.textContent.trim() }));
