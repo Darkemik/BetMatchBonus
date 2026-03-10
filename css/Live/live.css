@@ -247,9 +247,7 @@
     transition: all 0.3s ease;
 }
 
-.refresh-btn:hover {
-    background: #3d8b40;
-}
+
 
 .refresh-container {
     text-align: center;
@@ -309,7 +307,7 @@
 }
 
 .sport-item.active {
-    background: rgba(76,175,80,0.15);
+    background: #1e1e1e;
     color: #4CAF50;
     border-color: rgba(76,175,80,0.3);
     font-weight: 600;
