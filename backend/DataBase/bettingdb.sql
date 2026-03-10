@@ -18,6 +18,28 @@ CREATE TABLE IF NOT EXISTS Users (
   is_active      TINYINT(1)    NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
+CREATE TABLE IF NOT EXISTS AdminUsers (
+  id            INT           AUTO_INCREMENT PRIMARY KEY,
+  username      VARCHAR(50)   NOT NULL UNIQUE,
+  email         VARCHAR(150)  NOT NULL UNIQUE,
+  password_hash VARCHAR(255)  NOT NULL,
+  role          VARCHAR(30)   NOT NULL DEFAULT 'MOD'       COMMENT 'MOD, ADMIN, SUPERADMIN',
+  is_active     TINYINT(1)   NOT NULL DEFAULT 1,
+  created_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_login    DATETIME      DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+
+CREATE TABLE IF NOT EXISTS AuditLogs (
+  id          INT           AUTO_INCREMENT PRIMARY KEY,
+  admin_id    INT           NOT NULL,
+  details     VARCHAR(255)  DEFAULT NULL,
+  created_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  CONSTRAINT fk_audit_admin
+    FOREIGN KEY (admin_id) REFERENCES AdminUsers(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+
 -- COUNTRIES (a mostani PHP-k ezt várják: code + name)
 CREATE TABLE IF NOT EXISTS Countries (
   id         INT           AUTO_INCREMENT PRIMARY KEY,
