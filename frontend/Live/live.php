@@ -147,7 +147,6 @@ require_once "../../backend/ApiRequest/connect.php";
                 <div id="matches-container">
                     <?php 
                     // Csak a táblázatot jelenítjük meg, az API frissítést a live.js AJAX-szal csinálja
-                    $_GET['sport_id'] = 66;
                     include '../../backend/ApiRequest/live_table.php'; 
                     ?>
                 </div>

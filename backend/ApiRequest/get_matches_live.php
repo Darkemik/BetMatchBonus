@@ -20,16 +20,14 @@ $response = curl_exec($ch);
 
 if ($response === false) {
     ob_end_clean();
-    http_response_code(500);
-    exit;
+    return; // NE exit, mert include-ként is futhat!
 }
 curl_close($ch);
 
 $data = json_decode($response, true);
 if (!is_array($data)) {
     ob_end_clean();
-    http_response_code(500);
-    exit;
+    return; // NE exit, mert include-ként is futhat!
 }
 
 // 2) Prepared statementek

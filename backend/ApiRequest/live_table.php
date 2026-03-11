@@ -16,7 +16,7 @@ $sportIcons = [
     77  => 'fa-table-tennis'
 ];
 
-$sportIcon = $sportIcons[$sportId] ?? 'fa-futbol';
+$sportIcon = isset($sportIcons[$sportId]) ? $sportIcons[$sportId] : 'fa-futbol';
 
 $sql = "
 SELECT 
@@ -36,14 +36,18 @@ ORDER BY m.start_utc
 ";
 
 $stmt = $conn->prepare($sql);
+if (!$stmt) {
+    echo '<div class="no-matches">Hiba az adatbázis lekérdezésnél.</div>';
+    return;
+}
 $stmt->bind_param("i", $sportId);
 $stmt->execute();
 $res = $stmt->get_result();
 
 if (!$res || $res->num_rows === 0) {
-    echo '<div class="no-matches"><i class="fas ' . $sportIcon . '" style="font-size:40px;color:#aaa;margin-bottom:12px;"></i><br>Jelenleg nincs élő mérkőzés ebben a sportágban.</div>';
+    echo '<div class="no-matches"><i class="fas ' . $sportIcon . '" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i>Jelenleg nincs élő mérkőzés ebben a sportágban.</div>';
     $stmt->close();
-    exit;
+    return;
 }
 ?>
 <table class="matches-table">
@@ -51,7 +55,7 @@ if (!$res || $res->num_rows === 0) {
         <tr>
             <th><i class="fas fa-globe-europe"></i> Ország</th>
             <th><i class="fas fa-trophy"></i> Bajnokság</th>
-            <th><i class="fas <?= $sportIcon ?>"></i> Meccs</th>
+            <th><i class="fas <?php echo $sportIcon; ?>"></i> Meccs</th>
             <th><i class="fas fa-star"></i> Állás</th>
             <th><i class="fas fa-clock"></i> Kezdés</th>
             <th><i class="fas fa-stopwatch"></i> Élő idő</th>
@@ -63,38 +67,38 @@ if (!$res || $res->num_rows === 0) {
             $timeDisplay = ($liveTimeRaw !== null && $liveTimeRaw !== '') ? htmlspecialchars($liveTimeRaw) : '-';
 
             $matchParts = explode(' - ', $row['match_name'], 2);
-            $home = htmlspecialchars($matchParts[0] ?? $row['match_name']);
+            $home = htmlspecialchars($matchParts[0]);
             $away = isset($matchParts[1]) ? htmlspecialchars($matchParts[1]) : '';
 
             $startFormatted = date('H:i', strtotime($row['start_utc']));
             $scoreDisplay = !empty($row['score']) ? htmlspecialchars($row['score']) : '0 - 0';
             $apiId = (int)$row['api_id'];
         ?>
-            <tr class="match-row clickable" data-match-id="<?= $apiId ?>">
+            <tr class="match-row clickable" data-match-id="<?php echo $apiId; ?>">
                 <td>
-                    <span class="country-name"><?= htmlspecialchars($row['country_name']) ?></span>
+                    <span class="country-name"><?php echo htmlspecialchars($row['country_name']); ?></span>
                 </td>
                 <td>
-                    <span class="league-name"><?= htmlspecialchars($row['championship_name']) ?></span>
+                    <span class="league-name"><?php echo htmlspecialchars($row['championship_name']); ?></span>
                 </td>
                 <td class="match-cell">
                     <?php if ($away !== ''): ?>
-                        <span class="team home-team"><?= $home ?></span>
+                        <span class="team home-team"><?php echo $home; ?></span>
                         <span class="vs">vs</span>
-                        <span class="team away-team"><?= $away ?></span>
+                        <span class="team away-team"><?php echo $away; ?></span>
                     <?php else: ?>
-                        <span class="team"><?= $home ?></span>
+                        <span class="team"><?php echo $home; ?></span>
                     <?php endif; ?>
                 </td>
                 <td>
-                    <span class="match-score"><?= $scoreDisplay ?></span>
+                    <span class="match-score"><?php echo $scoreDisplay; ?></span>
                 </td>
                 <td>
-                    <span class="start-time"><?= $startFormatted ?></span>
+                    <span class="start-time"><?php echo $startFormatted; ?></span>
                 </td>
                 <td class="live-time-cell">
                     <span class="live-dot"></span>
-                    <span class="live-time-value"><?= $timeDisplay ?></span>
+                    <span class="live-time-value"><?php echo $timeDisplay; ?></span>
                 </td>
             </tr>
         <?php endwhile; ?>
