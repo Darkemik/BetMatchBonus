@@ -1,5 +1,5 @@
 <?php
-require_once "connect.php";
+require_once __DIR__ . "/connect.php";
 
 $eventId = isset($_GET['eventId']) ? intval($_GET['eventId']) : 0;
 

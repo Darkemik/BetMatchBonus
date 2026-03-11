@@ -298,24 +298,102 @@
     border-radius: 8px;
     transition: all 0.25s ease;
     border: 1px solid transparent;
+    --sport-color: #aaa;
+    --sport-bg-hover: rgba(255,255,255,0.08);
+    --sport-bg-active: rgba(255,255,255,0.14);
+    --sport-border: rgba(255,255,255,0.2);
 }
 
+/* ===== SPORT EGYEDI SZÍNEK ===== */
+
+/* Labdarúgás - zöld (fű) */
+.sport-item[data-sport="soccer"] {
+    --sport-color: #4CAF50;
+    --sport-bg-hover: rgba(76, 175, 80, 0.10);
+    --sport-bg-active: rgba(76, 175, 80, 0.20);
+    --sport-border: rgba(76, 175, 80, 0.35);
+}
+
+/* Kosárlabda - narancs */
+.sport-item[data-sport="basketball"] {
+    --sport-color: #FF9800;
+    --sport-bg-hover: rgba(255, 152, 0, 0.10);
+    --sport-bg-active: rgba(255, 152, 0, 0.20);
+    --sport-border: rgba(255, 152, 0, 0.35);
+}
+
+/* Darts - piros */
+.sport-item[data-sport="darts"] {
+    --sport-color: #f44336;
+    --sport-bg-hover: rgba(244, 67, 54, 0.10);
+    --sport-bg-active: rgba(244, 67, 54, 0.20);
+    --sport-border: rgba(244, 67, 54, 0.35);
+}
+
+/* Vízilabda - kék */
+.sport-item[data-sport="waterpolo"] {
+    --sport-color: #29B6F6;
+    --sport-bg-hover: rgba(41, 182, 246, 0.10);
+    --sport-bg-active: rgba(41, 182, 246, 0.20);
+    --sport-border: rgba(41, 182, 246, 0.35);
+}
+
+/* Kézilabda - sárga */
+.sport-item[data-sport="handball"] {
+    --sport-color: #FFCA28;
+    --sport-bg-hover: rgba(255, 202, 40, 0.10);
+    --sport-bg-active: rgba(255, 202, 40, 0.20);
+    --sport-border: rgba(255, 202, 40, 0.35);
+}
+
+/* Jégkorong - jégkék */
+.sport-item[data-sport="hockey"] {
+    --sport-color: #80DEEA;
+    --sport-bg-hover: rgba(128, 222, 234, 0.10);
+    --sport-bg-active: rgba(128, 222, 234, 0.20);
+    --sport-border: rgba(128, 222, 234, 0.35);
+}
+
+/* eSport - lila/neon */
+.sport-item[data-sport="esport"] {
+    --sport-color: #BA68C8;
+    --sport-bg-hover: rgba(186, 104, 200, 0.10);
+    --sport-bg-active: rgba(186, 104, 200, 0.20);
+    --sport-border: rgba(186, 104, 200, 0.35);
+}
+
+/* Pingpong - ciánkék/türkiz */
+.sport-item[data-sport="pingpong"] {
+    --sport-color: #26C6DA;
+    --sport-bg-hover: rgba(38, 198, 218, 0.10);
+    --sport-bg-active: rgba(38, 198, 218, 0.20);
+    --sport-border: rgba(38, 198, 218, 0.35);
+}
+
+/* Hover - halvány sport szín háttér */
 .sport-item:hover {
-    background: rgba(76,175,80,0.1);
-    color: #8ccfaa;
-    border-color: rgba(76,175,80,0.2);
+    background: var(--sport-bg-hover);
+    color: var(--sport-color);
+    border-color: transparent;
 }
 
+/* Aktív állapot - erősebb sport szín */
 .sport-item.active {
-    background: #1e1e1e;
-    color: #4CAF50;
-    border-color: rgba(76,175,80,0.3);
+    background: var(--sport-bg-active);
+    color: var(--sport-color);
+    border-color: var(--sport-border);
     font-weight: 600;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+}
+
+.sport-item.active .sport-icon i {
+    text-shadow: 0 0 8px var(--sport-color);
 }
 
 .sport-icon i {
     font-size: 18px;
     margin-right: 8px;
+    transition: text-shadow 0.25s ease;
 }
 
 .sport-name {

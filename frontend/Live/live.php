@@ -88,49 +88,49 @@ require_once "../../backend/ApiRequest/connect.php";
 
                 <div class="sports-nav-wrapper">
                     <nav class="sports-nav">
-                        <a href="#" id="btn-soccer" class="sport-item active">
+                        <a href="#" id="btn-soccer" class="sport-item active" data-sport="soccer">
                             <div class="sport-icon">
                                 <i class="fas fa-futbol"></i>
                             </div>
                             <span class="sport-name">Labdarúgás</span>
                         </a>
-                        <a href="#" class="sport-item">
+                        <a href="#" class="sport-item" data-sport="basketball">
                             <div class="sport-icon">
                                 <i class="fas fa-basketball-ball"></i>
                             </div>
                             <span class="sport-name">Kosárlabda</span>
                         </a>
-                        <a href="#" class="sport-item">
+                        <a href="#" class="sport-item" data-sport="darts">
                             <div class="sport-icon">
                                 <i class="fas fa-bullseye"></i>
                             </div>
                             <span class="sport-name">Darts</span>
                         </a>
-                        <a href="#" class="sport-item">
+                        <a href="#" class="sport-item" data-sport="waterpolo">
                             <div class="sport-icon">
                                 <i class="fas fa-swimmer"></i>
                             </div>
                             <span class="sport-name">Vízilabda</span>
                         </a>
-                        <a href="#" class="sport-item">
+                        <a href="#" class="sport-item" data-sport="handball">
                             <div class="sport-icon">
                                 <i class="fas fa-hand-rock"></i>
                             </div>
                             <span class="sport-name">Kézilabda</span>
                         </a>
-                        <a href="#" class="sport-item">
+                        <a href="#" class="sport-item" data-sport="hockey">
                             <div class="sport-icon">
                                 <i class="fas fa-hockey-puck"></i>
                             </div>
                             <span class="sport-name">Jégkorong</span>
                         </a>
-                        <a href="#" class="sport-item">
+                        <a href="#" class="sport-item" data-sport="esport">
                             <div class="sport-icon">
                                 <i class="fas fa-gamepad"></i>
                             </div>
                             <span class="sport-name">eSport</span>
                         </a>
-                        <a href="#" class="sport-item">
+                        <a href="#" class="sport-item" data-sport="pingpong">
                             <div class="sport-icon">
                                 <i class="fas fa-table-tennis"></i>
                             </div>
@@ -145,7 +145,10 @@ require_once "../../backend/ApiRequest/connect.php";
                 </div>
 
                 <div id="matches-container">
-                    <?php include '../../backend/ApiRequest/live_table.php'; ?>
+                    <?php 
+                    // Csak a táblázatot jelenítjük meg, az API frissítést a live.js AJAX-szal csinálja
+                    include '../../backend/ApiRequest/live_table.php'; 
+                    ?>
                 </div>
 
             </div>

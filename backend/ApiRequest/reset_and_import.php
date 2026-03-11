@@ -7,13 +7,15 @@ $conn->query("TRUNCATE TABLE Matches;");
 $conn->query("TRUNCATE TABLE Championships;");
 $conn->query("SET FOREIGN_KEY_CHECKS = 1;");
 
+echo "Táblák ürítve.\n";
+
 // 2) BAJNOKSÁGOK IMPORT
-require_once "get_championships.php";
+include "get_championships.php";
 
 // 3) ÉLŐ MECCSEK IMPORT
-require_once "get_matches_live.php";
+include "get_matches_live.php";
 
 // 4) NAPI MECCSEK (HA KELL)
-require_once "get_matches_date.php";
+include "get_matches_date.php";
 
-echo "Sikeres reset + import!";
+echo "\nSikeres reset + import!";
