@@ -1,6 +1,9 @@
 <?php
 require_once "connect.php";
 
+// Kimenet elfojtása – AJAX híváskor ne zavarjon semmilyen echo/warning
+ob_start();
+
 // score oszlop hozzáadása ha még nincs
 $conn->query("ALTER TABLE Matches ADD COLUMN IF NOT EXISTS score VARCHAR(20) DEFAULT NULL");
 
@@ -12,16 +15,21 @@ $url = "http://localhost:5000/api/matches/live";
 
 $ch = curl_init($url);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_TIMEOUT, 10); // 10 mp timeout
 $response = curl_exec($ch);
 
 if ($response === false) {
-    die("cURL hiba: " . curl_error($ch));
+    ob_end_clean();
+    http_response_code(500);
+    exit;
 }
 curl_close($ch);
 
 $data = json_decode($response, true);
 if (!is_array($data)) {
-    die("API HIBA: nem tömb érkezett.");
+    ob_end_clean();
+    http_response_code(500);
+    exit;
 }
 
 // 2) Prepared statementek
@@ -140,4 +148,5 @@ foreach ($data as $match) {
 $stmtFindChamp->close();
 $stmtUpsertMatch->close();
 
-echo "Összes élő meccs frissítve (minden sportág).";
+// Kimenet eldobása (semmit ne írjon ki)
+ob_end_clean();

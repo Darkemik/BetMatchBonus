@@ -1,6 +1,23 @@
 <?php
 require_once "connect.php";
 
+// Sport ID paraméter (alapból foci = 66)
+$sportId = isset($_GET['sport_id']) ? (int)$_GET['sport_id'] : 66;
+
+// Sport ikonok mapping (API ID-k alapján)
+$sportIcons = [
+    66  => 'fa-futbol',
+    67  => 'fa-basketball-ball',
+    78  => 'fa-bullseye',
+    83  => 'fa-swimmer',
+    73  => 'fa-hand-rock',
+    70  => 'fa-hockey-puck',
+    145 => 'fa-gamepad',
+    77  => 'fa-table-tennis'
+];
+
+$sportIcon = $sportIcons[$sportId] ?? 'fa-futbol';
+
 $sql = "
 SELECT 
     m.api_id,
@@ -13,15 +30,19 @@ SELECT
 FROM Matches m
 JOIN Championships ch ON m.championship_id = ch.id
 JOIN Countries c ON ch.country_code = c.code
-WHERE m.sport_id = 66
+WHERE m.sport_id = ?
   AND m.is_live = 1
 ORDER BY m.start_utc
 ";
 
-$res = $conn->query($sql);
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $sportId);
+$stmt->execute();
+$res = $stmt->get_result();
 
 if (!$res || $res->num_rows === 0) {
-    echo '<div class="no-matches"><i class="fas fa-futbol" style="font-size:40px;color:#aaa;margin-bottom:12px;"></i><br>Jelenleg nincs élő mérkőzés.</div>';
+    echo '<div class="no-matches"><i class="fas ' . $sportIcon . '" style="font-size:40px;color:#aaa;margin-bottom:12px;"></i><br>Jelenleg nincs élő mérkőzés ebben a sportágban.</div>';
+    $stmt->close();
     exit;
 }
 ?>
@@ -30,7 +51,7 @@ if (!$res || $res->num_rows === 0) {
         <tr>
             <th><i class="fas fa-globe-europe"></i> Ország</th>
             <th><i class="fas fa-trophy"></i> Bajnokság</th>
-            <th><i class="fas fa-futbol"></i> Meccs</th>
+            <th><i class="fas <?= $sportIcon ?>"></i> Meccs</th>
             <th><i class="fas fa-star"></i> Állás</th>
             <th><i class="fas fa-clock"></i> Kezdés</th>
             <th><i class="fas fa-stopwatch"></i> Élő idő</th>
@@ -79,3 +100,4 @@ if (!$res || $res->num_rows === 0) {
         <?php endwhile; ?>
     </tbody>
 </table>
+<?php $stmt->close(); ?>
