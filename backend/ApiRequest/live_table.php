@@ -1,5 +1,5 @@
 <?php
-require_once "connect.php";
+require_once __DIR__ . "/connect.php";
 
 // Sport ID paraméter (alapból foci = 66)
 $sportId = isset($_GET['sport_id']) ? (int)$_GET['sport_id'] : 66;
