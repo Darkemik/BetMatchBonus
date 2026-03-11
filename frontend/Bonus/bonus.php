@@ -78,7 +78,7 @@
     <?php include '../../frontend/Components/loginmodal.php'; ?>
     <?php include '../../frontend/Components/registermodal.php'; ?>
     <?php include '../../frontend/Components/registermodal2.php'; ?>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../../js/Login/loginmodal.js"></script>
     <script src="../../js/Register/registermodal.js"></script>
     <script src="../../js/Register/registermodal2.js"></script>

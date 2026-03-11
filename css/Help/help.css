@@ -96,12 +96,11 @@
 
 .help-summary:hover,
 details.level1 summary:hover {
-    color: #1eff00;
+    color: #3498db;
     cursor: pointer;
     transform: translateY(-2px);
     text-transform: uppercase;
     transition: all 0.3s ease;
-    background-color: #f9f9f9;
     padding: 8px 12px;
 }
 

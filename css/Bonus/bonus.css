@@ -1,80 +1,247 @@
 .bonus-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: space-around;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    padding: 32px 24px;
 }
 
 .doboz {
-    background: white;
-    border: 1px solid #ddd;
-    width: 300px;
-    margin-bottom: 20px;
+    perspective: 1000px;
+    height: 520px;
+    cursor: default;
+}
+
+.doboz-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.55s ease;
+    border-radius: 16px;
+}
+
+.doboz.flipped .doboz-inner {
+    transform: rotateY(180deg);
+}
+
+.doboz-front,
+.doboz-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #1e2128;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
     display: flex;
     flex-direction: column;
+}
+
+.doboz-front {
+    transition: box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.doboz:not(.flipped):hover .doboz-front {
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+    border-color: rgba(255, 162, 0, 0.35);
+}
+
+.doboz-back {
+    transform: rotateY(180deg);
+    background: #1a1d24;
+    border-color: rgba(255, 162, 0, 0.35);
+    overflow: hidden;
+}
+
+.doboz-back-header {
+    padding: 20px 20px 12px 20px;
+    flex-shrink: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.doboz-back-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #ffa200;
+    margin: 0;
+}
+
+.doboz-back-body {
+    padding: 16px 20px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.doboz-back-text {
+    color: #ffffff;
+    font-size: 0.88rem;
+    line-height: 1.7;
+    margin: 0;
+}
+
+.doboz-back-footer {
+    padding: 12px 20px 16px 20px;
+    flex-shrink: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.doboz-back-close {
+    padding: 10px 16px;
+    background: transparent;
+    color: #7eb8e8;
+    border: 1px solid rgba(126, 184, 232, 0.3);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    width: 100%;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.doboz-back-close:hover {
+    background: rgba(126, 184, 232, 0.1);
+    color: #c5dff5;
+    border-color: rgba(126, 184, 232, 0.6);
+}
+
+.doboz-kep-wrap {
+    position: relative;
+    width: 100%;
+    height: 280px;
+    flex-shrink: 0;
+    overflow: hidden;
 }
 
 .doboz-kep {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 320px;
+    height: 100%;
     object-fit: cover;
-    aspect-ratio: 1/1;
+    object-position: center;
+    display: block;
+    transition: transform 0.4s ease;
+}
+
+.doboz:not(.flipped):hover .doboz-kep {
+    transform: scale(1.06);
+}
+
+.bonus-amount-badge {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: linear-gradient(135deg, #ffa200, #ff6a00);
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 800;
+    padding: 5px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.6px;
+    box-shadow: 0 4px 12px rgba(255, 106, 0, 0.45);
+    text-transform: uppercase;
 }
 
 .doboz-tartalom {
-    padding: 15px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    height: 100%;
+    flex: 1;
+    gap: 10px;
+    overflow: hidden;
+    min-height: 0;
 }
 
 .doboz-cim {
-    font-weight: bold;
-    font-size: 20px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #f0f0f0;
+    margin: 0;
+    letter-spacing: 0.3px;
 }
 
-.doboz-szoveg {
-    margin-bottom: 15px;
-    color: #555;
+.bonus-feltetel {
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 3px solid #ffa200;
+    border-radius: 0 8px 8px 0;
+    padding: 10px 12px;
+    font-size: 0.86rem;
+    color: #b0b8c8;
+    line-height: 1.5;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
 }
 
 .doboz-gombok {
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 10px;
-    margin-top: auto;
+    margin-top: 6px;
+    flex-shrink: 0;
 }
 
 .doboz-gomb {
-    padding: 8px 12px;
-    background-color: #ffa200;
-    color: black;
+    padding: 11px 16px;
+    background: linear-gradient(135deg, #ffa200, #ff6a00);
+    color: #fff;
     text-decoration: none;
-    border-radius: 5px;
-    font-weight: bold;
-    display: inline-block;
-    white-space: nowrap;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 0.4px;
+    transition: opacity 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 4px 14px rgba(255, 106, 0, 0.35);
 }
 
 .doboz-gomb:hover {
-    background-color: #e69500;
-    color: white;
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 106, 0, 0.5);
+    color: #fff;
 }
 
 .tobb-info-gomb {
-    background: #3498db;
-    color: white;
-    padding: 12px 30px;
-    border-radius: 8px;
-    margin-bottom: 15px;
+    padding: 10px 16px;
+    background: transparent;
+    color: #7eb8e8;
+    border: 1px solid rgba(126, 184, 232, 0.3);
+    border-radius: 10px;
     cursor: pointer;
-    border: none;
-    font-size: 15px;
-    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 }
 
 .tobb-info-gomb:hover {
-    background: #2980b9;
-    color: black;
+    background: rgba(126, 184, 232, 0.1);
+    color: #c5dff5;
+    border-color: rgba(126, 184, 232, 0.6);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 900px) {
+    .bonus-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .bonus-row {
+        grid-template-columns: 1fr;
+        padding: 16px;
+        gap: 16px;
+    }
+
+    .doboz {
+        height: 480px;
+    }
 }
