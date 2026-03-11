@@ -106,6 +106,7 @@ if (!$matchesResult) {
     <nav class="nav collapse navbar-collapse" id="mainNavbar">
         <a href="../../frontend/MainMenu/MainMenu.php" class="active">Főoldal</a>
         <a href="../../frontend/Live/live.php">Élő</a>
+        <a href="../../frontend/Esport/esport.php">eSport</a>
         <a href="../../frontend/Bonus/bonus.php">Bónuszok</a>
         <a href="../../frontend/Help/help.php">Segítség</a>
     </nav>

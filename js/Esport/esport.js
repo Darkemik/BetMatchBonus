@@ -2,17 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById("matches-container");
     let refreshTimer = null;
     let currentMatchId = null;
-    let currentSportId = 66;
-
-    const sportIdMap = {
-        'soccer': 66,
-        'basketball': 67,
-        'darts': 78,
-        'waterpolo': 83,
-        'handball': 73,
-        'hockey': 70,
-        'pingpong': 77
-    };
+    const ESPORT_SPORT_ID = 145;
 
     // ===== BETSLIP ELLENŐRZÉS =====
     function isInBetslip(homeTeam, awayTeam, pickName, marketName) {
@@ -101,7 +91,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         document.querySelectorAll('.market-selections').forEach(function(marketContainer) {
             var buttons = Array.from(marketContainer.querySelectorAll('.selection-btn'));
-            // Szűrjük ki az 1.00 disabled gombokat (nincs data-market attribútumuk)
             var actionableButtons = buttons.filter(function(b) {
                 return b.getAttribute('data-market') !== null;
             });
@@ -126,26 +115,22 @@ document.addEventListener("DOMContentLoaded", () => {
                     return item.homeTeam === home && item.awayTeam === away && item.pick === pick && item.market === bMarket;
                 });
 
-                // Először reseteljük a gombot
                 b.classList.remove('active', 'market-locked');
                 b.removeAttribute('disabled');
 
                 if (inSlip) {
                     b.classList.add('active');
-                    // Győződjünk meg, hogy odds van megjelenítve, nem lakat
                     var lockIcon = b.querySelector('.lock-icon');
                     if (lockIcon && odd) {
                         lockIcon.outerHTML = '<span class="selection-odd">' + parseFloat(odd).toFixed(2) + '</span>';
                     }
                 } else if (hasActiveInMarket) {
                     b.classList.add('market-locked');
-                    // Odds cseréje lakatra
                     var oddSpan = b.querySelector('.selection-odd');
                     if (oddSpan) {
                         oddSpan.outerHTML = '<span class="lock-icon"><i class="fas fa-lock"></i></span>';
                     }
                 } else {
-                    // Szabad gomb - lakat visszacserélése oddsra
                     var lockIcon2 = b.querySelector('.lock-icon');
                     if (lockIcon2 && odd) {
                         lockIcon2.outerHTML = '<span class="selection-odd">' + parseFloat(odd).toFixed(2) + '</span>';
@@ -180,35 +165,41 @@ document.addEventListener("DOMContentLoaded", () => {
         return html;
     }
 
-    // ===== SPORT NAV =====
-    document.querySelectorAll('.sport-item').forEach(function(item) {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            document.querySelectorAll('.sport-item').forEach(function(s) { s.classList.remove('active'); });
-            item.classList.add('active');
-            var sportKey = item.getAttribute('data-sport');
-            currentSportId = sportIdMap[sportKey] || 66;
-            currentMatchId = null;
-            refreshLiveMatches();
+    // ===== TAB VÁLTÁS =====
+    var tabButtons = document.querySelectorAll('.tab-button');
+    var tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            tabButtons.forEach(function(b) { b.classList.remove('active'); });
+            tabContents.forEach(function(c) { c.classList.remove('active'); });
+            btn.classList.add('active');
+            var target = btn.getAttribute('data-tab');
+            var targetContent = document.getElementById('tab-' + target);
+            if (targetContent) targetContent.classList.add('active');
+
+            // Ha élő tabra váltunk, azonnali frissítés
+            if (target === 'live') {
+                currentMatchId = null;
+                refreshLiveMatches();
+            }
         });
     });
 
-    // ===== BADGE =====
-    function updateSportCounts(sportCounts) {
-        document.querySelectorAll('.sport-count').forEach(function(badge) {
-            var sportId = badge.getAttribute('data-sport-id');
-            var count = (sportCounts && sportCounts[sportId]) ? sportCounts[sportId] : 0;
+    // ===== BADGE FRISSÍTÉS =====
+    function updateLiveCount(count) {
+        var badge = document.getElementById('esport-live-badge');
+        if (badge) {
             badge.textContent = count;
             if (count > 0) {
                 badge.classList.add('has-live');
             } else {
                 badge.classList.remove('has-live');
             }
-        });
+        }
     }
 
-    // ===== MECCSEK FRISSÍTÉS =====
+    // ===== MECCSEK FRISSÍTÉS (csak eSport = 145) =====
     function refreshLiveMatches() {
         if (currentMatchId) {
             refreshMatchDetails(currentMatchId);
@@ -218,9 +209,10 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(function(res) { return res.json(); })
             .then(function(apiResult) {
                 if (apiResult && apiResult.sports) {
-                    updateSportCounts(apiResult.sports);
+                    var esportCount = apiResult.sports[ESPORT_SPORT_ID] || 0;
+                    updateLiveCount(esportCount);
                 }
-                return fetch("../../backend/ApiRequest/live_table.php?sport_id=" + currentSportId);
+                return fetch("../../backend/ApiRequest/live_table.php?sport_id=" + ESPORT_SPORT_ID);
             })
             .then(function(res) { return res.text(); })
             .then(function(html) {
@@ -232,7 +224,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             })
             .catch(function(err) {
-                console.error("Hiba a meccsek frissítésekor:", err);
+                console.error("Hiba az eSport meccsek frissítésekor:", err);
             });
     }
 
@@ -267,7 +259,9 @@ document.addEventListener("DOMContentLoaded", () => {
         fetch("../../backend/ApiRequest/get_matches_live.php")
             .then(function(res) { return res.json(); })
             .then(function(apiResult) {
-                if (apiResult && apiResult.sports) updateSportCounts(apiResult.sports);
+                if (apiResult && apiResult.sports) {
+                    updateLiveCount(apiResult.sports[ESPORT_SPORT_ID] || 0);
+                }
                 return fetch("../../backend/ApiRequest/get_match_details.php?eventId=" + eventId);
             })
             .then(function(res) { return res.json(); })
@@ -338,11 +332,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return div.innerHTML;
     }
 
-    function escapeJs(str) {
-        if (!str) return '';
-        return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
-    }
-
     function startAutoRefresh() {
         stopAutoRefresh();
         refreshTimer = setInterval(refreshLiveMatches, 5000);
@@ -364,6 +353,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    attachMatchClickHandlers();
-    startAutoRefresh();
+    // Csak az élő tab-on indítjuk a frissítést
+    var liveTab = document.querySelector('.tab-button[data-tab="live"]');
+    if (liveTab && liveTab.classList.contains('active')) {
+        attachMatchClickHandlers();
+        startAutoRefresh();
+    }
 });

@@ -65,6 +65,7 @@
     <nav class="nav collapse navbar-collapse" id="mainNavbar">
         <a href="../../frontend/MainMenu/MainMenu.php">Főoldal</a>
         <a href="../../frontend/Live/live.php">Élő</a>
+        <a href="../../frontend/Esport/esport.php">eSport</a>
         <a href="../../frontend/Bonus/bonus.php" class="active">Bónuszok</a>
         <a href="../../frontend/Help/help.php">Segítség</a>
     </nav>

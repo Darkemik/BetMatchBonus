@@ -7,16 +7,15 @@ require_once "../../backend/ApiRequest/connect.php";
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Élő meccsek | BetMatchBonus</title>
+    <title>eSport | BetMatchBonus</title>
     <link rel="stylesheet" href="../../css/Main/layout.css">
-    <link rel="stylesheet" href="../../css/Live/live.css">
+    <link rel="stylesheet" href="../../css/Esport/esport.css">
     <link rel="stylesheet" href="../../css/Betslip/betslip.css">
     <link rel="stylesheet" href="../../css/RootColor/root.css">
     <link rel="stylesheet" href="../../css/Modal/modal.css">
     <link rel="icon" href="../../img/logo.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-
 </head>
 
 <body>
@@ -28,11 +27,11 @@ require_once "../../backend/ApiRequest/connect.php";
             </button>
 
             <div class="logo-box">
-                <a href="../frontend/index.html">
+                <a href="../MainMenu/MainMenu.php">
                     <img class="kep" src="../../img/logo.png" alt="logo">
                 </a>
                 <div class="logo">
-                    <a href="../frontend/index.html" class="mainpage">BetMatchBonus</a>
+                    <a href="../MainMenu/MainMenu.php" class="mainpage">BetMatchBonus</a>
                 </div>
             </div>
 
@@ -72,8 +71,8 @@ require_once "../../backend/ApiRequest/connect.php";
 
         <nav class="nav collapse navbar-collapse" id="mainNavbar">
             <a href="../../frontend/MainMenu/MainMenu.php">Főoldal</a>
-            <a href="../../frontend/Live/live.php" class="active">Élő</a>
-            <a href="../../frontend/Esport/esport.php">eSport</a>
+            <a href="../../frontend/Live/live.php">Élő</a>
+            <a href="../../frontend/Esport/esport.php" class="active">eSport</a>
             <a href="../../frontend/Bonus/bonus.php">Bónuszok</a>
             <a href="../../frontend/Help/help.php">Segítség</a>
         </nav>
@@ -85,72 +84,22 @@ require_once "../../backend/ApiRequest/connect.php";
         </div>
         <div class="elo-main">
             <div class="elo-container">
-                <h1 class="elo-title" id="elo-title">Élő meccsek</h1>
-
-                <div class="sports-nav-wrapper">
-                    <nav class="sports-nav">
-                        <a href="#" id="btn-soccer" class="sport-item active" data-sport="soccer">
-                            <div class="sport-icon">
-                                <i class="fas fa-futbol"></i>
-                            </div>
-                            <span class="sport-name">Labdarúgás</span>
-                            <span class="sport-count" data-sport-id="66">-</span>
-                        </a>
-                        <a href="#" class="sport-item" data-sport="basketball">
-                            <div class="sport-icon">
-                                <i class="fas fa-basketball-ball"></i>
-                            </div>
-                            <span class="sport-name">Kosárlabda</span>
-                            <span class="sport-count" data-sport-id="67">-</span>
-                        </a>
-                        <a href="#" class="sport-item" data-sport="darts">
-                            <div class="sport-icon">
-                                <i class="fas fa-bullseye"></i>
-                            </div>
-                            <span class="sport-name">Darts</span>
-                            <span class="sport-count" data-sport-id="78">-</span>
-                        </a>
-                        <a href="#" class="sport-item" data-sport="waterpolo">
-                            <div class="sport-icon">
-                                <i class="fas fa-swimmer"></i>
-                            </div>
-                            <span class="sport-name">Vízilabda</span>
-                            <span class="sport-count" data-sport-id="83">-</span>
-                        </a>
-                        <a href="#" class="sport-item" data-sport="handball">
-                            <div class="sport-icon">
-                                <i class="fas fa-hand-rock"></i>
-                            </div>
-                            <span class="sport-name">Kézilabda</span>
-                            <span class="sport-count" data-sport-id="73">-</span>
-                        </a>
-                        <a href="#" class="sport-item" data-sport="hockey">
-                            <div class="sport-icon">
-                                <i class="fas fa-hockey-puck"></i>
-                            </div>
-                            <span class="sport-name">Jégkorong</span>
-                            <span class="sport-count" data-sport-id="70">-</span>
-                        </a>
-                        <a href="#" class="sport-item" data-sport="pingpong">
-                            <div class="sport-icon">
-                                <i class="fas fa-table-tennis"></i>
-                            </div>
-                            <span class="sport-name">Pingpong</span>
-                            <span class="sport-count" data-sport-id="77">-</span>
-                        </a>
-                    </nav>
-                </div>
-                <br>
+                <h1 class="elo-title"><i class="fas fa-gamepad"></i> eSport</h1>
 
                 <div class="tabs-container">
-                    <button class="tab-button active">Élő meccsek</button>
+                    <button class="tab-button active" data-tab="live">
+                        <i class="fas fa-broadcast-tower"></i> Élő meccsek
+                        <span class="esport-live-count" id="esport-live-badge">-</span>
+                    </button>
                 </div>
 
-                <div id="matches-container">
-                    <?php 
-                    // Csak a táblázatot jelenítjük meg, az API frissítést a live.js AJAX-szal csinálja
-                    include '../../backend/ApiRequest/live_table.php'; 
-                    ?>
+                <div class="tab-content active" id="tab-live">
+                    <div id="matches-container">
+                        <?php 
+                        $_GET['sport_id'] = 145;
+                        include '../../backend/ApiRequest/live_table.php'; 
+                        ?>
+                    </div>
                 </div>
 
             </div>
@@ -164,7 +113,7 @@ require_once "../../backend/ApiRequest/connect.php";
     <script src="../../js/Register/registermodal2.js"></script>
     <script src="../../js/Main/layout.js"></script>
     <script src="../../js/Betslip/betslip.js"></script>
-    <script src="../../js/Live/live.js"></script>
+    <script src="../../js/Esport/esport.js"></script>
     <?php include '../../frontend/Components/loginmodal.php'; ?>
     <?php include '../../frontend/Components/registermodal.php'; ?>
     <?php include '../../frontend/Components/registermodal2.php'; ?>
