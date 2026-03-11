@@ -3,47 +3,51 @@ fetch("../../json/bonuses.json")
     .then(bonuses => {
         const container = document.getElementById("bonusContainer");
 
-        bonuses.forEach((bonus, index) => {
-            const offcanvasId = "offcanvasBonus" + index;
-
+        bonuses.forEach((bonus) => {
             const box = document.createElement("div");
             box.classList.add("doboz");
 
             box.innerHTML = `
-                <img src="${bonus.image}" class="doboz-kep" alt="${bonus.title}">
-
-                <div class="doboz-tartalom">
-                    <p class="doboz-cim">${bonus.title}</p>
-
-                    ${bonus.amount ? `<div class="bonus-osszeg">${bonus.amount}</div>` : ""}
-
-                    <div class="bonus-feltetel">
-                        <strong>${bonus.condition}</strong>
+                <div class="doboz-inner">
+                    <div class="doboz-front">
+                        <div class="doboz-kep-wrap">
+                            <img src="${bonus.image}" class="doboz-kep" alt="${bonus.title}">
+                            ${bonus.amount ? `<span class="bonus-amount-badge">${bonus.amount}</span>` : ""}
+                        </div>
+                        <div class="doboz-tartalom">
+                            <p class="doboz-cim">${bonus.title}</p>
+                            <div class="bonus-feltetel">${bonus.condition}</div>
+                            <div class="doboz-gombok">
+                                <button class="doboz-gomb" data-bs-toggle="modal" data-bs-target="#loginModal">
+                                    🔐 BEJELENTKEZÉS / REGISZTRÁCIÓ
+                                </button>
+                                <button class="tobb-info-gomb">
+                                    ℹ️ Több információ
+                                </button>
+                            </div>
+                        </div>
                     </div>
-
-                    <div class="doboz-gombok">
-                        <button class="doboz-gomb" data-bs-toggle="modal" data-bs-target="#loginModal">
-                            BEJELENTKEZÉS / REGISZTRÁCIÓ
-                        </button>
-
-                        <button class="tobb-info-gomb"
-                                data-bs-toggle="offcanvas"
-                                data-bs-target="#${offcanvasId}">
-                            Több információ
-                        </button>
-                    </div>
-                </div>
-
-                <div class="offcanvas offcanvas-start" tabindex="-1" id="${offcanvasId}" data-bs-backdrop="false" data-bs-scroll="true">
-                    <div class="offcanvas-header">
-                        <h5 class="offcanvas-title">${bonus.title}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-                    </div>
-                    <div class="offcanvas-body">
-                        <p>${bonus.longDescription || "Nincs további információ."}</p>
+                    <div class="doboz-back">
+                        <div class="doboz-back-header">
+                            <p class="doboz-back-title">${bonus.title}</p>
+                        </div>
+                        <div class="doboz-back-body">
+                            <p class="doboz-back-text">${bonus.longDescription || "Nincs további információ."}</p>
+                        </div>
+                        <div class="doboz-back-footer">
+                            <button class="doboz-back-close">← Vissza</button>
+                        </div>
                     </div>
                 </div>
             `;
+
+            box.querySelector(".tobb-info-gomb").addEventListener("click", () => {
+                box.classList.add("flipped");
+            });
+
+            box.querySelector(".doboz-back-close").addEventListener("click", () => {
+                box.classList.remove("flipped");
+            });
 
             container.appendChild(box);
         });

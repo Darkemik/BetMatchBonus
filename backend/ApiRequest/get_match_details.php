@@ -1,5 +1,5 @@
 <?php
-require_once "connect.php";
+require_once __DIR__ . "/connect.php";
 
 $eventId = isset($_GET['eventId']) ? intval($_GET['eventId']) : 0;
 
@@ -71,25 +71,56 @@ $result = [
 
 // Ha van API adat, hozzáadjuk a markets-et
 if (is_array($apiData)) {
-    // Az API válasz közvetlenül tartalmazza a markets tömböt
-    if (isset($apiData['markets'])) {
-        $result['markets'] = $apiData['markets'];
-        // homeTeam / awayTeam ha van
-        if (isset($apiData['homeTeam'])) {
-            $result['match']['homeTeam'] = $apiData['homeTeam'];
+    if (isset($apiData['homeTeam'])) {
+        $result['match']['homeTeam'] = $apiData['homeTeam'];
+    }
+    if (isset($apiData['awayTeam'])) {
+        $result['match']['awayTeam'] = $apiData['awayTeam'];
+    }
+    if (isset($apiData['liveTime'])) {
+        $result['match']['liveTime'] = $apiData['liveTime'];
+    }
+    if (isset($apiData['liveStatus'])) {
+        $result['match']['liveStatus'] = $apiData['liveStatus'];
+    }
+    if (isset($apiData['score']) && is_array($apiData['score']) && count($apiData['score']) >= 2) {
+        $result['match']['score'] = $apiData['score'][0] . ' - ' . $apiData['score'][1];
+    }
+
+    if (isset($apiData['markets']) && is_array($apiData['markets'])) {
+        // Duplikátumszűrés: market név + specialValue alapján egyedi kulcs
+        $seen = [];
+        $uniqueMarkets = [];
+
+        foreach ($apiData['markets'] as $market) {
+            $marketName = $market['name'] ?? '';
+            $specialVal = $market['specialValue'] ?? '';
+            $key = $marketName . '||' . $specialVal;
+
+            if (isset($seen[$key])) {
+                continue; // Duplikátum, kihagyjuk
+            }
+            $seen[$key] = true;
+
+            // Selections duplikátumszűrés is
+            if (isset($market['selections']) && is_array($market['selections'])) {
+                $seenSel = [];
+                $uniqueSelections = [];
+                foreach ($market['selections'] as $sel) {
+                    $selName = $sel['name'] ?? '';
+                    if (isset($seenSel[$selName])) {
+                        continue;
+                    }
+                    $seenSel[$selName] = true;
+                    $uniqueSelections[] = $sel;
+                }
+                $market['selections'] = $uniqueSelections;
+            }
+
+            $uniqueMarkets[] = $market;
         }
-        if (isset($apiData['awayTeam'])) {
-            $result['match']['awayTeam'] = $apiData['awayTeam'];
-        }
-        if (isset($apiData['liveTime'])) {
-            $result['match']['liveTime'] = $apiData['liveTime'];
-        }
-        if (isset($apiData['liveStatus'])) {
-            $result['match']['liveStatus'] = $apiData['liveStatus'];
-        }
-        if (isset($apiData['score']) && is_array($apiData['score']) && count($apiData['score']) >= 2) {
-            $result['match']['score'] = $apiData['score'][0] . ' - ' . $apiData['score'][1];
-        }
+
+        $result['markets'] = $uniqueMarkets;
     }
 }
 
