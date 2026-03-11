@@ -7,10 +7,8 @@ document.addEventListener('DOMContentLoaded', function () {
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
             const target = tab.getAttribute('data-tab');
-
             tabs.forEach(t => t.classList.remove('active'));
             contents.forEach(c => c.classList.remove('active'));
-
             tab.classList.add('active');
             document.getElementById('betslip-' + target).classList.add('active');
         });
@@ -41,7 +39,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         betslipItems.forEach((item, index) => {
             totalOdds *= item.odds;
-
             const el = document.createElement('div');
             el.classList.add('betslip-item');
             el.innerHTML = `
@@ -57,17 +54,18 @@ document.addEventListener('DOMContentLoaded', function () {
             itemsContainer.appendChild(el);
         });
 
-        // Eltávolítás gombok
         document.querySelectorAll('.betslip-item-remove').forEach(btn => {
             btn.addEventListener('click', () => {
                 const idx = parseInt(btn.getAttribute('data-index'));
                 betslipItems.splice(idx, 1);
                 saveBetslip();
                 renderBetslip();
+                if (typeof window.refreshActiveOddsButtons === 'function') {
+                    window.refreshActiveOddsButtons();
+                }
             });
         });
 
-        // Összesítés
         document.getElementById('betslip-count').textContent = betslipItems.length;
         document.getElementById('betslip-total-odds').textContent = totalOdds.toFixed(2);
         updatePotentialWin(totalOdds);
@@ -85,7 +83,6 @@ document.addEventListener('DOMContentLoaded', function () {
         localStorage.setItem('betslip', JSON.stringify(betslipItems));
     }
 
-    // Tét változás figyelése
     const stakeInput = document.getElementById('stake-input');
     if (stakeInput) {
         stakeInput.addEventListener('input', () => {
@@ -95,21 +92,17 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ===== FOGADÁS ELKÜLDÉSE =====
     const submitBtn = document.getElementById('betslip-submit');
     if (submitBtn) {
         submitBtn.addEventListener('click', () => {
             if (betslipItems.length === 0) return;
-
             const stake = parseFloat(stakeInput.value) || 0;
             if (stake < 100) {
                 alert('A minimum tét 100 Ft!');
                 return;
             }
-
             let totalOdds = 1;
             betslipItems.forEach(item => totalOdds *= item.odds);
-
             const bet = {
                 id: Date.now(),
                 date: new Date().toLocaleString('hu-HU'),
@@ -119,44 +112,34 @@ document.addEventListener('DOMContentLoaded', function () {
                 potentialWin: Math.round(stake * totalOdds),
                 status: 'pending'
             };
-
             betHistory.unshift(bet);
             localStorage.setItem('betHistory', JSON.stringify(betHistory));
-
-            // Szelvény törlése
             betslipItems = [];
             saveBetslip();
             renderBetslip();
             renderNaplo();
-
+            if (typeof window.refreshActiveOddsButtons === 'function') {
+                window.refreshActiveOddsButtons();
+            }
             alert('Fogadás sikeresen leadva!');
         });
     }
 
-    // ===== NAPLÓ MEGJELENÍTÉSE =====
     function renderNaplo() {
         const naploItems = document.getElementById('naplo-items');
         const naploEmpty = document.getElementById('naplo-empty');
-
         if (betHistory.length === 0) {
             naploEmpty.style.display = 'flex';
             naploItems.style.display = 'none';
             return;
         }
-
         naploEmpty.style.display = 'none';
         naploItems.style.display = 'flex';
-
         naploItems.innerHTML = '';
-
         betHistory.forEach(bet => {
             const statusClass = bet.status;
-            const statusText = bet.status === 'pending' ? 'Függőben'
-                : bet.status === 'won' ? 'Nyert'
-                : 'Vesztett';
-
+            const statusText = bet.status === 'pending' ? 'Függőben' : bet.status === 'won' ? 'Nyert' : 'Vesztett';
             const matchNames = bet.items.map(i => `${i.homeTeam} vs ${i.awayTeam}`).join(', ');
-
             const el = document.createElement('div');
             el.classList.add('naplo-item', statusClass);
             el.innerHTML = `
@@ -175,23 +158,30 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ===== GLOBÁLIS FÜGGVÉNY - Tétel hozzáadása szelvényhez =====
-    window.addToBetslip = function (homeTeam, awayTeam, pick, odds) {
-        // Ellenőrzés: már rajta van-e
-        const exists = betslipItems.find(
-            i => i.homeTeam === homeTeam && i.awayTeam === awayTeam && i.pick === pick
-        );
-        if (exists) {
-            alert('Ez a tipp már rajta van a szelvényen!');
-            return;
-        }
+    // ===== GLOBÁLIS FÜGGVÉNYEK =====
+    window.refreshBetslipUI = function() {
+        betslipItems = JSON.parse(localStorage.getItem('betslip') || '[]');
+        renderBetslip();
+    };
 
-        betslipItems.push({ homeTeam, awayTeam, pick, odds });
+    window.addToBetslip = function(homeTeam, awayTeam, pick, odds, market) {
+        var exists = betslipItems.some(function(i) {
+            return i.homeTeam === homeTeam && i.awayTeam === awayTeam && i.pick === pick && i.market === market;
+        });
+        if (exists) return;
+        betslipItems.push({ homeTeam: homeTeam, awayTeam: awayTeam, pick: pick, odds: odds, market: market || '' });
         saveBetslip();
         renderBetslip();
     };
 
-    // Inicializálás
+    window.removeFromBetslip = function(homeTeam, awayTeam, pick, market) {
+        betslipItems = betslipItems.filter(function(item) {
+            return !(item.homeTeam === homeTeam && item.awayTeam === awayTeam && item.pick === pick && item.market === market);
+        });
+        saveBetslip();
+        renderBetslip();
+    };
+
     renderBetslip();
     renderNaplo();
 });

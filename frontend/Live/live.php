@@ -93,48 +93,56 @@ require_once "../../backend/ApiRequest/connect.php";
                                 <i class="fas fa-futbol"></i>
                             </div>
                             <span class="sport-name">Labdarúgás</span>
+                            <span class="sport-count" data-sport-id="66">-</span>
                         </a>
                         <a href="#" class="sport-item" data-sport="basketball">
                             <div class="sport-icon">
                                 <i class="fas fa-basketball-ball"></i>
                             </div>
                             <span class="sport-name">Kosárlabda</span>
+                            <span class="sport-count" data-sport-id="67">-</span>
                         </a>
                         <a href="#" class="sport-item" data-sport="darts">
                             <div class="sport-icon">
                                 <i class="fas fa-bullseye"></i>
                             </div>
                             <span class="sport-name">Darts</span>
+                            <span class="sport-count" data-sport-id="78">-</span>
                         </a>
                         <a href="#" class="sport-item" data-sport="waterpolo">
                             <div class="sport-icon">
                                 <i class="fas fa-swimmer"></i>
                             </div>
                             <span class="sport-name">Vízilabda</span>
+                            <span class="sport-count" data-sport-id="83">-</span>
                         </a>
                         <a href="#" class="sport-item" data-sport="handball">
                             <div class="sport-icon">
                                 <i class="fas fa-hand-rock"></i>
                             </div>
                             <span class="sport-name">Kézilabda</span>
+                            <span class="sport-count" data-sport-id="73">-</span>
                         </a>
                         <a href="#" class="sport-item" data-sport="hockey">
                             <div class="sport-icon">
                                 <i class="fas fa-hockey-puck"></i>
                             </div>
                             <span class="sport-name">Jégkorong</span>
+                            <span class="sport-count" data-sport-id="70">-</span>
                         </a>
                         <a href="#" class="sport-item" data-sport="esport">
                             <div class="sport-icon">
                                 <i class="fas fa-gamepad"></i>
                             </div>
                             <span class="sport-name">eSport</span>
+                            <span class="sport-count" data-sport-id="145">-</span>
                         </a>
                         <a href="#" class="sport-item" data-sport="pingpong">
                             <div class="sport-icon">
                                 <i class="fas fa-table-tennis"></i>
                             </div>
                             <span class="sport-name">Pingpong</span>
+                            <span class="sport-count" data-sport-id="77">-</span>
                         </a>
                     </nav>
                 </div>
