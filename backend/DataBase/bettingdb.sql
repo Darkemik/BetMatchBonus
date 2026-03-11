@@ -29,6 +29,10 @@ CREATE TABLE IF NOT EXISTS AdminUsers (
   last_login    DATETIME      DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
+ALTER TABLE AdminUsers
+  ADD CONSTRAINT chk_admin_role
+  CHECK (role IN ('MOD','ADMIN','SUPERADMIN'));
+  
 CREATE TABLE IF NOT EXISTS AuditLogs (
   id          INT           AUTO_INCREMENT PRIMARY KEY,
   admin_id    INT           NOT NULL,
