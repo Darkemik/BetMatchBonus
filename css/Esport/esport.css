@@ -26,6 +26,11 @@
     margin-right: 10px;
 }
 
+/* ===== CONTENT PARENT LAYOUT ===== */
+.content-parent {
+    width: 100%;
+}
+
 /* ===== TABS ===== */
 .tabs-container {
     display: flex;
@@ -44,6 +49,13 @@
     color: #aaa;
     transition: all 0.3s ease;
     border-radius: 5px 5px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tab-button i {
+    font-size: 14px;
 }
 
 .tab-button:hover {
@@ -252,6 +264,27 @@
 }
 
 .esport-live-count.has-live {
+    background: #BA68C8;
+    color: #fff;
+}
+
+.esport-today-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 20px;
+    padding: 0 6px;
+    margin-left: 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(186, 104, 200, 0.2);
+    color: #BA68C8;
+    transition: all 0.3s ease;
+}
+
+.esport-today-count.has-live {
     background: #BA68C8;
     color: #fff;
 }
@@ -516,6 +549,33 @@
     font-size: 1rem;
 }
 
+/* ===== NEM ÉLŐBEN CÍMKE ===== */
+.not-started-label {
+    font-size: 13px;
+    color: #78909c;
+    font-weight: 500;
+    background: rgba(255,255,255,0.04);
+    padding: 4px 12px;
+    border-radius: 6px;
+}
+
+.not-started-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    background: rgba(120, 144, 156, 0.15);
+    padding: 4px 14px;
+    border-radius: 20px;
+    color: #78909c;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.not-started-badge i {
+    font-size: 14px;
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 900px) {
     .matches-table thead th,
@@ -538,4 +598,8 @@
     .team-name-big { font-size: 1rem; }
     .score-big { font-size: 1.8rem; }
     .selection-btn { min-width: 80px; max-width: 150px; }
+    .tab-button {
+        font-size: 13px;
+        padding: 8px 12px;
+    }
 }

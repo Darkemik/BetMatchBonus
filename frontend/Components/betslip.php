@@ -54,3 +54,34 @@
         </div>
     </div>
 </aside>
+
+<!-- Fogadás visszaigazolás modal -->
+<div class="bet-confirm-overlay" id="bet-confirm-overlay">
+    <div class="bet-confirm-modal">
+        <div class="bet-confirm-header">
+            <span class="bet-confirm-icon">✅</span>
+            <h3>Fogadás sikeresen leadva!</h3>
+            <button class="bet-confirm-close" id="bet-confirm-close">&times;</button>
+        </div>
+        <div class="bet-confirm-body">
+            <div class="bet-confirm-items" id="bet-confirm-items"></div>
+            <div class="bet-confirm-summary">
+                <div class="bet-confirm-row">
+                    <span>Tét:</span>
+                    <span id="bet-confirm-stake">-</span>
+                </div>
+                <div class="bet-confirm-row">
+                    <span>Össz. odds:</span>
+                    <span id="bet-confirm-odds">-</span>
+                </div>
+                <div class="bet-confirm-row highlight">
+                    <span>Lehetséges nyeremény:</span>
+                    <span id="bet-confirm-win">-</span>
+                </div>
+            </div>
+        </div>
+        <div class="bet-confirm-footer">
+            <button class="bet-confirm-ok-btn" id="bet-confirm-ok">Rendben</button>
+        </div>
+    </div>
+</div>

@@ -87,13 +87,23 @@ require_once "../../backend/ApiRequest/connect.php";
                 <h1 class="elo-title"><i class="fas fa-gamepad"></i> eSport</h1>
 
                 <div class="tabs-container">
-                    <button class="tab-button active" data-tab="live">
+                    <button class="tab-button active" data-tab="today">
+                        <i class="fas fa-calendar-day"></i> Összes mai meccs
+                        <span class="esport-today-count" id="esport-today-badge">-</span>
+                    </button>
+                    <button class="tab-button" data-tab="live">
                         <i class="fas fa-broadcast-tower"></i> Élő meccsek
                         <span class="esport-live-count" id="esport-live-badge">-</span>
                     </button>
                 </div>
 
-                <div class="tab-content active" id="tab-live">
+                <div class="tab-content active" id="tab-today">
+                    <div id="today-matches-container">
+                        <div class="loading-details"><i class="fas fa-spinner fa-spin"></i> Mai meccsek betöltése...</div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="tab-live">
                     <div id="matches-container">
                         <?php 
                         $_GET['sport_id'] = 145;
