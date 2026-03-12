@@ -41,13 +41,16 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
+        var matchIdAttr = currentMatchId ? ' data-match-id="' + currentMatchId + '"' : '';
+
         if (isMarketLocked) {
             return '<button class="selection-btn market-locked" ' +
                 'data-home="' + escapeHtml(homeTeam) + '" ' +
                 'data-away="' + escapeHtml(awayTeam) + '" ' +
                 'data-pick="' + escapeHtml(sel.name) + '" ' +
                 'data-odd="' + sel.odd + '" ' +
-                'data-market="' + escapeHtml(marketFullName) + '">' +
+                'data-market="' + escapeHtml(marketFullName) + '"' +
+                matchIdAttr + '>' +
                 '<span class="selection-name">' + escapeHtml(sel.name) + '</span>' +
                 '<span class="lock-icon"><i class="fas fa-lock"></i></span>' +
             '</button>';
@@ -59,7 +62,8 @@ document.addEventListener("DOMContentLoaded", () => {
             'data-away="' + escapeHtml(awayTeam) + '" ' +
             'data-pick="' + escapeHtml(sel.name) + '" ' +
             'data-odd="' + sel.odd + '" ' +
-            'data-market="' + escapeHtml(marketFullName) + '">' +
+            'data-market="' + escapeHtml(marketFullName) + '"' +
+            matchIdAttr + '>' +
             '<span class="selection-name">' + escapeHtml(sel.name) + '</span>' +
             '<span class="selection-odd">' + sel.odd.toFixed(2) + '</span>' +
         '</button>';
@@ -77,6 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
         var pick = btn.getAttribute('data-pick');
         var odds = parseFloat(btn.getAttribute('data-odd'));
         var market = btn.getAttribute('data-market');
+        var matchId = parseInt(btn.getAttribute('data-match-id')) || 0;
 
         if (!homeTeam || !awayTeam || !pick || !market) return;
 
@@ -87,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
             btn.classList.remove('active');
         } else {
             if (typeof window.addToBetslip === 'function') {
-                window.addToBetslip(homeTeam, awayTeam, pick, odds, market);
+                window.addToBetslip(homeTeam, awayTeam, pick, odds, market, matchId);
             }
             btn.classList.add('active');
         }

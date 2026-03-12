@@ -1,7 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const container = document.getElementById("matches-container");
+    const liveContainer = document.getElementById("matches-container");
+    const todayContainer = document.getElementById("today-matches-container");
     let refreshTimer = null;
     let currentMatchId = null;
+    let activeTab = 'today'; // 'today' vagy 'live'
     const ESPORT_SPORT_ID = 145;
 
     // ===== BETSLIP ELLENŐRZÉS =====
@@ -31,13 +33,16 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
+        var matchIdAttr = currentMatchId ? ' data-match-id="' + currentMatchId + '"' : '';
+
         if (isMarketLocked) {
             return '<button class="selection-btn market-locked" ' +
                 'data-home="' + escapeHtml(homeTeam) + '" ' +
                 'data-away="' + escapeHtml(awayTeam) + '" ' +
                 'data-pick="' + escapeHtml(sel.name) + '" ' +
                 'data-odd="' + sel.odd + '" ' +
-                'data-market="' + escapeHtml(marketFullName) + '">' +
+                'data-market="' + escapeHtml(marketFullName) + '"' +
+                matchIdAttr + '>' +
                 '<span class="selection-name">' + escapeHtml(sel.name) + '</span>' +
                 '<span class="lock-icon"><i class="fas fa-lock"></i></span>' +
             '</button>';
@@ -49,7 +54,8 @@ document.addEventListener("DOMContentLoaded", () => {
             'data-away="' + escapeHtml(awayTeam) + '" ' +
             'data-pick="' + escapeHtml(sel.name) + '" ' +
             'data-odd="' + sel.odd + '" ' +
-            'data-market="' + escapeHtml(marketFullName) + '">' +
+            'data-market="' + escapeHtml(marketFullName) + '"' +
+            matchIdAttr + '>' +
             '<span class="selection-name">' + escapeHtml(sel.name) + '</span>' +
             '<span class="selection-odd">' + sel.odd.toFixed(2) + '</span>' +
         '</button>';
@@ -67,6 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
         var pick = btn.getAttribute('data-pick');
         var odds = parseFloat(btn.getAttribute('data-odd'));
         var market = btn.getAttribute('data-market');
+        var matchId = parseInt(btn.getAttribute('data-match-id')) || 0;
 
         if (!homeTeam || !awayTeam || !pick || !market) return;
 
@@ -77,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
             btn.classList.remove('active');
         } else {
             if (typeof window.addToBetslip === 'function') {
-                window.addToBetslip(homeTeam, awayTeam, pick, odds, market);
+                window.addToBetslip(homeTeam, awayTeam, pick, odds, market, matchId);
             }
             btn.classList.add('active');
         }
@@ -175,13 +182,16 @@ document.addEventListener("DOMContentLoaded", () => {
             tabContents.forEach(function(c) { c.classList.remove('active'); });
             btn.classList.add('active');
             var target = btn.getAttribute('data-tab');
+            activeTab = target;
             var targetContent = document.getElementById('tab-' + target);
             if (targetContent) targetContent.classList.add('active');
 
-            // Ha élő tabra váltunk, azonnali frissítés
+            currentMatchId = null;
+
             if (target === 'live') {
-                currentMatchId = null;
                 refreshLiveMatches();
+            } else if (target === 'today') {
+                refreshTodayMatches();
             }
         });
     });
@@ -199,8 +209,27 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // ===== MECCSEK FRISSÍTÉS (csak eSport = 145) =====
+    function updateTodayCount(count) {
+        var badge = document.getElementById('esport-today-badge');
+        if (badge) {
+            badge.textContent = count;
+            if (count > 0) {
+                badge.classList.add('has-live');
+            } else {
+                badge.classList.remove('has-live');
+            }
+        }
+    }
+
+    // ===== AKTÍV KONTÉNER =====
+    function getActiveContainer() {
+        if (activeTab === 'live') return liveContainer;
+        return todayContainer;
+    }
+
+    // ===== ÉLŐ MECCSEK FRISSÍTÉS =====
     function refreshLiveMatches() {
+        if (activeTab !== 'live') return;
         if (currentMatchId) {
             refreshMatchDetails(currentMatchId);
             return;
@@ -216,20 +245,67 @@ document.addEventListener("DOMContentLoaded", () => {
             })
             .then(function(res) { return res.text(); })
             .then(function(html) {
-                container.innerHTML = html;
-                attachMatchClickHandlers();
-                var savedLang = localStorage.getItem('lang') || 'hu';
-                if (savedLang !== 'hu' && typeof changeLanguageForContainer === 'function') {
-                    changeLanguageForContainer(container, savedLang);
-                }
+                liveContainer.innerHTML = html;
+                attachMatchClickHandlers(liveContainer);
+                applyTranslation(liveContainer);
             })
             .catch(function(err) {
-                console.error("Hiba az eSport meccsek frissítésekor:", err);
+                console.error("Hiba az eSport élő meccsek frissítésekor:", err);
             });
     }
 
-    function attachMatchClickHandlers() {
-        document.querySelectorAll('.match-row.clickable').forEach(function(row) {
+    // ===== MAI MECCSEK FRISSÍTÉS =====
+    function refreshTodayMatches() {
+        if (activeTab !== 'today') return;
+        if (currentMatchId) {
+            refreshMatchDetails(currentMatchId);
+            return;
+        }
+        // Élő badge frissítés + mai meccsek import párhuzamosan
+        Promise.all([
+            fetch("../../backend/ApiRequest/get_matches_live.php").then(function(res) { return res.json(); }),
+            fetch("../../backend/ApiRequest/esport_today.php").then(function(res) { return res.json(); })
+        ])
+        .then(function(results) {
+            var liveResult = results[0];
+            var todayResult = results[1];
+
+            // Élő badge frissítés a get_matches_live válaszból
+            if (liveResult && liveResult.sports) {
+                var esportLive = liveResult.sports[ESPORT_SPORT_ID] || 0;
+                updateLiveCount(esportLive);
+            }
+
+            // Mai meccsek badge
+            if (todayResult && todayResult.total !== undefined) {
+                updateTodayCount(todayResult.total);
+            }
+
+            // Tábla lekérése
+            return fetch("../../backend/ApiRequest/esport_today_table.php");
+        })
+        .then(function(res) { return res.text(); })
+        .then(function(html) {
+            todayContainer.innerHTML = html;
+            attachMatchClickHandlers(todayContainer);
+            applyTranslation(todayContainer);
+        })
+        .catch(function(err) {
+            console.error("Hiba a mai eSport meccsek frissítésekor:", err);
+        });
+    }
+
+    // ===== NYELV ALKALMAZÁS =====
+    function applyTranslation(container) {
+        var savedLang = localStorage.getItem('lang') || 'hu';
+        if (savedLang !== 'hu' && typeof changeLanguageForContainer === 'function') {
+            changeLanguageForContainer(container, savedLang);
+        }
+    }
+
+    // ===== MECCS KATTINTÁS KEZELŐ =====
+    function attachMatchClickHandlers(container) {
+        container.querySelectorAll('.match-row.clickable').forEach(function(row) {
             row.addEventListener('click', function() {
                 var matchId = row.getAttribute('data-match-id');
                 if (matchId) loadMatchDetails(matchId);
@@ -239,6 +315,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function loadMatchDetails(eventId) {
         currentMatchId = eventId;
+        var container = getActiveContainer();
         container.innerHTML = '<div class="loading-details"><i class="fas fa-spinner fa-spin"></i> Meccs adatok betöltése...</div>';
         fetch("../../backend/ApiRequest/get_match_details.php?eventId=" + eventId)
             .then(function(res) { return res.json(); })
@@ -267,6 +344,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 if (data.error) return;
+                var container = getActiveContainer();
                 var scoreEl = container.querySelector('.score-big');
                 if (scoreEl) scoreEl.textContent = data.match.score || '0 - 0';
                 var liveTimeEl = container.querySelector('.live-time-big');
@@ -294,12 +372,23 @@ document.addEventListener("DOMContentLoaded", () => {
         var awayTeam = match.awayTeam || (nameParts[1] || '');
         var score = match.score || '0 - 0';
         var liveTime = match.liveTime || '-';
+        var isLive = match.isLive;
         var startTime = match.startUtc ? new Date(match.startUtc).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }) : '-';
 
         var marketsHtml = buildMarketsHtml(markets, homeTeam, awayTeam);
 
+        var backLabel = activeTab === 'live' ? 'Vissza az élő meccsekhez' : 'Vissza a mai meccsekhez';
+
+        var liveSection = '';
+        if (isLive) {
+            liveSection = '<div class="live-badge"><span class="live-dot-big"></span><span class="live-time-big">' + escapeHtml(liveTime) + '</span></div>';
+        } else {
+            liveSection = '<div class="not-started-badge"><i class="fas fa-clock"></i> <span>' + startTime + '</span></div>';
+        }
+
+        var container = getActiveContainer();
         container.innerHTML = '<div class="match-details">' +
-            '<button class="back-btn" id="back-to-matches"><i class="fas fa-arrow-left"></i> Vissza az élő meccsekhez</button>' +
+            '<button class="back-btn" id="back-to-matches"><i class="fas fa-arrow-left"></i> ' + backLabel + '</button>' +
             '<div class="match-header-card">' +
                 '<div class="match-meta">' +
                     '<span class="meta-item"><i class="fas fa-globe-europe"></i> ' + escapeHtml(match.country) + '</span>' +
@@ -310,7 +399,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     '<div class="team-side home-side"><span class="team-name-big">' + escapeHtml(homeTeam) + '</span></div>' +
                     '<div class="score-center">' +
                         '<div class="score-big">' + escapeHtml(score) + '</div>' +
-                        '<div class="live-badge"><span class="live-dot-big"></span><span class="live-time-big">' + escapeHtml(liveTime) + '</span></div>' +
+                        liveSection +
                     '</div>' +
                     '<div class="team-side away-side"><span class="team-name-big">' + escapeHtml(awayTeam) + '</span></div>' +
                 '</div>' +
@@ -321,7 +410,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         document.getElementById('back-to-matches').addEventListener('click', function() {
             currentMatchId = null;
-            refreshLiveMatches();
+            if (activeTab === 'live') {
+                refreshLiveMatches();
+            } else {
+                refreshTodayMatches();
+            }
         });
     }
 
@@ -332,9 +425,18 @@ document.addEventListener("DOMContentLoaded", () => {
         return div.innerHTML;
     }
 
+    // ===== AUTO REFRESH =====
+    function refreshActive() {
+        if (activeTab === 'live') {
+            refreshLiveMatches();
+        } else {
+            refreshTodayMatches();
+        }
+    }
+
     function startAutoRefresh() {
         stopAutoRefresh();
-        refreshTimer = setInterval(refreshLiveMatches, 5000);
+        refreshTimer = setInterval(refreshActive, 5000);
     }
 
     function stopAutoRefresh() {
@@ -348,15 +450,24 @@ document.addEventListener("DOMContentLoaded", () => {
         if (document.hidden) {
             stopAutoRefresh();
         } else {
-            refreshLiveMatches();
+            refreshActive();
             startAutoRefresh();
         }
     });
 
-    // Csak az élő tab-on indítjuk a frissítést
-    var liveTab = document.querySelector('.tab-button[data-tab="live"]');
-    if (liveTab && liveTab.classList.contains('active')) {
-        attachMatchClickHandlers();
-        startAutoRefresh();
-    }
+    // ===== INDÍTÁS =====
+    // Élő badge frissítés induláskor
+    fetch("../../backend/ApiRequest/get_matches_live.php")
+        .then(function(res) { return res.json(); })
+        .then(function(apiResult) {
+            if (apiResult && apiResult.sports) {
+                var esportLive = apiResult.sports[String(ESPORT_SPORT_ID)] || apiResult.sports[ESPORT_SPORT_ID] || 0;
+                updateLiveCount(esportLive);
+            }
+        })
+        .catch(function() {});
+
+    // Mai tab betöltése (ez az alapértelmezett)
+    refreshTodayMatches();
+    startAutoRefresh();
 });
