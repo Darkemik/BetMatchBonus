@@ -88,7 +88,8 @@ INSERT INTO BonusTypes (id, name) VALUES
 (3, 'SEASONAL'),
 (4, 'EVENT_SPECIFIC'),
 (5, 'DATE_SPECIFIC'),
-(6, 'ADMIN_BONUS');
+(6, 'WEEKEND'),
+(7, 'ADMIN_BONUS');
 
 -- ============================================================
 -- 7) COMPETITIONS
