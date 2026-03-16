@@ -243,16 +243,21 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Piaca zárolás ellenőrzés
-        var hasOtherInMarket = betslipItems.some(function(item) {
-            return item.homeTeam === homeTeam && 
-                   item.awayTeam === awayTeam && 
-                   item.market === market;
-        });
+        // 1X2 piacon: nincs piaca zárolás, csak halványuláson alapuló
+        // Más piacokon: piaca zárolás van
+        var is1X2Market = is1X2OrMatchWinner(market);
+        
+        if (!is1X2Market) {
+            var hasOtherInMarket = betslipItems.some(function(item) {
+                return item.homeTeam === homeTeam && 
+                       item.awayTeam === awayTeam && 
+                       item.market === market;
+            });
 
-        if (hasOtherInMarket) {
-            console.log('[BETSLIP] Market already locked');
-            return;
+            if (hasOtherInMarket) {
+                console.log('[BETSLIP] Market already locked (not 1X2)');
+                return;
+            }
         }
 
         // Hozzáadás
@@ -288,6 +293,17 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('[BETSLIP] Removed! Now:', betslipItems.length);
     };
 
+    // ===== SEGÉDFÜGGVÉNYEK =====
+    function is1X2OrMatchWinner(marketName) {
+        var marketLower = (marketName || '').toLowerCase();
+        return marketLower.indexOf('1x2') !== -1 || 
+               marketLower.indexOf('winner') !== -1 || 
+               marketLower.indexOf('győztes') !== -1 ||
+               marketLower.indexOf('match result') !== -1 ||
+               marketLower.indexOf('full time result') !== -1 ||
+               marketLower.indexOf('moneyline') !== -1;
+    }
+
     window.refreshAllOddsButtons = function() {
         console.log('[BETSLIP] refreshAllOddsButtons');
         
@@ -309,12 +325,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 return item.homeTeam === home && item.awayTeam === away && item.market === market && item.pick !== pick;
             });
 
-            btn.classList.remove('active', 'market-locked');
+            btn.classList.remove('active', 'market-locked', 'hidden-other');
 
             if (inSlip) {
                 btn.classList.add('active');
             } else if (hasOtherInMarket) {
-                btn.classList.add('market-locked');
+                if (is1X2OrMatchWinner(market)) {
+                    btn.classList.add('hidden-other');
+                } else {
+                    btn.classList.add('market-locked');
+                }
             }
         });
     };

@@ -740,6 +740,13 @@
     font-size: 14px;
 }
 
+/* ===== HIDDEN OTHER GOMB (fade-out effektus) ===== */
+.selection-btn.hidden-other {
+    opacity: 0.3;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out;
+}
+
 .no-markets {
     text-align: center;
     padding: 40px;
