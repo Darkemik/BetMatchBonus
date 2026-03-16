@@ -26,9 +26,9 @@ $admins = [
         'role_id'  => 2,
     ],
     [
-        'username' => 'super_user',
-        'email'    => 'super@betmatchbonus.hu',
-        'password' => 'password123',
+        'username' => 'Darkemik',
+        'email'    => 'backkiller14@gmail.com',
+        'password' => 'Geriger0123',
         'role_id'  => 3,
     ],
 ];
