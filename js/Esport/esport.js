@@ -19,28 +19,37 @@ document.addEventListener("DOMContentLoaded", () => {
         if (sel.odd <= 1.0) {
             return '<button class="selection-btn disabled" disabled>' +
                 '<span class="selection-name">' + escapeHtml(sel.name) + '</span>' +
+                '<span class="lock-icon"><i class="fas fa-lock"></i></span>' +
             '</button>';
         }
 
         var isActive = isInBetslip(homeTeam, awayTeam, sel.name, marketFullName);
-        var hiddenClass = '';
+        var isMarketLocked = false;
 
-        // 1X2 piacon: nem zárolunk, csak halványítunk
-        if (is1X2OrMatchWinner(marketFullName) && hasOtherInMarket(homeTeam, awayTeam, marketFullName, sel.name)) {
-            hiddenClass = ' hidden-other';
-        }
-        
-        // Correct Score: ha van 1X2 választás, halványítsd az ellentétes lehetőségeket
-        if (isCorrectScoreMarket(marketFullName) && is1X2SelectedInMatch(homeTeam, awayTeam)) {
-            if (isConflictingCorrectScore(sel.name, homeTeam, awayTeam, marketFullName)) {
-                hiddenClass = ' hidden-other';
-            }
+        if (!isActive) {
+            var betslip = JSON.parse(localStorage.getItem('betslip') || '[]');
+            isMarketLocked = betslip.some(function(item) {
+                return item.homeTeam === homeTeam && item.awayTeam === awayTeam && item.market === marketFullName && item.pick !== sel.name;
+            });
         }
 
         var matchIdAttr = currentMatchId ? ' data-match-id="' + currentMatchId + '"' : '';
-        var activeClass = isActive ? ' active' : '';
 
-        return '<button class="selection-btn' + activeClass + hiddenClass + '" ' +
+        if (isMarketLocked) {
+            return '<button class="selection-btn market-locked" ' +
+                'data-home="' + escapeHtml(homeTeam) + '" ' +
+                'data-away="' + escapeHtml(awayTeam) + '" ' +
+                'data-pick="' + escapeHtml(sel.name) + '" ' +
+                'data-odd="' + sel.odd + '" ' +
+                'data-market="' + escapeHtml(marketFullName) + '"' +
+                matchIdAttr + '>' +
+                '<span class="selection-name">' + escapeHtml(sel.name) + '</span>' +
+                '<span class="lock-icon"><i class="fas fa-lock"></i></span>' +
+            '</button>';
+        }
+
+        var activeClass = isActive ? ' active' : '';
+        return '<button class="selection-btn' + activeClass + '" ' +
             'data-home="' + escapeHtml(homeTeam) + '" ' +
             'data-away="' + escapeHtml(awayTeam) + '" ' +
             'data-pick="' + escapeHtml(sel.name) + '" ' +
@@ -50,82 +59,6 @@ document.addEventListener("DOMContentLoaded", () => {
             '<span class="selection-name">' + escapeHtml(sel.name) + '</span>' +
             '<span class="selection-odd">' + sel.odd.toFixed(2) + '</span>' +
         '</button>';
-    }
-
-    // ===== SEGÉDFÜGGVÉNYEK =====
-    function is1X2OrMatchWinner(marketName) {
-        var marketLower = (marketName || '').toLowerCase();
-        return marketLower.indexOf('1x2') !== -1 || 
-               marketLower.indexOf('winner') !== -1 || 
-               marketLower.indexOf('győztes') !== -1 ||
-               marketLower.indexOf('match result') !== -1 ||
-               marketLower.indexOf('full time result') !== -1 ||
-               marketLower.indexOf('moneyline') !== -1;
-    }
-
-    function isCorrectScoreMarket(marketName) {
-        var marketLower = (marketName || '').toLowerCase();
-        return marketLower.indexOf('correct score') !== -1 || 
-               marketLower.indexOf('pontos végeredmény') !== -1 ||
-               marketLower.indexOf('exact score') !== -1 ||
-               marketLower.indexOf('végeredmény') !== -1;
-    }
-
-    function is1X2SelectedInMatch(homeTeam, awayTeam) {
-        var betslip = JSON.parse(localStorage.getItem('betslip') || '[]');
-        return betslip.some(function(item) {
-            return item.homeTeam === homeTeam && 
-                   item.awayTeam === awayTeam && 
-                   is1X2OrMatchWinner(item.market);
-        });
-    }
-
-    function get1X2Selection(homeTeam, awayTeam) {
-        var betslip = JSON.parse(localStorage.getItem('betslip') || '[]');
-        var found = betslip.find(function(item) {
-            return item.homeTeam === homeTeam && 
-                   item.awayTeam === awayTeam && 
-                   is1X2OrMatchWinner(item.market);
-        });
-        return found ? found.pick.toLowerCase() : null;
-    }
-
-    function isConflictingCorrectScore(scoreString, homeTeam, awayTeam, marketName) {
-        var pick1X2 = get1X2Selection(homeTeam, awayTeam);
-        if (!pick1X2) return false;
-
-        // scoreString formátum: "1:0", "0:1", "2:2", stb.
-        var parts = scoreString.split(':');
-        if (parts.length !== 2) return false;
-        
-        var homeGoals = parseInt(parts[0]);
-        var awayGoals = parseInt(parts[1]);
-        
-        if (isNaN(homeGoals) || isNaN(awayGoals)) return false;
-
-        // Ellenőrizzük az 1X2 választás alapján
-        if (pick1X2 === '1' || pick1X2 === 'home') {
-            // Ha az "1. nyer" választva van, az olyan scorek ellentétes amelyek nem home win
-            return !(homeGoals > awayGoals);
-        } else if (pick1X2 === '2' || pick1X2 === 'away') {
-            // Ha az "2. nyer" választva van, az olyan scorek ellentétes amelyek nem away win
-            return !(awayGoals > homeGoals);
-        } else if (pick1X2 === 'x' || pick1X2 === 'draw' || pick1X2 === 'döntetlen') {
-            // Ha a "döntetlen" választva van, az olyan scorek ellentétes amelyek nem döntetlen
-            return !(homeGoals === awayGoals);
-        }
-
-        return false;
-    }
-
-    function hasOtherInMarket(homeTeam, awayTeam, marketName, currentPick) {
-        var betslip = JSON.parse(localStorage.getItem('betslip') || '[]');
-        return betslip.some(function(item) {
-            return item.homeTeam === homeTeam && 
-                   item.awayTeam === awayTeam && 
-                   item.market === marketName && 
-                   item.pick !== currentPick;
-        });
     }
 
     // ===== ODDS GOMBOK KATTINTÁS KEZELŐ - AZONNALI FRISSÍTÉS =====
