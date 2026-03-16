@@ -28,9 +28,10 @@ SELECT
     c.name AS country_name,
     ch.name AS championship_name
 FROM Events m
+JOIN Sports s ON m.sport_id = s.id
 JOIN Competitions ch ON m.competition_id = ch.id
 JOIN Countries c ON ch.country_id = c.id
-WHERE m.sport_id = ?
+WHERE s.api_id = ?
   AND m.is_live = 1
 ORDER BY m.start_time
 ";
