@@ -22,17 +22,17 @@ $sql = "
 SELECT 
     m.api_id,
     m.name AS match_name,
-    m.start_utc,
+    m.start_time AS start_utc,
     m.live_time,
-    m.score,
+    CONCAT(IFNULL(m.home_score, 0), ' - ', IFNULL(m.away_score, 0)) AS score,
     c.name AS country_name,
     ch.name AS championship_name
-FROM Matches m
-JOIN Championships ch ON m.championship_id = ch.id
-JOIN Countries c ON ch.country_code = c.code
+FROM Events m
+JOIN Competitions ch ON m.competition_id = ch.id
+JOIN Countries c ON ch.country_id = c.id
 WHERE m.sport_id = ?
   AND m.is_live = 1
-ORDER BY m.start_utc
+ORDER BY m.start_time
 ";
 
 $stmt = $conn->prepare($sql);

@@ -30,17 +30,24 @@ if (!$stmtUpsertCountry) {
     die("SQL hiba (stmtUpsertCountry): " . $conn->error);
 }
 
-// 2) Prepared statement a bajnokság upsert-re
-$stmtUpsertChamp = $conn->prepare("
-    INSERT INTO Championships (api_id, sport_id, country_code, name)
+$stmtSelectCountry = $conn->prepare("
+    SELECT id FROM Countries WHERE code = ?
+");
+if (!$stmtSelectCountry) {
+    die("SQL hiba (stmtSelectCountry): " . $conn->error);
+}
+
+// 2) Prepared statement a verseny upsert-re
+$stmtUpsertComp = $conn->prepare("
+    INSERT INTO Competitions (api_id, sport_id, country_id, name)
     VALUES (?, ?, ?, ?)
     ON DUPLICATE KEY UPDATE
         sport_id = VALUES(sport_id),
-        country_code = VALUES(country_code),
+        country_id = VALUES(country_id),
         name = VALUES(name)
 ");
-if (!$stmtUpsertChamp) {
-    die("SQL hiba (stmtUpsertChamp): " . $conn->error);
+if (!$stmtUpsertComp) {
+    die("SQL hiba (stmtUpsertComp): " . $conn->error);
 }
 
 // 3) Minden sporthoz: bajnokságok importja
@@ -83,15 +90,23 @@ foreach ($sports as $sport) {
         $stmtUpsertCountry->bind_param("ss", $countryCode, $countryName);
         $stmtUpsertCountry->execute();
 
-        // Championship upsert (FK már ok)
-        $stmtUpsertChamp->bind_param("iiss", $apiChampId, $sportId, $countryCode, $champName);
-        $stmtUpsertChamp->execute();
+        // Country id lekérése
+        $stmtSelectCountry->bind_param("s", $countryCode);
+        $stmtSelectCountry->execute();
+        $countryResult = $stmtSelectCountry->get_result();
+        $countryRow = $countryResult->fetch_assoc();
+        $countryId = $countryRow ? (int)$countryRow['id'] : null;
+
+        // Competition upsert (country_id alapján)
+        $stmtUpsertComp->bind_param("iiis", $apiChampId, $sportId, $countryId, $champName);
+        $stmtUpsertComp->execute();
     }
 
     echo "Importálva: sportId=$sportId ($sportName) bajnokságai.\n";
 }
 
-$stmtUpsertChamp->close();
+$stmtUpsertComp->close();
+$stmtSelectCountry->close();
 $stmtUpsertCountry->close();
 
 echo "Minden sport bajnokságai frissítve.\n";

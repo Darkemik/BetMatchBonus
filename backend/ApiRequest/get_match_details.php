@@ -13,16 +13,18 @@ $stmt = $conn->prepare("
     SELECT 
         m.api_id,
         m.name AS match_name,
-        m.start_utc,
+        m.start_time AS start_utc,
         m.is_live,
         m.live_time,
-        m.score,
+        CONCAT(IFNULL(m.home_score, 0), ' - ', IFNULL(m.away_score, 0)) AS score,
         m.sport_id,
+        m.home_team_name,
+        m.away_team_name,
         c.name AS country_name,
         ch.name AS championship_name
-    FROM Matches m
-    JOIN Championships ch ON m.championship_id = ch.id
-    JOIN Countries c ON ch.country_code = c.code
+    FROM Events m
+    JOIN Competitions ch ON m.competition_id = ch.id
+    JOIN Countries c ON ch.country_id = c.id
     WHERE m.api_id = ?
 ");
 $stmt->bind_param("i", $eventId);
@@ -63,6 +65,8 @@ $result = [
         'liveTime' => $matchRow['live_time'],
         'score' => $matchRow['score'],
         'sportId' => $matchRow['sport_id'],
+        'homeTeam' => $matchRow['home_team_name'],
+        'awayTeam' => $matchRow['away_team_name'],
         'country' => $matchRow['country_name'],
         'championship' => $matchRow['championship_name'],
     ],

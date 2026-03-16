@@ -23,7 +23,7 @@ INSERT INTO Roles (id, name, description) VALUES
 -- ============================================================
 CREATE TABLE IF NOT EXISTS Countries (
   id         INT           AUTO_INCREMENT PRIMARY KEY,
-  code3      CHAR(3)       NOT NULL UNIQUE,
+  code       VARCHAR(10)   NOT NULL UNIQUE,
   name       VARCHAR(100)  NOT NULL,
   flag_url   VARCHAR(255)  DEFAULT NULL,
   sort_order INT           DEFAULT NULL
