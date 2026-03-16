@@ -10,9 +10,10 @@ SELECT
     c.name AS country_name,
     ch.name AS championship_name
 FROM Events m
+JOIN Sports s ON m.sport_id = s.id
 JOIN Competitions ch ON m.competition_id = ch.id
 JOIN Countries c ON ch.country_id = c.id
-WHERE m.sport_id = 66        -- foci
+WHERE s.api_id = 66        -- foci
   AND m.is_live = 1          -- élő meccsek
 ORDER BY m.start_time
 ";
