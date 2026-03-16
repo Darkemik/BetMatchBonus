@@ -31,6 +31,7 @@
     <?php include '../../frontend/Components/loginmodal.php'; ?>
     <?php include '../../frontend/Components/registermodal.php'; ?>
     <?php include '../../frontend/Components/registermodal2.php'; ?>
+    <script src="../../js/Main/auth_ui.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../../js/Login/loginmodal.js"></script>
     <script src="../../js/Register/registermodal.js"></script>

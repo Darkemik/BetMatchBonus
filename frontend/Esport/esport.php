@@ -61,11 +61,7 @@ require_once "../../backend/ApiRequest/connect.php";
                         </button>
                     </div>
                 </div>
-                <button data-i18n="loginbtn" class="loginbtn"
-                    data-bs-toggle="modal" data-bs-target="#loginModal">Bejelentkezés</button>
-                <button class="registrationbtn"
-                    data-bs-toggle="modal" data-bs-target="#registerModal"
-                    data-i18n="nav.register">Regisztráció</button>
+                <?php include '../../frontend/Components/login.php'; ?>
             </div>
         </div>
 
@@ -99,15 +95,16 @@ require_once "../../backend/ApiRequest/connect.php";
 
                 <div class="tab-content active" id="tab-today">
                     <div id="today-matches-container">
-                        <div class="loading-details"><i class="fas fa-spinner fa-spin"></i> Mai meccsek betöltése...</div>
+                        <div class="loading-details"><i class="fas fa-spinner fa-spin"></i> Mai meccsek betöltése...
+                        </div>
                     </div>
                 </div>
 
                 <div class="tab-content" id="tab-live">
                     <div id="matches-container">
-                        <?php 
+                        <?php
                         $_GET['sport_id'] = 145;
-                        include '../../backend/ApiRequest/live_table.php'; 
+                        include '../../backend/ApiRequest/live_table.php';
                         ?>
                     </div>
                 </div>
@@ -122,6 +119,7 @@ require_once "../../backend/ApiRequest/connect.php";
     <script src="../../js/Register/registermodal.js"></script>
     <script src="../../js/Register/registermodal2.js"></script>
     <script src="../../js/Main/layout.js"></script>
+    <script src="../../js/Main/auth_ui.js"></script>
     <script src="../../js/Betslip/betslip.js"></script>
     <script src="../../js/Esport/esport.js"></script>
     <?php include '../../frontend/Components/loginmodal.php'; ?>

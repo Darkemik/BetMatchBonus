@@ -34,6 +34,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../../js/Login/loginmodal.js"></script>
     <script src="../../js/Register/registermodal.js"></script>
+    <script src="../../js/Main/auth_ui.js"></script>
     <script src="../../js/Register/registermodal2.js"></script>
     <script src="../../js/Main/layout.js"></script>
     <script src="../../js/Help/sportszabalyok.js"></script>

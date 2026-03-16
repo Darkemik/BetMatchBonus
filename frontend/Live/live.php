@@ -62,11 +62,7 @@ require_once "../../backend/ApiRequest/connect.php";
                         </button>
                     </div>
                 </div>
-                <button data-i18n="loginbtn" class="loginbtn"
-                    data-bs-toggle="modal" data-bs-target="#loginModal">Bejelentkezés</button>
-                <button class="registrationbtn"
-                    data-bs-toggle="modal" data-bs-target="#registerModal"
-                    data-i18n="nav.register">Regisztráció</button>
+                <?php include '../../frontend/Components/login.php'; ?>
             </div>
         </div>
 
@@ -147,9 +143,9 @@ require_once "../../backend/ApiRequest/connect.php";
                 </div>
 
                 <div id="matches-container">
-                    <?php 
+                    <?php
                     // Csak a táblázatot jelenítjük meg, az API frissítést a live.js AJAX-szal csinálja
-                    include '../../backend/ApiRequest/live_table.php'; 
+                    include '../../backend/ApiRequest/live_table.php';
                     ?>
                 </div>
 
@@ -164,6 +160,7 @@ require_once "../../backend/ApiRequest/connect.php";
     <script src="../../js/Register/registermodal2.js"></script>
     <script src="../../js/Main/layout.js"></script>
     <script src="../../js/Betslip/betslip.js"></script>
+    <script src="../../js/Main/auth_ui.js"></script>
     <script src="../../js/Live/live.js"></script>
     <?php include '../../frontend/Components/loginmodal.php'; ?>
     <?php include '../../frontend/Components/registermodal.php'; ?>

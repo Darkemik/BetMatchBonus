@@ -14,25 +14,24 @@
 </head>
 
 <body>
-<header class="header">
-    <div class="header-top-row">
-        <button class="navbar-toggler navbar-dark" type="button"
-                data-bs-toggle="collapse" data-bs-target="#mainNavbar"
-                aria-controls="mainNavbar" aria-expanded="false" aria-label="Menü">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+    <header class="header">
+        <div class="header-top-row">
+            <button class="navbar-toggler navbar-dark" type="button" data-bs-toggle="collapse"
+                data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Menü">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-        <div class="logo-box">
-            <a href="../../frontend/MainMenu/MainMenu.php">
-                <img class="kep" src="../../img/logo.png" alt="logo">
-            </a>
-            <div class="logo">
-                <a href="../../frontend/MainMenu/MainMenu.php" class="mainpage">BetMatchBonus</a>
+            <div class="logo-box">
+                <a href="../../frontend/MainMenu/MainMenu.php">
+                    <img class="kep" src="../../img/logo.png" alt="logo">
+                </a>
+                <div class="logo">
+                    <a href="../../frontend/MainMenu/MainMenu.php" class="mainpage">BetMatchBonus</a>
+                </div>
             </div>
-        </div>
 
-        <div class="right_side">
-            <div class="lang-switcher">
+            <div class="right_side">
+                <div class="lang-switcher">
                     <button class="translateBtn" id="btn-hu">
                         <svg viewBox="0 0 9 6" xmlns="http://www.w3.org/2000/svg">
                             <rect width="9" height="2" y="0" fill="#c8102e" />
@@ -57,19 +56,19 @@
                         </button>
                     </div>
                 </div>
-            <button class="loginbtn" data-bs-toggle="modal" data-bs-target="#loginModal">Bejelentkezés</button>
-            <button class="registrationbtn" data-bs-toggle="modal" data-bs-target="#registerModal">Regisztráció</button>
-        </div>
-    </div>
+                <?php include '../../frontend/Components/login.php'; ?>
+            </div>
 
-    <nav class="nav collapse navbar-collapse" id="mainNavbar">
-        <a href="../../frontend/MainMenu/MainMenu.php">Főoldal</a>
-        <a href="../../frontend/Live/live.php">Élő</a>
-        <a href="../../frontend/Esport/esport.php">eSport</a>
-        <a href="../../frontend/Bonus/bonus.php" class="active">Bónuszok</a>
-        <a href="../../frontend/Help/help.php">Segítség</a>
-    </nav>
-</header>
+        </div>
+
+        <nav class="nav collapse navbar-collapse" id="mainNavbar">
+            <a href="../../frontend/MainMenu/MainMenu.php">Főoldal</a>
+            <a href="../../frontend/Live/live.php">Élő</a>
+            <a href="../../frontend/Esport/esport.php">eSport</a>
+            <a href="../../frontend/Bonus/bonus.php" class="active">Bónuszok</a>
+            <a href="../../frontend/Help/help.php">Segítség</a>
+        </nav>
+    </header>
 
     <div class="container">
         <div id="bonusContainer" class="bonus-row"></div>
@@ -81,6 +80,7 @@
     <?php include '../../frontend/Components/registermodal2.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../../js/Login/loginmodal.js"></script>
+    <script src="../../js/Main/auth_ui.js"></script>
     <script src="../../js/Register/registermodal.js"></script>
     <script src="../../js/Register/registermodal2.js"></script>
     <script src="../../js/Main/layout.js"></script>
