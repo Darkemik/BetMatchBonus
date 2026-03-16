@@ -66,6 +66,9 @@ $allMatches = array_values($uniqueMatches);
 $conn->query("DELETE FROM Events WHERE is_live = 1");
 
 // Prepared statementek
+$stmtFindSport = $conn->prepare("SELECT id FROM Sports WHERE api_id = ?");
+$stmtInsertSport = $conn->prepare("INSERT INTO Sports (api_id, name) VALUES (?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name)");
+
 $stmtFindChamp = $conn->prepare("
     SELECT id 
     FROM Competitions 
@@ -117,6 +120,19 @@ foreach ($allMatches as $match) {
         continue;
     }
 
+    // API sport id → belső Sports.id
+    $stmtFindSport->bind_param("i", $sportFromApi);
+    $stmtFindSport->execute();
+    $resSport = $stmtFindSport->get_result();
+    if ($rowSport = $resSport->fetch_assoc()) {
+        $internalSportId = (int)$rowSport['id'];
+    } else {
+        $sportApiName = "Sport {$sportFromApi}";
+        $stmtInsertSport->bind_param("is", $sportFromApi, $sportApiName);
+        $stmtInsertSport->execute();
+        $internalSportId = (int)$stmtInsertSport->insert_id;
+    }
+
     // Competition ID kikeresése
     $stmtFindChamp->bind_param("i", $leagueId);
     $stmtFindChamp->execute();
@@ -151,7 +167,7 @@ foreach ($allMatches as $match) {
             VALUES (?, ?, ?, ?)
             ON DUPLICATE KEY UPDATE name = VALUES(name)
         ");
-        $stmtInsertComp->bind_param("iiis", $leagueId, $sportFromApi, $countryId, $champName);
+        $stmtInsertComp->bind_param("iiis", $leagueId, $internalSportId, $countryId, $champName);
         $stmtInsertComp->execute();
         $stmtInsertComp->close();
 
@@ -174,7 +190,7 @@ foreach ($allMatches as $match) {
     $stmtUpsertMatch->bind_param(
         "iiissssisiii",
         $apiMatchId,
-        $sportFromApi,
+        $internalSportId,
         $competitionId,
         $name,
         $homeTeamName,
@@ -197,6 +213,8 @@ foreach ($allMatches as $match) {
 
 $stmtFindChamp->close();
 $stmtUpsertMatch->close();
+$stmtFindSport->close();
+$stmtInsertSport->close();
 
 header('Content-Type: application/json; charset=utf-8');
 echo json_encode([

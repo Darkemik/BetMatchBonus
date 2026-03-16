@@ -50,10 +50,32 @@ if (!$stmtUpsertComp) {
     die("SQL hiba (stmtUpsertComp): " . $conn->error);
 }
 
+// Sport belső id keresése / létrehozása (api_id → Sports.id)
+$stmtFindSport = $conn->prepare("SELECT id FROM Sports WHERE api_id = ?");
+if (!$stmtFindSport) {
+    die("SQL hiba (stmtFindSport): " . $conn->error);
+}
+$stmtInsertSport = $conn->prepare("INSERT INTO Sports (api_id, name) VALUES (?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name)");
+if (!$stmtInsertSport) {
+    die("SQL hiba (stmtInsertSport): " . $conn->error);
+}
+
 // 3) Minden sporthoz: bajnokságok importja
 foreach ($sports as $sport) {
     $sportId   = (int)$sport['id'];
     $sportName = $sport['name'] ?? '';
+
+    // API sport id → belső Sports.id
+    $stmtFindSport->bind_param("i", $sportId);
+    $stmtFindSport->execute();
+    $resSport = $stmtFindSport->get_result();
+    if ($rowSport = $resSport->fetch_assoc()) {
+        $internalSportId = (int)$rowSport['id'];
+    } else {
+        $stmtInsertSport->bind_param("is", $sportId, $sportName);
+        $stmtInsertSport->execute();
+        $internalSportId = (int)$stmtInsertSport->insert_id;
+    }
 
     $urlChamps = "http://localhost:5000/api/sports/championships?sportId=" . $sportId;
 
@@ -97,8 +119,8 @@ foreach ($sports as $sport) {
         $countryRow = $countryResult->fetch_assoc();
         $countryId = $countryRow ? (int)$countryRow['id'] : null;
 
-        // Competition upsert (country_id alapján)
-        $stmtUpsertComp->bind_param("iiis", $apiChampId, $sportId, $countryId, $champName);
+        // Competition upsert (belső sport_id alapján)
+        $stmtUpsertComp->bind_param("iiis", $apiChampId, $internalSportId, $countryId, $champName);
         $stmtUpsertComp->execute();
     }
 
@@ -108,5 +130,7 @@ foreach ($sports as $sport) {
 $stmtUpsertComp->close();
 $stmtSelectCountry->close();
 $stmtUpsertCountry->close();
+$stmtFindSport->close();
+$stmtInsertSport->close();
 
 echo "Minden sport bajnokságai frissítve.\n";
