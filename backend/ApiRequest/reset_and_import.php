@@ -3,8 +3,8 @@ require_once "connect.php";
 
 // 1) TÁBLÁK ÜRÍTÉSE
 $conn->query("SET FOREIGN_KEY_CHECKS = 0;");
-$conn->query("TRUNCATE TABLE Matches;");
-$conn->query("TRUNCATE TABLE Championships;");
+$conn->query("TRUNCATE TABLE Events;");
+$conn->query("TRUNCATE TABLE Competitions;");
 $conn->query("SET FOREIGN_KEY_CHECKS = 1;");
 
 echo "Táblák ürítve.\n";

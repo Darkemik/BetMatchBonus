@@ -1,9 +1,6 @@
 <?php
 require_once __DIR__ . "/connect.php";
 
-// score oszlop hozzáadása ha még nincs
-$conn->query("ALTER TABLE Matches ADD COLUMN IF NOT EXISTS score VARCHAR(20) DEFAULT NULL");
-
 // A mi 8 sportunk ID-ja
 $ourSportIds = [66, 67, 78, 83, 73, 70, 145, 77];
 
@@ -66,26 +63,30 @@ foreach ($allMatches as $match) {
 $allMatches = array_values($uniqueMatches);
 
 // Csak MOST töröljük az élő meccseket, ha van friss adat
-$conn->query("DELETE FROM Matches WHERE is_live = 1");
+$conn->query("DELETE FROM Events WHERE is_live = 1");
 
 // Prepared statementek
 $stmtFindChamp = $conn->prepare("
     SELECT id 
-    FROM Championships 
+    FROM Competitions 
     WHERE api_id = ?
 ");
 
 $stmtUpsertMatch = $conn->prepare("
-    INSERT INTO Matches (api_id, sport_id, championship_id, name, start_utc, is_live, live_time, score)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO Events (api_id, sport_id, competition_id, name, home_team_name, away_team_name, start_time, is_live, live_time, status_id, home_score, away_score)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON DUPLICATE KEY UPDATE
         sport_id = VALUES(sport_id),
-        championship_id = VALUES(championship_id),
+        competition_id = VALUES(competition_id),
         name = VALUES(name),
-        start_utc = VALUES(start_utc),
+        home_team_name = VALUES(home_team_name),
+        away_team_name = VALUES(away_team_name),
+        start_time = VALUES(start_time),
         is_live = VALUES(is_live),
         live_time = VALUES(live_time),
-        score = VALUES(score)
+        status_id = VALUES(status_id),
+        home_score = VALUES(home_score),
+        away_score = VALUES(away_score)
 ");
 
 $importedCount = 0;
@@ -99,17 +100,24 @@ foreach ($allMatches as $match) {
     $startUtcStr  = $match['startDateUtc'] ?? '';
     $isLive       = !empty($match['isLive']) ? 1 : 0;
     $liveTime     = $match['liveTime'] ?? null;
+    $statusId     = $isLive ? 2 : 1;
 
-    $scoreArr = $match['score'] ?? [];
-    $scoreStr = (is_array($scoreArr) && count($scoreArr) >= 2)
-        ? $scoreArr[0] . ' - ' . $scoreArr[1]
-        : null;
+    $scoreArr  = $match['score'] ?? [];
+    $homeScore = (is_array($scoreArr) && isset($scoreArr[0]) && is_numeric($scoreArr[0])) ? (int)$scoreArr[0] : null;
+    $awayScore = (is_array($scoreArr) && isset($scoreArr[1]) && is_numeric($scoreArr[1])) ? (int)$scoreArr[1] : null;
+
+    $teams = explode(' vs. ', $name);
+    if (count($teams) < 2) {
+        $teams = explode(' - ', $name);
+    }
+    $homeTeamName = trim($teams[0] ?? $name);
+    $awayTeamName = trim($teams[1] ?? '');
 
     if (!$isLive) {
         continue;
     }
 
-    // Championship ID kikeresése
+    // Competition ID kikeresése
     $stmtFindChamp->bind_param("i", $leagueId);
     $stmtFindChamp->execute();
     $resultChamp = $stmtFindChamp->get_result();
@@ -128,16 +136,24 @@ foreach ($allMatches as $match) {
         $stmtCountry->execute();
         $stmtCountry->close();
 
+        $stmtSelectCountry = $conn->prepare("SELECT id FROM Countries WHERE code = ?");
+        $stmtSelectCountry->bind_param("s", $countryCode);
+        $stmtSelectCountry->execute();
+        $countryResult = $stmtSelectCountry->get_result();
+        $countryRow = $countryResult->fetch_assoc();
+        $countryId = $countryRow ? (int)$countryRow['id'] : null;
+        $stmtSelectCountry->close();
+
         $champName = "Ismeretlen bajnokság (ID: {$leagueId})";
 
-        $stmtInsertChamp = $conn->prepare("
-            INSERT INTO Championships (api_id, sport_id, country_code, name)
+        $stmtInsertComp = $conn->prepare("
+            INSERT INTO Competitions (api_id, sport_id, country_id, name)
             VALUES (?, ?, ?, ?)
             ON DUPLICATE KEY UPDATE name = VALUES(name)
         ");
-        $stmtInsertChamp->bind_param("iiss", $leagueId, $sportFromApi, $countryCode, $champName);
-        $stmtInsertChamp->execute();
-        $stmtInsertChamp->close();
+        $stmtInsertComp->bind_param("iiis", $leagueId, $sportFromApi, $countryId, $champName);
+        $stmtInsertComp->execute();
+        $stmtInsertComp->close();
 
         $stmtFindChamp->bind_param("i", $leagueId);
         $stmtFindChamp->execute();
@@ -149,22 +165,26 @@ foreach ($allMatches as $match) {
         }
     }
 
-    $championshipId = (int)$champRow['id'];
+    $competitionId = (int)$champRow['id'];
 
     $dt = new DateTime($startUtcStr);
     $dt->setTimezone(new DateTimeZone('CET'));
-    $startUtcMysql = $dt->format('Y-m-d H:i:s');
+    $startTimeMysql = $dt->format('Y-m-d H:i:s');
 
     $stmtUpsertMatch->bind_param(
-        "iiississ",
+        "iiissssisiii",
         $apiMatchId,
         $sportFromApi,
-        $championshipId,
+        $competitionId,
         $name,
-        $startUtcMysql,
+        $homeTeamName,
+        $awayTeamName,
+        $startTimeMysql,
         $isLive,
         $liveTime,
-        $scoreStr
+        $statusId,
+        $homeScore,
+        $awayScore
     );
     $stmtUpsertMatch->execute();
 
