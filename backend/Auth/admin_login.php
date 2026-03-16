@@ -18,9 +18,10 @@ if ($login === '' || $password === '') {
 }
 
 $stmt = $conn->prepare("
-    SELECT id, username, email, password_hash, role, is_active
-    FROM AdminUsers
-    WHERE username = ? OR email = ?
+    SELECT a.id, a.username, a.email, a.password_hash, a.is_active, r.name AS role
+    FROM AdminUsers a
+    JOIN Roles r ON r.id = a.role_id
+    WHERE a.username = ? OR a.email = ?
     LIMIT 1
 ");
 $stmt->bind_param("ss", $login, $login);
