@@ -69,12 +69,15 @@ document.addEventListener("DOMContentLoaded", () => {
         '</button>';
     }
 
-    // ===== ODDS GOMBOK KATTINTÁS KEZELŐ =====
+    // ===== ODDS GOMBOK KATTINTÁS KEZELŐ - AZONNALI FRISSÍTÉS =====
     document.addEventListener('click', function(e) {
         var btn = e.target.closest('.selection-btn');
         if (!btn) return;
         if (btn.classList.contains('disabled')) return;
         if (btn.classList.contains('market-locked')) return;
+
+        e.preventDefault();
+        e.stopPropagation();
 
         var homeTeam = btn.getAttribute('data-home');
         var awayTeam = btn.getAttribute('data-away');
@@ -85,36 +88,101 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!homeTeam || !awayTeam || !pick || !market) return;
 
-        if (isInBetslip(homeTeam, awayTeam, pick, market)) {
+        console.log('[LIVE] Click handler fired:', {homeTeam, awayTeam, pick, odds, market});
+
+        // ===== AZONNAL VIZUÁLISAN FRISSÍTJÜK A GOMBOT ÉS A PIACA GOMBOKAT =====
+        var betslip = JSON.parse(localStorage.getItem('betslip') || '[]');
+        var isInSlip = betslip.some(function(item) {
+            return item.homeTeam === homeTeam && item.awayTeam === awayTeam && 
+                   item.pick === pick && item.market === market;
+        });
+
+        if (isInSlip) {
+            // ===== ELTÁVOLÍTÁS =====
+            console.log('[LIVE] Removing from betslip');
+            btn.classList.remove('active');
+            
+            // Azonnal feloldunk más gombokat ebben a piacon
+            updateMarketButtonsImmediately(homeTeam, awayTeam, market, betslip, true);
+            
             if (typeof window.removeFromBetslip === 'function') {
                 window.removeFromBetslip(homeTeam, awayTeam, pick, market);
             }
-            btn.classList.remove('active');
         } else {
+            // ===== HOZZÁADÁS =====
+            console.log('[LIVE] Adding to betslip');
+            btn.classList.add('active');
+            
+            // Azonnal zárolunk más gombokat ebben a piacon
+            updateMarketButtonsImmediately(homeTeam, awayTeam, market, betslip, false);
+            
             if (typeof window.addToBetslip === 'function') {
                 window.addToBetslip(homeTeam, awayTeam, pick, odds, market, matchId);
             }
-            btn.classList.add('active');
         }
-
-        refreshMarketButtons();
     });
 
-    // ===== PIACON BELÜLI GOMBOK FRISSÍTÉSE =====
-    function refreshMarketButtons() {
-        var betslip = JSON.parse(localStorage.getItem('betslip') || '[]');
+    // ===== PIACA GOMBÓK AZONNALI FRISSÍTÉSE =====
+    function updateMarketButtonsImmediately(homeTeam, awayTeam, marketName, betslip, isRemoving) {
+        // Összes selection-btn gomb szűrése
+        document.querySelectorAll('.selection-btn').forEach(function(btn) {
+            var btnHome = btn.getAttribute('data-home');
+            var btnAway = btn.getAttribute('data-away');
+            var btnMarket = btn.getAttribute('data-market');
+            var btnPick = btn.getAttribute('data-pick');
 
+            // Csak az ugyanabban a piacon és meccsben lévő gombokra koncentrálunk
+            if (btnHome !== homeTeam || btnAway !== awayTeam || btnMarket !== marketName) {
+                return; // Ez nem ebben a piacon van
+            }
+
+            // Ezt a gombot már kezelni fogjuk az addToBetslip/removeFromBetslip-ben
+            if (btn.classList.contains('disabled')) {
+                return;
+            }
+
+            // Ellenőrizzük az új betslip állapotot
+            var updatedBetslip = JSON.parse(localStorage.getItem('betslip') || '[]');
+            
+            var hasAnyInMarket = updatedBetslip.some(function(item) {
+                return item.homeTeam === homeTeam && 
+                       item.awayTeam === awayTeam && 
+                       item.market === marketName;
+            });
+
+            var thisButtonInSlip = updatedBetslip.some(function(item) {
+                return item.homeTeam === btnHome && 
+                       item.awayTeam === btnAway && 
+                       item.pick === btnPick && 
+                       item.market === btnMarket;
+            });
+
+            btn.classList.remove('active', 'market-locked');
+
+            if (thisButtonInSlip) {
+                btn.classList.add('active');
+            } else if (hasAnyInMarket) {
+                btn.classList.add('market-locked');
+            }
+        });
+    }
+
+    // ===== PIACA BELÜLI GOMBOK INTELLIGENS FRISSÍTÉSE =====
+    function updateMarketButtons(homeTeam, awayTeam, marketName, betslip) {
         document.querySelectorAll('.market-selections').forEach(function(marketContainer) {
             var buttons = Array.from(marketContainer.querySelectorAll('.selection-btn'));
-            // Szűrjük ki az 1.00 disabled gombokat (nincs data-market attribútumuk)
             var actionableButtons = buttons.filter(function(b) {
                 return b.getAttribute('data-market') !== null;
             });
             if (actionableButtons.length === 0) return;
 
-            var marketName = actionableButtons[0].getAttribute('data-market') || '';
+            var firstMarket = actionableButtons[0].getAttribute('data-market') || '';
             var firstHome = actionableButtons[0].getAttribute('data-home') || '';
             var firstAway = actionableButtons[0].getAttribute('data-away') || '';
+
+            if (firstMarket !== marketName || firstHome !== homeTeam || firstAway !== awayTeam) {
+                return;
+            }
 
             var hasActiveInMarket = betslip.some(function(item) {
                 return item.market === marketName && item.homeTeam === firstHome && item.awayTeam === firstAway;
@@ -131,26 +199,22 @@ document.addEventListener("DOMContentLoaded", () => {
                     return item.homeTeam === home && item.awayTeam === away && item.pick === pick && item.market === bMarket;
                 });
 
-                // Először reseteljük a gombot
                 b.classList.remove('active', 'market-locked');
                 b.removeAttribute('disabled');
 
                 if (inSlip) {
                     b.classList.add('active');
-                    // Győződjünk meg, hogy odds van megjelenítve, nem lakat
                     var lockIcon = b.querySelector('.lock-icon');
                     if (lockIcon && odd) {
                         lockIcon.outerHTML = '<span class="selection-odd">' + parseFloat(odd).toFixed(2) + '</span>';
                     }
                 } else if (hasActiveInMarket) {
                     b.classList.add('market-locked');
-                    // Odds cseréje lakatra
                     var oddSpan = b.querySelector('.selection-odd');
                     if (oddSpan) {
                         oddSpan.outerHTML = '<span class="lock-icon"><i class="fas fa-lock"></i></span>';
                     }
                 } else {
-                    // Szabad gomb - lakat visszacserélése oddsra
                     var lockIcon2 = b.querySelector('.lock-icon');
                     if (lockIcon2 && odd) {
                         lockIcon2.outerHTML = '<span class="selection-odd">' + parseFloat(odd).toFixed(2) + '</span>';
@@ -161,7 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     window.refreshActiveOddsButtons = function() {
-        refreshMarketButtons();
+        // Ez már az addToBetslip végzi el
     };
 
     // ===== MARKET HTML ÉPÍTÉS =====
@@ -341,11 +405,6 @@ document.addEventListener("DOMContentLoaded", () => {
         var div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
-    }
-
-    function escapeJs(str) {
-        if (!str) return '';
-        return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
     }
 
     function startAutoRefresh() {
