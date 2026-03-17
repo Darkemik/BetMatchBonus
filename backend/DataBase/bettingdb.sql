@@ -354,6 +354,8 @@ CREATE TABLE IF NOT EXISTS BonusCodes (
   parent_bonus_id      INT           DEFAULT NULL     COMMENT 'FK → BonusCodes.id (lépcsós bónusz)',
   step_number          INT           DEFAULT NULL     COMMENT 'hanyadik lépcső',
   valid_weekdays_only  TINYINT(1)    NOT NULL DEFAULT 0,
+  daily_start_time TIME DEFAULT NULL COMMENT 'pl. 10:00-tól aktiválható',
+  activation_expire_hours INT DEFAULT NULL COMMENT 'aktiválás után hány óráig érvényes',
   specific_date        DATE          DEFAULT NULL     COMMENT 'adott napi bónusz',
   advent_week          INT           DEFAULT NULL     COMMENT 'adventi bónusznál 1-4',
   birthday_bonus       TINYINT(1)    NOT NULL DEFAULT 0,
