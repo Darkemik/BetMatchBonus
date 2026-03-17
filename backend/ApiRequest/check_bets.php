@@ -27,7 +27,8 @@ foreach ($input as $bet) {
         continue;
     }
 
-    $allFinished = true;
+    $allFinished = true;      // Kezdetben feltételezzük hogy minden eldőlt
+    $allPending = true;       // Nyomon követjük ha van-e bármilyen nem-pending item
     $anyLost = false;
     $updatedItems = [];
 
@@ -37,13 +38,15 @@ foreach ($input as $bet) {
         $market = $item['market'] ?? '';
         $itemStatus = $item['status'] ?? 'pending';
 
-        // Ha ez a tétel már eldőlt, nem kérdezzük újra
+        // Ha ez a tétel már eldőlt
         if ($itemStatus === 'won' || $itemStatus === 'lost') {
+            $allPending = false;
             if ($itemStatus === 'lost') $anyLost = true;
             $updatedItems[] = $item;
             continue;
         }
 
+        // Ez a tétel még "pending"
         if ($matchId <= 0) {
             $allFinished = false;
             $updatedItems[] = $item;
@@ -138,15 +141,24 @@ foreach ($input as $bet) {
         $item['status'] = $betWon ? 'won' : 'lost';
         $item['finalScore'] = $homeScore . ' - ' . $awayScore;
         if (!$betWon) $anyLost = true;
+        $allPending = false;
         $updatedItems[] = $item;
     }
 
     // Szelvény státusz meghatározása
     $betStatus = 'pending';
-    if ($anyLost) {
+    if ($allPending) {
+        // Nincs egy sem eldőlt
+        $betStatus = 'pending';
+    } elseif ($anyLost) {
+        // Legalább egy vesztes
         $betStatus = 'lost';
     } elseif ($allFinished) {
+        // Minden eldőlt ÉS nincs vesztes
         $betStatus = 'won';
+    } else {
+        // Van eldőlt (és nincs vesztes) DE van még pending
+        $betStatus = 'pending';
     }
 
     $results[] = [
