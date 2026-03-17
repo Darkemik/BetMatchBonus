@@ -14,19 +14,19 @@ require_once __DIR__ . '/../ApiRequest/connect.php';
 
 $admins = [
     [
-        'username' => 'mod_user',
-        'email'    => 'mod@betmatchbonus.hu',
-        'password' => 'password123',
+        'username' => 'VBence',
+        'email'    => 'bencevarga185@gmail.com',
+        'password' => 'asdasd11',
         'role_id'  => 1,
     ],
     [
-        'username' => 'admin_user',
-        'email'    => 'admin@betmatchbonus.hu',
-        'password' => 'password123',
+        'username' => 'UMarcell',
+        'email'    => 'urban.marcell44@gmail.com',
+        'password' => 'Buzivokcs1',
         'role_id'  => 2,
     ],
     [
-        'username' => 'Darkemik',
+        'username' => 'GBence',
         'email'    => 'backkiller14@gmail.com',
         'password' => 'Geriger0123',
         'role_id'  => 3,
