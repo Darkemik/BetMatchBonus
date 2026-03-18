@@ -1,87 +1,87 @@
-<aside class="betslip">
-    <div class="betslip-tabs">
-        <button class="betslip-tab active" data-tab="szelveny">Szelvény</button>
-        <button class="betslip-tab" data-tab="naplo">Napló</button>
+<aside class="ticket-panel">
+    <div class="ticket-tabs">
+        <button class="ticket-tab active" data-tab="ticket">Ticket</button>
+        <button class="ticket-tab" data-tab="elozmeny">Fogadási előzmények</button>
     </div>
 
-    <!-- Szelvény tartalom -->
-    <div class="betslip-content active" id="betslip-szelveny">
-        <div class="betslip-empty">
-            <i class="fas fa-ticket-alt betslip-empty-icon"></i>
-            <p>Nincs fogadás a szelvényen</p>
+    <!-- Ticket tartalom -->
+    <div class="ticket-content active" id="ticket-ticket">
+        <div class="ticket-empty">
+            <i class="fas fa-ticket-alt ticket-empty-icon"></i>
+            <p>Nincs fogadás a ticketen</p>
             <span>Válassz egy mérkőzést és tedd meg a tippet!</span>
         </div>
 
-        <div class="betslip-items" id="betslip-items" style="display:none;">
+        <div class="ticket-items" id="ticket-items" style="display:none;">
             <!-- JS-ből jönnek a tételek -->
         </div>
 
-        <div class="betslip-footer" id="betslip-footer" style="display:none;">
-            <div class="betslip-stake">
+        <div class="ticket-footer" id="ticket-footer" style="display:none;">
+            <div class="ticket-stake">
                 <label for="stake-input">Tét (Ft):</label>
                 <input type="number" id="stake-input" class="stake-input" min="100" step="100" value="500" placeholder="Tét...">
             </div>
-            <div class="betslip-summary">
-                <div class="betslip-row">
+            <div class="ticket-summary">
+                <div class="ticket-row">
                     <span>Tételek:</span>
-                    <span id="betslip-count">0</span>
+                    <span id="ticket-count">0</span>
                 </div>
-                <div class="betslip-row">
+                <div class="ticket-row">
                     <span>Összesített odds:</span>
-                    <span id="betslip-total-odds">0.00</span>
+                    <span id="ticket-total-odds">0.00</span>
                 </div>
-                <div class="betslip-row betslip-row-highlight">
+                <div class="ticket-row ticket-row-highlight">
                     <span>Lehetséges nyeremény:</span>
-                    <span id="betslip-potential-win">0 Ft</span>
+                    <span id="ticket-potential-win">0 Ft</span>
                 </div>
             </div>
-            <button class="betslip-submit-btn" id="betslip-submit">
+            <button class="ticket-submit-btn" id="ticket-submit">
                 <i class="fas fa-check"></i> Fogadás elküldése
             </button>
         </div>
     </div>
 
-    <!-- Napló tartalom -->
-    <div class="betslip-content" id="betslip-naplo">
-        <div class="naplo-empty" id="naplo-empty">
-            <i class="fas fa-history naplo-empty-icon"></i>
+    <!-- Fogadási előzmények tartalom -->
+    <div class="ticket-content" id="ticket-elozmeny">
+        <div class="elozmeny-empty" id="elozmeny-empty">
+            <i class="fas fa-history elozmeny-empty-icon"></i>
             <p>Még nincs korábbi fogadásod</p>
             <span>A leadott fogadásaid itt fognak megjelenni.</span>
         </div>
 
-        <div class="naplo-items" id="naplo-items" style="display:none;">
+        <div class="elozmeny-items" id="elozmeny-items" style="display:none;">
             <!-- JS-ből jönnek a korábbi fogadások -->
         </div>
     </div>
 </aside>
 
 <!-- Fogadás visszaigazolás modal -->
-<div class="bet-confirm-overlay" id="bet-confirm-overlay">
-    <div class="bet-confirm-modal">
-        <div class="bet-confirm-header">
-            <span class="bet-confirm-icon">✅</span>
+<div class="ticket-confirm-overlay" id="ticket-confirm-overlay">
+    <div class="ticket-confirm-modal">
+        <div class="ticket-confirm-header">
+            <span class="ticket-confirm-icon">✅</span>
             <h3>Fogadás sikeresen leadva!</h3>
-            <button class="bet-confirm-close" id="bet-confirm-close">&times;</button>
+            <button class="ticket-confirm-close" id="ticket-confirm-close">&times;</button>
         </div>
-        <div class="bet-confirm-body">
-            <div class="bet-confirm-items" id="bet-confirm-items"></div>
-            <div class="bet-confirm-summary">
-                <div class="bet-confirm-row">
+        <div class="ticket-confirm-body">
+            <div class="ticket-confirm-items" id="ticket-confirm-items"></div>
+            <div class="ticket-confirm-summary">
+                <div class="ticket-confirm-row">
                     <span>Tét:</span>
-                    <span id="bet-confirm-stake">-</span>
+                    <span id="ticket-confirm-stake">-</span>
                 </div>
-                <div class="bet-confirm-row">
+                <div class="ticket-confirm-row">
                     <span>Össz. odds:</span>
-                    <span id="bet-confirm-odds">-</span>
+                    <span id="ticket-confirm-odds">-</span>
                 </div>
-                <div class="bet-confirm-row highlight">
+                <div class="ticket-confirm-row highlight">
                     <span>Lehetséges nyeremény:</span>
-                    <span id="bet-confirm-win">-</span>
+                    <span id="ticket-confirm-win">-</span>
                 </div>
             </div>
         </div>
-        <div class="bet-confirm-footer">
-            <button class="bet-confirm-ok-btn" id="bet-confirm-ok">Rendben</button>
+        <div class="ticket-confirm-footer">
+            <button class="ticket-confirm-ok-btn" id="ticket-confirm-ok">Rendben</button>
         </div>
     </div>
 </div>
