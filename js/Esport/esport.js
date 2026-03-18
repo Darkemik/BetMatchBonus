@@ -6,63 +6,50 @@ document.addEventListener("DOMContentLoaded", () => {
     let activeTab = 'today';
     const ESPORT_SPORT_ID = 145;
 
-    // ===== ODDS GOMB ÉPÍTÉS =====
-    function buildSelectionButton(sel, homeTeam, awayTeam, marketFullName) {
-        if (sel.odd <= 1.0) {
-            return '<button class="selection-btn disabled" disabled>' +
-                '<span class="selection-name">' + escapeHtml(sel.name) + '</span>' +
-            '</button>';
-        }
-
-        var state = window.BetslipLogic.getButtonState(homeTeam, awayTeam, sel.name, marketFullName);
-        var stateClass = state ? ' ' + state : '';
-        var isDisabled = state === 'disabled' ? ' disabled' : '';
-
-        var matchIdAttr = currentMatchId ? ' data-match-id="' + currentMatchId + '"' : '';
-
-        return '<button class="selection-btn' + stateClass + '"' + isDisabled + ' ' +
-            'data-home="' + escapeHtml(homeTeam) + '" ' +
-            'data-away="' + escapeHtml(awayTeam) + '" ' +
-            'data-pick="' + escapeHtml(sel.name) + '" ' +
-            'data-odd="' + sel.odd + '" ' +
-            'data-market="' + escapeHtml(marketFullName) + '"' +
-            matchIdAttr + '>' +
-            '<span class="selection-name">' + escapeHtml(sel.name) + '</span>' +
-            '<span class="selection-odd">' + sel.odd.toFixed(2) + '</span>' +
-        '</button>';
-    }
-
     // ===== ODDS GOMBOK KATTINTÁS KEZELŐ =====
-    document.addEventListener('click', function(e) {
-        var btn = e.target.closest('.selection-btn');
-        if (!btn) return;
-        if (btn.classList.contains('disabled')) return;
+    function attachOddsButtonHandlers(container) {
+        if (!container) return;
 
-        e.preventDefault();
-        e.stopPropagation();
+        // Btn-add-bet gombok (a táblázatban)
+        container.querySelectorAll('.btn-add-bet').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const matchId = parseInt(this.getAttribute('data-match-id'));
+                loadMatchDetails(matchId);
+            });
+        });
 
-        var homeTeam = btn.getAttribute('data-home');
-        var awayTeam = btn.getAttribute('data-away');
-        var pick = btn.getAttribute('data-pick');
-        var odds = parseFloat(btn.getAttribute('data-odd'));
-        var market = btn.getAttribute('data-market');
-        var matchId = parseInt(btn.getAttribute('data-match-id')) || 0;
+        // Selection gombok (piacok)
+        container.querySelectorAll('.selection-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                if (this.classList.contains('disabled')) return;
+                
+                e.preventDefault();
+                e.stopPropagation();
 
-        if (!homeTeam || !awayTeam || !pick || !market) return;
+                const homeTeam = this.getAttribute('data-home');
+                const awayTeam = this.getAttribute('data-away');
+                const pick = this.getAttribute('data-pick');
+                const odds = parseFloat(this.getAttribute('data-odd'));
+                const market = this.getAttribute('data-market');
+                const matchId = parseInt(this.getAttribute('data-match-id')) || 0;
 
-        console.log('[ESPORT] Toggle odds:', {homeTeam, awayTeam, pick, odds, market});
+                if (!homeTeam || !awayTeam || !pick || !market) return;
 
-        if (typeof window.toggleOdds === 'function') {
-            window.toggleOdds(homeTeam, awayTeam, pick, odds, market, matchId);
-            
-            // AZONNAL frissítjük az összes gombot
-            setTimeout(function() {
-                if (typeof window.refreshAllOddsButtons === 'function') {
-                    window.refreshAllOddsButtons();
+                if (typeof window.toggleOdds === 'function') {
+                    window.toggleOdds(homeTeam, awayTeam, pick, odds, market, matchId);
+                    
+                    setTimeout(function() {
+                        if (typeof window.refreshAllOddsButtons === 'function') {
+                            window.refreshAllOddsButtons();
+                        }
+                    }, 50);
                 }
-            }, 50);
-        }
-    });
+            });
+        });
+    }
 
     // ===== MARKET HTML ÉPÍTÉS =====
     function buildMarketsHtml(markets, homeTeam, awayTeam) {
@@ -78,7 +65,20 @@ document.addEventListener("DOMContentLoaded", () => {
             html += '<div class="market-header"><span class="market-name">' + escapeHtml(marketFullName) + '</span></div>';
             html += '<div class="market-selections">';
             market.selections.forEach(function(sel) {
-                html += buildSelectionButton(sel, homeTeam, awayTeam, marketFullName);
+                const oddsValue = parseFloat(sel.odds) || 0;
+                const state = window.BetslipLogic ? window.BetslipLogic.getButtonState(homeTeam, awayTeam, sel.name, marketFullName) : null;
+                const stateClass = state ? ' ' + state : '';
+                const isDisabled = state === 'disabled' ? ' disabled' : '';
+                
+                html += '<button class="selection-btn' + stateClass + '"' + isDisabled + ' ' +
+                    'data-home="' + escapeHtml(homeTeam) + '" ' +
+                    'data-away="' + escapeHtml(awayTeam) + '" ' +
+                    'data-pick="' + escapeHtml(sel.name) + '" ' +
+                    'data-odd="' + oddsValue + '" ' +
+                    'data-market="' + escapeHtml(marketFullName) + '">' +
+                    '<span class="selection-name">' + escapeHtml(sel.name) + '</span>' +
+                    '<span class="selection-odd">' + oddsValue.toFixed(2) + '</span>' +
+                '</button>';
             });
             html += '</div></div>';
         });
@@ -160,6 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(function(html) {
                 liveContainer.innerHTML = html;
                 attachMatchClickHandlers(liveContainer);
+                attachOddsButtonHandlers(liveContainer);
                 applyTranslation(liveContainer);
                 if (typeof window.refreshAllOddsButtons === 'function') {
                     window.refreshAllOddsButtons();
@@ -200,6 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
         .then(function(html) {
             todayContainer.innerHTML = html;
             attachMatchClickHandlers(todayContainer);
+            attachOddsButtonHandlers(todayContainer);
             applyTranslation(todayContainer);
             if (typeof window.refreshAllOddsButtons === 'function') {
                 window.refreshAllOddsButtons();
@@ -221,7 +223,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // ===== MECCS KATTINTÁS KEZELŐ =====
     function attachMatchClickHandlers(container) {
         container.querySelectorAll('.match-row.clickable').forEach(function(row) {
-            row.addEventListener('click', function() {
+            row.addEventListener('click', function(e) {
+                // Ne legyen kattintható az odds gomb
+                if (e.target.closest('.btn-add-bet')) return;
+                
                 var matchId = row.getAttribute('data-match-id');
                 if (matchId) loadMatchDetails(matchId);
             });
@@ -272,6 +277,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     var homeTeam = match.homeTeam || nameParts[0] || '';
                     var awayTeam = match.awayTeam || (nameParts[1] || '');
                     marketsContainer.innerHTML = buildMarketsHtml(data.markets || [], homeTeam, awayTeam);
+                    attachOddsButtonHandlers(marketsContainer);
                     if (typeof window.refreshAllOddsButtons === 'function') {
                         window.refreshAllOddsButtons();
                     }
@@ -335,6 +341,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
+        attachOddsButtonHandlers(container);
         if (typeof window.refreshAllOddsButtons === 'function') {
             window.refreshAllOddsButtons();
         }

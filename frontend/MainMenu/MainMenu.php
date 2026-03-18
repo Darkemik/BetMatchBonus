@@ -3,19 +3,22 @@ require_once "../../backend/ApiRequest/connect.php";
 
 $sql = "
 SELECT 
+    m.api_id,
     m.name AS match_name,
-    m.start_utc,
-    m.is_live,
-    m.live_time,
+    m.start_time AS start_utc,
+    CONCAT(IFNULL(m.home_score, 0), ' - ', IFNULL(m.away_score, 0)) AS score,
     c.name AS country_name,
     ch.name AS championship_name
-FROM Matches m
-JOIN Championships ch ON m.championship_id = ch.id
-JOIN Countries c ON ch.country_code = c.code
-ORDER BY m.start_utc
+FROM Events m
+JOIN Sports s ON m.sport_id = s.id
+JOIN Competitions ch ON m.competition_id = ch.id
+JOIN Countries c ON ch.country_id = c.id
+WHERE s.api_id = 66
+  AND m.is_live = 1
+ORDER BY m.start_time
+LIMIT 10
 ";
 
-// Itt eddig: $matchesResult = $mysqli->query($sql);
 $matchesResult = $conn->query($sql);
 
 if (!$matchesResult) {
@@ -34,8 +37,6 @@ if (!$matchesResult) {
   <link rel="stylesheet" href="../../css/RootColor/root.css">
   <link rel="stylesheet" href="../../css/Modal/modal.css">
   <link rel="icon" href="../../img/logo.png" type="image/x-icon">
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=search" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
   </head>
 
@@ -154,9 +155,6 @@ if (!$matchesResult) {
 
             <h1>Ide jönnek még a sportok csak angular js el csinalom meg </h1>
 
-
-
-
           </div>
 
         </form>
@@ -168,18 +166,7 @@ if (!$matchesResult) {
 
 
     <main class="center-content">
-      <h2>Középső rész</h2>
-      gatya van javitsam ki kereso közép föntre rakjam át sportágakat fejezzem be apit elötte megnézni
-      milyen sportágakat akarunk jobb oldal fogados rész elkezdése csak borderral külön görgetés mint három containerre
-      időt mshova rakjam át </p>
-      <p>footer ide aljra többi görgetősre egész oldam mére</p>
-      <h1>Ide jönnek még a sportok csak angular js el csinalom meg </h1>
-      <h1>Az alap szinek meg betűtipus :root al csinaljuk meg holnap megbeszelni az alap szint és navbar szint</h1>
-
-      <div class="temp_cont">
-
-      </div>
-      <h2 class="text-center mb-4">Mai meccsek (teszt)</h2>
+      <h2 class="text-center mb-4">Mai élő meccsek</h2>
 
     <?php if ($matchesResult && $matchesResult->num_rows > 0): ?>
         <table class="table table-striped table-bordered w-75 mx-auto">
@@ -189,8 +176,7 @@ if (!$matchesResult) {
                     <th>Bajnokság</th>
                     <th>Meccs</th>
                     <th>Kezdés (UTC)</th>
-                    <th>Élő?</th>
-                    <th>Élő idő</th>
+                    <th>Eredmény</th>
                 </tr>
             </thead>
             <tbody>
@@ -200,8 +186,7 @@ if (!$matchesResult) {
                         <td><?= htmlspecialchars($row['championship_name']) ?></td>
                         <td><?= htmlspecialchars($row['match_name']) ?></td>
                         <td><?= htmlspecialchars($row['start_utc']) ?></td>
-                        <td><?= $row['is_live'] ? 'Igen' : 'Nem' ?></td>
-                        <td><?= htmlspecialchars($row['live_time']) ?></td>
+                        <td><?= htmlspecialchars($row['score']) ?></td>
                     </tr>
                 <?php endwhile; ?>
             </tbody>
