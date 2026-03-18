@@ -96,7 +96,9 @@ if (!$res || $res->num_rows === 0) {
                             <span class="live-time-value"><?php echo $timeDisplay; ?></span>
                         </div>
                     <?php else: ?>
-                        <span class="not-started-label">Később</span>
+                        <button class="btn-add-bet" data-match-id="<?php echo $apiId; ?>" title="Fogadások megtekintése">
+                            <i class="fas fa-plus"></i> Fogadás
+                        </button>
                     <?php endif; ?>
                 </td>
             </tr>
