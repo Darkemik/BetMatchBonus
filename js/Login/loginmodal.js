@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var login = form.querySelector('input[name="login"]').value.trim();
     var password = form.querySelector('input[name="password"]').value;
+    var rememberMe = form.querySelector('input[name="rememberMe"]').checked ? '1' : '0';
 
     if (!login || !password) {
       result.style.color = 'red';
@@ -41,6 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var fd = new FormData();
     fd.append('login', login);
     fd.append('password', password);
+    fd.append('rememberMe', rememberMe);
 
     fetch('../../backend/Auth/login.php', {
       method: 'POST',

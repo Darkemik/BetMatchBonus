@@ -11,6 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $login = trim($_POST['login'] ?? '');
 $password = $_POST['password'] ?? '';
+$rememberMe = isset($_POST['rememberMe']) && $_POST['rememberMe'] === '1';
 
 if ($login === '' || $password === '') {
   echo json_encode(['success' => false, 'message' => 'Minden mező kitöltése kötelező!']);
@@ -40,4 +41,21 @@ if ((int)$user['is_active'] !== 1) {
 $_SESSION['user_id'] = (int)$user['id'];
 $_SESSION['username'] = $user['username'];
 
+// Cookie beállítás, ha "Remember Me" be van jelölve
+if ($rememberMe) {
+  $rememberToken = bin2hex(random_bytes(32));
+  $tokenHash = hash('sha256', $rememberToken);
+  $expiry = time() + (30 * 24 * 60 * 60); // 30 nap
+  
+  // Token mentése az adatbázisba
+  $stmt = $conn->prepare("UPDATE Users SET remember_token = ?, remember_expiry = FROM_UNIXTIME(?) WHERE id = ?");
+  $stmt->bind_param("sii", $tokenHash, $expiry, $user['id']);
+  $stmt->execute();
+  $stmt->close();
+  
+  // Cookie beállítása
+  setcookie('remember_token', $rememberToken, $expiry, '/', '', false, true);
+}
+
 echo json_encode(['success' => true, 'message' => 'Sikeres bejelentkezés!']);
+?>
