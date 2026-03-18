@@ -1,132 +1,134 @@
 <?php
 require_once __DIR__ . "/connect.php";
 
+header('Content-Type: application/json; charset=utf-8');
+
 $eventId = isset($_GET['eventId']) ? intval($_GET['eventId']) : 0;
 
 if ($eventId <= 0) {
+    http_response_code(400);
     echo json_encode(['error' => 'Hiányzó vagy érvénytelen eventId']);
     exit;
 }
 
-// Meccs alap adatok az adatbázisból
-$stmt = $conn->prepare("
-    SELECT 
-        m.api_id,
-        m.name AS match_name,
-        m.start_time AS start_utc,
-        m.is_live,
-        m.live_time,
-        CONCAT(IFNULL(m.home_score, 0), ' - ', IFNULL(m.away_score, 0)) AS score,
-        m.sport_id,
-        m.home_team_name,
-        m.away_team_name,
-        c.name AS country_name,
-        ch.name AS championship_name
-    FROM Events m
-    JOIN Competitions ch ON m.competition_id = ch.id
-    JOIN Countries c ON ch.country_id = c.id
-    WHERE m.api_id = ?
-");
-$stmt->bind_param("i", $eventId);
-$stmt->execute();
-$result = $stmt->get_result();
-$matchRow = $result->fetch_assoc();
-$stmt->close();
+$apiBaseUrl = "http://localhost:5000/api";
 
-if (!$matchRow) {
-    echo json_encode(['error' => 'Meccs nem található']);
-    exit;
-}
-
-// API hívás az odds/markets adatokért
-$url = "http://localhost:5000/api/matches/" . $eventId;
-
-$ch = curl_init($url);
+// Próba 1: /matches/event?eventId=
+$eventUrl = "$apiBaseUrl/matches/event?eventId=$eventId";
+$ch = curl_init($eventUrl);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_TIMEOUT, 10);
 $response = curl_exec($ch);
-
-if ($response === false) {
-    echo json_encode(['error' => 'API hiba: ' . curl_error($ch)]);
-    curl_close($ch);
-    exit;
-}
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 curl_close($ch);
 
-$apiData = json_decode($response, true);
+// Próba 2: Ha az első nem működik, próbáljuk /matches/{id}
+if ($httpCode !== 200 || !$response) {
+    $eventUrl = "$apiBaseUrl/matches/$eventId";
+    $ch = curl_init($eventUrl);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+}
 
-// Összeállítjuk a választ
-$result = [
+// Próba 3: Ha még mindig nem működik, próbáljuk /matches?id=
+if ($httpCode !== 200 || !$response) {
+    $eventUrl = "$apiBaseUrl/matches?id=$eventId";
+    $ch = curl_init($eventUrl);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+}
+
+if ($httpCode !== 200 || !$response) {
+    http_response_code(404);
+    echo json_encode(['error' => 'Meccs nem található az API-ban (eventId: ' . $eventId . '). Próbált végpontok: /matches/event?eventId=, /matches/{id}, /matches?id=']);
+    exit;
+}
+
+$apiData = json_decode($response, true);
+if (!is_array($apiData)) {
+    http_response_code(500);
+    echo json_encode(['error' => 'API válasz parse hiba']);
+    exit;
+}
+
+// Válasz összeállítása
+$response_data = [
     'match' => [
-        'id' => $matchRow['api_id'],
-        'name' => $matchRow['match_name'],
-        'startUtc' => $matchRow['start_utc'],
-        'isLive' => (bool)$matchRow['is_live'],
-        'liveTime' => $matchRow['live_time'],
-        'score' => $matchRow['score'],
-        'sportId' => $matchRow['sport_id'],
-        'homeTeam' => $matchRow['home_team_name'],
-        'awayTeam' => $matchRow['away_team_name'],
-        'country' => $matchRow['country_name'],
-        'championship' => $matchRow['championship_name'],
+        'id' => (int)($apiData['id'] ?? $eventId),
+        'name' => $apiData['name'] ?? 'Ismeretlen meccs',
+        'homeTeam' => $apiData['homeTeam'] ?? '',
+        'awayTeam' => $apiData['awayTeam'] ?? '',
+        'score' => '',
+        'isLive' => !empty($apiData['isLive']) ? true : false,
+        'liveTime' => $apiData['liveTime'] ?? null,
+        'liveStatus' => $apiData['liveStatus'] ?? null,
+        'country' => $apiData['countryCode'] ?? 'Ismeretlen',
+        'championship' => $apiData['leagueName'] ?? 'Ismeretlen',
+        'startUtc' => $apiData['startDateUtc'] ?? null,
     ],
     'markets' => []
 ];
 
-// Ha van API adat, hozzáadjuk a markets-et
-if (is_array($apiData)) {
-    if (isset($apiData['homeTeam'])) {
-        $result['match']['homeTeam'] = $apiData['homeTeam'];
-    }
-    if (isset($apiData['awayTeam'])) {
-        $result['match']['awayTeam'] = $apiData['awayTeam'];
-    }
-    if (isset($apiData['liveTime'])) {
-        $result['match']['liveTime'] = $apiData['liveTime'];
-    }
-    if (isset($apiData['liveStatus'])) {
-        $result['match']['liveStatus'] = $apiData['liveStatus'];
-    }
-    if (isset($apiData['score']) && is_array($apiData['score']) && count($apiData['score']) >= 2) {
-        $result['match']['score'] = $apiData['score'][0] . ' - ' . $apiData['score'][1];
-    }
+// Eredmény összeállítása
+if (isset($apiData['score']) && is_array($apiData['score']) && count($apiData['score']) >= 2) {
+    $response_data['match']['score'] = $apiData['score'][0] . ' - ' . $apiData['score'][1];
+} else {
+    $response_data['match']['score'] = '0 - 0';
+}
 
-    if (isset($apiData['markets']) && is_array($apiData['markets'])) {
-        // Duplikátumszűrés: market név + specialValue alapján egyedi kulcs
-        $seen = [];
-        $uniqueMarkets = [];
-
-        foreach ($apiData['markets'] as $market) {
-            $marketName = $market['name'] ?? '';
-            $specialVal = $market['specialValue'] ?? '';
-            $key = $marketName . '||' . $specialVal;
-
-            if (isset($seen[$key])) {
-                continue; // Duplikátum, kihagyjuk
-            }
-            $seen[$key] = true;
-
-            // Selections duplikátumszűrés is
-            if (isset($market['selections']) && is_array($market['selections'])) {
-                $seenSel = [];
-                $uniqueSelections = [];
-                foreach ($market['selections'] as $sel) {
-                    $selName = $sel['name'] ?? '';
-                    if (isset($seenSel[$selName])) {
-                        continue;
-                    }
-                    $seenSel[$selName] = true;
-                    $uniqueSelections[] = $sel;
-                }
-                $market['selections'] = $uniqueSelections;
-            }
-
-            $uniqueMarkets[] = $market;
+// Piacok feldolgozása
+if (isset($apiData['markets']) && is_array($apiData['markets'])) {
+    $seen = [];
+    
+    foreach ($apiData['markets'] as $market) {
+        $marketName = $market['name'] ?? '';
+        $specialVal = $market['specialValue'] ?? null;
+        $marketKey = $marketName . '||' . ($specialVal ?? '');
+        
+        // Duplikátum szűrés
+        if (isset($seen[$marketKey])) {
+            continue;
         }
-
-        $result['markets'] = $uniqueMarkets;
+        $seen[$marketKey] = true;
+        
+        $marketData = [
+            'name' => $marketName,
+            'specialValue' => $specialVal,
+            'selections' => []
+        ];
+        
+        // Selections feldolgozása
+        if (isset($market['selections']) && is_array($market['selections'])) {
+            $seenSel = [];
+            
+            foreach ($market['selections'] as $selection) {
+                $selName = $selection['name'] ?? '';
+                
+                // Duplikátum szűrés selections-ben
+                if (isset($seenSel[$selName])) {
+                    continue;
+                }
+                $seenSel[$selName] = true;
+                
+                $marketData['selections'][] = [
+                    'name' => $selName,
+                    'odds' => (float)($selection['odd'] ?? 1.0)
+                ];
+            }
+        }
+        
+        // Piac csak akkor kerül be, ha van legalább 1 selection
+        if (!empty($marketData['selections'])) {
+            $response_data['markets'][] = $marketData;
+        }
     }
 }
 
-header('Content-Type: application/json; charset=utf-8');
-echo json_encode($result, JSON_UNESCAPED_UNICODE);
+echo json_encode($response_data, JSON_UNESCAPED_UNICODE);
+?>

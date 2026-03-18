@@ -3,6 +3,20 @@ require_once "../../backend/ApiRequest/connect.php";
 
 $sql = "
 SELECT 
+    m.api_id,
+    m.name AS match_name,
+    m.start_time AS start_utc,
+    CONCAT(IFNULL(m.home_score, 0), ' - ', IFNULL(m.away_score, 0)) AS score,
+    c.name AS country_name,
+    ch.name AS championship_name
+FROM Events m
+JOIN Sports s ON m.sport_id = s.id
+JOIN Competitions ch ON m.competition_id = ch.id
+JOIN Countries c ON ch.country_id = c.id
+WHERE s.api_id = 66
+  AND m.is_live = 1
+ORDER BY m.start_time
+LIMIT 10
     e.name AS match_name,
     e.start_time,
     e.is_live,
@@ -34,6 +48,8 @@ if (!$matchesResult) {
   <link rel="stylesheet" href="../../css/RootColor/root.css">
   <link rel="stylesheet" href="../../css/Modal/modal.css">
   <link rel="icon" href="../../img/logo.png" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+  </head>
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=search" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
@@ -133,6 +149,7 @@ if (!$matchesResult) {
 
             </details>
 
+            <h1>Ide jönnek még a sportok csak angular js el csinalom meg </h1>
             <!-- TODO: További sportágak hozzáadása -->
 
           </div>
@@ -144,6 +161,7 @@ if (!$matchesResult) {
 
 
     <main class="center-content">
+      <h2 class="text-center mb-4">Mai élő meccsek</h2>
       <!-- TODO: Keresőt középre, sportágak befejezése, jobb oldali fogadás rész -->
 
       <div class="temp_cont">
@@ -157,6 +175,8 @@ if (!$matchesResult) {
                     <th>Ország</th>
                     <th>Bajnokság</th>
                     <th>Meccs</th>
+                    <th>Kezdés (UTC)</th>
+                    <th>Eredmény</th>
                     <th>Kezdés</th>
                     <th>Élő?</th>
                     <th>Élő idő</th>
@@ -168,6 +188,8 @@ if (!$matchesResult) {
                         <td><?= htmlspecialchars($row['country_name'] ?? '–') ?></td>
                         <td><?= htmlspecialchars($row['competition_name']) ?></td>
                         <td><?= htmlspecialchars($row['match_name']) ?></td>
+                        <td><?= htmlspecialchars($row['start_utc']) ?></td>
+                        <td><?= htmlspecialchars($row['score']) ?></td>
                         <td><?= htmlspecialchars($row['start_time']) ?></td>
                         <td><?= $row['is_live'] ? 'Igen' : 'Nem' ?></td>
                         <td><?= htmlspecialchars($row['live_time'] ?? '–') ?></td>
