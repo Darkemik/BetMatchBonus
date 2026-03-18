@@ -57,7 +57,7 @@ if ($walletResult->num_rows === 0) {
 }
 $stmtCheckWallet->close();
 
-// Cookie beállítás, ha "Remember Me" be van jelölve
+// Cookie beállítás CSAK ha "Remember Me" be van jelölve
 if ($rememberMe) {
   $rememberToken = bin2hex(random_bytes(32));
   $tokenHash = hash('sha256', $rememberToken);
@@ -71,6 +71,15 @@ if ($rememberMe) {
   
   // Cookie beállítása
   setcookie('remember_token', $rememberToken, $expiry, '/', '', false, true);
+} else {
+  // Ha nincs bejelölve, töröljük a régi remember_token-t az adatbázisból és a cookie-t
+  $stmt = $conn->prepare("UPDATE Users SET remember_token = NULL, remember_expiry = NULL WHERE id = ?");
+  $stmt->bind_param("i", $user['id']);
+  $stmt->execute();
+  $stmt->close();
+  
+  // Cookie törlése
+  setcookie('remember_token', '', time() - 3600, '/', '', false, true);
 }
 
 echo json_encode(['success' => true, 'message' => 'Sikeres bejelentkezés!']);

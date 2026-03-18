@@ -40,6 +40,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // login/register után ezt hívjuk
   document.addEventListener('auth:changed', () => {
     refreshAuthUI();
+    // Frissítsd az oldalt, hogy a bónusz kártyák is frissüljenek
+    setTimeout(() => {
+      location.reload();
+    }, 500);
   });
 
   const logoutBtn = document.getElementById('logoutBtn');

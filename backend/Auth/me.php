@@ -21,7 +21,7 @@ if (isset($_SESSION['user_id'])) {
   }
 }
 
-// Ha nincs session, próbálja meg a cookie-t használni
+// Ha nincs session, csak akkor próbálja meg a cookie-t használni ha van
 if (isset($_COOKIE['remember_token'])) {
   $rememberToken = $_COOKIE['remember_token'];
   $tokenHash = hash('sha256', $rememberToken);
