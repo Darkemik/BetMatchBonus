@@ -3,8 +3,8 @@
  * GET_BETTING_HISTORY.PHP - Bejelentkezett felhasználó Ticketjeinek lekérése
  */
 
+session_start();
 require_once __DIR__ . "/connect.php";
-require_once __DIR__ . "/../Auth/check_session.php";
 
 header('Content-Type: application/json; charset=utf-8');
 

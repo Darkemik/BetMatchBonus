@@ -41,6 +41,22 @@ if ((int)$user['is_active'] !== 1) {
 $_SESSION['user_id'] = (int)$user['id'];
 $_SESSION['username'] = $user['username'];
 
+// Wallet inicializáció - ha nincs wallet, akkor 50k-val létrehozzuk
+$stmtCheckWallet = $conn->prepare("SELECT id FROM Wallets WHERE user_id = ?");
+$stmtCheckWallet->bind_param("i", $user['id']);
+$stmtCheckWallet->execute();
+$walletResult = $stmtCheckWallet->get_result();
+
+if ($walletResult->num_rows === 0) {
+    // Nincs wallet - létrehozunk 50k-val
+    $initialBalance = 50000;
+    $stmtCreateWallet = $conn->prepare("INSERT INTO Wallets (user_id, balance, created_at, updated_at) VALUES (?, ?, NOW(), NOW())");
+    $stmtCreateWallet->bind_param("id", $user['id'], $initialBalance);
+    $stmtCreateWallet->execute();
+    $stmtCreateWallet->close();
+}
+$stmtCheckWallet->close();
+
 // Cookie beállítás, ha "Remember Me" be van jelölve
 if ($rememberMe) {
   $rememberToken = bin2hex(random_bytes(32));

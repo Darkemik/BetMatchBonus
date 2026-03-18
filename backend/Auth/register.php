@@ -71,8 +71,19 @@ $stmt = $conn->prepare(
 $stmt->bind_param("sssss", $username, $email, $password_hash, $full_name, $birthdate);
 
 if ($stmt->execute()) {
-    $_SESSION['user_id']  = $stmt->insert_id;
+    $userId = $stmt->insert_id;
+    $_SESSION['user_id']  = $userId;
     $_SESSION['username'] = $username;
+    
+    // Wallet létrehozása 50000 Ft alapegyenleggel
+    $initialBalance = 50000;
+    $walletStmt = $conn->prepare(
+        "INSERT INTO Wallets (user_id, balance) VALUES (?, ?)"
+    );
+    $walletStmt->bind_param("id", $userId, $initialBalance);
+    $walletStmt->execute();
+    $walletStmt->close();
+    
     echo json_encode(['success' => true, 'message' => 'Sikeres regisztráció!']);
 } else {
     echo json_encode(['success' => false, 'message' => 'Hiba: ' . $stmt->error]);

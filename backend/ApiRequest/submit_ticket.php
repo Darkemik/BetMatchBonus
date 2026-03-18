@@ -4,8 +4,8 @@
  * POST JSON: { stake, totalOdds, potentialWin, items: [{homeTeam, awayTeam, pick, odds, market, matchId}] }
  */
 
+session_start();
 require_once __DIR__ . "/connect.php";
-require_once __DIR__ . "/../Auth/check_session.php";
 
 header('Content-Type: application/json; charset=utf-8');
 
