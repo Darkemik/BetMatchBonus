@@ -1,21 +1,20 @@
 <?php
-require_once "../../backend/ApiRequest/connect.php";            
+require_once "../../backend/ApiRequest/connect.php";
 
 $sql = "
 SELECT 
-    m.name AS match_name,
-    m.start_utc,
-    m.is_live,
-    m.live_time,
+    e.name AS match_name,
+    e.start_time,
+    e.is_live,
+    e.live_time,
     c.name AS country_name,
-    ch.name AS championship_name
-FROM Matches m
-JOIN Championships ch ON m.championship_id = ch.id
-JOIN Countries c ON ch.country_code = c.code
-ORDER BY m.start_utc
+    comp.name AS competition_name
+FROM Events e
+JOIN Competitions comp ON e.competition_id = comp.id
+LEFT JOIN Countries c ON comp.country_id = c.id
+ORDER BY e.start_time
 ";
 
-// Itt eddig: $matchesResult = $mysqli->query($sql);
 $matchesResult = $conn->query($sql);
 
 if (!$matchesResult) {
@@ -27,6 +26,7 @@ if (!$matchesResult) {
 
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Online fogadás | BetMatchBonus</title>
   <link rel="stylesheet" href="../../css/MainMenu/MainMenu.css">
   <link rel="stylesheet" href="../../css/Main/layout.css">
@@ -36,8 +36,8 @@ if (!$matchesResult) {
   <link rel="icon" href="../../img/logo.png" type="image/x-icon">
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=search" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
-  </head>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+</head>
 
 <body>
 
@@ -100,10 +100,8 @@ if (!$matchesResult) {
 
     <aside class="left-sidebar">
       <div class="time-bar">
-
         <span id="currentDateTime"></span>
       </div>
-
 
       <div class="sports-menu-container">
         <form>
@@ -113,8 +111,6 @@ if (!$matchesResult) {
           </div>
 
           <div class="sports-menu">
-
-
 
             <details class="level1">
               <summary>&#x26BD; Foci</summary>
@@ -137,34 +133,22 @@ if (!$matchesResult) {
 
             </details>
 
-            <h1>Ide jönnek még a sportok csak angular js el csinalom meg </h1>
-
-
-
+            <!-- TODO: További sportágak hozzáadása -->
 
           </div>
-
         </form>
       </div>
       <div class="temp_cont">
-
       </div>
     </aside>
 
 
     <main class="center-content">
-      <h2>Középső rész</h2>
-      gatya van javitsam ki kereso közép föntre rakjam át sportágakat fejezzem be apit elötte megnézni
-      milyen sportágakat akarunk jobb oldal fogados rész elkezdése csak borderral külön görgetés mint három containerre
-      időt mshova rakjam át </p>
-      <p>footer ide aljra többi görgetősre egész oldam mére</p>
-      <h1>Ide jönnek még a sportok csak angular js el csinalom meg </h1>
-      <h1>Az alap szinek meg betűtipus :root al csinaljuk meg holnap megbeszelni az alap szint és navbar szint</h1>
+      <!-- TODO: Keresőt középre, sportágak befejezése, jobb oldali fogadás rész -->
 
       <div class="temp_cont">
-
       </div>
-      <h2 class="text-center mb-4">Mai meccsek (teszt)</h2>
+      <h2 class="text-center mb-4">Mai meccsek</h2>
 
     <?php if ($matchesResult && $matchesResult->num_rows > 0): ?>
         <table class="table table-striped table-bordered w-75 mx-auto">
@@ -173,7 +157,7 @@ if (!$matchesResult) {
                     <th>Ország</th>
                     <th>Bajnokság</th>
                     <th>Meccs</th>
-                    <th>Kezdés (UTC)</th>
+                    <th>Kezdés</th>
                     <th>Élő?</th>
                     <th>Élő idő</th>
                 </tr>
@@ -181,12 +165,12 @@ if (!$matchesResult) {
             <tbody>
                 <?php while ($row = $matchesResult->fetch_assoc()): ?>
                     <tr>
-                        <td><?= htmlspecialchars($row['country_name']) ?></td>
-                        <td><?= htmlspecialchars($row['championship_name']) ?></td>
+                        <td><?= htmlspecialchars($row['country_name'] ?? '–') ?></td>
+                        <td><?= htmlspecialchars($row['competition_name']) ?></td>
                         <td><?= htmlspecialchars($row['match_name']) ?></td>
-                        <td><?= htmlspecialchars($row['start_utc']) ?></td>
+                        <td><?= htmlspecialchars($row['start_time']) ?></td>
                         <td><?= $row['is_live'] ? 'Igen' : 'Nem' ?></td>
-                        <td><?= htmlspecialchars($row['live_time']) ?></td>
+                        <td><?= htmlspecialchars($row['live_time'] ?? '–') ?></td>
                     </tr>
                 <?php endwhile; ?>
             </tbody>
@@ -202,10 +186,8 @@ if (!$matchesResult) {
 
     <aside class="right-sidebar">
       <?php include '../../frontend/Components/betslip.php'; ?>
-      
 
       <div class="temp_cont">
-
       </div>
     </aside>
 
@@ -213,16 +195,15 @@ if (!$matchesResult) {
 
   <?php include '../../frontend/Components/loginmodal.php';?>
   <?php include '../../frontend/Components/registermodal.php';?>
-    <?php include '../../frontend/Components/registermodal2.php'; ?>
-    <script src="../../js/Main/auth_ui.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+  <?php include '../../frontend/Components/registermodal2.php'; ?>
+  <script src="../../js/Main/auth_ui.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../../js/Login/loginmodal.js"></script>
   <script src="../../js/Register/registermodal.js"></script>
   <script src="../../js/Register/registermodal2.js"></script>
   <script src="../../js/Main/layout.js"></script>
   <script src="../../js/Betslip/betslip.js"></script>
   <script src="../../js/MainMenu/main.js"></script>
-  
-</body>
 
+</body>
 </html>
