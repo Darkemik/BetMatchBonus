@@ -21,8 +21,11 @@
         <!-- Fő tartalom (középső rész)-->
         <main class="main-content">
             <h1>Kérdésed van vagy problémád?</h1>
+            <br>
             <h4>Keress minket bizalommal emailen keresztül!</h4>
+            <br>
             <h5>Ügyfélszolgálat: ugyfelszolgalat@betmatchbonus.com</h5>
+            <br>
             <p class="additional-info">Ha további információkra van szükséged, használd a bal oldali menüpontokat.</p>
         </main>
 

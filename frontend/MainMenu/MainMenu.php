@@ -1,5 +1,5 @@
 <?php
-require_once "../../backend/ApiRequest/connect.php";            
+require_once "../../backend/ApiRequest/connect.php";
 
 $sql = "
 SELECT 
@@ -17,6 +17,16 @@ WHERE s.api_id = 66
   AND m.is_live = 1
 ORDER BY m.start_time
 LIMIT 10
+    e.name AS match_name,
+    e.start_time,
+    e.is_live,
+    e.live_time,
+    c.name AS country_name,
+    comp.name AS competition_name
+FROM Events e
+JOIN Competitions comp ON e.competition_id = comp.id
+LEFT JOIN Countries c ON comp.country_id = c.id
+ORDER BY e.start_time
 ";
 
 $matchesResult = $conn->query($sql);
@@ -30,6 +40,7 @@ if (!$matchesResult) {
 
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Online fogadás | BetMatchBonus</title>
   <link rel="stylesheet" href="../../css/MainMenu/MainMenu.css">
   <link rel="stylesheet" href="../../css/Main/layout.css">
@@ -39,6 +50,10 @@ if (!$matchesResult) {
   <link rel="icon" href="../../img/logo.png" type="image/x-icon">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
   </head>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=search" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+</head>
 
 <body>
 
@@ -85,23 +100,8 @@ if (!$matchesResult) {
                         </button>
                     </div>
                 </div>
-            <button class="loginbtn" data-bs-toggle="modal" data-bs-target="#loginModal">Bejelentkezés</button>
-            <button class="registrationbtn" data-bs-toggle="modal" data-bs-target="#registerModal">Regisztráció</button>
+            <?php include '../../frontend/Components/login.php'; ?>
         </div>
-        <div id="userMenu" class="dropdown" style="display:none;">
-  <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-    <span id="userMenuUsername">Fiókom</span>
-  </button>
-
-  <ul class="dropdown-menu dropdown-menu-end">
-    <li class="dropdown-header">
-      <div><strong id="userFullName">-</strong></div>
-      <div style="font-size: 12px;" id="userEmail">-</div>
-    </li>
-    <li><hr class="dropdown-divider"></li>
-    <li><button class="dropdown-item" id="logoutBtn" type="button">Kijelentkezés</button></li>
-  </ul>
-</div>
     </div>
 
     <nav class="nav collapse navbar-collapse" id="mainNavbar">
@@ -116,10 +116,8 @@ if (!$matchesResult) {
 
     <aside class="left-sidebar">
       <div class="time-bar">
-
         <span id="currentDateTime"></span>
       </div>
-
 
       <div class="sports-menu-container">
         <form>
@@ -129,8 +127,6 @@ if (!$matchesResult) {
           </div>
 
           <div class="sports-menu">
-
-
 
             <details class="level1">
               <summary>&#x26BD; Foci</summary>
@@ -154,19 +150,23 @@ if (!$matchesResult) {
             </details>
 
             <h1>Ide jönnek még a sportok csak angular js el csinalom meg </h1>
+            <!-- TODO: További sportágak hozzáadása -->
 
           </div>
-
         </form>
       </div>
       <div class="temp_cont">
-
       </div>
     </aside>
 
 
     <main class="center-content">
       <h2 class="text-center mb-4">Mai élő meccsek</h2>
+      <!-- TODO: Keresőt középre, sportágak befejezése, jobb oldali fogadás rész -->
+
+      <div class="temp_cont">
+      </div>
+      <h2 class="text-center mb-4">Mai meccsek</h2>
 
     <?php if ($matchesResult && $matchesResult->num_rows > 0): ?>
         <table class="table table-striped table-bordered w-75 mx-auto">
@@ -177,16 +177,22 @@ if (!$matchesResult) {
                     <th>Meccs</th>
                     <th>Kezdés (UTC)</th>
                     <th>Eredmény</th>
+                    <th>Kezdés</th>
+                    <th>Élő?</th>
+                    <th>Élő idő</th>
                 </tr>
             </thead>
             <tbody>
                 <?php while ($row = $matchesResult->fetch_assoc()): ?>
                     <tr>
-                        <td><?= htmlspecialchars($row['country_name']) ?></td>
-                        <td><?= htmlspecialchars($row['championship_name']) ?></td>
+                        <td><?= htmlspecialchars($row['country_name'] ?? '–') ?></td>
+                        <td><?= htmlspecialchars($row['competition_name']) ?></td>
                         <td><?= htmlspecialchars($row['match_name']) ?></td>
                         <td><?= htmlspecialchars($row['start_utc']) ?></td>
                         <td><?= htmlspecialchars($row['score']) ?></td>
+                        <td><?= htmlspecialchars($row['start_time']) ?></td>
+                        <td><?= $row['is_live'] ? 'Igen' : 'Nem' ?></td>
+                        <td><?= htmlspecialchars($row['live_time'] ?? '–') ?></td>
                     </tr>
                 <?php endwhile; ?>
             </tbody>
@@ -202,10 +208,8 @@ if (!$matchesResult) {
 
     <aside class="right-sidebar">
       <?php include '../../frontend/Components/betslip.php'; ?>
-      
 
       <div class="temp_cont">
-
       </div>
     </aside>
 
@@ -213,16 +217,15 @@ if (!$matchesResult) {
 
   <?php include '../../frontend/Components/loginmodal.php';?>
   <?php include '../../frontend/Components/registermodal.php';?>
-    <?php include '../../frontend/Components/registermodal2.php'; ?>
-    <script src="../../js/Main/auth_ui.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+  <?php include '../../frontend/Components/registermodal2.php'; ?>
+  <script src="../../js/Main/auth_ui.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../../js/Login/loginmodal.js"></script>
   <script src="../../js/Register/registermodal.js"></script>
   <script src="../../js/Register/registermodal2.js"></script>
   <script src="../../js/Main/layout.js"></script>
   <script src="../../js/Betslip/betslip.js"></script>
   <script src="../../js/MainMenu/main.js"></script>
-  
-</body>
 
+</body>
 </html>

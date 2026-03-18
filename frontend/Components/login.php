@@ -1,6 +1,5 @@
 <button class="loginbtn" data-bs-toggle="modal" data-bs-target="#loginModal">Bejelentkezés</button>
 <button class="registrationbtn" data-bs-toggle="modal" data-bs-target="#registerModal">Regisztráció</button>
-</div>
 <div id="userMenu" class="dropdown" style="display:none;">
     <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
         <span id="userMenuUsername">Fiókom</span>
@@ -16,4 +15,5 @@
         </li>
         <li><button class="dropdown-item" id="logoutBtn" type="button">Kijelentkezés</button></li>
     </ul>
+</div>
 </div>

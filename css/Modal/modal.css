@@ -24,9 +24,24 @@
 #registerModal2Result {
     color: red;
     font-weight: bold;
+    font-size: 14px;
+    padding: 10px;
+    text-align: center;
 }
 
 .modal-img-preview {
     max-height: 120px;
     display: none;
+}
+
+/* Logout button styling */
+#logoutBtn {
+    background-color: transparent !important;
+    color: #000000 !important;
+    padding: 8px 16px !important;
+}
+
+#logoutBtn:hover {
+    background-color: rgba(255, 162, 0, 0.1) !important;
+    color: #ffa200 !important;
 }
