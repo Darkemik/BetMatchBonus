@@ -7,9 +7,10 @@
 
 .left-sidebar {
     flex: 0 0 250px;
-    background-color: #fff;
+    background-color: #1e2128;
     border-radius: 8px;
     padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 .sidebar-section {
@@ -17,17 +18,17 @@
 }
 
 .sidebar-section h3 {
-    color: #1a1a1a;
+    color: #ffa200;
     font-size: 14px;
     font-weight: 700;
     letter-spacing: 0.5px;
     margin-bottom: 15px;
     padding-bottom: 8px;
-    border-bottom: 2px solid #3498db;
+    border-bottom: 2px solid #ffa200;
 }
 
 .sidebar-section ul {
-    list-style-type: none;
+    list-style: none;
     padding: 0;
     margin: 0;
 }
@@ -37,7 +38,7 @@
 }
 
 .sidebar-section a {
-    color: #333;
+    color: #b0b8c8;
     text-decoration: none;
     display: block;
     padding: 8px 12px;
@@ -48,81 +49,109 @@
 }
 
 .sidebar-section a:hover {
-    background-color: #f5f9ff;
-    color: #2c6eaf;
-    border-left: 3px solid #3498db;
+    background-color: rgba(255, 162, 0, 0.1);
+    color: #ffa200;
+    border-left-color: #ffa200;
     padding-left: 15px;
 }
 
 .main-content {
     flex: 1;
-    background-color: #fff;
+    background-color: #1e2128;
     border-radius: 8px;
     padding: 30px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    border: 1px solid #e0e0e0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    color: #ffffff;
 }
 
 .main-content h1 {
-    color: #1a1a1a;
+    color: #f0f0f0;
     font-size: 24px;
     font-weight: 700;
     margin-bottom: 15px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 .main-content h4 {
-    color: #3498db;
+    color: #ffa200;
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 15px;
 }
 
+.main-content h5,
+.main-content p {
+    color: #ffffff !important;
+}
+
 .help-menu-container {
-    color: #555;
+    color: #b0b8c8;
     font-size: 15px;
     line-height: 1.6;
     margin-bottom: 20px;
     padding: 15px;
-    background-color: #f9f9f9;
+    background-color: rgba(255, 162, 0, 0.05);
     border-radius: 6px;
-    border-left: 4px solid #3498db;
+    border-left: 4px solid #ffa200;
 }
 
+/* GYIK Styles */
 .help-summary {
     list-style: none;
+    color: #ffffff;
+    font-size: 18px;
 }
 
+details.level0 {
+    margin-bottom: 16px;
+    border-bottom: 2px solid rgba(255, 162, 0, 0.3);
+    padding-bottom: 12px;
+}
+
+details.level0 summary,
 .help-summary:hover,
 details.level1 summary:hover {
-    color: #3498db;
-    cursor: pointer;
-    transform: translateY(-2px);
-    text-transform: uppercase;
-    transition: all 0.3s ease;
-    padding: 8px 12px;
+    color: #ffffff;
+    transition: color 0.2s ease;
 }
 
-details.level1[open] summary+* p {
-    font-size: 14px;
-    max-height: 500px;
-    opacity: 1;
-    transform: scaleY(1);
-    margin-top: 10px;
-    padding: 10px;
-    background-color: #f5f9ff;
+details.level0 summary {
+    font-size: 20px;
+    font-weight: 700;
+    padding: 8px 0;
+    list-style: none;
+    position: relative;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+}
+
+details.level0 summary:hover {
+    color: #ffa200;
+}
+
+details.level0 summary:after,
+details.level1 summary:after {
+    position: absolute;
+    right: 10px;
+    font-weight: bold;
+    color: #ffa200;
+}
+
+details.level0 summary:after {
+    font-size: 20px;
 }
 
 details.level1 {
     margin-bottom: 8px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
     padding-bottom: 8px;
 }
 
 details.level1 summary {
-    color: #000;
-    font-size: 14px;
+    color: #ffffff;
+    font-size: 16px;
     font-weight: 600;
     padding: 5px 0;
     list-style: none;
@@ -130,20 +159,30 @@ details.level1 summary {
     cursor: pointer;
 }
 
+details.level1 summary:hover {
+    color: #ffa200;
+    cursor: pointer;
+    transform: translateY(-2px);
+}
+
 details.level1 summary:after {
-    position: absolute;
-    right: 10px;
-    font-weight: bold;
     font-size: 18px;
-    color: #3498db;
+}
+
+details.level1[open] > p {
+    font-size: 16px;
+    margin-top: 10px;
+    padding: 10px;
+    color: #ffffff !important;
 }
 
 .additional-info {
     margin-bottom: 15px;
-    border: 1px solid #ddd;
+    border: 1px solid rgba(255, 162, 0, 0.3);
     border-radius: 6px;
     padding: 10px;
-    background-color: #3ba4f0;
+    background-color: rgba(255, 162, 0, 0.1);
+    color: #ffffff !important;
 }
 
 .right-sidebar {
@@ -154,14 +193,17 @@ details.level1 summary:after {
 }
 
 .promo-kartya {
-    background-color: #fff;
+    background-color: #1e2128;
     border-radius: 8px;
     padding: 20px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 .promo-kartya:hover {
     transform: translateY(-3px);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+    border-color: rgba(255, 162, 0, 0.35);
 }
 
 .promo-kartya img {
@@ -174,49 +216,168 @@ details.level1 summary:after {
 }
 
 .promo-kartya h3 {
-    color: #1a1a1a;
+    color: #f0f0f0;
     font-size: 18px;
     font-weight: 700;
     margin: 0 0 15px;
     padding-bottom: 10px;
-    border-bottom: 2px solid #e74c3c;
-}
-
-.promo-kartya:nth-child(2) h3 {
-    border-bottom-color: #3498db;
-}
-
-.promo-kartya:nth-child(3) h3 {
-    border-bottom-color: #9b59b6;
+    border-bottom: 2px solid #ffa200;
 }
 
 .promo-kartya p {
-    color: #555;
+    color: #b0b8c8;
     font-size: 14px;
     line-height: 1.5;
     margin-bottom: 20px;
 }
 
 .tobb-info-gomb {
-    background: #3498db;
+    background: linear-gradient(135deg, #ffa200, #ff6a00);
     color: white;
     border: none;
     padding: 10px 20px;
-    border-radius: 4px;
+    border-radius: 10px;
     font-weight: 700;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.15s ease;
     width: 100%;
     font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    box-shadow: 0 4px 14px rgba(255, 106, 0, 0.35);
 }
 
 .tobb-info-gomb:hover {
-    background: #2980b9;
-    color: black;
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 106, 0, 0.5);
 }
 
+/* Sport szabalyok */
+.sport-card {
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 6px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    background-color: #1a1d24;
+}
+
+.sport-card-header {
+    width: 100%;
+    text-align: left;
+    background-color: rgba(255, 162, 0, 0.08);
+    border: none;
+    padding: 12px 16px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #f0f0f0;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s ease;
+}
+
+.sport-card-header::after {
+    content: "+";
+    font-size: 20px;
+    font-weight: bold;
+    color: #ffa200;
+    transition: transform 0.2s ease;
+}
+
+.sport-card-header:hover {
+    background-color: rgba(255, 162, 0, 0.12);
+}
+
+.sport-card-header.open {
+    background-color: rgba(255, 162, 0, 0.15);
+    border-bottom: 2px solid #ffa200;
+}
+
+.sport-card-header.open::after {
+    content: "−";
+}
+
+.sport-card-body {
+    padding: 14px 18px;
+    background-color: #1a1d24;
+}
+
+.sport-rules-list {
+    margin: 0;
+    padding-left: 20px;
+    color: #b0b8c8;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.sport-rules-list li {
+    margin-bottom: 8px;
+    padding-left: 4px;
+}
+
+/* Szótár */
+.szotar-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid rgba(255, 162, 0, 0.3);
+}
+
+.szotar-nav-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    background-color: rgba(255, 162, 0, 0.08);
+    border: 1px solid rgba(255, 162, 0, 0.3);
+    border-radius: 4px;
+    color: #ffa200;
+    font-weight: 700;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.szotar-nav-btn:hover {
+    background-color: #ffa200;
+    color: #1e2128;
+    border-color: #ffa200;
+}
+
+.szotar-section {
+    margin-bottom: 28px;
+}
+
+.szotar-letter {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffa200;
+    border-bottom: 2px solid #ffa200;
+    padding-bottom: 4px;
+    margin-bottom: 12px;
+}
+
+.szotar-term {
+    font-size: 15px;
+    font-weight: 700;
+    color: #f0f0f0;
+    margin-top: 12px;
+    margin-bottom: 4px;
+}
+
+.szotar-def {
+    font-size: 14px;
+    color: #b0b8c8;
+    line-height: 1.6;
+    padding: 10px 14px;
+    background-color: rgba(255, 162, 0, 0.05);
+    border-left: 3px solid #ffa200;
+    border-radius: 0 4px 4px 0;
+}
+
+/* Responsive */
 @media (max-width: 1024px) {
     .help-container {
         flex-wrap: wrap;
@@ -240,14 +401,13 @@ details.level1 summary:after {
         flex-wrap: wrap;
         margin-top: 20px;
     }
-
 }
 
 @media (max-width: 768px) {
     .help-container {
+        flex-direction: column;
         padding: 10px;
         gap: 15px;
-        flex-direction: column;
     }
 
     .left-sidebar,
@@ -261,12 +421,12 @@ details.level1 summary:after {
         flex-direction: column;
     }
 
-    .main-content h1 {
-        font-size: 20px;
-    }
-
     .main-content {
         padding: 20px;
+    }
+
+    .main-content h1 {
+        font-size: 20px;
     }
 }
 
@@ -285,132 +445,4 @@ details.level1 summary:after {
         padding: 6px 10px;
         font-size: 13px;
     }
-
-}
-
-.sport-card {
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    margin-bottom: 10px;
-    overflow: hidden;
-}
-
-.sport-card-header {
-    width: 100%;
-    text-align: left;
-    background-color: #f5f9ff;
-    border: none;
-    padding: 12px 16px;
-    font-size: 15px;
-    font-weight: 600;
-    color: #1a1a1a;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: background-color 0.2s ease;
-}
-
-.sport-card-header::after {
-    content: "+";
-    font-size: 20px;
-    font-weight: bold;
-    color: #3498db;
-    transition: transform 0.2s ease;
-}
-
-.sport-card-header.open {
-    background-color: #e8f3fc;
-    border-bottom: 2px solid #3498db;
-}
-
-.sport-card-header.open::after {
-    content: "−";
-}
-
-.sport-card-header:hover {
-    background-color: #dceefb;
-}
-
-.sport-card-body {
-    padding: 14px 18px;
-    background-color: #fff;
-}
-
-.sport-rules-list {
-    margin: 0;
-    padding-left: 20px;
-    color: #444;
-    font-size: 14px;
-    line-height: 1.7;
-}
-
-.sport-rules-list li {
-    margin-bottom: 8px;
-    padding-left: 4px;
-}
-
-/* Szótár */
-.szotar-nav {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 24px;
-    padding-bottom: 16px;
-    border-bottom: 2px solid #e0e0e0;
-}
-
-.szotar-nav-btn {
-    display: inline-block;
-    padding: 6px 12px;
-    background-color: #f5f9ff;
-    border: 1px solid #c8dff5;
-    border-radius: 4px;
-    color: #2c6eaf;
-    font-weight: 700;
-    font-size: 14px;
-    text-decoration: none;
-    transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.szotar-nav-btn:hover {
-    background-color: #3498db;
-    color: #fff;
-    border-color: #3498db;
-}
-
-.szotar-section {
-    margin-bottom: 28px;
-}
-
-.szotar-letter {
-    font-size: 20px;
-    font-weight: 700;
-    color: #3498db;
-    border-bottom: 2px solid #3498db;
-    padding-bottom: 4px;
-    margin-bottom: 12px;
-}
-
-.szotar-list {
-    margin: 0;
-}
-
-.szotar-term {
-    font-size: 15px;
-    font-weight: 700;
-    color: #1a1a1a;
-    margin-top: 12px;
-    margin-bottom: 4px;
-}
-
-.szotar-def {
-    font-size: 14px;
-    color: #555;
-    line-height: 1.6;
-    margin-left: 0;
-    padding: 10px 14px;
-    background-color: #f9f9f9;
-    border-left: 3px solid #3498db;
-    border-radius: 0 4px 4px 0;
 }

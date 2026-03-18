@@ -28,6 +28,13 @@
             </button>
           </div>
 
+          <div class="form-check mb-2">
+            <input type="checkbox" class="form-check-input" id="rememberMe" name="rememberMe" value="1">
+            <label class="form-check-label" for="rememberMe">
+              Emlékezz rám
+            </label>
+          </div>
+
           <a href="#" class="small modal-link">Elfelejtettem a jelszavam</a>
 
           <p id="loginModalResult" class="mt-2 mb-0"></p>

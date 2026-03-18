@@ -6,7 +6,6 @@ $today = date('Y-m-d');
 
 $sql = "
 SELECT 
-    e.api_id,
     e.name AS match_name,
     e.start_time,
     e.is_live,
@@ -102,6 +101,8 @@ $stmtSports->close();
   <link rel="stylesheet" href="../../css/RootColor/root.css">
   <link rel="stylesheet" href="../../css/Modal/modal.css">
   <link rel="icon" href="../../img/logo.png" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+  </head>
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=search" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
@@ -153,7 +154,8 @@ $stmtSports->close();
                         </button>
                     </div>
                 </div>
-            <?php include '../../frontend/Components/login.php'; ?>
+            <button class="loginbtn" data-bs-toggle="modal" data-bs-target="#loginModal">Bejelentkezés</button>
+            <button class="registrationbtn" data-bs-toggle="modal" data-bs-target="#registerModal">Regisztráció</button>
         </div>
         <div id="userMenu" class="dropdown" style="display:none;">
   <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -195,10 +197,31 @@ $stmtSports->close();
             <input class="search-input" id="sidebarSearch" type="search" placeholder="Keresés...">
           </div>
 
-          <div class="sports-menu" id="sports-menu">
-            <div class="sidebar-loading">
-              <i class="fas fa-spinner fa-spin"></i> Sportok betöltése...
-            </div>
+          <div class="sports-menu">
+
+            <details class="level1">
+              <summary>&#x26BD; Foci</summary>
+
+              <details class="level2">
+                <summary>NB I</summary>
+                <ul class="level3">
+                  <li><a href="#">Fradi – Újpest</a></li>
+                  <li><a href="#">PAFC – Debrecen</a></li>
+                </ul>
+              </details>
+
+              <details class="level2">
+                <summary>Premier League</summary>
+                <ul class="level3">
+                  <li><a href="#">Arsenal – Chelsea</a></li>
+                  <li><a href="#">Liverpool – City</a></li>
+                </ul>
+              </details>
+
+            </details>
+
+            <!-- TODO: További sportágak hozzáadása -->
+
           </div>
         </form>
       </div>
@@ -206,190 +229,35 @@ $stmtSports->close();
 
     <!-- ===== KÖZÉPSŐ TARTALOM ===== -->
     <main class="center-content">
+      <!-- TODO: Keresőt középre, sportágak befejezése, jobb oldali fogadás rész -->
 
-      <!-- Kereső sáv -->
-      <div class="main-search-bar">
-        <div class="search-wrapper">
-          <i class="fas fa-search search-bar-icon"></i>
-          <input type="search" id="mainSearch" class="main-search-input" placeholder="Keresés meccsek, csapatok között...">
-        </div>
+      <div class="temp_cont">
       </div>
+      <h2 class="text-center mb-4">Mai meccsek</h2>
 
-      <!-- Sport navigáció (live.php stílusú) -->
-      <div class="sports-nav-wrapper">
-        <nav class="sports-nav" id="sports-nav">
-          <a href="#" class="sport-item active" data-sport="all" data-sport-id="0">
-            <div class="sport-icon"><i class="fas fa-list"></i></div>
-            <span class="sport-name">Összes</span>
-            <span class="sport-count"><?= count($allMatches) ?></span>
-          </a>
-          <?php
-          // Sportok megjelenítése (reset pointer)
-          $matchesResult = null; // already consumed
-          $sportsNav = $conn->query("
-            SELECT s.api_id, s.name, COUNT(e.id) AS mc
-            FROM Sports s
-            LEFT JOIN Events e ON e.sport_id = s.id AND DATE(e.start_time) = '$today'
-            WHERE s.is_active = 1
-            GROUP BY s.id
-            HAVING mc > 0
-            ORDER BY mc DESC
-          ");
-          if ($sportsNav) {
-              while ($sp = $sportsNav->fetch_assoc()) {
-                  $apiId = (int)$sp['api_id'];
-                  $icon = $sportIcons[$apiId] ?? 'fa-trophy';
-                  $name = $sportNames[$apiId] ?? htmlspecialchars($sp['name']);
-                  $count = (int)$sp['mc'];
-                  echo '<a href="#" class="sport-item" data-sport="' . $apiId . '" data-sport-id="' . $apiId . '">';
-                  echo '<div class="sport-icon"><i class="fas ' . $icon . '"></i></div>';
-                  echo '<span class="sport-name">' . $name . '</span>';
-                  echo '<span class="sport-count">' . $count . '</span>';
-                  echo '</a>';
-              }
-          }
-          ?>
-        </nav>
-      </div>
-
-      <!-- ===== ÉLŐ MOST szekció ===== -->
-      <?php if (!empty($liveMatches)): ?>
-      <div class="section-block">
-        <h2 class="section-title"><span class="live-indicator"></span> Élő most</h2>
-        <table class="matches-table">
-          <thead>
-            <tr>
-              <th><i class="fas fa-globe-europe"></i> Ország</th>
-              <th><i class="fas fa-trophy"></i> Bajnokság</th>
-              <th><i class="fas fa-futbol"></i> Meccs</th>
-              <th><i class="fas fa-star"></i> Állás</th>
-              <th><i class="fas fa-stopwatch"></i> Élő idő</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php foreach ($liveMatches as $row):
-              $matchParts = explode(' - ', $row['match_name'], 2);
-              $home = htmlspecialchars($matchParts[0]);
-              $away = isset($matchParts[1]) ? htmlspecialchars($matchParts[1]) : '';
-              $score = ($row['home_score'] !== null ? $row['home_score'] : '0') . ' - ' . ($row['away_score'] !== null ? $row['away_score'] : '0');
-              $liveTime = !empty($row['live_time']) ? htmlspecialchars($row['live_time']) : '-';
-              $apiId = (int)($row['api_id'] ?? 0);
-            ?>
-            <tr class="match-row clickable" data-match-id="<?= $apiId ?>" data-sport="<?= (int)$row['sport_api_id'] ?>">
-              <td><span class="country-name"><?= htmlspecialchars($row['country_name'] ?? '–') ?></span></td>
-              <td><span class="league-name"><?= htmlspecialchars($row['competition_name']) ?></span></td>
-              <td class="match-cell">
-                <?php if ($away !== ''): ?>
-                  <span class="team home-team"><?= $home ?></span>
-                  <span class="vs">vs</span>
-                  <span class="team away-team"><?= $away ?></span>
-                <?php else: ?>
-                  <span class="team"><?= $home ?></span>
-                <?php endif; ?>
-              </td>
-              <td><span class="match-score"><?= $score ?></span></td>
-              <td class="live-time-cell">
-                <span class="live-dot"></span>
-                <span class="live-time-value"><?= $liveTime ?></span>
-              </td>
-            </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-      </div>
-      <?php endif; ?>
-
-      <!-- ===== HAMAROSAN KEZDŐDIK szekció ===== -->
-      <?php if (!empty($upcomingMatches)): ?>
-      <div class="section-block">
-        <h2 class="section-title"><i class="fas fa-clock"></i> Hamarosan kezdődik</h2>
-        <table class="matches-table">
-          <thead>
-            <tr>
-              <th><i class="fas fa-globe-europe"></i> Ország</th>
-              <th><i class="fas fa-trophy"></i> Bajnokság</th>
-              <th><i class="fas fa-futbol"></i> Meccs</th>
-              <th><i class="fas fa-clock"></i> Kezdés</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php foreach ($upcomingMatches as $row):
-              $matchParts = explode(' - ', $row['match_name'], 2);
-              $home = htmlspecialchars($matchParts[0]);
-              $away = isset($matchParts[1]) ? htmlspecialchars($matchParts[1]) : '';
-              $startFormatted = date('H:i', strtotime($row['start_time']));
-              $apiId = (int)($row['api_id'] ?? 0);
-            ?>
-            <tr class="match-row clickable" data-match-id="<?= $apiId ?>" data-sport="<?= (int)$row['sport_api_id'] ?>">
-              <td><span class="country-name"><?= htmlspecialchars($row['country_name'] ?? '–') ?></span></td>
-              <td><span class="league-name"><?= htmlspecialchars($row['competition_name']) ?></span></td>
-              <td class="match-cell">
-                <?php if ($away !== ''): ?>
-                  <span class="team home-team"><?= $home ?></span>
-                  <span class="vs">vs</span>
-                  <span class="team away-team"><?= $away ?></span>
-                <?php else: ?>
-                  <span class="team"><?= $home ?></span>
-                <?php endif; ?>
-              </td>
-              <td><span class="start-time"><?= $startFormatted ?></span></td>
-            </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-      </div>
-      <?php endif; ?>
-
-      <!-- ===== MAI MECCSEK szekció ===== -->
-      <div class="section-block">
-        <h2 class="section-title"><i class="fas fa-calendar-day"></i> Mai meccsek</h2>
-        <div id="matches-container">
-        <?php if (!empty($allMatches)): ?>
-          <table class="matches-table" id="main-matches-table">
-            <thead>
-              <tr>
-                <th><i class="fas fa-globe-europe"></i> Ország</th>
-                <th><i class="fas fa-trophy"></i> Bajnokság</th>
-                <th><i class="fas fa-futbol"></i> Meccs</th>
-                <th><i class="fas fa-star"></i> Állás</th>
-                <th><i class="fas fa-clock"></i> Kezdés</th>
-                <th><i class="fas fa-stopwatch"></i> Státusz</th>
-              </tr>
+    <?php if ($matchesResult && $matchesResult->num_rows > 0): ?>
+        <table class="table table-striped table-bordered w-75 mx-auto">
+            <thead class="table-dark">
+                <tr>
+                    <th>Ország</th>
+                    <th>Bajnokság</th>
+                    <th>Meccs</th>
+                    <th>Kezdés</th>
+                    <th>Élő?</th>
+                    <th>Élő idő</th>
+                </tr>
             </thead>
             <tbody>
-              <?php foreach ($allMatches as $row):
-                $matchParts = explode(' - ', $row['match_name'], 2);
-                $home = htmlspecialchars($matchParts[0]);
-                $away = isset($matchParts[1]) ? htmlspecialchars($matchParts[1]) : '';
-                $startFormatted = date('H:i', strtotime($row['start_time']));
-                $score = ($row['home_score'] !== null ? $row['home_score'] : '0') . ' - ' . ($row['away_score'] !== null ? $row['away_score'] : '0');
-                $isLive = (bool)$row['is_live'];
-                $liveTime = !empty($row['live_time']) ? htmlspecialchars($row['live_time']) : '';
-                $apiId = (int)($row['api_id'] ?? 0);
-              ?>
-              <tr class="match-row clickable <?= $isLive ? 'live-match' : '' ?>" data-match-id="<?= $apiId ?>" data-sport="<?= (int)$row['sport_api_id'] ?>">
-                <td><span class="country-name"><?= htmlspecialchars($row['country_name'] ?? '–') ?></span></td>
-                <td><span class="league-name"><?= htmlspecialchars($row['competition_name']) ?></span></td>
-                <td class="match-cell">
-                  <?php if ($away !== ''): ?>
-                    <span class="team home-team"><?= $home ?></span>
-                    <span class="vs">vs</span>
-                    <span class="team away-team"><?= $away ?></span>
-                  <?php else: ?>
-                    <span class="team"><?= $home ?></span>
-                  <?php endif; ?>
-                </td>
-                <td><span class="match-score"><?= $score ?></span></td>
-                <td><span class="start-time"><?= $startFormatted ?></span></td>
-                <td>
-                  <?php if ($isLive): ?>
-                    <span class="live-badge-inline"><span class="live-dot"></span> <?= $liveTime ?: 'Élő' ?></span>
-                  <?php else: ?>
-                    <span class="status-upcoming">Várható</span>
-                  <?php endif; ?>
-                </td>
-              </tr>
-              <?php endforeach; ?>
+                <?php while ($row = $matchesResult->fetch_assoc()): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($row['country_name'] ?? '–') ?></td>
+                        <td><?= htmlspecialchars($row['competition_name']) ?></td>
+                        <td><?= htmlspecialchars($row['match_name']) ?></td>
+                        <td><?= htmlspecialchars($row['start_time']) ?></td>
+                        <td><?= $row['is_live'] ? 'Igen' : 'Nem' ?></td>
+                        <td><?= htmlspecialchars($row['live_time'] ?? '–') ?></td>
+                    </tr>
+                <?php endwhile; ?>
             </tbody>
           </table>
         <?php else: ?>

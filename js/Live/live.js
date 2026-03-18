@@ -1,287 +1,416 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const container = document.getElementById("matches-container");
-    let refreshTimer = null;
-    let currentMatchId = null;
-    let currentSportId = 66;
+document.addEventListener('DOMContentLoaded', function() {
+    const sportButtons = document.querySelectorAll('.sport-item');
+    const matchesContainer = document.getElementById('matches-container');
+    let currentSportId = 66; // Alapértelmezetten foci
+    let autoRefreshInterval = null;
 
-    const sportIdMap = {
-        'soccer': 66,
-        'basketball': 67,
-        'darts': 78,
-        'waterpolo': 83,
-        'handball': 73,
-        'hockey': 70,
-        'pingpong': 77
-    };
-
-    // ===== ODDS GOMB ÉPÍTÉS =====
-    function buildSelectionButton(sel, homeTeam, awayTeam, marketFullName) {
-        if (sel.odd <= 1.0) {
-            return '<button class="selection-btn disabled" disabled>' +
-                '<span class="selection-name">' + escapeHtml(sel.name) + '</span>' +
-            '</button>';
-        }
-
-        var state = window.BetslipLogic.getButtonState(homeTeam, awayTeam, sel.name, marketFullName);
-        var stateClass = state ? ' ' + state : '';
-        var isDisabled = state === 'disabled' ? ' disabled' : '';
-
-        var matchIdAttr = currentMatchId ? ' data-match-id="' + currentMatchId + '"' : '';
-
-        return '<button class="selection-btn' + stateClass + '"' + isDisabled + ' ' +
-            'data-home="' + escapeHtml(homeTeam) + '" ' +
-            'data-away="' + escapeHtml(awayTeam) + '" ' +
-            'data-pick="' + escapeHtml(sel.name) + '" ' +
-            'data-odd="' + sel.odd + '" ' +
-            'data-market="' + escapeHtml(marketFullName) + '"' +
-            matchIdAttr + '>' +
-            '<span class="selection-name">' + escapeHtml(sel.name) + '</span>' +
-            '<span class="selection-odd">' + sel.odd.toFixed(2) + '</span>' +
-        '</button>';
-    }
-
-    // ===== ODDS GOMBOK KATTINTÁS KEZELŐ =====
-    document.addEventListener('click', function(e) {
-        var btn = e.target.closest('.selection-btn');
-        if (!btn) return;
-        if (btn.classList.contains('disabled')) return;
-
-        e.preventDefault();
-        e.stopPropagation();
-
-        var homeTeam = btn.getAttribute('data-home');
-        var awayTeam = btn.getAttribute('data-away');
-        var pick = btn.getAttribute('data-pick');
-        var odds = parseFloat(btn.getAttribute('data-odd'));
-        var market = btn.getAttribute('data-market');
-        var matchId = parseInt(btn.getAttribute('data-match-id')) || 0;
-
-        if (!homeTeam || !awayTeam || !pick || !market) return;
-
-        console.log('[LIVE] Toggle odds:', {homeTeam, awayTeam, pick, odds, market});
-
-        if (typeof window.toggleOdds === 'function') {
-            window.toggleOdds(homeTeam, awayTeam, pick, odds, market, matchId);
-            
-            // AZONNAL frissítjük az összes gombot
-            setTimeout(function() {
-                if (typeof window.refreshAllOddsButtons === 'function') {
-                    window.refreshAllOddsButtons();
-                }
-            }, 50);
-        }
+    console.log('[LIVE.JS] Inicializálás...', {
+        sportButtonsCount: sportButtons.length,
+        hasMatchesContainer: !!matchesContainer
     });
 
-    // ===== MARKET HTML ÉPÍTÉS =====
-    function buildMarketsHtml(markets, homeTeam, awayTeam) {
-        var validMarkets = markets.filter(function(m) { return m.selections && m.selections.length > 0; });
-        if (validMarkets.length === 0) {
-            return '<div class="no-markets">Jelenleg nincsenek elérhető fogadási piacok ehhez a meccshez.</div>';
-        }
-        var html = '';
-        validMarkets.forEach(function(market) {
-            var specialVal = market.specialValue ? ' (' + market.specialValue + ')' : '';
-            var marketFullName = (market.name || '') + specialVal;
-            html += '<div class="market-card">';
-            html += '<div class="market-header"><span class="market-name">' + escapeHtml(marketFullName) + '</span></div>';
-            html += '<div class="market-selections">';
-            market.selections.forEach(function(sel) {
-                html += buildSelectionButton(sel, homeTeam, awayTeam, marketFullName);
-            });
-            html += '</div></div>';
-        });
-        return html;
-    }
-
-    // ===== SPORT NAV =====
-    document.querySelectorAll('.sport-item').forEach(function(item) {
-        item.addEventListener('click', function(e) {
+    // Sport gomb kattintások
+    sportButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
             e.preventDefault();
-            e.stopPropagation();
-            document.querySelectorAll('.sport-item').forEach(function(s) { s.classList.remove('active'); });
-            item.classList.add('active');
-            var sportKey = item.getAttribute('data-sport');
-            currentSportId = sportIdMap[sportKey] || 66;
-            currentMatchId = null;
-            refreshLiveMatches();
+            
+            console.log('[LIVE.JS] Sport gomb kattintás');
+            
+            // Aktív státusz frissítése
+            sportButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Sport ID lekérése
+            const sportCount = this.querySelector('.sport-count');
+            if (!sportCount) {
+                console.error('[LIVE.JS] Nincs .sport-count elem!');
+                return;
+            }
+            
+            currentSportId = parseInt(sportCount.getAttribute('data-sport-id'));
+            console.log('[LIVE.JS] Kiválasztott sport ID:', currentSportId);
+            
+            // Táblázat frissítése
+            refreshMatches();
         });
     });
 
-    // ===== BADGE =====
-    function updateSportCounts(sportCounts) {
-        document.querySelectorAll('.sport-count').forEach(function(badge) {
-            var sportId = badge.getAttribute('data-sport-id');
-            var count = (sportCounts && sportCounts[sportId]) ? sportCounts[sportId] : 0;
-            badge.textContent = count;
-            if (count > 0) {
-                badge.classList.add('has-live');
-            } else {
-                badge.classList.remove('has-live');
+    // Meccsek frissítése AJAX-szal
+    function refreshMatches() {
+        console.log('[LIVE.JS] Meccsek frissítése, sport ID:', currentSportId);
+        
+        const url = '../../backend/ApiRequest/live_table.php?sport_id=' + currentSportId;
+        console.log('[LIVE.JS] Fetch URL:', url);
+        
+        fetch(url, {
+            method: 'GET'
+        })
+        .then(response => response.text())
+        .then(html => {
+            console.log('[LIVE.JS] HTML kapott, hossz:', html.length);
+            matchesContainer.innerHTML = html;
+            attachMatchClickHandlers();
+            attachOddsButtonHandlers();
+            updateSportCounts();
+            if (typeof window.refreshAllOddsButtons === 'function') {
+                console.log('[LIVE.JS] refreshAllOddsButtons meghívása');
+                window.refreshAllOddsButtons();
             }
-        });
+        })
+        .catch(error => console.error('[LIVE.JS] Hiba a meccsek frissítésekor:', error));
     }
 
-    // ===== MECCSEK FRISSÍTÉS =====
-    function refreshLiveMatches() {
-        if (currentMatchId) {
-            refreshMatchDetails(currentMatchId);
-            return;
-        }
-        fetch("../../backend/ApiRequest/get_matches_live.php")
-            .then(function(res) { return res.json(); })
-            .then(function(apiResult) {
-                if (apiResult && apiResult.sports) {
-                    updateSportCounts(apiResult.sports);
-                }
-                return fetch("../../backend/ApiRequest/live_table.php?sport_id=" + currentSportId);
-            })
-            .then(function(res) { return res.text(); })
-            .then(function(html) {
-                container.innerHTML = html;
-                attachMatchClickHandlers();
-                var savedLang = localStorage.getItem('lang') || 'hu';
-                if (savedLang !== 'hu' && typeof changeLanguageForContainer === 'function') {
-                    changeLanguageForContainer(container, savedLang);
-                }
-                if (typeof window.refreshAllOddsButtons === 'function') {
-                    window.refreshAllOddsButtons();
-                }
-            })
-            .catch(function(err) {
-                console.error("Hiba a meccsek frissítésekor:", err);
-            });
-    }
-
+    // Meccs sor kattintás kezelése
     function attachMatchClickHandlers() {
-        document.querySelectorAll('.match-row.clickable').forEach(function(row) {
-            row.addEventListener('click', function() {
-                var matchId = row.getAttribute('data-match-id');
-                if (matchId) loadMatchDetails(matchId);
-            });
-        });
-    }
-
-    function loadMatchDetails(eventId) {
-        currentMatchId = eventId;
-        container.innerHTML = '<div class="loading-details"><i class="fas fa-spinner fa-spin"></i> Meccs adatok betöltése...</div>';
-        fetch("../../backend/ApiRequest/get_match_details.php?eventId=" + eventId)
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                if (data.error) {
-                    container.innerHTML = '<div class="error-msg"><i class="fas fa-exclamation-triangle"></i> ' + data.error + '</div>';
+        const matchRows = document.querySelectorAll('.match-row.clickable');
+        console.log('[LIVE.JS] attachMatchClickHandlers - talált match-row:', matchRows.length);
+        
+        matchRows.forEach(row => {
+            row.addEventListener('click', function(e) {
+                // Ha az odds gombra kattintottak, ne nyiljon meg a modal
+                if (e.target.closest('.btn-add-bet')) {
+                    console.log('[LIVE.JS] btn-add-bet gombra kattintás');
                     return;
                 }
-                renderMatchDetails(data);
-            })
-            .catch(function(err) {
-                console.error("Hiba:", err);
-                container.innerHTML = '<div class="error-msg"><i class="fas fa-exclamation-triangle"></i> Hiba történt.</div>';
+                
+                const matchId = parseInt(this.getAttribute('data-match-id'));
+                console.log('[LIVE.JS] Meccs soron kattintás, matchId:', matchId);
+                loadMatchDetails(matchId);
             });
+        });
     }
 
-    function refreshMatchDetails(eventId) {
-        fetch("../../backend/ApiRequest/get_matches_live.php")
-            .then(function(res) { return res.json(); })
-            .then(function(apiResult) {
-                if (apiResult && apiResult.sports) updateSportCounts(apiResult.sports);
-                return fetch("../../backend/ApiRequest/get_match_details.php?eventId=" + eventId);
-            })
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                if (data.error) return;
-                var scoreEl = container.querySelector('.score-big');
-                if (scoreEl) scoreEl.textContent = data.match.score || '0 - 0';
-                var liveTimeEl = container.querySelector('.live-time-big');
-                if (liveTimeEl) liveTimeEl.textContent = data.match.liveTime || '-';
-
-                var marketsContainer = container.querySelector('.markets-container');
-                if (marketsContainer) {
-                    var match = data.match;
-                    var nameParts = match.name.split(' - ');
-                    var homeTeam = match.homeTeam || nameParts[0] || '';
-                    var awayTeam = match.awayTeam || (nameParts[1] || '');
-                    marketsContainer.innerHTML = buildMarketsHtml(data.markets || [], homeTeam, awayTeam);
-                    if (typeof window.refreshAllOddsButtons === 'function') {
-                        window.refreshAllOddsButtons();
-                    }
-                }
-            })
-            .catch(function(err) {
-                console.error("Hiba a meccs részletek frissítésekor:", err);
+    // Odds gombok kattintás kezelése
+    function attachOddsButtonHandlers(container) {
+        const targetContainer = container || document;
+        
+        console.log('[LIVE.JS] attachOddsButtonHandlers - container:', !!container);
+        
+        // Btn-add-bet gombok (a táblázatban az "Akció" oszlopban)
+        const addBetBtns = targetContainer.querySelectorAll('.btn-add-bet');
+        console.log('[LIVE.JS] btn-add-bet gombok talált:', addBetBtns.length);
+        
+        addBetBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const matchId = parseInt(this.getAttribute('data-match-id'));
+                const matchName = this.getAttribute('data-match-name');
+                
+                console.log('[LIVE.JS] btn-add-bet kattintás, matchId:', matchId);
+                
+                // Meccs részleteit lekérjük
+                fetch('../../backend/ApiRequest/get_match_details.php?eventId=' + matchId)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('[LIVE.JS] Match details kapott');
+                        openMatchModal(data);
+                    })
+                    .catch(error => console.error('[LIVE.JS] Hiba a meccs adatok lekérésekor:', error));
             });
-    }
-
-    function renderMatchDetails(data) {
-        var match = data.match;
-        var markets = data.markets || [];
-        var nameParts = match.name.split(' - ');
-        var homeTeam = match.homeTeam || nameParts[0] || '';
-        var awayTeam = match.awayTeam || (nameParts[1] || '');
-        var score = match.score || '0 - 0';
-        var liveTime = match.liveTime || '-';
-        var startTime = match.startUtc ? new Date(match.startUtc).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }) : '-';
-
-        var marketsHtml = buildMarketsHtml(markets, homeTeam, awayTeam);
-
-        container.innerHTML = '<div class="match-details">' +
-            '<button class="back-btn" id="back-to-matches"><i class="fas fa-arrow-left"></i> Vissza az élő meccsekhez</button>' +
-            '<div class="match-header-card">' +
-                '<div class="match-meta">' +
-                    '<span class="meta-item"><i class="fas fa-globe-europe"></i> ' + escapeHtml(match.country) + '</span>' +
-                    '<span class="meta-item"><i class="fas fa-trophy"></i> ' + escapeHtml(match.championship) + '</span>' +
-                    '<span class="meta-item"><i class="fas fa-clock"></i> ' + startTime + '</span>' +
-                '</div>' +
-                '<div class="match-scoreboard">' +
-                    '<div class="team-side home-side"><span class="team-name-big">' + escapeHtml(homeTeam) + '</span></div>' +
-                    '<div class="score-center">' +
-                        '<div class="score-big">' + escapeHtml(score) + '</div>' +
-                        '<div class="live-badge"><span class="live-dot-big"></span><span class="live-time-big">' + escapeHtml(liveTime) + '</span></div>' +
-                    '</div>' +
-                    '<div class="team-side away-side"><span class="team-name-big">' + escapeHtml(awayTeam) + '</span></div>' +
-                '</div>' +
-            '</div>' +
-            '<h3 class="markets-title"><i class="fas fa-chart-bar"></i> Fogadási piacok</h3>' +
-            '<div class="markets-container">' + marketsHtml + '</div>' +
-        '</div>';
-
-        document.getElementById('back-to-matches').addEventListener('click', function() {
-            currentMatchId = null;
-            refreshLiveMatches();
         });
 
-        if (typeof window.refreshAllOddsButtons === 'function') {
-            window.refreshAllOddsButtons();
-        }
+        // Selection button (odds) kattintás - MODAL-ban és MÁSHOL
+        const selectionBtns = targetContainer.querySelectorAll('.selection-btn');
+        console.log('[LIVE.JS] selection-btn gombok talált:', selectionBtns.length);
+        
+        selectionBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                if (this.classList.contains('disabled')) {
+                    console.log('[LIVE.JS] Disabled selection-btn, ignored');
+                    return;
+                }
+                
+                e.preventDefault();
+                e.stopPropagation();
+
+                const homeTeam = this.getAttribute('data-home');
+                const awayTeam = this.getAttribute('data-away');
+                const pick = this.getAttribute('data-pick');
+                const odds = parseFloat(this.getAttribute('data-odd'));
+                const market = this.getAttribute('data-market');
+                const matchId = parseInt(this.getAttribute('data-match-id')) || 0;
+
+                console.log('[LIVE.JS] selection-btn kattintás:', {
+                    homeTeam, awayTeam, pick, odds, market, matchId
+                });
+
+                if (!homeTeam || !awayTeam || !pick || !market) {
+                    console.error('[LIVE.JS] Hiányzó adatok a selection-btn-ben');
+                    return;
+                }
+
+                if (typeof window.toggleOdds === 'function') {
+                    window.toggleOdds(homeTeam, awayTeam, pick, odds, market, matchId);
+                    
+                    // Frissítjük az összes gombot
+                    setTimeout(function() {
+                        if (typeof window.refreshAllOddsButtons === 'function') {
+                            window.refreshAllOddsButtons();
+                        }
+                    }, 50);
+                } else {
+                    console.error('[LIVE.JS] toggleOdds függvény nem érhető el');
+                }
+            });
+        });
     }
 
-    function escapeHtml(str) {
-        if (!str) return '';
-        var div = document.createElement('div');
-        div.textContent = str;
+    // Meccs modal megnyitása
+    function openMatchModal(matchData) {
+        console.log('[LIVE.JS] openMatchModal - kapott adat:', matchData);
+
+        // Ellenőrzés: van-e error vagy nincs match adat?
+        if (!matchData || matchData.error) {
+            console.error('[LIVE.JS] Hiba a match data-ban:', matchData);
+            alert('Hiba: ' + (matchData ? matchData.error : 'Ismeretlen hiba'));
+            return;
+        }
+
+        const match = matchData.match;
+        if (!match) {
+            console.error('[LIVE.JS] Nincs match objektum a válaszban');
+            alert('Hiba: Nincsenek meccs adatok');
+            return;
+        }
+
+        const markets = matchData.markets || [];
+
+        console.log('[LIVE.JS] Modal adatok - match:', match.name, 'markets:', markets.length);
+
+        let modalHTML = `
+            <div class="modal fade" id="matchModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content bg-dark text-light">
+                        <div class="modal-header border-bottom border-secondary">
+                            <div>
+                                <h5 class="modal-title">${escapeHtml(match.name || 'Meccs')}</h5>
+                                <small class="text-muted">${escapeHtml((match.country || '') + ' - ' + (match.championship || ''))}</small>
+                            </div>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="match-info mb-4">
+                                <div class="text-center">
+                                    <div class="fs-5 mb-2">${escapeHtml((match.homeTeam || '') + ' ')} <strong>${escapeHtml(match.score || '0 - 0')}</strong> ${escapeHtml((match.awayTeam || ''))}</div>
+                                    ${match.isLive ? `<div class="live-indicator"><span class="badge bg-danger">ÉLŐBEN</span> ${escapeHtml(match.liveTime || '')}</div>` : '<div class="text-muted small">Nem élő</div>'}
+                                </div>
+                            </div>
+        `;
+
+        if (markets.length > 0) {
+            modalHTML += '<div class="markets">';
+            
+            markets.forEach(market => {
+                const specialVal = market.specialValue ? ' (' + market.specialValue + ')' : '';
+                const marketFullName = (market.name || '') + specialVal;
+                modalHTML += `<div class="market-section mb-3">
+                    <h6 class="text-secondary">${escapeHtml(marketFullName)}</h6>
+                    <div class="selections">`;
+                
+                if (market.selections && Array.isArray(market.selections)) {
+                    market.selections.forEach(selection => {
+                        const oddsValue = parseFloat(selection.odds) || 0;
+                        const state = window.BetslipLogic ? window.BetslipLogic.getButtonState(match.homeTeam, match.awayTeam, selection.name, marketFullName) : null;
+                        const stateClass = state ? ' ' + state : '';
+                        const isDisabled = state === 'disabled' ? ' disabled' : '';
+                        
+                        modalHTML += `
+                            <button class="selection-btn${stateClass}"${isDisabled} data-match-id="${match.id}" data-home="${escapeHtml(match.homeTeam || '')}" data-away="${escapeHtml(match.awayTeam || '')}" data-pick="${escapeHtml(selection.name)}" data-market="${escapeHtml(marketFullName)}" data-odd="${oddsValue}">
+                                <div class="selection-name">${escapeHtml(selection.name)}</div>
+                                <div class="selection-odds">${oddsValue.toFixed(2)}</div>
+                            </button>`;
+                    });
+                }
+                
+                modalHTML += '</div></div>';
+            });
+            
+            modalHTML += '</div>';
+        } else {
+            modalHTML += '<div class="alert alert-info">Nincsenek elérhető piacok ehhez a mérkőzéshez.</div>';
+        }
+
+        modalHTML += `
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        let existingModal = document.getElementById('matchModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+        const modal = new bootstrap.Modal(document.getElementById('matchModal'));
+        modal.show();
+
+        // Modal megnyitása után AZONNAL csatoljuk az odds gombokat
+        const modalElement = document.getElementById('matchModal');
+        attachOddsButtonHandlers(modalElement);
+
+        // Modal bezáráskor is csatoljuk újra (a fő táblázat gombait)
+        modalElement.addEventListener('hidden.bs.modal', function() {
+            console.log('[LIVE.JS] Modal bezárva, odds gombok újra csatolása');
+            attachOddsButtonHandlers();
+        });
+    }
+
+    // Meccs részletek megjelenítése (teljes oldal, nem modal)
+    function loadMatchDetails(eventId) {
+        console.log('[LIVE.JS] loadMatchDetails, eventId:', eventId);
+        
+        const container = matchesContainer;
+        container.innerHTML = '<div class="loading-details"><i class="fas fa-spinner fa-spin"></i> Meccs adatok betöltése...</div>';
+        
+        fetch('../../backend/ApiRequest/get_match_details.php?eventId=' + eventId)
+            .then(response => {
+                console.log('[LIVE.JS] Response status:', response.status);
+                return response.text();
+            })
+            .then(text => {
+                console.log('[LIVE.JS] Raw response:', text);
+                const data = JSON.parse(text);
+                console.log('[LIVE.JS] Match details JSON kapott:', data);
+                renderMatchDetails(data);
+            })
+            .catch(error => console.error('[LIVE.JS] Hiba a meccs adatok lekérésekor:', error));
+    }
+
+    // Meccs részletek renderelése (teljes oldal nézet)
+    function renderMatchDetails(matchData) {
+        console.log('[LIVE.JS] renderMatchDetails - kapott adat:', matchData);
+
+        // Ellenőrzés: van-e error vagy nincs match adat?
+        if (!matchData || matchData.error) {
+            console.error('[LIVE.JS] Hiba a match data-ban:', matchData);
+            matchesContainer.innerHTML = '<div class="error-msg"><i class="fas fa-exclamation-triangle"></i> Hiba: ' + (matchData ? matchData.error : 'Ismeretlen hiba') + '</div>';
+            return;
+        }
+
+        const match = matchData.match;
+        if (!match) {
+            console.error('[LIVE.JS] Nincs match objektum a válaszban');
+            matchesContainer.innerHTML = '<div class="error-msg"><i class="fas fa-exclamation-triangle"></i> Hiba: Nincsenek meccs adatok</div>';
+            return;
+        }
+
+        const markets = matchData.markets || [];
+        console.log('[LIVE.JS] Render adatok - match:', match.name, 'markets:', markets.length);
+
+        let html = `
+            <button class="back-btn" id="back-to-matches">
+                <i class="fas fa-arrow-left"></i> Vissza az élő meccsekhez
+            </button>
+
+            <div class="match-header-card">
+                <div class="match-meta">
+                    <span class="meta-item"><i class="fas fa-globe-europe"></i> ${escapeHtml(match.country || 'Ismeretlen')}</span>
+                    <span class="meta-item"><i class="fas fa-trophy"></i> ${escapeHtml(match.championship || 'Ismeretlen')}</span>
+                    <span class="meta-item"><i class="fas fa-clock"></i> ${escapeHtml(new Date(match.startUtc).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }) || '-')}</span>
+                </div>
+                <div class="match-scoreboard">
+                    <div class="team-side home-side">
+                        <span class="team-name-big">${escapeHtml(match.homeTeam || '')}</span>
+                    </div>
+                    <div class="score-center">
+                        <div class="score-big">${escapeHtml(match.score || '0 - 0')}</div>
+                        ${match.isLive ? `<div class="live-badge"><span class="live-dot-big"></span><span class="live-time-big">${escapeHtml(match.liveTime || '-')}</span></div>` : '<div class="not-started-badge"><i class="fas fa-clock"></i> Nem élő</div>'}
+                    </div>
+                    <div class="team-side away-side">
+                        <span class="team-name-big">${escapeHtml(match.awayTeam || '')}</span>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="markets-title"><i class="fas fa-chart-bar"></i> Fogadási piacok</h3>
+        `;
+
+        if (markets.length > 0) {
+            html += '<div class="markets-container">';
+            
+            markets.forEach(market => {
+                const specialVal = market.specialValue ? ' (' + market.specialValue + ')' : '';
+                const marketFullName = (market.name || '') + specialVal;
+                html += `<div class="market-card">
+                    <div class="market-header"><span class="market-name">${escapeHtml(marketFullName)}</span></div>
+                    <div class="market-selections">`;
+                
+                if (market.selections && Array.isArray(market.selections)) {
+                    market.selections.forEach(selection => {
+                        const oddsValue = parseFloat(selection.odds) || 0;
+                        const state = window.BetslipLogic ? window.BetslipLogic.getButtonState(match.homeTeam, match.awayTeam, selection.name, marketFullName) : null;
+                        const stateClass = state ? ' ' + state : '';
+                        const isDisabled = state === 'disabled' ? ' disabled' : '';
+                        
+                        html += `
+                            <button class="selection-btn${stateClass}"${isDisabled} data-match-id="${match.id}" data-home="${escapeHtml(match.homeTeam || '')}" data-away="${escapeHtml(match.awayTeam || '')}" data-pick="${escapeHtml(selection.name)}" data-market="${escapeHtml(marketFullName)}" data-odd="${oddsValue}">
+                                <div class="selection-name">${escapeHtml(selection.name)}</div>
+                                <div class="selection-odds">${oddsValue.toFixed(2)}</div>
+                            </button>`;
+                    });
+                }
+                
+                html += '</div></div>';
+            });
+            
+            html += '</div>';
+        } else {
+            html += '<div class="alert alert-info">Nincsenek elérhető piacok ehhez a mérkőzéshez.</div>';
+        }
+
+        matchesContainer.innerHTML = html;
+
+        // Vissza gomb kattintás
+        document.getElementById('back-to-matches').addEventListener('click', function() {
+            console.log('[LIVE.JS] Vissza a meccsekhez');
+            refreshMatches();
+        });
+
+        // Odds gombok kezelése
+        attachOddsButtonHandlers();
+    }
+
+    // Sport meccsek számlálásának frissítése
+    function updateSportCounts() {
+        const sportCounts = document.querySelectorAll('.sport-count');
+        
+        sportCounts.forEach(countSpan => {
+            const sportId = parseInt(countSpan.getAttribute('data-sport-id'));
+            
+            fetch('../../backend/ApiRequest/live_table.php?sport_id=' + sportId)
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const rowCount = doc.querySelectorAll('.match-row').length;
+                    countSpan.textContent = rowCount;
+                })
+                .catch(() => {
+                    countSpan.textContent = '-';
+                });
+        });
+    }
+
+    // HTML escape függvény
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
         return div.innerHTML;
     }
 
-    function startAutoRefresh() {
-        stopAutoRefresh();
-        refreshTimer = setInterval(refreshLiveMatches, 5000);
-    }
-
-    function stopAutoRefresh() {
-        if (refreshTimer) {
-            clearInterval(refreshTimer);
-            refreshTimer = null;
-        }
-    }
-
-    document.addEventListener("visibilitychange", function() {
-        if (document.hidden) {
-            stopAutoRefresh();
-        } else {
-            refreshLiveMatches();
-            startAutoRefresh();
-        }
-    });
-
-    attachMatchClickHandlers();
-    startAutoRefresh();
+    // Inicializálás
+    console.log('[LIVE.JS] Az oldal inicializálása...');
+    refreshMatches();
+    
+    // Auto-frissítés 30 másodpercenként
+    autoRefreshInterval = setInterval(() => {
+        refreshMatches();
+    }, 30000);
+    
+    console.log('[LIVE.JS] Inicializálás kész!');
 });

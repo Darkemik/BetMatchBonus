@@ -40,17 +40,25 @@ document.addEventListener('DOMContentLoaded', () => {
   // login/register után ezt hívjuk
   document.addEventListener('auth:changed', () => {
     refreshAuthUI();
+    // Frissítsd az oldalt, hogy a bónusz kártyák is frissüljenek
+    setTimeout(() => {
+      location.reload();
+    }, 500);
   });
 
   const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
       try {
-        await fetch('/BetMatchBonus/backend/Auth/logout.php', { method: 'POST' });
+        const res = await fetch('/BetMatchBonus/backend/Auth/logout.php', { method: 'POST' });
+        if (res.ok) {
+          // Kijelentkezés után menjünk a főoldalra
+          window.location.href = '/BetMatchBonus/frontend/MainMenu/MainMenu.php';
+        }
       } catch (e) {
-        console.error(e);
+        console.error('Logout error:', e);
+        window.location.href = '/BetMatchBonus/frontend/MainMenu/MainMenu.php';
       }
-      document.dispatchEvent(new CustomEvent('auth:changed'));
     });
   }
 });
