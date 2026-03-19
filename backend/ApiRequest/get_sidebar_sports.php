@@ -44,6 +44,9 @@ JOIN Sports s ON e.sport_id = s.id
 JOIN Competitions comp ON e.competition_id = comp.id
 LEFT JOIN Countries c ON comp.country_id = c.id
 WHERE DATE(e.start_time) = ?
+  AND e.name IS NOT NULL
+  AND TRIM(e.name) != ''
+  AND e.start_time IS NOT NULL
 ORDER BY s.api_id, c.name, comp.name, e.start_time
 ";
 
@@ -63,6 +66,18 @@ while ($row = $res->fetch_assoc()) {
     $sportApiId = (int)$row['sport_api_id'];
     $countryName = $row['country_name'] ?? 'International';
     $compName = $row['competition_name'];
+    $matchName = trim($row['match_name']);
+
+    // Kihagyjuk az üres vagy érvénytelen nevű meccseket
+    if ($matchName === '' || $matchName === '-') {
+        continue;
+    }
+
+    // Kihagyjuk ahol nincs " - " (azaz nem érvényes hazai - vendég formátum)
+    $parts = explode(' - ', $matchName, 2);
+    if (count($parts) < 2 || trim($parts[0]) === '' || trim($parts[1]) === '') {
+        continue;
+    }
 
     if (!isset($sportIndex[$sportApiId])) {
         $sportIndex[$sportApiId] = count($sports);

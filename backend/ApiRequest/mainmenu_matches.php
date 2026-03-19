@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . "/connect.php";
 
+header('Content-Type: text/html; charset=utf-8');
+
 $sportId = isset($_GET['sport_id']) ? (int)$_GET['sport_id'] : 0;
 $today = date('Y-m-d');
 
@@ -16,7 +18,6 @@ $sportIcons = [
 ];
 
 if ($sportId > 0) {
-    $sportIcon = $sportIcons[$sportId] ?? 'fa-futbol';
     $sql = "
     SELECT 
         m.api_id,
@@ -34,6 +35,9 @@ if ($sportId > 0) {
     LEFT JOIN Countries c ON ch.country_id = c.id
     WHERE s.api_id = ?
       AND DATE(m.start_time) = ?
+      AND m.name IS NOT NULL
+      AND TRIM(m.name) != ''
+      AND m.start_time IS NOT NULL
     ORDER BY m.is_live DESC, m.start_time ASC
     ";
     $stmt = $conn->prepare($sql);
@@ -43,7 +47,6 @@ if ($sportId > 0) {
     }
     $stmt->bind_param("is", $sportId, $today);
 } else {
-    $sportIcon = 'fa-futbol';
     $sql = "
     SELECT 
         m.api_id,
@@ -60,6 +63,9 @@ if ($sportId > 0) {
     JOIN Competitions ch ON m.competition_id = ch.id
     LEFT JOIN Countries c ON ch.country_id = c.id
     WHERE DATE(m.start_time) = ?
+      AND m.name IS NOT NULL
+      AND TRIM(m.name) != ''
+      AND m.start_time IS NOT NULL
     ORDER BY m.is_live DESC, m.start_time ASC
     ";
     $stmt = $conn->prepare($sql);
@@ -96,9 +102,20 @@ if (!$res || $res->num_rows === 0) {
             $isLive = (int)$row['is_live'];
             $timeDisplay = ($liveTimeRaw !== null && $liveTimeRaw !== '') ? htmlspecialchars($liveTimeRaw) : '-';
 
-            $matchParts = explode(' - ', $row['match_name'], 2);
-            $home = htmlspecialchars($matchParts[0]);
-            $away = isset($matchParts[1]) ? htmlspecialchars($matchParts[1]) : '';
+            // Meccs név validáció — kihagyjuk ha üres vagy nem tartalmaz " - " elválasztót
+            $matchName = trim($row['match_name']);
+            if ($matchName === '' || $matchName === '-') {
+                continue;
+            }
+
+            $matchParts = explode(' - ', $matchName, 2);
+            $home = htmlspecialchars(trim($matchParts[0]));
+            $away = isset($matchParts[1]) ? htmlspecialchars(trim($matchParts[1])) : '';
+
+            // Ha az egyik csapatnév üres, kihagyjuk
+            if ($home === '' || $away === '') {
+                continue;
+            }
 
             $startFormatted = date('H:i', strtotime($row['start_utc']));
             $scoreDisplay = !empty($row['score']) ? htmlspecialchars($row['score']) : '0 - 0';
@@ -114,13 +131,9 @@ if (!$res || $res->num_rows === 0) {
                     <span class="league-name"><?php echo htmlspecialchars($row['championship_name']); ?></span>
                 </td>
                 <td class="match-cell">
-                    <?php if ($away !== ''): ?>
-                        <span class="team home-team"><?php echo $home; ?></span>
-                        <span class="vs">vs</span>
-                        <span class="team away-team"><?php echo $away; ?></span>
-                    <?php else: ?>
-                        <span class="team"><?php echo $home; ?></span>
-                    <?php endif; ?>
+                    <span class="team home-team"><?php echo $home; ?></span>
+                    <span class="vs">vs</span>
+                    <span class="team away-team"><?php echo $away; ?></span>
                 </td>
                 <td>
                     <span class="match-score"><?php echo $scoreDisplay; ?></span>
