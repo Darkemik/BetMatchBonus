@@ -25,7 +25,8 @@ if ($sportId > 0) {
         m.start_time AS start_utc,
         m.is_live,
         m.live_time,
-        CONCAT(IFNULL(m.home_score, 0), ' - ', IFNULL(m.away_score, 0)) AS score,
+        m.home_score,
+        m.away_score,
         c.name AS country_name,
         ch.name AS championship_name,
         s.api_id AS sport_api_id
@@ -54,7 +55,8 @@ if ($sportId > 0) {
         m.start_time AS start_utc,
         m.is_live,
         m.live_time,
-        CONCAT(IFNULL(m.home_score, 0), ' - ', IFNULL(m.away_score, 0)) AS score,
+        m.home_score,
+        m.away_score,
         c.name AS country_name,
         ch.name AS championship_name,
         s.api_id AS sport_api_id
@@ -118,7 +120,14 @@ if (!$res || $res->num_rows === 0) {
             }
 
             $startFormatted = date('H:i', strtotime($row['start_utc']));
-            $scoreDisplay = !empty($row['score']) ? htmlspecialchars($row['score']) : '0 - 0';
+            // Állás: ha van eredmény, mutatjuk; ha még nem kezdődött, kötőjel
+            $homeScore = $row['home_score'];
+            $awayScore = $row['away_score'];
+            if ($homeScore !== null && $awayScore !== null) {
+                $scoreDisplay = (int)$homeScore . ' - ' . (int)$awayScore;
+            } else {
+                $scoreDisplay = '-';
+            }
             $apiId = (int)$row['api_id'];
             $rowSportApiId = (int)$row['sport_api_id'];
             $rowIcon = $sportIcons[$rowSportApiId] ?? 'fa-futbol';
@@ -136,7 +145,7 @@ if (!$res || $res->num_rows === 0) {
                     <span class="team away-team"><?php echo $away; ?></span>
                 </td>
                 <td>
-                    <span class="match-score"><?php echo $scoreDisplay; ?></span>
+                    <span class="match-score"><?php echo htmlspecialchars($scoreDisplay); ?></span>
                 </td>
                 <td>
                     <span class="start-time"><?php echo $startFormatted; ?></span>

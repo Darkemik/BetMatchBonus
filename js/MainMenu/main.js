@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function () {
       sportsList.style.display = 'none';
       sportDetailPanel.style.display = 'block';
 
-      let html = `<div class="sidebar-sport-detail-title" style="font-weight:700;color:#fff;margin-bottom:10px;">
+      let html = `<div class="sidebar-sport-detail-title">
           <i class="fas ${escapeHtml(sport.icon)}"></i> ${escapeHtml(sport.sport_name)}
       </div>`;
 
