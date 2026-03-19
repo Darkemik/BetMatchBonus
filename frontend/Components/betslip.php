@@ -14,12 +14,14 @@
 
     <!-- TICKET TARTALOM -->
     <div class="betslip-content active" id="betslip-ticket">
-        <div class="betslip-bets" id="betslip-bets">
-            <div class="betslip-empty" id="betslip-empty">
-                <i class="fas fa-inbox"></i>
-                <p id="empty-message">Nincs aktív fogadás</p>
-                <span style="font-size: 12px; color: #999;">Válassz meccseket és odds-okat!</span>
-            </div>
+        <div class="betslip-empty" id="betslip-empty">
+            <i class="fas fa-inbox"></i>
+            <p id="empty-message">Nincs aktív fogadás</p>
+            <span style="font-size: 12px; color: #999;">Válassz meccseket és odds-okat!</span>
+        </div>
+
+        <div class="betslip-bets" id="betslip-bets" style="display: none;">
+            <!-- JS-ből jönnek a betslip-item elemek -->
         </div>
 
         <div class="betslip-summary" id="betslip-summary" style="display: none;">
@@ -49,7 +51,6 @@
         <button 
             class="bet-button" 
             id="place-bet-btn" 
-            disabled
             style="display: none;"
             aria-label="Fogadás elhelyezése"
         >

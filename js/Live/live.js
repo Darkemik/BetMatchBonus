@@ -9,6 +9,84 @@ document.addEventListener('DOMContentLoaded', function() {
         hasMatchesContainer: !!matchesContainer
     });
 
+    // ===== GLOBÁLIS EVENT DELEGATION az odds gombokhoz =====
+    // Ez működik az AJAX után új gombok esetén is
+    document.addEventListener('click', function(e) {
+        const selectionBtn = e.target.closest('.selection-btn');
+        if (!selectionBtn) return;
+
+        if (selectionBtn.classList.contains('disabled') || selectionBtn.classList.contains('market-locked')) {
+            console.log('[LIVE.JS] Disabled/locked selection-btn, ignored');
+            return;
+        }
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        const homeTeam = selectionBtn.getAttribute('data-home');
+        const awayTeam = selectionBtn.getAttribute('data-away');
+        const pick = selectionBtn.getAttribute('data-pick');
+        const odds = parseFloat(selectionBtn.getAttribute('data-odd'));
+        const market = selectionBtn.getAttribute('data-market');
+        const matchId = parseInt(selectionBtn.getAttribute('data-match-id')) || 0;
+
+        console.log('[LIVE.JS] selection-btn delegation kattintás:', {
+            homeTeam, awayTeam, pick, odds, market, matchId
+        });
+
+        if (!homeTeam || !awayTeam || !pick || !market) {
+            console.error('[LIVE.JS] Hiányzó adatok a selection-btn-ben');
+            return;
+        }
+
+        if (typeof window.toggleOdds === 'function') {
+            window.toggleOdds(homeTeam, awayTeam, pick, odds, market, matchId);
+            
+            // Azonnal frissítjük az összes gombot
+            setTimeout(() => {
+                if (typeof window.refreshAllOddsButtons === 'function') {
+                    window.refreshAllOddsButtons();
+                    console.log('[LIVE.JS] Odds gombok azonnal frissítve (delegation után)');
+                }
+            }, 0);
+        } else {
+            console.error('[LIVE.JS] toggleOdds függvény nem érhető el');
+        }
+    });
+
+    // ===== GLOBÁLIS EVENT DELEGATION a btn-add-bet gombokhoz =====
+    // Ez működik az AJAX után új gombok esetén is
+    document.addEventListener('click', function(e) {
+        const addBetBtn = e.target.closest('.btn-add-bet');
+        if (!addBetBtn) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        const matchId = parseInt(addBetBtn.getAttribute('data-match-id'));
+        console.log('[LIVE.JS] btn-add-bet kattintás (delegation), matchId:', matchId);
+
+        if (isNaN(matchId)) {
+            console.error('[LIVE.JS] Érvénytelen matchId a btn-add-bet-ben');
+            return;
+        }
+
+        fetch('../../backend/ApiRequest/get_match_details.php?eventId=' + matchId)
+            .then(response => response.json())
+            .then(data => {
+                console.log('[LIVE.JS] Match details kapott');
+                if (data.error) {
+                    BmbPopup.error(data.error, 'Hiba');
+                } else {
+                    openMatchModal(data);
+                }
+            })
+            .catch(error => {
+                console.error('[LIVE.JS] Hiba a meccs adatok lekérésekor:', error);
+                BmbPopup.error('Hiba a meccs adatok lekérésekor', 'Szerverhiba');
+            });
+    });
+
     // Sport gomb kattintások
     sportButtons.forEach(button => {
         button.addEventListener('click', function(e) {
@@ -49,12 +127,17 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(html => {
             console.log('[LIVE.JS] HTML kapott, hossz:', html.length);
             matchesContainer.innerHTML = html;
+            
+            // Meccs sor kattintás kezelése (delegáció helyett)
             attachMatchClickHandlers();
-            attachOddsButtonHandlers();
+            
             updateSportCounts();
+            
+            // selection-btn és btn-add-bet gombok már globális delegationnel működnek!
+            // Csak az odds gombokat frissítjük
             if (typeof window.refreshAllOddsButtons === 'function') {
-                console.log('[LIVE.JS] refreshAllOddsButtons meghívása');
-                window.refreshAllOddsButtons();
+                console.log('[LIVE.JS] refreshAllOddsButtons meghívása KÉSLELTETÉSSEL');
+                window.refreshAllOddsButtons(50);
             }
         })
         .catch(error => console.error('[LIVE.JS] Hiba a meccsek frissítésekor:', error));
@@ -68,91 +151,14 @@ document.addEventListener('DOMContentLoaded', function() {
         matchRows.forEach(row => {
             row.addEventListener('click', function(e) {
                 // Ha az odds gombra kattintottak, ne nyiljon meg a modal
-                if (e.target.closest('.btn-add-bet')) {
-                    console.log('[LIVE.JS] btn-add-bet gombra kattintás');
+                if (e.target.closest('.btn-add-bet') || e.target.closest('.selection-btn')) {
+                    console.log('[LIVE.JS] Add-bet vagy selection-btn gombra kattintás');
                     return;
                 }
                 
                 const matchId = parseInt(this.getAttribute('data-match-id'));
                 console.log('[LIVE.JS] Meccs soron kattintás, matchId:', matchId);
                 loadMatchDetails(matchId);
-            });
-        });
-    }
-
-    // Odds gombok kattintás kezelése
-    function attachOddsButtonHandlers(container) {
-        const targetContainer = container || document;
-        
-        console.log('[LIVE.JS] attachOddsButtonHandlers - container:', !!container);
-        
-        // Btn-add-bet gombok (a táblázatban az "Akció" oszlopban)
-        const addBetBtns = targetContainer.querySelectorAll('.btn-add-bet');
-        console.log('[LIVE.JS] btn-add-bet gombok talált:', addBetBtns.length);
-        
-        addBetBtns.forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const matchId = parseInt(this.getAttribute('data-match-id'));
-                const matchName = this.getAttribute('data-match-name');
-                
-                console.log('[LIVE.JS] btn-add-bet kattintás, matchId:', matchId);
-                
-                // Meccs részleteit lekérjük
-                fetch('../../backend/ApiRequest/get_match_details.php?eventId=' + matchId)
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log('[LIVE.JS] Match details kapott');
-                        openMatchModal(data);
-                    })
-                    .catch(error => console.error('[LIVE.JS] Hiba a meccs adatok lekérésekor:', error));
-            });
-        });
-
-        // Selection button (odds) kattintás - MODAL-ban és MÁSHOL
-        const selectionBtns = targetContainer.querySelectorAll('.selection-btn');
-        console.log('[LIVE.JS] selection-btn gombok talált:', selectionBtns.length);
-        
-        selectionBtns.forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                if (this.classList.contains('disabled')) {
-                    console.log('[LIVE.JS] Disabled selection-btn, ignored');
-                    return;
-                }
-                
-                e.preventDefault();
-                e.stopPropagation();
-
-                const homeTeam = this.getAttribute('data-home');
-                const awayTeam = this.getAttribute('data-away');
-                const pick = this.getAttribute('data-pick');
-                const odds = parseFloat(this.getAttribute('data-odd'));
-                const market = this.getAttribute('data-market');
-                const matchId = parseInt(this.getAttribute('data-match-id')) || 0;
-
-                console.log('[LIVE.JS] selection-btn kattintás:', {
-                    homeTeam, awayTeam, pick, odds, market, matchId
-                });
-
-                if (!homeTeam || !awayTeam || !pick || !market) {
-                    console.error('[LIVE.JS] Hiányzó adatok a selection-btn-ben');
-                    return;
-                }
-
-                if (typeof window.toggleOdds === 'function') {
-                    window.toggleOdds(homeTeam, awayTeam, pick, odds, market, matchId);
-                    
-                    // Frissítjük az összes gombot
-                    setTimeout(function() {
-                        if (typeof window.refreshAllOddsButtons === 'function') {
-                            window.refreshAllOddsButtons();
-                        }
-                    }, 50);
-                } else {
-                    console.error('[LIVE.JS] toggleOdds függvény nem érhető el');
-                }
             });
         });
     }
@@ -164,14 +170,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // Ellenőrzés: van-e error vagy nincs match adat?
         if (!matchData || matchData.error) {
             console.error('[LIVE.JS] Hiba a match data-ban:', matchData);
-            alert('Hiba: ' + (matchData ? matchData.error : 'Ismeretlen hiba'));
+            BmbPopup.error((matchData ? matchData.error : 'Ismeretlen hiba'), 'Hiba');
             return;
         }
 
         const match = matchData.match;
         if (!match) {
             console.error('[LIVE.JS] Nincs match objektum a válaszban');
-            alert('Hiba: Nincsenek meccs adatok');
+            BmbPopup.error('Nincsenek meccs adatok', 'Hiba');
             return;
         }
 
@@ -249,15 +255,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const modal = new bootstrap.Modal(document.getElementById('matchModal'));
         modal.show();
 
-        // Modal megnyitása után AZONNAL csatoljuk az odds gombokat
-        const modalElement = document.getElementById('matchModal');
-        attachOddsButtonHandlers(modalElement);
-
-        // Modal bezáráskor is csatoljuk újra (a fő táblázat gombait)
-        modalElement.addEventListener('hidden.bs.modal', function() {
-            console.log('[LIVE.JS] Modal bezárva, odds gombok újra csatolása');
-            attachOddsButtonHandlers();
-        });
+        // Frissítjük az odds gombokat a modal-ben
+        if (typeof window.refreshAllOddsButtons === 'function') {
+            window.refreshAllOddsButtons(50);
+        }
     }
 
     // Meccs részletek megjelenítése (teljes oldal, nem modal)
@@ -365,14 +366,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
         matchesContainer.innerHTML = html;
 
+        // Frissítjük az odds gombokat az új gombok után
+        if (typeof window.refreshAllOddsButtons === 'function') {
+            window.refreshAllOddsButtons(50);
+        }
+
         // Vissza gomb kattintás
         document.getElementById('back-to-matches').addEventListener('click', function() {
             console.log('[LIVE.JS] Vissza a meccsekhez');
             refreshMatches();
         });
-
-        // Odds gombok kezelése
-        attachOddsButtonHandlers();
     }
 
     // Sport meccsek számlálásának frissítése

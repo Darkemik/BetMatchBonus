@@ -6,50 +6,69 @@ document.addEventListener("DOMContentLoaded", () => {
     let activeTab = 'today';
     const ESPORT_SPORT_ID = 145;
 
-    // ===== ODDS GOMBOK KATTINTÁS KEZELŐ =====
-    function attachOddsButtonHandlers(container) {
-        if (!container) return;
+    // ===== GLOBÁLIS EVENT DELEGATION az odds gombokhoz (live.js-hez hasonló) =====
+    document.addEventListener('click', function(e) {
+        const selectionBtn = e.target.closest('.selection-btn');
+        if (!selectionBtn) return;
 
-        // Btn-add-bet gombok (a táblázatban)
-        container.querySelectorAll('.btn-add-bet').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const matchId = parseInt(this.getAttribute('data-match-id'));
-                loadMatchDetails(matchId);
-            });
+        if (selectionBtn.classList.contains('disabled') || selectionBtn.classList.contains('market-locked')) {
+            console.log('[ESPORT] Disabled/locked selection-btn, ignored');
+            return;
+        }
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        const homeTeam = selectionBtn.getAttribute('data-home');
+        const awayTeam = selectionBtn.getAttribute('data-away');
+        const pick = selectionBtn.getAttribute('data-pick');
+        const odds = parseFloat(selectionBtn.getAttribute('data-odd'));
+        const market = selectionBtn.getAttribute('data-market');
+        const matchId = parseInt(selectionBtn.getAttribute('data-match-id')) || 0;
+
+        console.log('[ESPORT] selection-btn delegation kattintás:', {
+            homeTeam, awayTeam, pick, odds, market, matchId
         });
 
-        // Selection gombok (piacok)
-        container.querySelectorAll('.selection-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                if (this.classList.contains('disabled')) return;
-                
-                e.preventDefault();
-                e.stopPropagation();
+        if (!homeTeam || !awayTeam || !pick || !market) {
+            console.error('[ESPORT] Hiányzó adatok a selection-btn-ben');
+            return;
+        }
 
-                const homeTeam = this.getAttribute('data-home');
-                const awayTeam = this.getAttribute('data-away');
-                const pick = this.getAttribute('data-pick');
-                const odds = parseFloat(this.getAttribute('data-odd'));
-                const market = this.getAttribute('data-market');
-                const matchId = parseInt(this.getAttribute('data-match-id')) || 0;
-
-                if (!homeTeam || !awayTeam || !pick || !market) return;
-
-                if (typeof window.toggleOdds === 'function') {
-                    window.toggleOdds(homeTeam, awayTeam, pick, odds, market, matchId);
-                    
-                    setTimeout(function() {
-                        if (typeof window.refreshAllOddsButtons === 'function') {
-                            window.refreshAllOddsButtons();
-                        }
-                    }, 50);
+        if (typeof window.toggleOdds === 'function') {
+            window.toggleOdds(homeTeam, awayTeam, pick, odds, market, matchId);
+            
+            // Azonnal frissítjük az összes gombot
+            setTimeout(() => {
+                if (typeof window.refreshAllOddsButtons === 'function') {
+                    window.refreshAllOddsButtons();
+                    console.log('[ESPORT] Odds gombok azonnal frissítve (delegation után)');
                 }
-            });
-        });
-    }
+            }, 0);
+        } else {
+            console.error('[ESPORT] toggleOdds függvény nem érhető el');
+        }
+    });
+
+    // ===== GLOBÁLIS EVENT DELEGATION a btn-add-bet gombokhoz =====
+    // Ez működik az AJAX után új gombok esetén is
+    document.addEventListener('click', function(e) {
+        const addBetBtn = e.target.closest('.btn-add-bet');
+        if (!addBetBtn) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        const matchId = parseInt(addBetBtn.getAttribute('data-match-id'));
+        console.log('[ESPORT] btn-add-bet kattintás (delegation), matchId:', matchId);
+
+        if (isNaN(matchId)) {
+            console.error('[ESPORT] Érvénytelen matchId a btn-add-bet-ben');
+            return;
+        }
+
+        loadMatchDetails(matchId);
+    });
 
     // ===== MARKET HTML ÉPÍTÉS =====
     function buildMarketsHtml(markets, homeTeam, awayTeam) {
@@ -160,7 +179,6 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(function(html) {
                 liveContainer.innerHTML = html;
                 attachMatchClickHandlers(liveContainer);
-                attachOddsButtonHandlers(liveContainer);
                 applyTranslation(liveContainer);
                 if (typeof window.refreshAllOddsButtons === 'function') {
                     window.refreshAllOddsButtons();
@@ -201,7 +219,6 @@ document.addEventListener("DOMContentLoaded", () => {
         .then(function(html) {
             todayContainer.innerHTML = html;
             attachMatchClickHandlers(todayContainer);
-            attachOddsButtonHandlers(todayContainer);
             applyTranslation(todayContainer);
             if (typeof window.refreshAllOddsButtons === 'function') {
                 window.refreshAllOddsButtons();
@@ -225,7 +242,10 @@ document.addEventListener("DOMContentLoaded", () => {
         container.querySelectorAll('.match-row.clickable').forEach(function(row) {
             row.addEventListener('click', function(e) {
                 // Ne legyen kattintható az odds gomb
-                if (e.target.closest('.btn-add-bet')) return;
+                if (e.target.closest('.btn-add-bet') || e.target.closest('.selection-btn')) {
+                    console.log('[ESPORT] Add-bet vagy selection-btn gombra kattintás');
+                    return;
+                }
                 
                 var matchId = row.getAttribute('data-match-id');
                 if (matchId) loadMatchDetails(matchId);
@@ -277,7 +297,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     var homeTeam = match.homeTeam || nameParts[0] || '';
                     var awayTeam = match.awayTeam || (nameParts[1] || '');
                     marketsContainer.innerHTML = buildMarketsHtml(data.markets || [], homeTeam, awayTeam);
-                    attachOddsButtonHandlers(marketsContainer);
                     if (typeof window.refreshAllOddsButtons === 'function') {
                         window.refreshAllOddsButtons();
                     }
@@ -348,7 +367,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        attachOddsButtonHandlers(container);
         if (typeof window.refreshAllOddsButtons === 'function') {
             window.refreshAllOddsButtons();
         }
