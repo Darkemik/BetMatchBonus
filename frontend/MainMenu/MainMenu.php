@@ -11,8 +11,8 @@ require_once "../../backend/ApiRequest/connect.php";
   <link rel="stylesheet" href="../../css/MainMenu/MainMenu.css">
   <link rel="stylesheet" href="../../css/Main/layout.css">
   <link rel="stylesheet" href="../../css/Betslip/betslip.css">
+  <link rel="stylesheet" href="../../css/Main/popup.css">
   <link rel="stylesheet" href="../../css/RootColor/root.css">
-  <link rel="stylesheet" href="../../css/Modal/modal.css">
   <link rel="icon" href="../../img/logo.png" type="image/x-icon">
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=search" />
@@ -131,6 +131,7 @@ require_once "../../backend/ApiRequest/connect.php";
   <script src="../../js/Register/registermodal.js"></script>
   <script src="../../js/Register/registermodal2.js"></script>
   <script src="../../js/Main/layout.js"></script>
+  <script src="../../js/Main/popup.js"></script>
   <script src="../../js/Betslip/betslip.js"></script>
   <script src="../../js/MainMenu/main.js"></script>
 

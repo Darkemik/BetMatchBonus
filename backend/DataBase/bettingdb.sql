@@ -207,18 +207,26 @@ CREATE TABLE IF NOT EXISTS OddsOutcomes (
 -- 13) USERS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS Users (
-  id            INT           AUTO_INCREMENT PRIMARY KEY,
-  username      VARCHAR(50)   NOT NULL UNIQUE,
-  email         VARCHAR(150)  NOT NULL UNIQUE,
-  password_hash VARCHAR(255)  NOT NULL,
-  full_name     VARCHAR(150)  DEFAULT NULL,
-  birth_date    DATE          NOT NULL,
-  is_verified   TINYINT(1)    NOT NULL DEFAULT 0,
-  is_active     TINYINT(1)    NOT NULL DEFAULT 1,
-  remember_token VARCHAR(64)  DEFAULT NULL,
-  remember_expiry DATETIME    DEFAULT NULL,
-  created_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  id                  INT           AUTO_INCREMENT PRIMARY KEY,
+  username            VARCHAR(50)   NOT NULL UNIQUE,
+  email               VARCHAR(150)  NOT NULL UNIQUE,
+  password_hash       VARCHAR(255)  NOT NULL,
+  full_name           VARCHAR(150)  DEFAULT NULL,
+  pre_name            VARCHAR(100)  DEFAULT NULL,
+  family_name         VARCHAR(100)  DEFAULT NULL,
+  sure_name           VARCHAR(100)  DEFAULT NULL,
+  mother_full_name    VARCHAR(150)  DEFAULT NULL,
+  birthplace          VARCHAR(150)  DEFAULT NULL,
+  birth_date          DATE          NOT NULL,
+  id_image_first      VARCHAR(255)  DEFAULT NULL,
+  id_image_second     VARCHAR(255)  DEFAULT NULL,
+  address_image       VARCHAR(255)  DEFAULT NULL,
+  is_verified         TINYINT(1)    NOT NULL DEFAULT 0,
+  is_active           TINYINT(1)    NOT NULL DEFAULT 1,
+  remember_token      VARCHAR(64)   DEFAULT NULL,
+  remember_expiry     DATETIME      DEFAULT NULL,
+  created_at          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 -- ============================================================

@@ -27,106 +27,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    // ===== POP-UP MODAL - TÉT LEADÁSA =====
-    function showPlaceBetModal(totalOdds) {
-        let modal = document.getElementById('betslip-place-bet-modal');
-        if (!modal) {
-            modal = document.createElement('div');
-            modal.id = 'betslip-place-bet-modal';
-            modal.className = 'modal fade';
-            modal.tabIndex = -1;
-            modal.innerHTML = `
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content bg-dark text-light" style="border: 1px solid rgba(255,255,255,0.1);">
-                        <div class="modal-header border-bottom border-secondary">
-                            <h5 class="modal-title">
-                                <i class="fas fa-ticket-alt"></i> Szelvény leadása
-                            </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label for="modal-stake-input" class="form-label">Tét összege (Ft):</label>
-                                <input type="number" id="modal-stake-input" class="form-control bg-secondary text-light border-secondary" 
-                                       placeholder="Min. 100 Ft" min="100" value="100">
-                                <small class="text-muted">Minimális tét: 100 Ft</small>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-6">
-                                    <div class="card bg-secondary" style="border: none;">
-                                        <div class="card-body p-2">
-                                            <div class="text-muted small">Szorzó</div>
-                                            <div class="fs-5 fw-bold" id="modal-total-odds">-</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="card bg-secondary" style="border: none;">
-                                        <div class="card-body p-2">
-                                            <div class="text-muted small">Lehetséges nyeremény</div>
-                                            <div class="fs-5 fw-bold" id="modal-potential-win">-</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="modal-items-list" class="small text-muted" style="max-height: 200px; overflow-y: auto;">
-                                <!-- items list -->
-                            </div>
-                        </div>
-                        <div class="modal-footer border-top border-secondary">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button>
-                            <button type="button" class="btn btn-success" id="modal-confirm-bet-btn">
-                                <i class="fas fa-check"></i> Szelvény leadása
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-            
-            document.getElementById('modal-confirm-bet-btn').addEventListener('click', function() {
-                const modalStake = parseFloat(document.getElementById('modal-stake-input').value) || 0;
-                if (modalStake < 100) {
-                    alert('Minimum tét: 100 Ft');
-                    return;
-                }
-                submitTicketToDB(modalStake);
-            });
-            
-            const modalStakeInput = document.getElementById('modal-stake-input');
-            if (modalStakeInput) {
-                modalStakeInput.addEventListener('input', () => {
-                    updateModalDisplay(totalOdds);
-                });
-            }
-        }
-        
-        updateModalDisplay(totalOdds);
-        const bsModal = new bootstrap.Modal(modal);
-        bsModal.show();
-    }
-
-    function updateModalDisplay(totalOdds) {
-        const modalStake = parseFloat(document.getElementById('modal-stake-input').value) || 0;
-        const potentialWin = Math.round(modalStake * totalOdds);
-        
-        document.getElementById('modal-total-odds').textContent = totalOdds.toFixed(3);
-        document.getElementById('modal-potential-win').textContent = potentialWin.toLocaleString('hu-HU') + ' Ft';
-        
-        let itemsHtml = '<div class="border-top pt-2">';
-        ticketItems.forEach((item, idx) => {
-            itemsHtml += `
-                <div class="py-2 border-bottom">
-                    <div class="fw-bold">${escapeHtml(item.homeTeam)} vs ${escapeHtml(item.awayTeam)}</div>
-                    <div class="small">${escapeHtml(item.market)}</div>
-                    <div class="small text-success">${escapeHtml(item.pick)} @ ${item.odds.toFixed(2)}</div>
-                </div>
-            `;
-        });
-        itemsHtml += '</div>';
-        document.getElementById('modal-items-list').innerHTML = itemsHtml;
-    }
-
     // ===== CENTRÁLIS LOGIKA =====
     window.BetslipLogic = {
         is1X2Market: function(marketName) {
@@ -222,6 +122,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== TOGGLE: HOZZÁADÁS / ELTÁVOLÍTÁS =====
     window.toggleOdds = function(homeTeam, awayTeam, pick, odds, market, matchId) {
+        console.log('[BETSLIP] toggleOdds called:', {homeTeam, awayTeam, pick, odds, market, matchId});
+        
         var existingIndex = ticketItems.findIndex(function(item) {
             return item.homeTeam === homeTeam && 
                    item.awayTeam === awayTeam && 
@@ -230,17 +132,25 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         if (existingIndex >= 0) {
+            console.log('[BETSLIP] Eltávolítás indexről:', existingIndex);
             ticketItems.splice(existingIndex, 1);
         } else {
+            // MÓDOSÍTÁS: Csak akkor blokkoljuk, ha ugyanarról a piacról már van kiválasztás
+            // De KÜLÖNBÖZŐ piacokról lehet több fogadás ugyanarról a meccsről
             if (window.BetslipLogic.hasSelectionInMarket(homeTeam, awayTeam, market)) {
+                console.log('[BETSLIP] Már van választás ebben a piacban, nem lehet hozzáadni másikat ugyanarról a piacról');
+                BmbPopup.warning('Már van választásod ebben a piacon! Másik piacról válassz vagy módosítsd a jelenlegi választást.', 'Piac ütközés');
                 return;
             }
 
             if (window.BetslipLogic.isCorrectScoreMarket(market) && 
                 window.BetslipLogic.isConflictingScore(pick, homeTeam, awayTeam)) {
+                console.log('[BETSLIP] Ütköző pontos végeredmény');
+                BmbPopup.warning('Ez a választás ütköző az 1X2 piacon már meglévő választásoddal!', 'Ütköző választás');
                 return;
             }
 
+            console.log('[BETSLIP] Hozzáadás:', {homeTeam, awayTeam, pick, odds, market});
             ticketItems.push({
                 homeTeam: homeTeam,
                 awayTeam: awayTeam,
@@ -252,38 +162,64 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
+        console.log('[BETSLIP] ticketItems után:', ticketItems);
         saveToStorage();
         renderTicket();
         refreshAllOddsButtons();
-        console.log('[BETSLIP] Ticket items:', ticketItems.length, '- Active buttons refreshed');
     };
 
     // ===== TICKET RENDERELÉS =====
     function renderTicket() {
+        console.log('[BETSLIP] renderTicket() kezdés, items:', ticketItems.length);
+        
         const empty = document.getElementById('betslip-empty');
-        const betsContainer = document.getElementById('betslip-bets');
         const submitBtn = document.getElementById('place-bet-btn');
         const clearBtn = document.getElementById('clear-bets-btn');
         const summary = document.getElementById('betslip-summary');
+        const betslipCountEl = document.getElementById('betslip-count');
 
-        if (!empty || !betsContainer) return;
+        if (!empty) {
+            console.warn('[BETSLIP] betslip-empty nem található!');
+            return;
+        }
 
         if (ticketItems.length === 0) {
+            console.log('[BETSLIP] Nincsenek tételek, üres megjelenítés');
             empty.style.display = 'flex';
-            betsContainer.style.display = 'none';
-            if (submitBtn) submitBtn.style.display = 'none';
+            const betsContainer = document.getElementById('betslip-bets');
+            if (betsContainer) {
+                betsContainer.style.display = 'none';
+                betsContainer.innerHTML = '';
+            }
+            if (submitBtn) {
+                submitBtn.style.display = 'none';
+                submitBtn.setAttribute('disabled', 'disabled');
+            }
             if (clearBtn) clearBtn.style.display = 'none';
             if (summary) summary.style.display = 'none';
+            if (betslipCountEl) betslipCountEl.textContent = '0';
+            return;
+        }
+
+        // Friss keresés az aktuális DOM-ból
+        let betsContainer = document.getElementById('betslip-bets');
+        if (!betsContainer) {
+            console.warn('[BETSLIP] betslip-bets konténer nem található!');
             return;
         }
 
         empty.style.display = 'none';
         betsContainer.style.display = 'flex';
-        if (submitBtn) submitBtn.style.display = 'block';
+        if (submitBtn) {
+            submitBtn.style.display = 'block';
+            submitBtn.removeAttribute('disabled');
+        }
         if (clearBtn) clearBtn.style.display = 'block';
         if (summary) summary.style.display = 'block';
 
+        // MÓDOSÍTÁS: Ne lecseréljük az egész containerét, hanem csak az innerHTML-t frissítjük
         betsContainer.innerHTML = '';
+        
         let totalOdds = 1;
 
         ticketItems.forEach((item, idx) => {
@@ -302,32 +238,30 @@ document.addEventListener('DOMContentLoaded', function() {
             betsContainer.appendChild(el);
         });
 
-        // EVENT DELEGATION - csak egyszer kötjük fel az eventeket a containerhez
-        // Eltávolítjuk az összes régi listener-t cloneNode-dal
-        const newBetsContainer = betsContainer.cloneNode(false);
-        betsContainer.parentNode.replaceChild(newBetsContainer, betsContainer);
-        
-        // Újra kötjük fel az event listener-t az új containerhez
-        newBetsContainer.addEventListener('click', (e) => {
-            if (e.target.classList.contains('betslip-remove')) {
-                const idx = parseInt(e.target.getAttribute('data-index'));
-                if (!isNaN(idx) && idx >= 0 && idx < ticketItems.length) {
-                    ticketItems.splice(idx, 1);
-                    saveToStorage();
-                    renderTicket();
-                    refreshAllOddsButtons();
-                    console.log('[BETSLIP] Item removed, total:', ticketItems.length);
-                }
-            }
-        });
-
         // Frissítjük az összes elemet az oldalon
-        const betslipCountEl = document.getElementById('betslip-count');
-        const totalOddsEl = document.getElementById('total-odds');
         if (betslipCountEl) betslipCountEl.textContent = ticketItems.length;
+        const totalOddsEl = document.getElementById('total-odds');
         if (totalOddsEl) totalOddsEl.textContent = totalOdds.toFixed(3);
         updatePotentialWin(totalOdds);
+        
+        console.log('[BETSLIP] renderTicket() vége, totalOdds:', totalOdds);
     }
+
+    // ===== REMOVE BUTTON - delegated event listener =====
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('betslip-remove')) {
+            const idx = parseInt(e.target.getAttribute('data-index'));
+            console.log('[BETSLIP] Remove gomb kattintva, index:', idx);
+            if (!isNaN(idx) && idx >= 0 && idx < ticketItems.length) {
+                console.log('[BETSLIP] Removing item at index:', idx);
+                ticketItems.splice(idx, 1);
+                saveToStorage();
+                renderTicket();
+                refreshAllOddsButtons();
+                console.log('[BETSLIP] Item removed, total:', ticketItems.length);
+            }
+        }
+    });
 
     function updatePotentialWin(totalOdds) {
         const stakeInput = document.getElementById('stake-input');
@@ -352,10 +286,18 @@ document.addEventListener('DOMContentLoaded', function() {
         submitBtn.addEventListener('click', () => {
             if (ticketItems.length === 0) return;
             
-            // Közvetlenül nyissuk meg a fogadás modalt
-            let totalOdds = 1;
-            ticketItems.forEach(item => totalOdds *= item.odds);
-            showPlaceBetModal(totalOdds);
+            const stake = parseFloat(document.getElementById('stake-input').value) || 0;
+            if (stake < 100) {
+                BmbPopup.warning('Minimum tét: 100 Ft', 'Érvénytelen tét');
+                return;
+            }
+
+            if (!isLoggedIn) {
+                BmbPopup.info('A fogadáshoz be kell jelentkezned!', 'Bejelentkezés szükséges');
+                return;
+            }
+
+            submitTicketToDB(stake);
         });
     }
 
@@ -378,12 +320,6 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(r => r.json())
         .then(data => {
-            const modal = document.getElementById('betslip-place-bet-modal');
-            if (modal) {
-                const bsModal = bootstrap.Modal.getInstance(modal);
-                if (bsModal) bsModal.hide();
-            }
-
             if (data.status === 'ok') {
                 // Success modal
                 let successModal = document.getElementById('betslip-success-modal');
@@ -422,12 +358,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 renderTicket();
                 loadBettingHistory();
             } else {
-                alert('❌ Hiba: ' + (data.message || 'Ismeretlen hiba'));
+                BmbPopup.error((data.message || 'Ismeretlen hiba'), 'Sikertelen fogadás');
             }
         })
         .catch(e => {
             console.error('Hiba:', e);
-            alert('❌ Szerverhiba!');
+            BmbPopup.error('Szerverhiba! Kérjük próbáld újra később.', 'Szerverhiba');
         });
     }
 
@@ -439,13 +375,13 @@ document.addEventListener('DOMContentLoaded', function() {
         clearBtn.parentNode.replaceChild(newClearBtn, clearBtn);
         
         newClearBtn.addEventListener('click', () => {
-            if (confirm('Biztosan törlöd az összes fogadást?')) {
+            BmbPopup.confirm('Biztosan törlöd az összes fogadást?', function() {
                 ticketItems = [];
                 saveToStorage();
                 renderTicket();
                 refreshAllOddsButtons();
                 console.log('[BETSLIP] All bets cleared');
-            }
+            }, null, 'Összes törlése');
         });
     }
 
@@ -518,27 +454,52 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ===== ODDS GOMBOK FRISSÍTÉSE =====
-    window.refreshAllOddsButtons = function() {
-        document.querySelectorAll('.selection-btn').forEach(btn => {
-            const home = btn.getAttribute('data-home');
-            const away = btn.getAttribute('data-away');
-            const pick = btn.getAttribute('data-pick');
-            const market = btn.getAttribute('data-market');
-
-            if (!home || !away || !pick || !market) return;
-
-            const state = window.BetslipLogic.getButtonState(home, away, pick, market);
+    window.refreshAllOddsButtons = function(delay = 0) {
+        const doRefresh = () => {
+            console.log('[BETSLIP] refreshAllOddsButtons() - gombok keresése...');
             
-            btn.classList.remove('active', 'disabled');
-            btn.removeAttribute('disabled');
-
-            if (state === 'active') {
-                btn.classList.add('active');
-            } else if (state === 'disabled') {
-                btn.classList.add('disabled');
-                btn.setAttribute('disabled', 'disabled');
+            const buttons = document.querySelectorAll('.selection-btn');
+            console.log('[BETSLIP] Talált .selection-btn gombok:', buttons.length);
+            
+            if (buttons.length === 0) {
+                console.warn('[BETSLIP] Nincsenek .selection-btn gombok az oldalon!');
+                return;
             }
-        });
+            
+            buttons.forEach(btn => {
+                const home = btn.getAttribute('data-home');
+                const away = btn.getAttribute('data-away');
+                const pick = btn.getAttribute('data-pick');
+                const market = btn.getAttribute('data-market');
+
+                if (!home || !away || !pick || !market) {
+                    console.warn('[BETSLIP] Hiányzó adat egy gombnál:', {home, away, pick, market});
+                    return;
+                }
+
+                const state = window.BetslipLogic.getButtonState(home, away, pick, market);
+                
+                btn.classList.remove('active', 'disabled');
+                btn.removeAttribute('disabled');
+
+                if (state === 'active') {
+                    btn.classList.add('active');
+                    console.log('[BETSLIP] Gomb active:', `${home} vs ${away} - ${pick}`);
+                } else if (state === 'disabled') {
+                    btn.classList.add('disabled');
+                    btn.setAttribute('disabled', 'disabled');
+                    console.log('[BETSLIP] Gomb disabled:', `${home} vs ${away} - ${pick}`);
+                }
+            });
+            
+            console.log('[BETSLIP] refreshAllOddsButtons() - kész!');
+        };
+        
+        if (delay > 0) {
+            setTimeout(doRefresh, delay);
+        } else {
+            doRefresh();
+        }
     };
 
     // ===== TAB VÁLTÁS =====
