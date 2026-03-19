@@ -299,6 +299,10 @@ document.addEventListener("DOMContentLoaded", () => {
         var isLive = match.isLive;
         var startTime = match.startUtc ? new Date(match.startUtc).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }) : '-';
 
+        console.log('[ESPORT] renderMatchDetails - Markets count:', markets.length);
+        console.log('[ESPORT] Match data:', match);
+        console.log('[ESPORT] Markets:', markets);
+
         var marketsHtml = buildMarketsHtml(markets, homeTeam, awayTeam);
 
         var backLabel = activeTab === 'live' ? 'Vissza az élő meccsekhez' : 'Vissza a mai meccsekhez';
@@ -332,14 +336,17 @@ document.addEventListener("DOMContentLoaded", () => {
             '<div class="markets-container">' + marketsHtml + '</div>' +
         '</div>';
 
-        document.getElementById('back-to-matches').addEventListener('click', function() {
-            currentMatchId = null;
-            if (activeTab === 'live') {
-                refreshLiveMatches();
-            } else {
-                refreshTodayMatches();
-            }
-        });
+        var backBtn = document.getElementById('back-to-matches');
+        if (backBtn) {
+            backBtn.addEventListener('click', function() {
+                currentMatchId = null;
+                if (activeTab === 'live') {
+                    refreshLiveMatches();
+                } else {
+                    refreshTodayMatches();
+                }
+            });
+        }
 
         attachOddsButtonHandlers(container);
         if (typeof window.refreshAllOddsButtons === 'function') {

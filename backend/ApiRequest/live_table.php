@@ -101,7 +101,9 @@ $sportIcon = $sportIcons[$sport_id] ?? 'fa-futbol';
                             <span class="live-time-value"><?php echo htmlspecialchars($liveTime); ?></span>
                         </div>
                     <?php else: ?>
-                        <span class="not-started-label">Később</span>
+                        <button class="btn-add-bet" data-match-id="<?php echo $matchId; ?>" title="Fogadások megtekintése">
+                            <i class="fas fa-plus"></i> Fogadás
+                        </button>
                     <?php endif; ?>
                 </td>
             </tr>

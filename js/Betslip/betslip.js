@@ -264,21 +264,24 @@ document.addEventListener('DOMContentLoaded', function() {
         const betsContainer = document.getElementById('betslip-bets');
         const submitBtn = document.getElementById('place-bet-btn');
         const clearBtn = document.getElementById('clear-bets-btn');
+        const summary = document.getElementById('betslip-summary');
 
         if (!empty || !betsContainer) return;
 
         if (ticketItems.length === 0) {
             empty.style.display = 'flex';
             betsContainer.style.display = 'none';
-            submitBtn.disabled = true;
-            clearBtn.style.display = 'none';
+            if (submitBtn) submitBtn.style.display = 'none';
+            if (clearBtn) clearBtn.style.display = 'none';
+            if (summary) summary.style.display = 'none';
             return;
         }
 
         empty.style.display = 'none';
         betsContainer.style.display = 'flex';
-        submitBtn.disabled = false;
-        clearBtn.style.display = 'block';
+        if (submitBtn) submitBtn.style.display = 'block';
+        if (clearBtn) clearBtn.style.display = 'block';
+        if (summary) summary.style.display = 'block';
 
         betsContainer.innerHTML = '';
         let totalOdds = 1;
@@ -299,8 +302,13 @@ document.addEventListener('DOMContentLoaded', function() {
             betsContainer.appendChild(el);
         });
 
-        // EVENT DELEGATION - nem direkt az X gombokra
-        betsContainer.addEventListener('click', (e) => {
+        // EVENT DELEGATION - csak egyszer kötjük fel az eventeket a containerhez
+        // Eltávolítjuk az összes régi listener-t cloneNode-dal
+        const newBetsContainer = betsContainer.cloneNode(false);
+        betsContainer.parentNode.replaceChild(newBetsContainer, betsContainer);
+        
+        // Újra kötjük fel az event listener-t az új containerhez
+        newBetsContainer.addEventListener('click', (e) => {
             if (e.target.classList.contains('betslip-remove')) {
                 const idx = parseInt(e.target.getAttribute('data-index'));
                 if (!isNaN(idx) && idx >= 0 && idx < ticketItems.length) {
@@ -313,8 +321,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        document.getElementById('betslip-count').textContent = ticketItems.length;
-        document.getElementById('total-odds').textContent = totalOdds.toFixed(3);
+        // Frissítjük az összes elemet az oldalon
+        const betslipCountEl = document.getElementById('betslip-count');
+        const totalOddsEl = document.getElementById('total-odds');
+        if (betslipCountEl) betslipCountEl.textContent = ticketItems.length;
+        if (totalOddsEl) totalOddsEl.textContent = totalOdds.toFixed(3);
         updatePotentialWin(totalOdds);
     }
 

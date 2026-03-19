@@ -22,7 +22,7 @@
             </div>
         </div>
 
-        <div class="betslip-summary">
+        <div class="betslip-summary" id="betslip-summary" style="display: none;">
             <div class="summary-row">
                 <span id="summary-label">Összesített odds:</span>
                 <span class="summary-value" id="total-odds">1.00</span>
@@ -50,6 +50,7 @@
             class="bet-button" 
             id="place-bet-btn" 
             disabled
+            style="display: none;"
             aria-label="Fogadás elhelyezése"
         >
             <i class="fas fa-check"></i> Ticket leadása
