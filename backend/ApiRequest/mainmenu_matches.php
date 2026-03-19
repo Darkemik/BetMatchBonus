@@ -110,7 +110,9 @@ if (!$res || $res->num_rows === 0) {
                 continue;
             }
 
-            $matchParts = explode(' - ', $matchName, 2);
+            $matchParts = strpos($matchName, ' vs. ') !== false
+                ? explode(' vs. ', $matchName, 2)
+                : explode(' - ', $matchName, 2);
             $home = htmlspecialchars(trim($matchParts[0]));
             $away = isset($matchParts[1]) ? htmlspecialchars(trim($matchParts[1])) : '';
 

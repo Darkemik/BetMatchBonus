@@ -498,5 +498,6 @@ document.addEventListener('DOMContentLoaded', function () {
   // ========== INICIALIZÁLÁS ==========
   loadSidebarSports();
   loadMatches(0);
+});
 
 });
