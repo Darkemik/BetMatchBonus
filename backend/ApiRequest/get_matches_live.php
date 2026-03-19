@@ -117,13 +117,21 @@ function importMatches($conn, $matches, $sportId) {
         $homeScore = isset($score[0]) ? (int)$score[0] : null;
         $awayScore = isset($score[1]) ? (int)$score[1] : null;
 
-        // Csapatok kinyerése a name-ből
+        // Csapatok kinyerése a name-ből (" vs. " és " - " elválasztó egyaránt)
         $teams = explode(' vs. ', $name);
         if (count($teams) < 2) {
             $teams = explode(' - ', $name);
         }
         $homeTeam = trim($teams[0] ?? $name);
         $awayTeam = trim($teams[1] ?? '');
+
+        // startDateUtc → MySQL DATETIME (Budapest timezone)
+        $startTimeMysql = '';
+        if (!empty($startUtc)) {
+            $dt = new DateTime($startUtc);
+            $dt->setTimezone(new DateTimeZone('Europe/Budapest'));
+            $startTimeMysql = $dt->format('Y-m-d H:i:s');
+        }
 
         // Championship keresése
         $stmtChamp->bind_param("i", $leagueId);
@@ -154,7 +162,7 @@ function importMatches($conn, $matches, $sportId) {
             $name,
             $homeTeam,
             $awayTeam,
-            $startUtc,
+            $startTimeMysql,
             $isLive,
             $liveTime,
             $statusId,

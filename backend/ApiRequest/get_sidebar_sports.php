@@ -73,8 +73,10 @@ while ($row = $res->fetch_assoc()) {
         continue;
     }
 
-    // Kihagyjuk ahol nincs " - " (azaz nem érvényes hazai - vendég formátum)
-    $parts = explode(' - ', $matchName, 2);
+    // Kihagyjuk ahol nincs érvényes csapatnév elválasztó (" vs. " vagy " - ")
+    $parts = strpos($matchName, ' vs. ') !== false
+        ? explode(' vs. ', $matchName, 2)
+        : explode(' - ', $matchName, 2);
     if (count($parts) < 2 || trim($parts[0]) === '' || trim($parts[1]) === '') {
         continue;
     }
