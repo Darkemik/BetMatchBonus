@@ -30,7 +30,7 @@
                             <input type="text" name="mother_full_name" class="form-control mb-3" placeholder="Anyja leánykori neve" required>
 
                             <label class="form-label">Születési hely</label>
-                            <input type="text" name="birthplace" class="form-control mb-3" placeholder="Születési hely" required>
+                            <input type="text" name="birthplace" id="modal2-birthplace" class="form-control mb-3" placeholder="pl. Budapest" required>
 
                             <label class="form-label">Születési dátum</label>
                             <input type="date" id="modal2-date-input" name="birthdate" class="form-control mb-1" required>

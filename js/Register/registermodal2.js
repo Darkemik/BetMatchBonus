@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var calcAge = document.getElementById('modal2-calculated_age');
     var form = document.getElementById('registerModal2Form');
     var result = document.getElementById('registerModal2Result');
+    var birthplaceInput = document.getElementById('modal2-birthplace');
 
     // Prevent typing in date input
     dateInput.addEventListener('keydown', function (e) { e.preventDefault(); });
@@ -93,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function () {
         formData.append('family_name', form.querySelector('input[name="family_name"]').value.trim());
         formData.append('sure_name', form.querySelector('input[name="Sure_name"]').value.trim());
         formData.append('mother_full_name', form.querySelector('input[name="mother_full_name"]').value.trim());
-        formData.append('birthplace', form.querySelector('input[name="birthplace"]').value.trim());
+        formData.append('birthplace', birthplaceInput.value.trim());
         formData.append('birthdate', dateInput.value);
         formData.append('calculated_age', calcAge.value);
 

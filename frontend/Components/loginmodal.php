@@ -15,11 +15,11 @@
       <div class="modal-body">
         <form id="loginModalForm">
           <label class="form-label">Felhasználónév vagy e-mail cím</label>
-          <input type="text" name="login" id="login-login" class="form-control mb-3" required>
+          <input type="text" name="login" id="login-login" class="form-control mb-3" placeholder="Felhasználónév vagy e-mail" required>
 
           <label class="form-label">Jelszó</label>
           <div class="input-group mb-2">
-            <input type="password" name="password" id="login-password" class="form-control" required>
+            <input type="password" name="password" id="login-password" class="form-control" placeholder="Jelszó" required>
             <button type="button"
                     class="btn btn-outline-secondary toggle-password"
                     data-target="login-password"
@@ -35,7 +35,7 @@
             </label>
           </div>
 
-          <a href="#" class="small modal-link">Elfelejtettem a jelszavam</a>
+          <a href="#" class="small modal-link" id="switchToForgotPassword">Elfelejtettem a jelszavam</a>
 
           <p id="loginModalResult" class="mt-2 mb-0"></p>
 

@@ -10,10 +10,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // Adatok beolvasása
-$username   = trim($_POST['username'] ?? '');
-$email      = trim($_POST['email'] ?? '');
-$password   = $_POST['password'] ?? '';
-$birthdate  = $_POST['birthdate'] ?? '';
+$username            = trim($_POST['username'] ?? '');
+$email               = trim($_POST['email'] ?? '');
+$password            = $_POST['password'] ?? '';
+$phone               = trim($_POST['phone'] ?? '');
+$birthdate           = $_POST['birthdate'] ?? '';
+$birthplace_city_id  = (int)($_POST['birthplace_city_id'] ?? 0);
 
 // 2. lépés – teljes név összeállítása
 $family_name = trim($_POST['family_name'] ?? '');
@@ -34,8 +36,12 @@ if (strlen($password) < 7) {
     echo json_encode(['success' => false, 'message' => 'A jelszó legalább 7 karakter legyen!']);
     exit;
 }
-if ($birthdate === '' || $family_name === '' || $sure_name === '') {
+if ($birthdate === '' || $family_name === '' || $sure_name === '' || $phone === '' || $birthplace_city_id <= 0) {
     echo json_encode(['success' => false, 'message' => 'A személyes adatok kitöltése kötelező!']);
+    exit;
+}
+if (strlen($phone) < 11) {
+    echo json_encode(['success' => false, 'message' => 'A telefonszám legalább 11 számjegy legyen!']);
     exit;
 }
 
@@ -60,15 +66,21 @@ if ($stmt->num_rows > 0) {
 }
 $stmt->close();
 
+// Város ellenőrzés
+if ($birthplace_city_id <= 0) {
+    echo json_encode(['success' => false, 'message' => 'Születési hely kiválasztása kötelező!']);
+    exit;
+}
+
 // Jelszó hashelés
 $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
 // INSERT a Users táblába
 $stmt = $conn->prepare(
-    "INSERT INTO Users (username, email, password_hash, full_name, birth_date) 
-    VALUES (?, ?, ?, ?, ?)"
+    "INSERT INTO Users (username, email, password_hash, full_name, birth_date, mobile_number, birthplace) 
+    VALUES (?, ?, ?, ?, ?, ?, ?)"
 );
-$stmt->bind_param("sssss", $username, $email, $password_hash, $full_name, $birthdate);
+$stmt->bind_param("ssssssi", $username, $email, $password_hash, $full_name, $birthdate, $phone, $birthplace_city_id);
 
 if ($stmt->execute()) {
     $userId = $stmt->insert_id;
