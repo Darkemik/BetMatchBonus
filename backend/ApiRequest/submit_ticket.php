@@ -69,37 +69,57 @@ try {
     }
 
     // 2. TICKET SELECTIONS MENTÉSE
-    $stmtSelection = $conn->prepare("
-        INSERT INTO TicketSelections (ticket_id, outcome_id, event_id, odds_at_pick, status, created_at)
-        VALUES (?, ?, ?, ?, 'OPEN', NOW())
-    ");
-
     foreach ($items as $item) {
         $matchId = (int)$item['matchId'];
         $pick = $item['pick'];
         $odds = (float)$item['odds'];
         $market = $item['market'];
+        $homeTeam = $item['homeTeam'] ?? '';
+        $awayTeam = $item['awayTeam'] ?? '';
 
-        // Outcome és Event ID keresése az adatbázisból (egyszerűsített - az API-tól jön)
-        $stmtOutcome = $conn->prepare("
-            SELECT o.id FROM OddsOutcomes o
-            JOIN EventMarkets em ON o.event_market_id = em.id
-            WHERE em.event_id = ? AND o.label = ?
-            LIMIT 1
-        ");
-        $stmtOutcome->bind_param("is", $matchId, $pick);
-        $stmtOutcome->execute();
-        $outcomeResult = $stmtOutcome->get_result();
-        $outcomeRow = $outcomeResult->fetch_assoc();
-        $stmtOutcome->close();
+        // Outcome és Event ID keresése az adatbázisból (opcionális - lehet NULL)
+        $outcomeId = null;
+        $eventId = null;
 
-        if ($outcomeRow) {
-            $outcomeId = (int)$outcomeRow['id'];
-            $stmtSelection->bind_param("iiid", $ticketId, $outcomeId, $matchId, $odds);
-            $stmtSelection->execute();
+        $stmtEvent = $conn->prepare("SELECT id FROM Events WHERE api_id = ? LIMIT 1");
+        $stmtEvent->bind_param("i", $matchId);
+        $stmtEvent->execute();
+        $eventResult = $stmtEvent->get_result();
+        $eventRow = $eventResult->fetch_assoc();
+        $stmtEvent->close();
+
+        if ($eventRow) {
+            $eventId = (int)$eventRow['id'];
+
+            $stmtOutcome = $conn->prepare("
+                SELECT o.id FROM OddsOutcomes o
+                JOIN EventMarkets em ON o.event_market_id = em.id
+                WHERE em.event_id = ? AND o.label = ?
+                LIMIT 1
+            ");
+            $stmtOutcome->bind_param("is", $eventId, $pick);
+            $stmtOutcome->execute();
+            $outcomeResult = $stmtOutcome->get_result();
+            $outcomeRow = $outcomeResult->fetch_assoc();
+            $stmtOutcome->close();
+
+            if ($outcomeRow) {
+                $outcomeId = (int)$outcomeRow['id'];
+            }
         }
+
+        // MINDIG mentjük a selection-t - outcome_id és event_id lehet NULL
+        $stmtSel = $conn->prepare("
+            INSERT INTO TicketSelections (ticket_id, outcome_id, event_id, match_id, home_team, away_team, pick_label, market_name, odds_at_pick, status, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', NOW())
+        ");
+        $stmtSel->bind_param("iiiissssd",
+            $ticketId, $outcomeId, $eventId, $matchId,
+            $homeTeam, $awayTeam, $pick, $market, $odds
+        );
+        $stmtSel->execute();
+        $stmtSel->close();
     }
-    $stmtSelection->close();
 
     // 3. WALLET UPDATE - Tét levonása
     $stmtUpdateWallet = $conn->prepare("

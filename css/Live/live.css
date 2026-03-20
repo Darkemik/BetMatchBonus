@@ -747,6 +747,52 @@
     font-size: 1rem;
 }
 
+/* ===== ODDS VÁLTOZÁS ANIMÁCIÓ ===== */
+.selection-btn.odds-changed {
+    animation: oddsFlash 0.6s ease;
+}
+
+@keyframes oddsFlash {
+    0% { background: rgba(245, 197, 24, 0.08); }
+    30% { background: rgba(245, 197, 24, 0.35); }
+    100% { background: rgba(245, 197, 24, 0.08); }
+}
+
+.selection-btn.active.odds-changed {
+    animation: oddsFlashActive 0.6s ease;
+}
+
+@keyframes oddsFlashActive {
+    0% { background: rgba(76, 175, 80, 0.25); }
+    30% { background: rgba(76, 175, 80, 0.5); }
+    100% { background: rgba(76, 175, 80, 0.25); }
+}
+
+/* ===== ODDS NYILAK (fel/le) ===== */
+.odds-arrow {
+    display: inline-block;
+    margin-left: 4px;
+    font-size: 0.7rem;
+    font-weight: 900;
+    vertical-align: middle;
+    animation: arrowFadeIn 0.3s ease;
+}
+
+.odds-arrow-up {
+    color: #4CAF50;
+    text-shadow: 0 0 6px rgba(76, 175, 80, 0.6);
+}
+
+.odds-arrow-down {
+    color: #e74c3c;
+    text-shadow: 0 0 6px rgba(231, 76, 60, 0.6);
+}
+
+@keyframes arrowFadeIn {
+    0% { opacity: 0; transform: scale(0.5); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 600px) {
     .match-scoreboard {

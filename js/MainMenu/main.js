@@ -499,5 +499,3 @@ document.addEventListener('DOMContentLoaded', function () {
   loadSidebarSports();
   loadMatches(0);
 });
-
-});

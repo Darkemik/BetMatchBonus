@@ -75,11 +75,54 @@ $response_data = [
     'markets' => []
 ];
 
-// Eredmény összeállítása
+// Eredmény összeállítása - több formátumot kezelünk
 if (isset($apiData['score']) && is_array($apiData['score']) && count($apiData['score']) >= 2) {
     $response_data['match']['score'] = $apiData['score'][0] . ' - ' . $apiData['score'][1];
+} elseif (isset($apiData['score']) && is_string($apiData['score'])) {
+    // Ha string formátumban jön (pl. "1:1" vagy "1 - 1")
+    $response_data['match']['score'] = str_replace(':', ' - ', $apiData['score']);
+} elseif (isset($apiData['homeScore']) && isset($apiData['awayScore'])) {
+    $response_data['match']['score'] = $apiData['homeScore'] . ' - ' . $apiData['awayScore'];
+} elseif (isset($apiData['scores']) && is_array($apiData['scores'])) {
+    // Néha "scores" kulcs alatt jön
+    if (isset($apiData['scores']['home']) && isset($apiData['scores']['away'])) {
+        $response_data['match']['score'] = $apiData['scores']['home'] . ' - ' . $apiData['scores']['away'];
+    } elseif (count($apiData['scores']) >= 2) {
+        $response_data['match']['score'] = $apiData['scores'][0] . ' - ' . $apiData['scores'][1];
+    }
 } else {
-    $response_data['match']['score'] = '0 - 0';
+    // Ha sehogy nem találjuk, próbáljuk az élő meccsek API-ból lekérni az eredményt
+    $liveUrl = "$apiBaseUrl/matches/live";
+    $chLive = curl_init($liveUrl);
+    curl_setopt($chLive, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($chLive, CURLOPT_TIMEOUT, 5);
+    $liveResponse = curl_exec($chLive);
+    $liveHttpCode = curl_getinfo($chLive, CURLINFO_HTTP_CODE);
+    curl_close($chLive);
+    
+    $foundScore = false;
+    if ($liveHttpCode === 200 && $liveResponse) {
+        $liveMatches = json_decode($liveResponse, true);
+        if (is_array($liveMatches)) {
+            foreach ($liveMatches as $liveMatch) {
+                if (isset($liveMatch['id']) && (int)$liveMatch['id'] === $eventId) {
+                    if (isset($liveMatch['score']) && is_array($liveMatch['score']) && count($liveMatch['score']) >= 2) {
+                        $response_data['match']['score'] = $liveMatch['score'][0] . ' - ' . $liveMatch['score'][1];
+                        // Frissítsük a liveTime-ot is ha van
+                        if (isset($liveMatch['liveTime'])) {
+                            $response_data['match']['liveTime'] = $liveMatch['liveTime'];
+                        }
+                        $foundScore = true;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    
+    if (!$foundScore) {
+        $response_data['match']['score'] = '0 - 0';
+    }
 }
 
 // Piacok feldolgozása

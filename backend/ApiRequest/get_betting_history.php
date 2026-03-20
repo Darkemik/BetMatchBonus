@@ -34,12 +34,14 @@ while ($ticket = $ticketsResult->fetch_assoc()) {
     
     // Selections lekérése ebből a ticketből
     $stmtSelections = $conn->prepare("
-        SELECT ts.id, ts.odds_at_pick, ts.status, o.label, e.home_team_name, e.away_team_name, 
-               em.name as market_name
+        SELECT ts.id, ts.odds_at_pick, ts.status, 
+               ts.home_team, ts.away_team, ts.pick_label, ts.market_name,
+               o.label, e.home_team_name, e.away_team_name, 
+               em.name as em_market_name
         FROM TicketSelections ts
-        JOIN OddsOutcomes o ON ts.outcome_id = o.id
-        JOIN EventMarkets em ON o.event_market_id = em.id
-        JOIN Events e ON ts.event_id = e.id
+        LEFT JOIN OddsOutcomes o ON ts.outcome_id = o.id
+        LEFT JOIN EventMarkets em ON o.event_market_id = em.id
+        LEFT JOIN Events e ON ts.event_id = e.id
         WHERE ts.ticket_id = ?
     ");
     $stmtSelections->bind_param("i", $ticketId);
@@ -49,10 +51,10 @@ while ($ticket = $ticketsResult->fetch_assoc()) {
     $selections = [];
     while ($sel = $selectionsResult->fetch_assoc()) {
         $selections[] = [
-            'homeTeam' => $sel['home_team_name'],
-            'awayTeam' => $sel['away_team_name'],
-            'pick' => $sel['label'],
-            'market' => $sel['market_name'],
+            'homeTeam' => $sel['home_team'] ?: ($sel['home_team_name'] ?? ''),
+            'awayTeam' => $sel['away_team'] ?: ($sel['away_team_name'] ?? ''),
+            'pick' => $sel['pick_label'] ?: ($sel['label'] ?? ''),
+            'market' => $sel['market_name'] ?: ($sel['em_market_name'] ?? ''),
             'odds' => (float)$sel['odds_at_pick'],
             'status' => $sel['status']
         ];
