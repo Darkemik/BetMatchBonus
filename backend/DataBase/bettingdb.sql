@@ -340,16 +340,21 @@ CREATE TABLE IF NOT EXISTS Tickets (
 -- 21) TICKET SELECTIONS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS TicketSelections (
-  id           INT           AUTO_INCREMENT PRIMARY KEY,
-  ticket_id    INT           NOT NULL,
-  outcome_id   INT           NOT NULL,
-  event_id     INT           NOT NULL,
-  odds_at_pick DECIMAL(8,4)  NOT NULL,
-  status       VARCHAR(20)   NOT NULL DEFAULT 'OPEN',
-  created_at   DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  id             INT           AUTO_INCREMENT PRIMARY KEY,
+  ticket_id      INT           NOT NULL,
+  outcome_id     INT           DEFAULT NULL,
+  event_id       INT           DEFAULT NULL,
+  match_id       INT           DEFAULT NULL         COMMENT 'API match ID (ha event_id nincs)',
+  home_team      VARCHAR(150)  DEFAULT NULL,
+  away_team      VARCHAR(150)  DEFAULT NULL,
+  pick_label     VARCHAR(150)  DEFAULT NULL,
+  market_name    VARCHAR(200)  DEFAULT NULL,
+  odds_at_pick   DECIMAL(8,4)  NOT NULL,
+  status         VARCHAR(20)   NOT NULL DEFAULT 'OPEN',
+  created_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_tsel_ticket  FOREIGN KEY (ticket_id)  REFERENCES Tickets(id)      ON UPDATE CASCADE ON DELETE CASCADE,
-  CONSTRAINT fk_tsel_outcome FOREIGN KEY (outcome_id) REFERENCES OddsOutcomes(id) ON UPDATE CASCADE ON DELETE RESTRICT,
-  CONSTRAINT fk_tsel_event   FOREIGN KEY (event_id)   REFERENCES Events(id)       ON UPDATE CASCADE ON DELETE RESTRICT
+  CONSTRAINT fk_tsel_outcome FOREIGN KEY (outcome_id) REFERENCES OddsOutcomes(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  CONSTRAINT fk_tsel_event   FOREIGN KEY (event_id)   REFERENCES Events(id)       ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 -- ============================================================

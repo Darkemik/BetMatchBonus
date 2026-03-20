@@ -3,6 +3,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const matchesContainer = document.getElementById('matches-container');
     let currentSportId = 66; // Alapértelmezetten foci
     let autoRefreshInterval = null;
+    let viewingMatchDetails = false; // Flag: meccs részletek nézetben vagyunk-e
+    let refreshRequestId = 0; // Minden refreshMatches híváshoz egyedi ID
+    let currentDetailEventId = null; // Melyik meccs részleteit nézzük éppen
 
     console.log('[LIVE.JS] Inicializálás...', {
         sportButtonsCount: sportButtons.length,
@@ -108,6 +111,9 @@ document.addEventListener('DOMContentLoaded', function() {
             currentSportId = parseInt(sportCount.getAttribute('data-sport-id'));
             console.log('[LIVE.JS] Kiválasztott sport ID:', currentSportId);
             
+            // Ha a részletek nézetben voltunk, visszaállítjuk a flag-et
+            viewingMatchDetails = false;
+            
             // Táblázat frissítése
             refreshMatches();
         });
@@ -115,28 +121,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Meccsek frissítése AJAX-szal
     function refreshMatches() {
-        console.log('[LIVE.JS] Meccsek frissítése, sport ID:', currentSportId);
+        // Ha a meccs részletek nézet van megnyitva, NE frissítsünk
+        if (viewingMatchDetails) {
+            console.log('[LIVE.JS] refreshMatches() kihagyva - meccs részletek nézet aktív');
+            return;
+        }
+
+        // Egyedi request ID - ha közben új hívás jön vagy nézet vált, eldobjuk a régit
+        const myRequestId = ++refreshRequestId;
+
+        console.log('[LIVE.JS] Meccsek frissítése, sport ID:', currentSportId, 'requestId:', myRequestId);
         
         const url = '../../backend/ApiRequest/live_table.php?sport_id=' + currentSportId;
-        console.log('[LIVE.JS] Fetch URL:', url);
         
-        fetch(url, {
-            method: 'GET'
-        })
+        fetch(url, { method: 'GET' })
         .then(response => response.text())
         .then(html => {
+            // Ha közben a részletek nézetre váltottunk VAGY újabb refresh indult, NE írjuk felül!
+            if (viewingMatchDetails || myRequestId !== refreshRequestId) {
+                console.log('[LIVE.JS] refreshMatches response eldobva (viewingDetails:', viewingMatchDetails, ', requestId:', myRequestId, '/', refreshRequestId, ')');
+                return;
+            }
+
             console.log('[LIVE.JS] HTML kapott, hossz:', html.length);
             matchesContainer.innerHTML = html;
             
-            // Meccs sor kattintás kezelése (delegáció helyett)
             attachMatchClickHandlers();
-            
             updateSportCounts();
             
-            // selection-btn és btn-add-bet gombok már globális delegationnel működnek!
-            // Csak az odds gombokat frissítjük
             if (typeof window.refreshAllOddsButtons === 'function') {
-                console.log('[LIVE.JS] refreshAllOddsButtons meghívása KÉSLELTETÉSSEL');
                 window.refreshAllOddsButtons(50);
             }
         })
@@ -264,6 +277,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Meccs részletek megjelenítése (teljes oldal, nem modal)
     function loadMatchDetails(eventId) {
         console.log('[LIVE.JS] loadMatchDetails, eventId:', eventId);
+        viewingMatchDetails = true; // Jelöljük, hogy a részletek nézetben vagyunk
+        currentDetailEventId = eventId; // Elmentjük melyik meccset nézzük
+        refreshRequestId++; // Érvénytelenítjük a még futó refreshMatches fetch-eket
         
         const container = matchesContainer;
         container.innerHTML = '<div class="loading-details"><i class="fas fa-spinner fa-spin"></i> Meccs adatok betöltése...</div>';
@@ -280,6 +296,82 @@ document.addEventListener('DOMContentLoaded', function() {
                 renderMatchDetails(data);
             })
             .catch(error => console.error('[LIVE.JS] Hiba a meccs adatok lekérésekor:', error));
+    }
+
+    // Meccs részletek frissítése (élő adatok: állás, perc, oddsok)
+    function refreshMatchDetails() {
+        if (!viewingMatchDetails || !currentDetailEventId) return;
+        
+        console.log('[LIVE.JS] refreshMatchDetails, eventId:', currentDetailEventId);
+        
+        fetch('../../backend/ApiRequest/get_match_details.php?eventId=' + currentDetailEventId)
+            .then(response => response.json())
+            .then(data => {
+                // Közben visszamentünk a listához? Ne csináljunk semmit
+                if (!viewingMatchDetails || !currentDetailEventId) return;
+                
+                if (data && !data.error && data.match) {
+                    // Állás és perc frissítése
+                    const scoreBig = matchesContainer.querySelector('.score-big');
+                    if (scoreBig) scoreBig.textContent = data.match.score || '0 - 0';
+                    
+                    const liveTimeBig = matchesContainer.querySelector('.live-time-big');
+                    if (liveTimeBig) liveTimeBig.textContent = data.match.liveTime || '-';
+                    
+                    // Oddsok frissítése - végigmegyünk az összes selection-btn-en
+                    const markets = data.markets || [];
+                    markets.forEach(market => {
+                        const specialVal = market.specialValue ? ' (' + market.specialValue + ')' : '';
+                        const marketFullName = (market.name || '') + specialVal;
+                        
+                        if (market.selections && Array.isArray(market.selections)) {
+                            market.selections.forEach(selection => {
+                                const newOdds = parseFloat(selection.odds) || 0;
+                                // Megkeressük a megfelelő gombot
+                                const btns = matchesContainer.querySelectorAll(`.selection-btn[data-market="${CSS.escape(marketFullName)}"][data-pick="${CSS.escape(selection.name)}"]`);
+                                btns.forEach(btn => {
+                                    const oddsEl = btn.querySelector('.selection-odds');
+                                    if (oddsEl) {
+                                        const oldOdds = parseFloat(btn.getAttribute('data-odd')) || 0;
+                                        if (oldOdds !== newOdds) {
+                                            // Nyíl irány meghatározása
+                                            const arrowClass = newOdds > oldOdds ? 'odds-arrow-up' : 'odds-arrow-down';
+                                            const arrowIcon = newOdds > oldOdds ? '▲' : '▼';
+                                            
+                                            // Régi nyíl eltávolítása ha van
+                                            const oldArrow = btn.querySelector('.odds-arrow');
+                                            if (oldArrow) oldArrow.remove();
+                                            
+                                            // Új nyíl hozzáadása
+                                            const arrowSpan = document.createElement('span');
+                                            arrowSpan.className = 'odds-arrow ' + arrowClass;
+                                            arrowSpan.textContent = arrowIcon;
+                                            oddsEl.appendChild(arrowSpan);
+                                            
+                                            // Odds érték frissítése
+                                            // Az oddsEl-ben az első szövegcsomópont az odds szám
+                                            oddsEl.firstChild.textContent = newOdds.toFixed(2);
+                                            btn.setAttribute('data-odd', newOdds);
+                                            
+                                            // Vizuális jelzés
+                                            btn.classList.add('odds-changed');
+                                            setTimeout(() => {
+                                                btn.classList.remove('odds-changed');
+                                                // Nyíl eltávolítása 3 mp után
+                                                const arrow = btn.querySelector('.odds-arrow');
+                                                if (arrow) arrow.remove();
+                                            }, 3000);
+                                        }
+                                    }
+                                });
+                            });
+                        }
+                    });
+                    
+                    console.log('[LIVE.JS] Meccs részletek frissítve (állás, perc, oddsok)');
+                }
+            })
+            .catch(error => console.error('[LIVE.JS] Hiba a meccs részletek frissítésekor:', error));
     }
 
     // Meccs részletek renderelése (teljes oldal nézet)
@@ -374,6 +466,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Vissza gomb kattintás
         document.getElementById('back-to-matches').addEventListener('click', function() {
             console.log('[LIVE.JS] Vissza a meccsekhez');
+            viewingMatchDetails = false; // Visszaállítjuk a flag-et
+            currentDetailEventId = null; // Töröljük a meccs ID-t
             refreshMatches();
         });
     }
@@ -410,10 +504,15 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('[LIVE.JS] Az oldal inicializálása...');
     refreshMatches();
     
-    // Auto-frissítés 30 másodpercenként
+    // Auto-frissítés 10 másodpercenként
     autoRefreshInterval = setInterval(() => {
-        refreshMatches();
-    }, 30000);
+        if (viewingMatchDetails) {
+            // Ha a meccs részletek nézetben vagyunk, csak a meccs adatait frissítjük
+            refreshMatchDetails();
+        } else {
+            refreshMatches();
+        }
+    }, 10000);
     
     console.log('[LIVE.JS] Inicializálás kész!');
 });
