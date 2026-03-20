@@ -24,6 +24,9 @@
                     <label class="form-label">Email újra</label>
                     <input type="email" id="modal-email2" class="form-control mb-3" placeholder="Email újra" required>
 
+                    <label class="form-label">Telefonszám</label>
+                    <input type="tel" name="phone" id="modal-phone" class="form-control mb-3" placeholder="Pl.:06308469165" inputmode="numeric" pattern="[0-9]+" minlength="11" required>
+
                     <label class="form-label">Jelszó</label>
                     <div class="input-group mb-3">
                         <input type="password" id="modal-password" name="password" class="form-control" placeholder="Jelszó" required>

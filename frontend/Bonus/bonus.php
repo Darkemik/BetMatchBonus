@@ -76,10 +76,12 @@
 
     <?php include '../../frontend/Components/footer.php'; ?>
     <?php include '../../frontend/Components/loginmodal.php'; ?>
+    <?php include '../../frontend/Components/forgotmypassword.php'; ?>
     <?php include '../../frontend/Components/registermodal.php'; ?>
     <?php include '../../frontend/Components/registermodal2.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../../js/Login/loginmodal.js"></script>
+    <script src="../../js/Forgotmypassword/forgotmypassword.js"></script>
     <script src="../../js/Main/auth_ui.js"></script>
     <script src="../../js/Register/registermodal.js"></script>
     <script src="../../js/Register/registermodal2.js"></script>

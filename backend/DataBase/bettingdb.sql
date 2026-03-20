@@ -30,7 +30,19 @@ CREATE TABLE IF NOT EXISTS Countries (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 -- ============================================================
--- 3) SPORTS
+-- 3) CITIES
+-- ============================================================
+CREATE TABLE IF NOT EXISTS Cities (
+  id         INT           AUTO_INCREMENT PRIMARY KEY,
+  country_id INT           NOT NULL,
+  name       VARCHAR(100)  NOT NULL,
+  is_active  TINYINT(1)    NOT NULL DEFAULT 1,
+  UNIQUE KEY unique_city_country (country_id, name),
+  CONSTRAINT fk_city_country FOREIGN KEY (country_id) REFERENCES Countries(id) ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+
+-- ============================================================
+-- 4) SPORTS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS Sports (
   id              INT           AUTO_INCREMENT PRIMARY KEY,
@@ -43,7 +55,7 @@ CREATE TABLE IF NOT EXISTS Sports (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 -- ============================================================
--- 4) STATUS
+-- 5) STATUS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS Status (
   id   INT           AUTO_INCREMENT PRIMARY KEY,
@@ -58,7 +70,7 @@ INSERT INTO Status (id, name) VALUES
 (5, 'CANCELLED');
 
 -- ============================================================
--- 5) WALLET TRANSACTION TYPES
+-- 6) WALLET TRANSACTION TYPES
 -- ============================================================
 CREATE TABLE IF NOT EXISTS WalletTransactionsType (
   id   INT           AUTO_INCREMENT PRIMARY KEY,
@@ -75,7 +87,7 @@ INSERT INTO WalletTransactionsType (id, name) VALUES
 (7, 'MANUAL_ADJUST');
 
 -- ============================================================
--- 6) BONUS TYPES
+-- 7) BONUS TYPES
 -- ============================================================
 CREATE TABLE IF NOT EXISTS BonusTypes (
   id   INT           AUTO_INCREMENT PRIMARY KEY,
@@ -92,7 +104,7 @@ INSERT INTO BonusTypes (id, name) VALUES
 (7, 'ADMIN_BONUS');
 
 -- ============================================================
--- 7) COMPETITIONS
+-- 8) COMPETITIONS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS Competitions (
   id         INT           AUTO_INCREMENT PRIMARY KEY,
@@ -108,7 +120,7 @@ CREATE TABLE IF NOT EXISTS Competitions (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 -- ============================================================
--- 8) SEASONS
+-- 9) SEASONS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS Seasons (
   id             INT           AUTO_INCREMENT PRIMARY KEY,
@@ -121,7 +133,7 @@ CREATE TABLE IF NOT EXISTS Seasons (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 -- ============================================================
--- 9) TEAMS
+-- 10) TEAMS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS Teams (
   id         INT           AUTO_INCREMENT PRIMARY KEY,
@@ -137,7 +149,7 @@ CREATE TABLE IF NOT EXISTS Teams (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 -- ============================================================
--- 10) EVENTS
+-- 11) EVENTS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS Events (
   id               INT           AUTO_INCREMENT PRIMARY KEY,
@@ -170,7 +182,7 @@ CREATE TABLE IF NOT EXISTS Events (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 -- ============================================================
--- 11) EVENT MARKETS
+-- 12) EVENT MARKETS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS EventMarkets (
   id             INT           AUTO_INCREMENT PRIMARY KEY,
@@ -188,7 +200,7 @@ CREATE TABLE IF NOT EXISTS EventMarkets (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 -- ============================================================
--- 12) ODDS OUTCOMES
+-- 13) ODDS OUTCOMES
 -- ============================================================
 CREATE TABLE IF NOT EXISTS OddsOutcomes (
   id              INT           AUTO_INCREMENT PRIMARY KEY,
@@ -204,7 +216,7 @@ CREATE TABLE IF NOT EXISTS OddsOutcomes (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 -- ============================================================
--- 13) USERS
+-- 14) USERS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS Users (
   id                  INT           AUTO_INCREMENT PRIMARY KEY,
@@ -218,6 +230,7 @@ CREATE TABLE IF NOT EXISTS Users (
   mother_full_name    VARCHAR(150)  DEFAULT NULL,
   birthplace          VARCHAR(150)  DEFAULT NULL,
   birth_date          DATE          NOT NULL,
+  mobile_number       VARCHAR(20)   DEFAULT NULL,
   id_image_first      VARCHAR(255)  DEFAULT NULL,
   id_image_second     VARCHAR(255)  DEFAULT NULL,
   address_image       VARCHAR(255)  DEFAULT NULL,
@@ -225,12 +238,14 @@ CREATE TABLE IF NOT EXISTS Users (
   is_active           TINYINT(1)    NOT NULL DEFAULT 1,
   remember_token      VARCHAR(64)   DEFAULT NULL,
   remember_expiry     DATETIME      DEFAULT NULL,
+  reset_token         VARCHAR(64)   DEFAULT NULL,
+  reset_token_expiry  DATETIME      DEFAULT NULL,
   created_at          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 -- ============================================================
--- 14) USER SESSIONS
+-- 15) USER SESSIONS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS UserSessions (
   id         INT           AUTO_INCREMENT PRIMARY KEY,
@@ -243,7 +258,7 @@ CREATE TABLE IF NOT EXISTS UserSessions (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 -- ============================================================
--- 15) USER LOGS
+-- 16) USER LOGS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS UserLogs (
   id           INT           AUTO_INCREMENT PRIMARY KEY,
@@ -258,7 +273,7 @@ CREATE TABLE IF NOT EXISTS UserLogs (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 -- ============================================================
--- 16) NOTIFICATIONS
+-- 17) NOTIFICATIONS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS Notifications (
   id           INT           AUTO_INCREMENT PRIMARY KEY,
@@ -275,7 +290,7 @@ CREATE TABLE IF NOT EXISTS Notifications (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 -- ============================================================
--- 17) WALLETS
+-- 18) WALLETS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS Wallets (
   id            INT           AUTO_INCREMENT PRIMARY KEY,
@@ -288,7 +303,7 @@ CREATE TABLE IF NOT EXISTS Wallets (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 -- ============================================================
--- 18) WALLET TRANSACTIONS
+-- 19) WALLET TRANSACTIONS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS WalletTransactions (
   id           INT           AUTO_INCREMENT PRIMARY KEY,
@@ -304,7 +319,7 @@ CREATE TABLE IF NOT EXISTS WalletTransactions (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 -- ============================================================
--- 19) TICKETS
+-- 20) TICKETS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS Tickets (
   id              INT           AUTO_INCREMENT PRIMARY KEY,
@@ -322,7 +337,7 @@ CREATE TABLE IF NOT EXISTS Tickets (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 -- ============================================================
--- 20) TICKET SELECTIONS
+-- 21) TICKET SELECTIONS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS TicketSelections (
   id             INT           AUTO_INCREMENT PRIMARY KEY,
@@ -343,7 +358,7 @@ CREATE TABLE IF NOT EXISTS TicketSelections (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 -- ============================================================
--- 21) BONUS CODES
+-- 22) BONUS CODES
 -- ============================================================
 CREATE TABLE IF NOT EXISTS BonusCodes (
   id                   INT           AUTO_INCREMENT PRIMARY KEY,
@@ -386,7 +401,7 @@ CREATE TABLE IF NOT EXISTS BonusCodes (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 -- ============================================================
--- 22) USER BONUSES
+-- 23) USER BONUSES
 -- ============================================================
 CREATE TABLE IF NOT EXISTS UserBonuses (
   id                  INT           AUTO_INCREMENT PRIMARY KEY,
@@ -413,7 +428,7 @@ CREATE TABLE IF NOT EXISTS UserBonuses (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 -- ============================================================
--- 23) ADMIN USERS
+-- 24) ADMIN USERS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS AdminUsers (
   id            INT           AUTO_INCREMENT PRIMARY KEY,
@@ -428,7 +443,7 @@ CREATE TABLE IF NOT EXISTS AdminUsers (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 -- ============================================================
--- 24) AUDIT LOGS
+-- 25) AUDIT LOGS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS AuditLogs (
   id             INT           AUTO_INCREMENT PRIMARY KEY,

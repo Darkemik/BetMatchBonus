@@ -1,4 +1,6 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', '0');
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 
@@ -10,16 +12,19 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // Adatok beolvasása
-$username   = trim($_POST['username'] ?? '');
-$email      = trim($_POST['email'] ?? '');
-$password   = $_POST['password'] ?? '';
-$birthdate  = $_POST['birthdate'] ?? '';
+$username            = trim($_POST['username'] ?? '');
+$email               = trim($_POST['email'] ?? '');
+$password            = $_POST['password'] ?? '';
+$phone               = trim($_POST['phone'] ?? '');
+$birthdate           = $_POST['birthdate'] ?? '';
+$birthplace          = trim($_POST['birthplace'] ?? '');
 
 // 2. lépés – teljes név összeállítása
 $family_name = trim($_POST['family_name'] ?? '');
 $sure_name   = trim($_POST['sure_name'] ?? '');
 $pre_name    = trim($_POST['pre_name'] ?? '');
 $full_name   = trim($pre_name . ' ' . $family_name . ' ' . $sure_name);
+$mother_full_name = trim($_POST['mother_full_name'] ?? '');
 
 // Validáció
 if ($username === '' || $email === '' || $password === '') {
@@ -34,8 +39,12 @@ if (strlen($password) < 7) {
     echo json_encode(['success' => false, 'message' => 'A jelszó legalább 7 karakter legyen!']);
     exit;
 }
-if ($birthdate === '' || $family_name === '' || $sure_name === '') {
+if ($birthdate === '' || $family_name === '' || $sure_name === '' || $phone === '' || $birthplace === '') {
     echo json_encode(['success' => false, 'message' => 'A személyes adatok kitöltése kötelező!']);
+    exit;
+}
+if (strlen($phone) < 11) {
+    echo json_encode(['success' => false, 'message' => 'A telefonszám legalább 11 számjegy legyen!']);
     exit;
 }
 
@@ -60,34 +69,65 @@ if ($stmt->num_rows > 0) {
 }
 $stmt->close();
 
+// Város ellenőrzés
+if ($birthplace === '') {
+    echo json_encode(['success' => false, 'message' => 'Születési hely megadása kötelező!']);
+    exit;
+}
+
 // Jelszó hashelés
 $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
+// birth_date konvertálása DATE formátumra
+$birthdate_formatted = date('Y-m-d', strtotime($birthdate));
+
 // INSERT a Users táblába
 $stmt = $conn->prepare(
-    "INSERT INTO Users (username, email, password_hash, full_name, birth_date) 
-    VALUES (?, ?, ?, ?, ?)"
+    "INSERT INTO Users (username, email, password_hash, full_name, pre_name, family_name, sure_name, mother_full_name, birthplace, birth_date, mobile_number) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 );
-$stmt->bind_param("sssss", $username, $email, $password_hash, $full_name, $birthdate);
 
-if ($stmt->execute()) {
-    $userId = $stmt->insert_id;
-    $_SESSION['user_id']  = $userId;
-    $_SESSION['username'] = $username;
-    
-    // Wallet létrehozása 50000 Ft alapegyenleggel
-    $initialBalance = 50000;
-    $walletStmt = $conn->prepare(
-        "INSERT INTO Wallets (user_id, balance) VALUES (?, ?)"
-    );
-    $walletStmt->bind_param("id", $userId, $initialBalance);
-    $walletStmt->execute();
-    $walletStmt->close();
-    
-    echo json_encode(['success' => true, 'message' => 'Sikeres regisztráció!']);
-} else {
-    echo json_encode(['success' => false, 'message' => 'Hiba: ' . $stmt->error]);
+if (!$stmt) {
+    echo json_encode(['success' => false, 'message' => 'Adatbázis hiba: ' . $conn->error]);
+    exit;
 }
+
+$stmt->bind_param("sssssssssss", $username, $email, $password_hash, $full_name, $pre_name, $family_name, $sure_name, $mother_full_name, $birthplace, $birthdate_formatted, $phone);
+
+if (!$stmt->execute()) {
+    echo json_encode(['success' => false, 'message' => 'Regisztrációs hiba: ' . $stmt->error]);
+    $stmt->close();
+    exit;
+}
+
+$userId = $stmt->insert_id;
+$_SESSION['user_id']  = $userId;
+$_SESSION['username'] = $username;
+
+// Wallet létrehozása 50000 Ft alapegyenleggel
+$initialBalance = 50000.00;
+$walletStmt = $conn->prepare(
+    "INSERT INTO Wallets (user_id, balance) VALUES (?, ?)"
+);
+
+if (!$walletStmt) {
+    echo json_encode(['success' => false, 'message' => 'Wallet hiba: ' . $conn->error]);
+    $stmt->close();
+    exit;
+}
+
+$walletStmt->bind_param("id", $userId, $initialBalance);
+
+if (!$walletStmt->execute()) {
+    echo json_encode(['success' => false, 'message' => 'Wallet létrehozási hiba: ' . $walletStmt->error]);
+    $walletStmt->close();
+    $stmt->close();
+    exit;
+}
+
+$walletStmt->close();
+
+echo json_encode(['success' => true, 'message' => 'Sikeres regisztráció!']);
 
 $stmt->close();
 $conn->close();
