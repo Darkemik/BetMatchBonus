@@ -12,6 +12,7 @@ require_once "../../backend/ApiRequest/connect.php";
   <link rel="stylesheet" href="../../css/Main/layout.css">
   <link rel="stylesheet" href="../../css/Betslip/betslip.css">
   <link rel="stylesheet" href="../../css/Main/popup.css">
+  <link rel="stylesheet" href="../../css/Modal/modal.css">
   <link rel="stylesheet" href="../../css/RootColor/root.css">
   <link rel="icon" href="../../img/logo.png" type="image/x-icon">
   <link rel="stylesheet"
@@ -125,11 +126,13 @@ require_once "../../backend/ApiRequest/connect.php";
   <?php include '../../frontend/Components/loginmodal.php';?>
   <?php include '../../frontend/Components/registermodal.php';?>
   <?php include '../../frontend/Components/registermodal2.php'; ?>
+  <?php include '../../frontend/Components/forgotmypassword.php'; ?>
   <script src="../../js/Main/auth_ui.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../../js/Login/loginmodal.js"></script>
   <script src="../../js/Register/registermodal.js"></script>
   <script src="../../js/Register/registermodal2.js"></script>
+  <script src="../../js/Forgotmypassword/forgotmypassword.js"></script>
   <script src="../../js/Main/layout.js"></script>
   <script src="../../js/Main/popup.js"></script>
   <script src="../../js/Betslip/betslip.js"></script>

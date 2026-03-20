@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
             var email2 = document.getElementById('modal-email2').value.trim();
             var password = document.getElementById('modal-password').value;
             var password2 = document.getElementById('modal-password2').value;
+            var phone = document.getElementById('modal-phone').value.trim();
             var termsRules = document.getElementById('modal-terms_rules').checked ? '1' : '';
             var termsPrivacy = document.getElementById('modal-terms_privacy').checked ? '1' : '';
 
@@ -62,6 +63,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
+            if (phone.length < 11) {
+                result.style.color = 'red';
+                result.textContent = 'A telefonszám legalább 11 számjegy hosszú kell legyen!';
+                return;
+            }
+
             if (!termsRules || !termsPrivacy) {
                 result.style.color = 'red';
                 result.textContent = 'A folytatáshoz el kell fogadnod a szabályzatot és az adatkezelési tájékoztatót!';
@@ -75,6 +82,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 username: username,
                 email: email,
                 password: password,
+                phone: phone,
                 terms_rules: termsRules,
                 terms_privacy: termsPrivacy
             };

@@ -1,7 +1,8 @@
 #loginModal .modal-content,
 #registerModal .modal-content,
 #registerModal2 .modal-content,
-#forgotPasswordModal .modal-content {
+#forgotPasswordModal .modal-content,
+#forgotUsernameModal .modal-content {
     border-radius: 10px;
     background-color: #1e2128 !important;
     color: #ffffff !important;
@@ -11,7 +12,8 @@
 #loginModal .modal-header,
 #registerModal .modal-header,
 #registerModal2 .modal-header,
-#forgotPasswordModal .modal-header {
+#forgotPasswordModal .modal-header,
+#forgotUsernameModal .modal-header {
     background-color: #1e2128;
     border-bottom: 1px solid rgba(255, 162, 0, 0.2);
 }
@@ -19,14 +21,16 @@
 #loginModal .modal-title,
 #registerModal .modal-title,
 #registerModal2 .modal-title,
-#forgotPasswordModal .modal-title {
+#forgotPasswordModal .modal-title,
+#forgotUsernameModal .modal-title {
     color: #ffffff !important;
 }
 
 #loginModal .modal-body,
 #registerModal .modal-body,
 #registerModal2 .modal-body,
-#forgotPasswordModal .modal-body {
+#forgotPasswordModal .modal-body,
+#forgotUsernameModal .modal-body {
     background-color: #1e2128;
     color: #ffffff;
 }
@@ -34,7 +38,8 @@
 #loginModal .modal-footer,
 #registerModal .modal-footer,
 #registerModal2 .modal-footer,
-#forgotPasswordModal .modal-footer {
+#forgotPasswordModal .modal-footer,
+#forgotUsernameModal .modal-footer {
     background-color: #1e2128;
     border-top: 1px solid rgba(255, 162, 0, 0.2);
 }
@@ -42,14 +47,16 @@
 #loginModal .form-label,
 #registerModal .form-label,
 #registerModal2 .form-label,
-#forgotPasswordModal .form-label {
+#forgotPasswordModal .form-label,
+#forgotUsernameModal .form-label {
     color: #ffffff !important;
 }
 
 #loginModal .form-control,
 #registerModal .form-control,
 #registerModal2 .form-control,
-#forgotPasswordModal .form-control {
+#forgotPasswordModal .form-control,
+#forgotUsernameModal .form-control {
     background-color: #262c35;
     color: #ffffff;
     border-color: rgba(255, 162, 0, 0.3);
@@ -58,7 +65,8 @@
 #loginModal .form-control::placeholder,
 #registerModal .form-control::placeholder,
 #registerModal2 .form-control::placeholder,
-#forgotPasswordModal .form-control::placeholder {
+#forgotPasswordModal .form-control::placeholder,
+#forgotUsernameModal .form-control::placeholder {
     color: #b0b8c8 !important;
     opacity: 1;
 }
@@ -66,7 +74,8 @@
 #loginModal .form-control:focus,
 #registerModal .form-control:focus,
 #registerModal2 .form-control:focus,
-#forgotPasswordModal .form-control:focus {
+#forgotPasswordModal .form-control:focus,
+#forgotUsernameModal .form-control:focus {
     background-color: #262c35;
     color: #ffffff;
     border-color: #ffa200;
@@ -76,21 +85,24 @@
 #loginModal .btn-close,
 #registerModal .btn-close,
 #registerModal2 .btn-close,
-#forgotPasswordModal .btn-close {
+#forgotPasswordModal .btn-close,
+#forgotUsernameModal .btn-close {
     filter: invert(1);
 }
 
 #loginModal .form-check-label,
 #registerModal .form-check-label,
 #registerModal2 .form-check-label,
-#forgotPasswordModal .form-check-label {
+#forgotPasswordModal .form-check-label,
+#forgotUsernameModal .form-check-label {
     color: #ffffff !important;
 }
 
 #loginModal .form-check-input,
 #registerModal .form-check-input,
 #registerModal2 .form-check-input,
-#forgotPasswordModal .form-check-input {
+#forgotPasswordModal .form-check-input,
+#forgotUsernameModal .form-check-input {
     background-color: #262c35;
     border-color: rgba(255, 162, 0, 0.3);
 }
@@ -98,7 +110,8 @@
 #loginModal .form-check-input:checked,
 #registerModal .form-check-input:checked,
 #registerModal2 .form-check-input:checked,
-#forgotPasswordModal .form-check-input:checked {
+#forgotPasswordModal .form-check-input:checked,
+#forgotUsernameModal .form-check-input:checked {
     background-color: #ffa200;
     border-color: #ffa200;
 }

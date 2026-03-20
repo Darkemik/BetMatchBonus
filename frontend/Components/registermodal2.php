@@ -1,4 +1,3 @@
-<!-- ⚡ NINCS PHP rész a tetején – tiszta HTML modal -->
 <div class="modal fade" id="registerModal2" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -35,6 +34,7 @@
                             <label class="form-label">Születési dátum</label>
                             <input type="date" id="modal2-date-input" name="birthdate" class="form-control mb-1" required>
                             <input type="hidden" name="calculated_age" id="modal2-calculated_age">
+                            <input type="hidden" name="birthplace_city_id" id="modal2-birthplace_city_id" value="1">
                             <p id="modal2-age-result" class="small text-muted mb-3"></p>
                         </div>
 

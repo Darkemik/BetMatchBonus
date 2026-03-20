@@ -50,6 +50,57 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  // Forgot username form submit
+  const forgotUsernameForm = document.getElementById('forgotUsernameForm');
+  const forgotUsernameResult = document.getElementById('forgotUsernameResult');
+
+  if (forgotUsernameForm) {
+    forgotUsernameForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      var email = forgotUsernameForm.querySelector('input[name="email"]').value.trim();
+      var birthdate = forgotUsernameForm.querySelector('input[name="birthdate"]').value.trim();
+
+      if (!email || !birthdate) {
+        forgotUsernameResult.style.color = 'red';
+        forgotUsernameResult.textContent = 'E-mail cím és születési dátum megadása kötelező!';
+        return;
+      }
+
+      var fd = new FormData();
+      fd.append('email', email);
+      fd.append('birthdate', birthdate);
+
+      fetch('../../backend/Auth/forgotusername.php', {
+        method: 'POST',
+        body: fd
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (!data.success) {
+            forgotUsernameResult.style.color = 'red';
+            forgotUsernameResult.textContent = data.message || 'Hiba történt.';
+            return;
+          }
+
+          forgotUsernameResult.style.color = 'green';
+          forgotUsernameResult.textContent = data.message || 'E-mail sikeresen elküldve! Kérjük ellenőrizd a postafiókod.';
+
+          // 2 másodperc után bezárjuk a modalt
+          setTimeout(() => {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('forgotUsernameModal'));
+            if (modal) modal.hide();
+            forgotUsernameForm.reset();
+          }, 2000);
+        })
+        .catch(function (err) {
+          console.error(err);
+          forgotUsernameResult.style.color = 'red';
+          forgotUsernameResult.textContent = 'Hiba történt a kérés során.';
+        });
+    });
+  }
+
   // Modal switch: login -> forgotpassword
   const switchToForgotPassword = document.getElementById('switchToForgotPassword');
   if (switchToForgotPassword) {
@@ -86,13 +137,39 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // Username help link - helyett csak hide a modal
+  // Modal switch: forgotpassword -> forgotusername
   const switchToUsernameHelp = document.getElementById('switchToUsernameHelp');
   if (switchToUsernameHelp) {
     switchToUsernameHelp.addEventListener('click', function (e) {
       e.preventDefault();
-      // Nincs alert, csak megmarad az oldal
-      console.log('Ha nem tudod a felhasználóneved, kérjük vedd fel a kapcsolatot az ügyfélszolgálattal.');
+      const forgotModal = bootstrap.Modal.getInstance(document.getElementById('forgotPasswordModal'));
+      if (forgotModal) forgotModal.hide();
+      const forgotUsernameModal = new bootstrap.Modal(document.getElementById('forgotUsernameModal'));
+      forgotUsernameModal.show();
+    });
+  }
+
+  // Modal switch: forgotusername -> forgotpassword (back button)
+  const backToForgotPasswordFromUsername = document.getElementById('backToForgotPasswordFromUsername');
+  if (backToForgotPasswordFromUsername) {
+    backToForgotPasswordFromUsername.addEventListener('click', function (e) {
+      e.preventDefault();
+      const forgotUsernameModal = bootstrap.Modal.getInstance(document.getElementById('forgotUsernameModal'));
+      if (forgotUsernameModal) forgotUsernameModal.hide();
+      const forgotModal = new bootstrap.Modal(document.getElementById('forgotPasswordModal'));
+      forgotModal.show();
+    });
+  }
+
+  // Modal switch: forgotusername -> forgotpassword (link)
+  const switchBackToForgotPassword = document.getElementById('switchBackToForgotPassword');
+  if (switchBackToForgotPassword) {
+    switchBackToForgotPassword.addEventListener('click', function (e) {
+      e.preventDefault();
+      const forgotUsernameModal = bootstrap.Modal.getInstance(document.getElementById('forgotUsernameModal'));
+      if (forgotUsernameModal) forgotUsernameModal.hide();
+      const forgotModal = new bootstrap.Modal(document.getElementById('forgotPasswordModal'));
+      forgotModal.show();
     });
   }
 });

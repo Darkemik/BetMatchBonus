@@ -86,6 +86,7 @@ document.addEventListener('DOMContentLoaded', function () {
         formData.append('username', window.registerStep1Data.username);
         formData.append('email', window.registerStep1Data.email);
         formData.append('password', window.registerStep1Data.password);
+        formData.append('phone', window.registerStep1Data.phone);
         formData.append('terms_rules', window.registerStep1Data.terms_rules);
         formData.append('terms_privacy', window.registerStep1Data.terms_privacy);
 
@@ -114,15 +115,38 @@ document.addEventListener('DOMContentLoaded', function () {
             method: 'POST',
             body: formData
         })
-        .then(function (res) { return res.json(); })
-        .then(function (data) {
-            if (data.success) {
-                result.style.color = 'green';
-                result.textContent = data.message;
-                setTimeout(function () { location.reload(); }, 1500);
-            } else {
+        .then(function (res) {
+            if (!res.ok) {
+                throw new Error('HTTP ' + res.status + ': ' + res.statusText);
+            }
+            return res.text();
+        })
+        .then(function (text) {
+            try {
+                var data = JSON.parse(text);
+                if (data.success) {
+                    result.style.color = 'green';
+                    result.textContent = data.message;
+                    // Modalok bezárása és forma resetelése
+                    setTimeout(function () {
+                        var reg2 = bootstrap.Modal.getInstance(document.getElementById('registerModal2'));
+                        if (reg2) reg2.hide();
+                        form.reset();
+                        document.getElementById('modal2-id_preview_first').style.display = 'none';
+                        document.getElementById('modal2-id_preview_second').style.display = 'none';
+                        document.getElementById('modal2-address_preview').style.display = 'none';
+                        ageResult.textContent = '';
+                        // 1. lépés adatainak törlése
+                        window.registerStep1Data = null;
+                    }, 1500);
+                } else {
+                    result.style.color = 'red';
+                    result.textContent = data.message;
+                }
+            } catch (parseErr) {
                 result.style.color = 'red';
-                result.textContent = data.message;
+                result.textContent = 'Szerver hiba történt (500). Kérjük, próbáld újra később.';
+                console.error('JSON parse error:', parseErr, 'Response:', text);
             }
         })
         .catch(function (err) {
