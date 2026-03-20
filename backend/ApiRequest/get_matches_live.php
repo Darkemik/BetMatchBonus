@@ -55,11 +55,17 @@ foreach ($sports as $sport) {
         // Élő meccsek importálása az adatbázisba
         if ($liveCount > 0) {
             importMatches($conn, $liveMatches, $sportId);
+            
+            // Azok a meccsek amik korábban élők voltak DE már nincsenek az API élő listájában → befejezettek
+            markFinishedMatches($conn, $liveMatches, $sportId);
         }
     } else {
         $result['sports'][$sportId] = 0;
     }
 }
+
+// Globális: MINDEN olyan meccs ami 2+ órája kezdődött és még is_live=1 → befejezett
+markOldLiveMatchesAsFinished($conn);
 
 echo json_encode($result);
 
@@ -176,5 +182,64 @@ function importMatches($conn, $matches, $sportId) {
     $stmtCountry->close();
     $stmtInsertChamp->close();
     $stmtInsertMatch->close();
+}
+
+/**
+ * Azon meccsek befejezettnek jelölése, amik korábban élők voltak,
+ * de már nincsenek az API élő listájában
+ */
+function markFinishedMatches($conn, $currentLiveMatches, $sportApiId) {
+    // Összegyűjtjük az API-ban jelenleg élő meccsek api_id-jeit
+    $liveApiIds = [];
+    foreach ($currentLiveMatches as $m) {
+        if (isset($m['id'])) {
+            $liveApiIds[] = (int)$m['id'];
+        }
+    }
+    
+    if (empty($liveApiIds)) return;
+
+    // Sport belső ID
+    $stmtSport = $conn->prepare("SELECT id FROM Sports WHERE api_id = ?");
+    $stmtSport->bind_param("i", $sportApiId);
+    $stmtSport->execute();
+    $sportRow = $stmtSport->get_result()->fetch_assoc();
+    $stmtSport->close();
+    if (!$sportRow) return;
+    $internalSportId = (int)$sportRow['id'];
+
+    // Keressük meg azokat a meccseket amik az adatbázisban is_live=1 ebben a sportban,
+    // DE nincsenek benne a jelenlegi élő listában
+    $placeholders = implode(',', array_fill(0, count($liveApiIds), '?'));
+    $types = str_repeat('i', count($liveApiIds));
+    
+    $sql = "UPDATE Events 
+            SET is_live = 0, live_status = 'Ended' 
+            WHERE sport_id = ? 
+              AND is_live = 1 
+              AND api_id NOT IN ($placeholders)
+              AND start_time < NOW()";
+    
+    $stmt = $conn->prepare($sql);
+    $params = array_merge([$internalSportId], $liveApiIds);
+    $typeStr = 'i' . $types;
+    $stmt->bind_param($typeStr, ...$params);
+    $stmt->execute();
+    $stmt->close();
+}
+
+/**
+ * GLOBÁLIS: Minden meccs ami 2+ órája kezdődött és még is_live=1 → befejezett
+ * Ez a fallback ha egy sport nincs az API-ban de a meccs régen elkezdődött
+ */
+function markOldLiveMatchesAsFinished($conn) {
+    $stmt = $conn->prepare("
+        UPDATE Events 
+        SET is_live = 0, live_status = 'Ended'
+        WHERE is_live = 1 
+          AND start_time < DATE_SUB(NOW(), INTERVAL 2 HOUR)
+    ");
+    $stmt->execute();
+    $stmt->close();
 }
 ?>

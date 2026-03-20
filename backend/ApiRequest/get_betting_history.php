@@ -1,10 +1,12 @@
 <?php
 /**
  * GET_BETTING_HISTORY.PHP - Bejelentkezett felhasználó Ticketjeinek lekérése
+ * Automatikusan kiértékeli a nyitott szelvényeket is!
  */
 
 session_start();
 require_once __DIR__ . "/connect.php";
+require_once __DIR__ . "/check_bets.php";
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -15,6 +17,9 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $userId = (int)$_SESSION['user_id'];
+
+// ELŐSZÖR kiértékeljük a nyitott szelvényeket
+evaluateOpenTickets($conn, $userId);
 
 // Ticketek lekérése az utolsó 50-ből
 $stmtTickets = $conn->prepare("

@@ -391,11 +391,69 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(r => r.json())
             .then(data => {
                 if (data.status === 'ok') {
+                    const oldHistory = bettingHistory;
                     bettingHistory = data.history || [];
                     renderHistory();
+
+                    // Státuszváltozás detektálás → popup értesítés
+                    if (oldHistory.length > 0) {
+                        detectStatusChanges(oldHistory, bettingHistory);
+                    }
+
+                    // Háttér-ellenőrzés indítása/leállítása nyitott szelvények alapján
+                    manageBackgroundCheck();
                 }
             })
             .catch(e => console.error('Előzmények hiba:', e));
+    }
+
+    // ===== STÁTUSZVÁLTOZÁS DETEKTÁLÁS =====
+    function detectStatusChanges(oldHistory, newHistory) {
+        newHistory.forEach(ticket => {
+            const oldTicket = oldHistory.find(t => t.id === ticket.id);
+            if (!oldTicket) return;
+
+            // Ha a státusz megváltozott
+            if (oldTicket.status === 'OPEN' && ticket.status !== 'OPEN') {
+                if (ticket.status === 'WON') {
+                    const winAmount = parseFloat(ticket.potential_win).toLocaleString('hu-HU');
+                    if (typeof BmbPopup !== 'undefined' && BmbPopup.success) {
+                        BmbPopup.success(
+                            `Nyertes szelvény! 🎉\nNyeremény: ${winAmount} Ft jóváírva!`,
+                            '✅ Nyertél!'
+                        );
+                    }
+                    console.log('[BETSLIP] 🎉 Nyertes szelvény! ID:', ticket.id, 'Nyeremény:', winAmount, 'Ft');
+                } else if (ticket.status === 'LOST') {
+                    if (typeof BmbPopup !== 'undefined' && BmbPopup.error) {
+                        BmbPopup.error(
+                            'Sajnos a szelvényed vesztes lett. Legközelebb több szerencsét!',
+                            '❌ Vesztes szelvény'
+                        );
+                    }
+                    console.log('[BETSLIP] ❌ Vesztes szelvény. ID:', ticket.id);
+                }
+            }
+        });
+    }
+
+    // ===== HÁTTÉR KIÉRTÉKELÉS KEZELÉSE =====
+    function manageBackgroundCheck() {
+        const hasOpenTickets = bettingHistory.some(t => t.status === 'OPEN');
+
+        if (hasOpenTickets && !historyCheckTimer) {
+            // Van nyitott szelvény → indítsuk a háttér-ellenőrzést (60 mp)
+            console.log('[BETSLIP] ⏱ Háttér-ellenőrzés indítása (60s) - vannak nyitott szelvények');
+            historyCheckTimer = setInterval(() => {
+                console.log('[BETSLIP] 🔄 Háttér kiértékelés futtatása...');
+                loadBettingHistory();
+            }, 60000);
+        } else if (!hasOpenTickets && historyCheckTimer) {
+            // Nincs nyitott szelvény → leállítjuk
+            console.log('[BETSLIP] ⏹ Háttér-ellenőrzés leállítva - nincs nyitott szelvény');
+            clearInterval(historyCheckTimer);
+            historyCheckTimer = null;
+        }
     }
 
     // ===== FOGADÁSI ELŐZMÉNYEK RENDERELÉS =====
@@ -425,18 +483,30 @@ document.addEventListener('DOMContentLoaded', function() {
             let itemsHtml = '';
             if (ticket.items && ticket.items.length > 0) {
                 ticket.items.forEach(item => {
+                    const itemStatus = item.status || 'OPEN';
+                    const itemIcon = itemStatus === 'WON' ? '✅' : 
+                                     itemStatus === 'LOST' ? '❌' : '⏳';
+                    const itemStatusClass = itemStatus.toLowerCase();
+                    
                     itemsHtml += `
-                        <div class="elozmeny-item-entry">
-                            <div class="elozmeny-match">${escapeHtml(item.homeTeam)} vs ${escapeHtml(item.awayTeam)}</div>
+                        <div class="elozmeny-item-entry ${itemStatusClass}">
+                            <div class="elozmeny-match">
+                                <span class="item-status-icon">${itemIcon}</span>
+                                ${escapeHtml(item.homeTeam)} vs ${escapeHtml(item.awayTeam)}
+                            </div>
                             <div class="elozmeny-market">${escapeHtml(item.market)}</div>
-                            <div class="elozmeny-pick">${escapeHtml(item.pick)} @ ${parseFloat(item.odds).toFixed(2)}</div>
+                            <div class="elozmeny-pick">Tipp: <strong>${escapeHtml(item.pick)}</strong> @ ${parseFloat(item.odds).toFixed(2)}</div>
                         </div>
                     `;
                 });
             }
 
+            // Nyertes szelvénynél más szín a summary-n
+            const wonClass = ticket.status === 'WON' ? ' elozmeny-won' : '';
+            const lostClass = ticket.status === 'LOST' ? ' elozmeny-lost' : '';
+
             const el = document.createElement('div');
-            el.className = 'elozmeny-item';
+            el.className = 'elozmeny-item' + wonClass + lostClass;
             el.innerHTML = `
                 <div class="elozmeny-header">
                     <span class="elozmeny-date">${new Date(ticket.created_at).toLocaleString('hu-HU')}</span>
@@ -446,7 +516,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="elozmeny-summary">
                     <span><strong>Tét:</strong> ${parseFloat(ticket.stake).toLocaleString('hu-HU')} Ft</span>
                     <span><strong>Odds:</strong> ${parseFloat(ticket.total_odds).toFixed(3)}</span>
-                    <span><strong>Potenciális:</strong> ${parseFloat(ticket.potential_win).toLocaleString('hu-HU')} Ft</span>
+                    <span class="${ticket.status === 'WON' ? 'won-amount' : ''}"><strong>${ticket.status === 'WON' ? 'Nyeremény:' : 'Potenciális:'}</strong> ${parseFloat(ticket.potential_win).toLocaleString('hu-HU')} Ft</span>
                 </div>
             `;
             container.appendChild(el);
