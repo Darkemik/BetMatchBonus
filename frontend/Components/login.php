@@ -2,7 +2,7 @@
 <button class="registrationbtn" data-bs-toggle="modal" data-bs-target="#registerModal">Regisztráció</button>
 <div id="userMenu" class="dropdown" style="display:none;">
     <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-        <span id="userMenuUsername">Fiókom</span>
+        <span id="userMenuUsername">-</span>
     </button>
 
     <ul class="dropdown-menu dropdown-menu-end">

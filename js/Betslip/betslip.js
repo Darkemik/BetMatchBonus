@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let historyCheckTimer = null;
     let isLoggedIn = false;
     let currentUserId = null;
+    let userBalance = 0;
 
     // ===== BEJELENTKEZÉS ELLENŐRZÉSE =====
     function checkLoginStatus() {
@@ -19,11 +20,15 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 isLoggedIn = data.loggedIn === true;
                 currentUserId = data.user?.id || null;
-                console.log('[BETSLIP] Login status:', isLoggedIn, 'User ID:', currentUserId);
+                userBalance = parseFloat(data.user?.balance) || 0;
+                console.log('[BETSLIP] Login status:', isLoggedIn, 'User ID:', currentUserId, 'Balance:', userBalance);
+                updatePlaceBetButton();
             })
             .catch(e => {
                 console.error('[BETSLIP] Login check error:', e);
                 isLoggedIn = false;
+                userBalance = 0;
+                updatePlaceBetButton();
             });
     }
 
@@ -243,6 +248,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const totalOddsEl = document.getElementById('total-odds');
         if (totalOddsEl) totalOddsEl.textContent = totalOdds.toFixed(3);
         updatePotentialWin(totalOdds);
+        updatePlaceBetButton();
         
         console.log('[BETSLIP] renderTicket() vége, totalOdds:', totalOdds);
     }
@@ -282,6 +288,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== TICKET ELKÜLDÉSE =====
     const submitBtn = document.getElementById('place-bet-btn');
+    
+    function updatePlaceBetButton() {
+        if (!submitBtn) return;
+        
+        const stake = parseFloat(document.getElementById('stake-input')?.value) || 0;
+        
+        // Letiltás feltételei:
+        if (!isLoggedIn || userBalance === 0 || userBalance < stake || ticketItems.length === 0) {
+            submitBtn.disabled = true;
+            if (!isLoggedIn) {
+                submitBtn.title = 'Be kell jelentkezned a fogadáshoz';
+            } else if (userBalance === 0) {
+                submitBtn.title = 'Nincs elegendő egyenleg! Kérjük, töltsd fel az accountot.';
+            } else if (userBalance < stake) {
+                submitBtn.title = 'Nincs elegendő egyenleg az adott téthez!';
+            } else if (ticketItems.length === 0) {
+                submitBtn.title = 'Legalább egy fogadás szükséges';
+            }
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.title = '';
+        }
+    }
+    
     if (submitBtn) {
         submitBtn.addEventListener('click', () => {
             if (ticketItems.length === 0) return;
@@ -297,8 +327,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
+            if (userBalance === 0 || userBalance < stake) {
+                BmbPopup.warning('Nincs elegendő egyenleg! Kérjük, töltsd fel az accountot.', 'Nincs elegendő pénz');
+                return;
+            }
+
             submitTicketToDB(stake);
         });
+        
+        // Figyelje a stake-input változásait
+        const stakeInput = document.getElementById('stake-input');
+        if (stakeInput) {
+            stakeInput.addEventListener('input', updatePlaceBetButton);
+        }
     }
 
     // ===== SUBMIT TICKET TO DB =====
@@ -601,6 +642,7 @@ document.addEventListener('DOMContentLoaded', function() {
     renderTicket();
     loadBettingHistory();
     refreshAllOddsButtons();
+    updatePlaceBetButton();
 
     console.log('[BETSLIP] Kész!');
 });

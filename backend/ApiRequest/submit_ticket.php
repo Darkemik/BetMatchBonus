@@ -37,16 +37,16 @@ if ($stake < 100 || count($items) === 0) {
 }
 
 // Wallet ellenőrzése
-$stmtWallet = $conn->prepare("SELECT balance FROM Wallets WHERE user_id = ?");
+$stmtWallet = $conn->prepare("SELECT balance FROM Users WHERE id = ?");
 $stmtWallet->bind_param("i", $userId);
 $stmtWallet->execute();
 $walletResult = $stmtWallet->get_result();
 $wallet = $walletResult->fetch_assoc();
 $stmtWallet->close();
 
-if (!$wallet || $wallet['balance'] < $stake) {
+if (!$wallet || !isset($wallet['balance']) || $wallet['balance'] === 0 || $wallet['balance'] < $stake) {
     http_response_code(400);
-    echo json_encode(['status' => 'error', 'message' => 'Nincs elegendő egyenleg!']);
+    echo json_encode(['status' => 'error', 'message' => 'Nincs elegendő egyenleg! Kérjük, töltse fel az accountot.']);
     exit;
 }
 
@@ -121,22 +121,47 @@ try {
         $stmtSel->close();
     }
 
-    // 3. WALLET UPDATE - Tét levonása
-    $stmtUpdateWallet = $conn->prepare("
-        UPDATE Wallets SET balance = balance - ? WHERE user_id = ?
-    ");
-    $stmtUpdateWallet->bind_param("di", $stake, $userId);
-    $stmtUpdateWallet->execute();
-    $stmtUpdateWallet->close();
+    // 3. WALLET UPDATE - Tét levonása (ha Wallets tábla létezik)
+    $stmtCheckWallets = $conn->prepare("SELECT COUNT(*) as cnt FROM information_schema.TABLES WHERE TABLE_NAME='Wallets' AND TABLE_SCHEMA=DATABASE()");
+    $stmtCheckWallets->execute();
+    $walletCheck = $stmtCheckWallets->get_result()->fetch_assoc();
+    $stmtCheckWallets->close();
+    
+    if ($walletCheck['cnt'] > 0) {
+        $stmtUpdateWallet = $conn->prepare("
+            UPDATE Wallets SET balance = balance - ? WHERE user_id = ?
+        ");
+        $stmtUpdateWallet->bind_param("di", $stake, $userId);
+        $stmtUpdateWallet->execute();
+        $stmtUpdateWallet->close();
 
-    // 4. WALLET TRANSACTION RÖGZÍTÉSE
-    $stmtTx = $conn->prepare("
-        INSERT INTO WalletTransactions (wallet_id, amount, type_id, related_type, related_id, created_at)
-        SELECT id, ?, 3, 'Ticket', ?, NOW() FROM Wallets WHERE user_id = ?
+        // 4. WALLET TRANSACTION RÖGZÍTÉSE
+        $stmtTx = $conn->prepare("
+            INSERT INTO WalletTransactions (wallet_id, amount, type_id, related_type, related_id, created_at)
+            SELECT id, ?, 3, 'Ticket', ?, NOW() FROM Wallets WHERE user_id = ?
+        ");
+        $stmtTx->bind_param("dii", $stake, $ticketId, $userId);
+        $stmtTx->execute();
+        $stmtTx->close();
+    }
+    
+    // 5. USERS BALANCE UPDATE - UserProfile rendszerhez
+    $stmtUpdateUserBalance = $conn->prepare("
+        UPDATE Users SET balance = balance - ? WHERE id = ?
     ");
-    $stmtTx->bind_param("dii", $stake, $ticketId, $userId);
-    $stmtTx->execute();
-    $stmtTx->close();
+    $stmtUpdateUserBalance->bind_param("di", $stake, $userId);
+    $stmtUpdateUserBalance->execute();
+    $stmtUpdateUserBalance->close();
+    
+    // 6. TRANSACTION RÖGZÍTÉSE - UserProfile modulos Transactions táblához
+    $stmtTransaction = $conn->prepare("
+        INSERT INTO Transactions (user_id, type, amount, payment_method, status, transaction_id, created_at)
+        VALUES (?, 'withdrawal', ?, 'bet', 'completed', ?, NOW())
+    ");
+    $transactionId = uniqid('BET_');
+    $stmtTransaction->bind_param("ids", $userId, $stake, $transactionId);
+    $stmtTransaction->execute();
+    $stmtTransaction->close();
 
     // TRANZAKCIÓ COMMIT
     $conn->commit();

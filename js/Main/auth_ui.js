@@ -26,7 +26,11 @@ async function refreshAuthUI() {
     const fullNameEl = document.getElementById('userFullName');
     const emailEl = document.getElementById('userEmail');
 
-    if (usernameEl) usernameEl.textContent = u.username || 'Fiókom';
+    // Balance megjelenítése formázva
+    const balance = parseFloat(u.balance) || 0;
+    const balanceFormatted = balance.toLocaleString('hu-HU', { style: 'currency', currency: 'HUF' }).replace('Ft', 'FT').trim();
+    
+    if (usernameEl) usernameEl.textContent = balanceFormatted;
     if (fullNameEl) fullNameEl.textContent = u.full_name || u.username || '-';
     if (emailEl) emailEl.textContent = u.email || '-';
   } catch (e) {

@@ -45,12 +45,17 @@
         </div>
     </div>
 
+    <?php
+    $is_in_userprofile = strpos($_SERVER['PHP_SELF'], 'UserProfile') !== false;
+    $current_page = basename($_SERVER['PHP_SELF'], '.php');
+    ?>
+
     <nav class="nav collapse navbar-collapse" id="mainNavbar">
-        <a href="<?php echo dirname(dirname($_SERVER['PHP_SELF'])); ?>/MainMenu/MainMenu.php" class="active">Főoldal</a>
-        <a href="<?php echo dirname(dirname($_SERVER['PHP_SELF'])); ?>/Live/live.php">Élő</a>
-        <a href="<?php echo dirname(dirname($_SERVER['PHP_SELF'])); ?>/Esport/esport.php">eSport</a>
-        <a href="<?php echo dirname(dirname($_SERVER['PHP_SELF'])); ?>/Bonus/bonus.php">Bónuszok</a>
-        <a href="<?php echo dirname(dirname($_SERVER['PHP_SELF'])); ?>/Help/help.php">Segítség</a>
+        <a href="<?php echo dirname(dirname($_SERVER['PHP_SELF'])); ?>/MainMenu/MainMenu.php" <?php if (!$is_in_userprofile && $current_page === 'MainMenu') echo 'class="active"'; ?>>Főoldal</a>
+        <a href="<?php echo dirname(dirname($_SERVER['PHP_SELF'])); ?>/Live/live.php" <?php if (!$is_in_userprofile && $current_page === 'live') echo 'class="active"'; ?>>Élő</a>
+        <a href="<?php echo dirname(dirname($_SERVER['PHP_SELF'])); ?>/Esport/esport.php" <?php if (!$is_in_userprofile && $current_page === 'esport') echo 'class="active"'; ?>>eSport</a>
+        <a href="<?php echo dirname(dirname($_SERVER['PHP_SELF'])); ?>/Bonus/bonus.php" <?php if (!$is_in_userprofile && $current_page === 'bonus') echo 'class="active"'; ?>>Bónuszok</a>
+        <a href="<?php echo dirname(dirname($_SERVER['PHP_SELF'])); ?>/Help/help.php" <?php if (!$is_in_userprofile && $current_page === 'help') echo 'class="active"'; ?>>Segítség</a>
     </nav>
 </header>
 

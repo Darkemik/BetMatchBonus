@@ -8,7 +8,7 @@ require_once __DIR__ . '/../ApiRequest/connect.php';
 if (isset($_SESSION['user_id'])) {
   $userId = (int)$_SESSION['user_id'];
   
-  $stmt = $conn->prepare("SELECT id, username, email, full_name FROM Users WHERE id = ? LIMIT 1");
+  $stmt = $conn->prepare("SELECT id, username, email, full_name, balance FROM Users WHERE id = ? LIMIT 1");
   $stmt->bind_param("i", $userId);
   $stmt->execute();
   $res = $stmt->get_result();
@@ -26,7 +26,7 @@ if (isset($_COOKIE['remember_token'])) {
   $rememberToken = $_COOKIE['remember_token'];
   $tokenHash = hash('sha256', $rememberToken);
   
-  $stmt = $conn->prepare("SELECT id, username, email, full_name, remember_expiry FROM Users 
+  $stmt = $conn->prepare("SELECT id, username, email, full_name, balance, remember_expiry FROM Users 
                           WHERE remember_token = ? AND remember_expiry > NOW() LIMIT 1");
   $stmt->bind_param("s", $tokenHash);
   $stmt->execute();
@@ -43,7 +43,8 @@ if (isset($_COOKIE['remember_token'])) {
       'id' => $user['id'],
       'username' => $user['username'],
       'email' => $user['email'],
-      'full_name' => $user['full_name']
+      'full_name' => $user['full_name'],
+      'balance' => $user['balance']
     ]]);
     exit;
   } else {

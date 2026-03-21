@@ -94,13 +94,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                         <div class="form-group mb-3">
                             <label for="username">Felhasználónév</label>
                             <input type="text" class="form-control" id="username" value="<?php echo htmlspecialchars($user['username']); ?>" disabled>
-                            <small class="form-text text-muted">A felhasználónév nem módosítható</small>
+                            <small class="form-text" style="color: white;">A felhasználónév nem módosítható</small>
                         </div>
                         
                         <div class="form-group mb-3">
                             <label for="email">Email</label>
                             <input type="email" class="form-control" id="email" value="<?php echo htmlspecialchars($user['email']); ?>" disabled>
-                            <small class="form-text text-muted">Az email cím nem módosítható</small>
+                            <small class="form-text" style="color: white;">Az email cím nem módosítható</small>
                         </div>
                         
                         <div class="form-group mb-3">
@@ -136,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                         <div class="form-group mb-3">
                             <label for="birth_date">Születési Dátum</label>
                             <input type="date" class="form-control" id="birth_date" value="<?php echo htmlspecialchars($user['birth_date'] ?? ''); ?>" disabled>
-                            <small class="form-text text-muted">A születési dátum nem módosítható</small>
+                            <small class="form-text" style="color: white;">A születési dátum nem módosítható</small>
                         </div>
                         
                         <div class="form-group mb-3">
