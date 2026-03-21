@@ -454,3 +454,88 @@ CREATE TABLE IF NOT EXISTS AuditLogs (
   CONSTRAINT fk_audit_admin FOREIGN KEY (admin_id)       REFERENCES AdminUsers(id) ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT fk_audit_bonus FOREIGN KEY (bonus_codes_id) REFERENCES BonusCodes(id) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+
+-- ============================================================
+-- 26) TRANSACTIONS (UserProfile - Befizetések/Kifizetések)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS Transactions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    type ENUM('deposit', 'withdrawal') NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    payment_method VARCHAR(50),
+    status ENUM('pending', 'completed', 'failed', 'cancelled') DEFAULT 'pending',
+    transaction_id VARCHAR(100) UNIQUE,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
+    INDEX idx_user_id (user_id),
+    INDEX idx_status (status),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+
+-- ============================================================
+-- 27) ACTIVITY LOG (Tevékenységi Napló)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS ActivityLog (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    activity_type VARCHAR(50) NOT NULL,
+    description TEXT,
+    ip_address VARCHAR(45),
+    user_agent VARCHAR(255),
+    device_info VARCHAR(255),
+    status VARCHAR(50) DEFAULT 'completed',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
+    INDEX idx_user_id (user_id),
+    INDEX idx_activity_type (activity_type),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+
+-- ============================================================
+-- 28) USER PAYMENT METHODS (Fizetési Módok)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS UserPaymentMethods (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    payment_type VARCHAR(50) NOT NULL,
+    account_holder VARCHAR(100),
+    account_number VARCHAR(100),
+    bank_name VARCHAR(100),
+    is_default BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
+    INDEX idx_user_id (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+
+-- ============================================================
+-- 29) BALANCE HISTORY (Egyenleg Történet)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS BalanceHistory (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    transaction_id INT,
+    previous_balance DECIMAL(10, 2),
+    new_balance DECIMAL(10, 2),
+    change_amount DECIMAL(10, 2),
+    reason VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
+    FOREIGN KEY (transaction_id) REFERENCES Transactions(id) ON DELETE SET NULL,
+    INDEX idx_user_id (user_id),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+
+-- ============================================================
+-- 30) USERS TABLE - Hiányzó oszlopok hozzáadása
+-- ============================================================
+ALTER TABLE Users ADD COLUMN IF NOT EXISTS balance DECIMAL(10, 2) DEFAULT 0;
+ALTER TABLE Users ADD COLUMN IF NOT EXISTS phone VARCHAR(20);
+ALTER TABLE Users ADD COLUMN IF NOT EXISTS country VARCHAR(100);
+ALTER TABLE Users ADD COLUMN IF NOT EXISTS city VARCHAR(100);
+ALTER TABLE Users ADD COLUMN IF NOT EXISTS postal_code VARCHAR(20);
+ALTER TABLE Users ADD COLUMN IF NOT EXISTS address VARCHAR(255);
