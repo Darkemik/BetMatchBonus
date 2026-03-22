@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . "/connect.php";
+require_once __DIR__ . "/live_helper.php";
 
 $sport_id = isset($_GET['sport_id']) ? intval($_GET['sport_id']) : 66;
 
@@ -20,7 +21,14 @@ if ($httpCode !== 200 || !$response) {
 }
 
 $matches = json_decode($response, true);
-if (!is_array($matches) || empty($matches)) {
+if (!is_array($matches)) $matches = [];
+
+// Adatbázis szinkronizálás - élő meccsek frissítése, befejezettek jelölése
+syncLiveMatchScores($conn, $matches);
+markFinishedMatchesBySport($conn, $matches, $sport_id);
+markOldLiveMatchesGlobal($conn);
+
+if (empty($matches)) {
     echo '<div class="no-matches"><i class="fas fa-futbol" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i>Jelenleg nincs élő meccs ehhez a sporthoz.</div>';
     exit;
 }

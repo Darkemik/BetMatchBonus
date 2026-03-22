@@ -448,31 +448,18 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(e => console.error('Előzmények hiba:', e));
     }
 
-    // ===== STÁTUSZVÁLTOZÁS DETEKTÁLÁS =====
+    // ===== STÁTUSZVÁLTOZÁS DETEKTÁLÁS (csak logolás, popup nélkül) =====
     function detectStatusChanges(oldHistory, newHistory) {
         newHistory.forEach(ticket => {
             const oldTicket = oldHistory.find(t => t.id === ticket.id);
             if (!oldTicket) return;
 
-            // Ha a státusz megváltozott
             if (oldTicket.status === 'OPEN' && ticket.status !== 'OPEN') {
                 if (ticket.status === 'WON') {
                     const winAmount = parseFloat(ticket.potential_win).toLocaleString('hu-HU');
-                    if (typeof BmbPopup !== 'undefined' && BmbPopup.success) {
-                        BmbPopup.success(
-                            `Nyertes szelvény! 🎉\nNyeremény: ${winAmount} Ft jóváírva!`,
-                            '✅ Nyertél!'
-                        );
-                    }
-                    console.log('[BETSLIP] 🎉 Nyertes szelvény! ID:', ticket.id, 'Nyeremény:', winAmount, 'Ft');
+                    console.log('[BETSLIP] Nyertes szelvény! ID:', ticket.id, 'Nyeremény:', winAmount, 'Ft');
                 } else if (ticket.status === 'LOST') {
-                    if (typeof BmbPopup !== 'undefined' && BmbPopup.error) {
-                        BmbPopup.error(
-                            'Sajnos a szelvényed vesztes lett. Legközelebb több szerencsét!',
-                            '❌ Vesztes szelvény'
-                        );
-                    }
-                    console.log('[BETSLIP] ❌ Vesztes szelvény. ID:', ticket.id);
+                    console.log('[BETSLIP] Vesztes szelvény. ID:', ticket.id);
                 }
             }
         });

@@ -106,8 +106,8 @@ function evaluateOpenTickets($conn, $userId) {
                             ];
                         }
                         
-                        // Frissítsük az Events tábla live_status-át is
-                        $stmtFixStatus = $conn->prepare("UPDATE Events SET is_live = 0, live_status = 'Ended' WHERE api_id = ? AND is_live = 1");
+                        // Frissítsük az Events tábla live_status-át és status_id-ját is
+                        $stmtFixStatus = $conn->prepare("UPDATE Events SET is_live = 0, live_status = 'Ended', status_id = 3 WHERE api_id = ? AND is_live = 1");
                         $stmtFixStatus->bind_param("i", $matchId);
                         $stmtFixStatus->execute();
                         $stmtFixStatus->close();
@@ -274,6 +274,12 @@ function updateTicketStatus($conn, $ticketId, $userId) {
         $stmtWallet->bind_param("di", $potentialWin, $userId);
         $stmtWallet->execute();
         $stmtWallet->close();
+
+        // Users.balance frissítése (UserProfile rendszer)
+        $stmtUserBal = $conn->prepare("UPDATE Users SET balance = balance + ? WHERE id = ?");
+        $stmtUserBal->bind_param("di", $potentialWin, $userId);
+        $stmtUserBal->execute();
+        $stmtUserBal->close();
 
         // Wallet tranzakció rögzítése (type_id = 4 = WIN)
         $stmtTx = $conn->prepare("
