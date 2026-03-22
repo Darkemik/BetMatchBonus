@@ -529,7 +529,688 @@ CREATE TABLE IF NOT EXISTS BalanceHistory (
     INDEX idx_user_id (user_id),
     INDEX idx_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+-- Bonuszok itt leeszenk insertelve azert elmentjuk egyelore
+-- ============================================================
+-- ÖSSZES BÓNUSZ BESZÚRÁSA (EGYELŐRE INAKTÍV, CSAK ADMIN SZÁMÁRA)
+-- ============================================================
 
+-- 1. HÉTKÖZNAPI BÓNUSZ (VAN KÓDJA)
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  'BONUSZHETKOZNAP5K',
+  'BÓNUSZ HÉTKÖZNAP (5.000 Ft, 100%, 3x)',
+  'Hétfőtől péntekig minden nap aktiválható. Minimum 5.000 Ft befizetés, 100% bónusz max 5.000 Ft-ig. A bónusz összegét 3x kell megforgatni.',
+  2,                          -- WEEKDAYS
+  0.00,
+  5000.00,
+  5000.00,
+  100.00,
+  'BONUS_MONEY',
+  'DEPOSIT',
+  'ANY',
+  0,
+  NULL,
+  NULL,
+  NULL,
+  3.0,
+  5.0,
+  0,
+  0,
+  NULL,
+  NULL,
+  1,
+  '00:00:00',
+  NULL,
+  NULL,
+  NULL,
+  0,
+  0,
+  NULL,
+  1,
+  '2026-01-01 00:00:00',
+  NULL,
+  0                           -- Csak admin
+);
+
+-- 2. DARTS BÓNUSZ (VAN KÓDJA)
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  'DARTSBONUSZ5K',
+  'DARTS BÓNUSZ (10.000 Ft fogadás, 5.000 Ft bónusz)',
+  'Fogadjon 10.000 Ft értékben 2-es kötésben kizárólag darts mérkőzésekre. Sikeres fogadás után 5.000 Ft bónusz jár, amit 2x kell megforgatni.',
+  4,                          -- EVENT_SPECIFIC
+  5000.00,
+  0.00,
+  5000.00,
+  0.00,
+  'BONUS_MONEY',
+  'BET',
+  'DARTS',
+  0,
+  2.0,
+  2,
+  NULL,
+  2.0,
+  5.0,
+  1,
+  0,
+  NULL,
+  NULL,
+  0,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  0,
+  0,
+  NULL,
+  1,
+  '2026-01-01 00:00:00',
+  NULL,
+  0                           -- Csak admin
+);
+
+-- 3. HÁROM LÉPCSŐS ÜDVÖZLŐ BÓNUSZ (NINCS KÓD)
+-- 3.1 Első lépcső: 100% max 20.000 Ft-ig, 2-es kötés, 2-es odds
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  NULL,                       
+  'ÜDVÖZLŐ BÓNUSZ 1. LÉPÉS (100% max 20.000 Ft)',
+  'Első lépcső: 100% feltöltési bónusz maximum 20.000 Ft-ig. Követelmény: 2-es kötés, minimum 2-es össz odds. A bónusz összegét 3x kell megforgatni.',
+  1,                          -- WELCOME
+  0.00,
+  3000.00,
+  20000.00,
+  100.00,
+  'BONUS_MONEY',
+  'DEPOSIT',
+  'ANY',
+  0,
+  2.0,
+  2,
+  NULL,
+  3.0,
+  5.0,
+  0,
+  1,
+  NULL,
+  1,
+  0,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  0,
+  0,
+  NULL,
+  1,
+  '2026-01-01 00:00:00',
+  NULL,
+  0                           -- Csak admin
+);
+
+-- 3.2 Második lépcső: 10.000 Ft feltöltés -> 5.000 Ft ingyenes fogadás
+SET @parent_id1 = (SELECT id FROM BonusCodes WHERE name = 'ÜDVÖZLŐ BÓNUSZ 1. LÉPÉS (100% max 20.000 Ft)' LIMIT 1);
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  NULL,                       
+  'ÜDVÖZLŐ BÓNUSZ 2. LÉPÉS (5.000 Ft ingyenes fogadás)',
+  'Második lépcső: Minimum 10.000 Ft feltöltés esetén 5.000 Ft ingyenes fogadás jár. Az ingyenes fogadásra 2-es kötés és 2-es odds vonatkozik.',
+  1,                          
+  5000.00,
+  10000.00,
+  5000.00,
+  0.00,
+  'FREE_BET',
+  'DEPOSIT',
+  'ANY',
+  0,
+  2.0,
+  2,
+  NULL,
+  0.0,
+  5.0,
+  0,
+  1,
+  @parent_id1,
+  2,
+  0,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  0,
+  0,
+  NULL,
+  1,
+  '2026-01-01 00:00:00',
+  NULL,
+  0                           -- Csak admin
+);
+
+-- 3.3 Harmadik lépcső: 50% bónusz max 25.000 Ft-ig
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  NULL,                       
+  'ÜDVÖZLŐ BÓNUSZ 3. LÉPÉS (50% max 25.000 Ft)',
+  'Harmadik lépcső: 50% feltöltési bónusz maximum 25.000 Ft-ig (50.000 Ft feltöltés esetén 25.000 Ft bónusz). A bónusz összegét 3x kell megforgatni.',
+  1,                          
+  0.00,
+  3000.00,
+  25000.00,
+  50.00,
+  'BONUS_MONEY',
+  'DEPOSIT',
+  'ANY',
+  0,
+  NULL,
+  NULL,
+  NULL,
+  3.0,
+  5.0,
+  0,
+  1,
+  @parent_id1,
+  3,
+  0,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  0,
+  0,
+  NULL,
+  1,
+  '2026-01-01 00:00:00',
+  NULL,
+  0                           -- Csak admin
+);
+
+-- 4. KARÁCSONYVÁRÓ ADVENTI VASÁRNAPI BÓNUSZOK (NINCS KÓD)
+-- 4.1 Első adventi vasárnap
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  NULL,                       
+  'ADVENTI VASÁRNAP 1. (dec. 6.)',
+  'Első adventi vasárnap: 100% feltöltési bónusz maximum 10.000 Ft-ig. Követelmény: 3-as kötés, minimum 3-as össz odds, eseményenként minimum 1,3 odds.',
+  3,                          -- SEASONAL
+  0.00,
+  3000.00,
+  10000.00,
+  100.00,
+  'BONUS_MONEY',
+  'DEPOSIT',
+  'ANY',
+  0,
+  3.0,
+  3,
+  1.3,
+  3.0,
+  5.0,
+  0,
+  0,
+  NULL,
+  NULL,
+  0,
+  NULL,
+  NULL,
+  '2026-12-06',
+  1,
+  0,
+  0,                          
+  NULL,
+  1,
+  '2026-01-01 00:00:00',
+  '2026-12-06 23:59:59',
+  0                           -- Csak admin
+);
+
+-- 4.2 Második adventi vasárnap
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  NULL,                       
+  'ADVENTI VASÁRNAP 2. (dec. 13.)',
+  'Második adventi vasárnap: 100% feltöltési bónusz maximum 10.000 Ft-ig. Követelmény: 3-as kötés, minimum 3-as össz odds, eseményenként minimum 1,3 odds.',
+  3,
+  0.00,
+  3000.00,
+  10000.00,
+  100.00,
+  'BONUS_MONEY',
+  'DEPOSIT',
+  'ANY',
+  0,
+  3.0,
+  3,
+  1.3,
+  3.0,
+  5.0,
+  0,
+  0,
+  NULL,
+  NULL,
+  0,
+  NULL,
+  NULL,
+  '2026-12-13',
+  2,
+  0,
+  0,
+  NULL,
+  1,
+  '2026-01-01 00:00:00',
+  '2026-12-13 23:59:59',
+  0                           -- Csak admin
+);
+
+-- 4.3 Harmadik adventi vasárnap
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  NULL,                       
+  'ADVENTI VASÁRNAP 3. (dec. 20.)',
+  'Harmadik adventi vasárnap: 100% feltöltési bónusz maximum 10.000 Ft-ig. Követelmény: 3-as kötés, minimum 3-as össz odds, eseményenként minimum 1,3 odds.',
+  3,
+  0.00,
+  3000.00,
+  10000.00,
+  100.00,
+  'BONUS_MONEY',
+  'DEPOSIT',
+  'ANY',
+  0,
+  3.0,
+  3,
+  1.3,
+  3.0,
+  5.0,
+  0,
+  0,
+  NULL,
+  NULL,
+  0,
+  NULL,
+  NULL,
+  '2026-12-20',
+  3,
+  0,
+  0,
+  NULL,
+  1,
+  '2026-01-01 00:00:00',
+  '2026-12-20 23:59:59',
+  0                           -- Csak admin
+);
+
+-- 4.4 Negyedik adventi vasárnap
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  NULL,                       
+  'ADVENTI VASÁRNAP 4. (dec. 27.)',
+  'Negyedik adventi vasárnap: 100% feltöltési bónusz maximum 10.000 Ft-ig. Követelmény: 3-as kötés, minimum 3-as össz odds, eseményenként minimum 1,3 odds.',
+  3,
+  0.00,
+  3000.00,
+  10000.00,
+  100.00,
+  'BONUS_MONEY',
+  'DEPOSIT',
+  'ANY',
+  0,
+  3.0,
+  3,
+  1.3,
+  3.0,
+  5.0,
+  0,
+  0,
+  NULL,
+  NULL,
+  0,
+  NULL,
+  NULL,
+  '2026-12-27',
+  4,
+  0,
+  0,
+  NULL,
+  1,
+  '2026-01-01 00:00:00',
+  '2026-12-27 23:59:59',
+  0                           -- Csak admin
+);
+
+-- 5. NB1-ES DERBY (ÚJPEST – FERENCVÁROS) - VAN KÓDJA
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  'NB1DERBY',
+  'NB1 DERBY BÓNUSZ (Újpest-Ferencváros)',
+  'Élőben kell fogadni minimum 5.000 Ft értékben az Újpest-Ferencváros mérkőzésre, minimum 2-es odds. Sikeres fogadás után 5.000 Ft ingyenes fogadás jár.',
+  4,
+  5000.00,
+  5000.00,
+  5000.00,
+  0.00,
+  'FREE_BET',
+  'BET',
+  'FOOTBALL',
+  1,
+  2.0,
+  NULL,
+  NULL,
+  0.0,
+  5.0,
+  1,
+  0,
+  NULL,
+  NULL,
+  0,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  0,
+  0,
+  NULL,
+  1,
+  '2026-01-01 00:00:00',
+  NULL,
+  0                           -- Csak admin
+);
+
+-- 6. ESPORT BÓNUSZ (VAN KÓDJA)
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  'ESPORT5K',
+  'ESPORT BÓNUSZ (5.000 Ft bónusz)',
+  'Fogadjon 5.000 Ft értékben bármilyen esport mérkőzésre, és kap 5.000 Ft bónuszt. A bónuszt 3-as kötésben kell megtennie, eseményenként minimum 1,3 odds, össz odds minimum 3.0.',
+  4,
+  5000.00,
+  5000.00,
+  5000.00,
+  0.00,
+  'BONUS_MONEY',
+  'BET',
+  'ESPORT',
+  0,
+  3.0,
+  3,
+  1.3,
+  3.0,
+  5.0,
+  1,
+  0,
+  NULL,
+  NULL,
+  0,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  0,
+  0,
+  NULL,
+  1,
+  '2026-01-01 00:00:00',
+  NULL,
+  0                           -- Csak admin
+);
+
+-- 7. CSUPA KETTES BÓNUSZ (február 22.) - VAN KÓDJA
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  '0222',
+  'CSUPA KETTES BÓNUSZ (február 22.)',
+  'Töltsön fel 2222 Ft-ot és 100%-ban megkapja az összeget. Követelmény: 2-es odds, 2 esemény, minimum 1,4 odds eseményenként.',
+  5,
+  0.00,
+  2222.00,
+  2222.00,
+  100.00,
+  'BONUS_MONEY',
+  'DEPOSIT',
+  'ANY',
+  0,
+  2.0,
+  2,
+  1.4,
+  3.0,
+  5.0,
+  0,
+  0,
+  NULL,
+  NULL,
+  0,
+  NULL,
+  NULL,
+  '2026-02-22',
+  NULL,
+  0,
+  0,
+  NULL,
+  1,
+  '2026-01-01 00:00:00',
+  '2026-02-22 23:59:59',
+  0                           -- Csak admin
+);
+
+-- 8. SZÜLETÉSNAPI BÓNUSZ (NINCS KÓD - igénylős)
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  NULL,                       
+  'SZÜLETÉSNAPI BÓNUSZ (5.000 Ft)',
+  'Születésnap alkalmából 5.000 Ft bónusz, amellyel arra fogadhat, amire akar. Nincs forgatási követelmény. Igényelhető bónusz.',
+  7,                          -- ADMIN_BONUS
+  5000.00,
+  0.00,
+  5000.00,
+  0.00,
+  'BONUS_MONEY',
+  'MANUAL',
+  'ANY',
+  0,
+  NULL,
+  NULL,
+  NULL,
+  0.0,
+  5.0,
+  0,
+  0,
+  NULL,
+  NULL,
+  0,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  1,                          -- birthday_bonus = IGEN
+  0,                          
+  NULL,
+  1,
+  '2026-01-01 00:00:00',
+  NULL,
+  0                           -- Csak admin
+);
+
+-- 9. BETMATCHBONUS SZÜLETÉSNAPI BÓNUSZ (NINCS KÓD - igénylős, első 500)
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  NULL,                       
+  'BETMATCH SZÜLETÉSNAPI BÓNUSZ (első 500)',
+  'Első 500 ügyfél számára, aki igényli, 5.000 Ft bónusz születésnapján, amellyel arra fogadhat, amire akar. Nincs forgatási követelmény.',
+  7,                          -- ADMIN_BONUS
+  5000.00,
+  0.00,
+  5000.00,
+  0.00,
+  'BONUS_MONEY',
+  'MANUAL',
+  'ANY',
+  0,
+  NULL,
+  NULL,
+  NULL,
+  0.0,
+  5.0,
+  0,
+  0,
+  NULL,
+  NULL,
+  0,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  1,                          -- birthday_bonus = IGEN
+  0,                          
+  500,                        -- usage_limit = 500
+  1,
+  '2026-01-01 00:00:00',
+  NULL,
+  0                           -- Csak admin
+);
+
+-- HÉTVÉGI BÓNUSZ (szombat-vasárnap)
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  'HETVEGI5K',                
+  'HÉTVÉGI BÓNUSZ (5.000 Ft ingyenes fogadás)',
+  'Szombaton és vasárnap: 5.000 Ft befizetés esetén 5.000 Ft ingyenes fogadás jár. Követelmény: 2-es kötés, minimum 2-es össz odds. Nincs forgatási követelmény.',
+  6,                          -- WEEKEND
+  5000.00,                    
+  5000.00,                    
+  5000.00,                    
+  100.00,                     
+  'FREE_BET',                 
+  'DEPOSIT',                  
+  'ANY',                      
+  0,                          
+  2.0,                        
+  2,                          
+  1.4,                       
+  0.0,                        
+  5.0,                        
+  0,                          
+  0,                          
+  NULL,                       
+  NULL,                       
+  0,                          
+  NULL,                       
+  NULL,                       
+  NULL,                       
+  NULL,                       
+  0,                          
+  0,                          
+  NULL,                       
+  1,                          
+  '2026-01-01 00:00:00',      
+  NULL,                       
+  0                           -- Csak admin
+);
 -- ============================================================
 -- 30) USERS TABLE - Hiányzó oszlopok hozzáadása
 -- ============================================================
