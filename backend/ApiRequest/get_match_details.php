@@ -57,6 +57,26 @@ if (!is_array($apiData)) {
     exit;
 }
 
+// ===== Adatbázisból lekérjük az eredményt (megbízható forrás) =====
+$dbScore = null;
+$dbLiveTime = null;
+$dbIsLive = null;
+$stmtDb = $conn->prepare("SELECT home_score, away_score, is_live, live_time FROM Events WHERE api_id = ? LIMIT 1");
+if ($stmtDb) {
+    $stmtDb->bind_param("i", $eventId);
+    $stmtDb->execute();
+    $dbResult = $stmtDb->get_result();
+    $dbRow = $dbResult->fetch_assoc();
+    $stmtDb->close();
+    if ($dbRow) {
+        if ($dbRow['home_score'] !== null && $dbRow['away_score'] !== null) {
+            $dbScore = (int)$dbRow['home_score'] . ' - ' . (int)$dbRow['away_score'];
+        }
+        $dbIsLive = (int)$dbRow['is_live'];
+        $dbLiveTime = $dbRow['live_time'];
+    }
+}
+
 // Válasz összeállítása
 $response_data = [
     'match' => [
@@ -76,22 +96,34 @@ $response_data = [
 ];
 
 // Eredmény összeállítása - több formátumot kezelünk
+$scoreFound = false;
+
 if (isset($apiData['score']) && is_array($apiData['score']) && count($apiData['score']) >= 2) {
     $response_data['match']['score'] = $apiData['score'][0] . ' - ' . $apiData['score'][1];
-} elseif (isset($apiData['score']) && is_string($apiData['score'])) {
+    $scoreFound = true;
+} elseif (isset($apiData['score']) && is_string($apiData['score']) && trim($apiData['score']) !== '') {
     // Ha string formátumban jön (pl. "1:1" vagy "1 - 1")
     $response_data['match']['score'] = str_replace(':', ' - ', $apiData['score']);
+    $scoreFound = true;
 } elseif (isset($apiData['homeScore']) && isset($apiData['awayScore'])) {
     $response_data['match']['score'] = $apiData['homeScore'] . ' - ' . $apiData['awayScore'];
+    $scoreFound = true;
 } elseif (isset($apiData['scores']) && is_array($apiData['scores'])) {
     // Néha "scores" kulcs alatt jön
     if (isset($apiData['scores']['home']) && isset($apiData['scores']['away'])) {
         $response_data['match']['score'] = $apiData['scores']['home'] . ' - ' . $apiData['scores']['away'];
+        $scoreFound = true;
     } elseif (count($apiData['scores']) >= 2) {
         $response_data['match']['score'] = $apiData['scores'][0] . ' - ' . $apiData['scores'][1];
+        $scoreFound = true;
     }
-} else {
-    // Ha sehogy nem találjuk, próbáljuk az élő meccsek API-ból lekérni az eredményt
+}
+
+// Ha az API-ból nem kaptunk score-t VAGY "0 - 0" jött → adatbázisból és élő API-ból próbáljuk
+if (!$scoreFound || $response_data['match']['score'] === '0 - 0') {
+    $foundFromLiveApi = false;
+
+    // Próba: élő meccsek API-ból (sport-szűrő nélkül)
     $liveUrl = "$apiBaseUrl/matches/live";
     $chLive = curl_init($liveUrl);
     curl_setopt($chLive, CURLOPT_RETURNTRANSFER, true);
@@ -99,8 +131,7 @@ if (isset($apiData['score']) && is_array($apiData['score']) && count($apiData['s
     $liveResponse = curl_exec($chLive);
     $liveHttpCode = curl_getinfo($chLive, CURLINFO_HTTP_CODE);
     curl_close($chLive);
-    
-    $foundScore = false;
+
     if ($liveHttpCode === 200 && $liveResponse) {
         $liveMatches = json_decode($liveResponse, true);
         if (is_array($liveMatches)) {
@@ -108,21 +139,37 @@ if (isset($apiData['score']) && is_array($apiData['score']) && count($apiData['s
                 if (isset($liveMatch['id']) && (int)$liveMatch['id'] === $eventId) {
                     if (isset($liveMatch['score']) && is_array($liveMatch['score']) && count($liveMatch['score']) >= 2) {
                         $response_data['match']['score'] = $liveMatch['score'][0] . ' - ' . $liveMatch['score'][1];
-                        // Frissítsük a liveTime-ot is ha van
-                        if (isset($liveMatch['liveTime'])) {
-                            $response_data['match']['liveTime'] = $liveMatch['liveTime'];
-                        }
-                        $foundScore = true;
+                        $foundFromLiveApi = true;
+                    }
+                    if (isset($liveMatch['liveTime'])) {
+                        $response_data['match']['liveTime'] = $liveMatch['liveTime'];
+                    }
+                    if (isset($liveMatch['isLive'])) {
+                        $response_data['match']['isLive'] = !empty($liveMatch['isLive']);
                     }
                     break;
                 }
             }
         }
     }
-    
-    if (!$foundScore) {
+
+    // Ha az élő API-ból sem kaptunk → adatbázisból vesszük
+    if (!$foundFromLiveApi && $dbScore !== null) {
+        $response_data['match']['score'] = $dbScore;
+    }
+
+    // Ha sehonnan sem kaptunk score-t
+    if (empty($response_data['match']['score'])) {
         $response_data['match']['score'] = '0 - 0';
     }
+}
+
+// Ha az API-ból nem jött isLive/liveTime, de az adatbázisban van → használjuk azt
+if ($dbIsLive !== null && !$response_data['match']['isLive'] && $dbIsLive === 1) {
+    $response_data['match']['isLive'] = true;
+}
+if ($dbLiveTime !== null && empty($response_data['match']['liveTime'])) {
+    $response_data['match']['liveTime'] = $dbLiveTime;
 }
 
 // Piacok feldolgozása
