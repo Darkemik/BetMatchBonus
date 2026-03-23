@@ -47,6 +47,9 @@ WHERE DATE(e.start_time) = ?
   AND e.name IS NOT NULL
   AND TRIM(e.name) != ''
   AND e.start_time IS NOT NULL
+  AND (c.name IS NULL OR (LOWER(TRIM(c.name)) != 'n/a' AND TRIM(c.name) != ''))
+  AND LOWER(TRIM(comp.name)) != 'n/a'
+  AND TRIM(comp.name) != ''
 ORDER BY s.api_id, c.name, comp.name, e.start_time
 ";
 
