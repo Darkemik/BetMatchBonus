@@ -17,6 +17,34 @@ $sportIcons = [
     77  => 'fa-table-tennis'
 ];
 
+$priorityOrder = "
+    CASE
+        WHEN ch.name LIKE '%Champions League%'    THEN 1
+        WHEN ch.name LIKE '%World Cup%'           THEN 2
+        WHEN ch.name LIKE '%Europa League%'       THEN 3
+        WHEN ch.name LIKE '%Conference League%'   THEN 4
+        WHEN ch.name LIKE '%Premier League%'      THEN 5
+        WHEN ch.name LIKE '%La Liga%'             THEN 6
+        WHEN ch.name LIKE '%Bundesliga%'          THEN 7
+        WHEN ch.name LIKE '%Serie A%'             THEN 8
+        WHEN ch.name LIKE '%Ligue 1%'             THEN 9
+        WHEN ch.name LIKE '%NB I%'
+          OR ch.name LIKE '%NB1%'
+          OR ch.name LIKE '%Nemzeti Bajnokság%'   THEN 10
+        WHEN ch.name LIKE '%Eredivisie%'          THEN 11
+        WHEN ch.name LIKE '%Primeira Liga%'       THEN 12
+        ELSE 99
+    END ASC
+";
+
+$naFilter = "
+    AND m.api_id IS NOT NULL
+    AND m.api_id > 0
+    AND LOWER(TRIM(ch.name)) != 'n/a'
+    AND TRIM(ch.name) != ''
+    AND (c.name IS NULL OR (LOWER(TRIM(c.name)) != 'n/a' AND TRIM(c.name) != ''))
+";
+
 if ($sportId > 0) {
     $sql = "
     SELECT 
@@ -39,7 +67,8 @@ if ($sportId > 0) {
       AND m.name IS NOT NULL
       AND TRIM(m.name) != ''
       AND m.start_time IS NOT NULL
-    ORDER BY m.is_live DESC, m.start_time ASC
+      $naFilter
+    ORDER BY m.is_live DESC, $priorityOrder, m.start_time ASC
     ";
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
@@ -68,7 +97,8 @@ if ($sportId > 0) {
       AND m.name IS NOT NULL
       AND TRIM(m.name) != ''
       AND m.start_time IS NOT NULL
-    ORDER BY m.is_live DESC, m.start_time ASC
+      $naFilter
+    ORDER BY m.is_live DESC, $priorityOrder, m.start_time ASC
     ";
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
@@ -104,11 +134,14 @@ if (!$res || $res->num_rows === 0) {
             $isLive = (int)$row['is_live'];
             $timeDisplay = ($liveTimeRaw !== null && $liveTimeRaw !== '') ? htmlspecialchars($liveTimeRaw) : '-';
 
-            // Meccs név validáció — kihagyjuk ha üres vagy nem tartalmaz " - " elválasztót
+            // Meccs név validáció — kihagyjuk ha üres
             $matchName = trim($row['match_name']);
             if ($matchName === '' || $matchName === '-') {
                 continue;
             }
+
+            $countryName = $row['country_name'] ?? '';
+            $champName   = $row['championship_name'] ?? '';
 
             $matchParts = strpos($matchName, ' vs. ') !== false
                 ? explode(' vs. ', $matchName, 2)
@@ -136,10 +169,10 @@ if (!$res || $res->num_rows === 0) {
         ?>
             <tr class="match-row clickable" data-match-id="<?php echo $apiId; ?>">
                 <td>
-                    <span class="country-name"><?php echo htmlspecialchars($row['country_name'] ?? 'N/A'); ?></span>
+                    <span class="country-name"><?php echo htmlspecialchars($countryName ?: '—'); ?></span>
                 </td>
                 <td>
-                    <span class="league-name"><?php echo htmlspecialchars($row['championship_name']); ?></span>
+                    <span class="league-name"><?php echo htmlspecialchars($champName); ?></span>
                 </td>
                 <td class="match-cell">
                     <span class="team home-team"><?php echo $home; ?></span>

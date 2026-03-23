@@ -87,9 +87,16 @@ require_once "../../backend/ApiRequest/connect.php";
       </div>
 
       <div class="sports-menu-container">
-          <div class="search">
-            <span class="search-icon material-symbols-outlined">search</span>
-            <input class="search-input" id="sidebarSearch" type="search" placeholder="Keresés meccs, bajnokság...">
+          <div class="specialis-menu">
+            <div class="specialis-menu-header">
+              <i class="fas fa-star"></i> Speciális
+            </div>
+            <div class="specialis-menu-items">
+              <a href="../../frontend/Bonus/bonus.php" class="specialis-menu-item">
+                <i class="fas fa-rocket"></i>
+                <span>Oddsűrhajó</span>
+              </a>
+            </div>
           </div>
 
           <div class="sports-list" id="sportsList">
