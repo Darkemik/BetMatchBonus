@@ -5,14 +5,17 @@ document.addEventListener('DOMContentLoaded', function () {
   const sportDetailPanel = document.getElementById('sportDetailPanel');
   const sportDetailContent = document.getElementById('sportDetailContent');
   const sidebarBackBtn = document.getElementById('sidebarBackBtn');
-  const sidebarSearch = document.getElementById('sidebarSearch');
   const matchesContainer = document.getElementById('matches-container');
   const centerTitle = document.getElementById('centerTitle');
   const matchSearch = document.getElementById('matchSearch');
   const currentDateTimeSpan = document.getElementById('currentDateTime');
 
   let sportsData = []; // sidebar adatok cache
-  let currentSportId = 0; // 0 = összes sport
+  let currentSportId = 66; // 66 = Foci (alapértelmezett)
+
+  // ========== LAPOZÁS ==========
+  const PAGE_SIZE = 20;
+  let currentPage = 1;
 
   // ========== DÁTUM/IDŐ ==========
   function updateDateTime() {
@@ -53,14 +56,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
       const filterLower = (filter || '').toLowerCase();
 
-      // Ha van szűrő, a meccsnevekben is keresünk
       let filtered = sports;
       if (filterLower) {
           filtered = sports.map(sport => {
-              // Sport név egyezés
               const sportMatch = sport.sport_name.toLowerCase().includes(filterLower);
-
-              // Országokon/bajnokságokon/meccseken belüli egyezés
               const filteredCountries = sport.countries.map(country => {
                   const countryMatch = country.country_name.toLowerCase().includes(filterLower);
                   const filteredComps = country.competitions.map(comp => {
@@ -113,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       sportsList.innerHTML = html;
 
-      // Kattintás kezelés
+      // Kattintás kezelés — csak meccsek töltése, liga panel NEM nyílik
       sportsList.querySelectorAll('.sidebar-sport-item').forEach(item => {
           item.addEventListener('click', function () {
               const sportId = parseInt(this.getAttribute('data-sport-id'));
@@ -123,13 +122,7 @@ document.addEventListener('DOMContentLoaded', function () {
               sportsList.querySelectorAll('.sidebar-sport-item').forEach(el => el.classList.remove('active'));
               this.classList.add('active');
 
-              // Keressük meg a sport adatait
-              const sport = sportsData.find(s => s.sport_api_id === sportId);
-              if (sport && sport.countries && sport.countries.length > 0) {
-                  showSportDetail(sport);
-              }
-
-              // Center meccsek frissítése erre a sportra
+              // Center meccsek frissítése erre a sportra (liga panel nem nyílik)
               loadMatches(sportId);
           });
       });
@@ -178,21 +171,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
       sportDetailContent.innerHTML = html;
 
-      // Ország csoportok nyitás/zárás
       sportDetailContent.querySelectorAll('.sidebar-country-header').forEach(header => {
           header.addEventListener('click', function () {
               this.parentElement.classList.toggle('open');
           });
       });
 
-      // Bajnokság csoportok nyitás/zárás
       sportDetailContent.querySelectorAll('.sidebar-comp-header').forEach(header => {
           header.addEventListener('click', function () {
               this.parentElement.classList.toggle('open');
           });
       });
 
-      // Meccsre kattintás a sidebarban
       sportDetailContent.querySelectorAll('.sidebar-match-item').forEach(item => {
           item.addEventListener('click', function () {
               const matchId = parseInt(this.getAttribute('data-match-id'));
@@ -208,23 +198,66 @@ document.addEventListener('DOMContentLoaded', function () {
       sidebarBackBtn.addEventListener('click', function () {
           sportDetailPanel.style.display = 'none';
           sportsList.style.display = 'flex';
-          currentSportId = 0;
+          currentSportId = 66;
           sportsList.querySelectorAll('.sidebar-sport-item').forEach(el => el.classList.remove('active'));
-          loadMatches(0);
+          const fociItem = sportsList.querySelector('[data-sport-id="66"]');
+          if (fociItem) fociItem.classList.add('active');
+          loadMatches(66);
       });
   }
 
-  // ========== SIDEBAR KERESÉS ==========
-  if (sidebarSearch) {
-      sidebarSearch.addEventListener('input', function () {
-          const val = this.value.trim();
-          // Ha a detail panel nyitva van, térjünk vissza a listához
-          if (sportDetailPanel && sportDetailPanel.style.display !== 'none') {
-              sportDetailPanel.style.display = 'none';
-              sportsList.style.display = 'flex';
-          }
-          renderSportsList(sportsData, val);
+  // ========== LAPOZÁS ==========
+  function applyPagination() {
+      currentPage = 1;
+      const rows = matchesContainer.querySelectorAll('.match-row');
+
+      // Meglévő "Több betöltése" gomb eltávolítása
+      const existingBtn = matchesContainer.querySelector('.load-more-btn-wrapper');
+      if (existingBtn) existingBtn.remove();
+
+      if (rows.length <= PAGE_SIZE) {
+          rows.forEach(row => { row.style.display = ''; });
+          return;
+      }
+
+      rows.forEach((row, i) => {
+          row.style.display = i < PAGE_SIZE ? '' : 'none';
       });
+
+      createLoadMoreBtn(rows.length);
+  }
+
+  function createLoadMoreBtn(totalCount) {
+      const existing = matchesContainer.querySelector('.load-more-btn-wrapper');
+      if (existing) existing.remove();
+
+      const visible = currentPage * PAGE_SIZE;
+      if (visible >= totalCount) return;
+
+      const remaining = totalCount - visible;
+      const wrapper = document.createElement('div');
+      wrapper.className = 'load-more-btn-wrapper';
+
+      const btn = document.createElement('button');
+      btn.className = 'load-more-btn';
+      btn.innerHTML = `<i class="fas fa-chevron-down"></i> Több betöltése (${remaining} meccs)`;
+
+      btn.addEventListener('click', () => {
+          currentPage++;
+          const allRows = matchesContainer.querySelectorAll('.match-row');
+          allRows.forEach((row, i) => {
+              if (i < currentPage * PAGE_SIZE) row.style.display = '';
+          });
+          const newRemaining = Math.max(0, totalCount - currentPage * PAGE_SIZE);
+          if (newRemaining === 0) {
+              wrapper.remove();
+          } else {
+              btn.innerHTML = `<i class="fas fa-chevron-down"></i> Több betöltése (${newRemaining} meccs)`;
+          }
+      });
+
+      wrapper.appendChild(btn);
+      matchesContainer.appendChild(wrapper);
   }
 
   // ========== MECCSEK BETÖLTÉSE (CENTER) ==========
@@ -255,8 +288,8 @@ document.addEventListener('DOMContentLoaded', function () {
               matchesContainer.innerHTML = html;
               attachMatchClickHandlers();
               attachOddsButtonHandlers();
+              applyPagination();
 
-              // Ha angol nyelvű mód van, fordítsuk le az új tartalmat
               if (typeof window.changeLanguageForContainer === 'function') {
                   const lang = localStorage.getItem('lang') || 'hu';
                   if (lang !== 'hu') {
@@ -281,10 +314,19 @@ document.addEventListener('DOMContentLoaded', function () {
               const rows = matchesContainer.querySelectorAll('.match-row');
               if (rows.length === 0) return;
 
+              if (val === '') {
+                  // Keresés ürítve: lapozás visszaállítása
+                  const noResult = matchesContainer.querySelector('.search-no-result');
+                  if (noResult) noResult.remove();
+                  applyPagination();
+                  return;
+              }
+
+              // Keresési mód: minden egyező sor megjelenik (lapozástól függetlenül)
               let visibleCount = 0;
               rows.forEach(row => {
                   const text = row.textContent.toLowerCase();
-                  if (val === '' || text.includes(val)) {
+                  if (text.includes(val)) {
                       row.style.display = '';
                       visibleCount++;
                   } else {
@@ -292,9 +334,12 @@ document.addEventListener('DOMContentLoaded', function () {
                   }
               });
 
-              // Ha nincs találat, jelezzük
+              // "Több betöltése" gomb elrejtése keresés alatt
+              const loadMoreWrapper = matchesContainer.querySelector('.load-more-btn-wrapper');
+              if (loadMoreWrapper) loadMoreWrapper.style.display = 'none';
+
               let noResult = matchesContainer.querySelector('.search-no-result');
-              if (visibleCount === 0 && val !== '') {
+              if (visibleCount === 0) {
                   if (!noResult) {
                       noResult = document.createElement('div');
                       noResult.className = 'search-no-result no-matches';
@@ -314,7 +359,6 @@ document.addEventListener('DOMContentLoaded', function () {
       const matchRows = matchesContainer.querySelectorAll('.match-row.clickable');
       matchRows.forEach(row => {
           row.addEventListener('click', function (e) {
-              // Ha odds gombra kattintottak, ne nyissuk meg a részleteket
               if (e.target.closest('.selection-btn') || e.target.closest('.btn-add-bet')) {
                   return;
               }
@@ -497,5 +541,5 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // ========== INICIALIZÁLÁS ==========
   loadSidebarSports();
-  loadMatches(0);
+  loadMatches(66); // Alapértelmezett: Foci
 });
