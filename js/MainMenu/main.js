@@ -17,6 +17,58 @@ document.addEventListener('DOMContentLoaded', function () {
   const PAGE_SIZE = 20;
   let currentPage = 1;
 
+  // ========== LIGA PRIORITÁS ==========
+  const PRIORITY_LEAGUES = [
+      'bajnokok ligája', 'champions league',
+      'world cup', 'világkupa',
+      'europa league', 'európa liga',
+      'conference league',
+      'premier league',
+      'la liga',
+      'bundesliga',
+      'serie a',
+      'ligue 1',
+      'nb i', 'nb1', 'nemzeti bajnokság',
+      'eredivisie',
+      'primeira liga',
+  ];
+
+  function getLeaguePriority(leagueName) {
+      const lower = (leagueName || '').toLowerCase();
+      for (let i = 0; i < PRIORITY_LEAGUES.length; i++) {
+          if (lower.includes(PRIORITY_LEAGUES[i])) return i;
+      }
+      return PRIORITY_LEAGUES.length;
+  }
+
+  function filterNARows() {
+      if (!matchesContainer) return;
+      matchesContainer.querySelectorAll('.match-row').forEach(row => {
+          const league = (row.querySelector('.league-name')?.textContent || '').trim().toLowerCase();
+          const country = (row.querySelector('.country-name')?.textContent || '').trim().toLowerCase();
+          if (league === 'n/a' || country === 'n/a') {
+              row.remove();
+          }
+      });
+  }
+
+  function sortMatchesByPriority() {
+      if (!matchesContainer) return;
+      const tbody = matchesContainer.querySelector('tbody');
+      if (!tbody) return;
+      const rows = Array.from(tbody.querySelectorAll('.match-row'));
+      if (rows.length < 2) return;
+      rows.sort((a, b) => {
+          const aLive = a.querySelector('.live-dot') ? 0 : 1;
+          const bLive = b.querySelector('.live-dot') ? 0 : 1;
+          if (aLive !== bLive) return aLive - bLive;
+          const aLeague = (a.querySelector('.league-name')?.textContent || '').trim();
+          const bLeague = (b.querySelector('.league-name')?.textContent || '').trim();
+          return getLeaguePriority(aLeague) - getLeaguePriority(bLeague);
+      });
+      rows.forEach(row => tbody.appendChild(row));
+  }
+
   // ========== DÁTUM/IDŐ ==========
   function updateDateTime() {
       if (!currentDateTimeSpan) return;
@@ -97,6 +149,19 @@ document.addEventListener('DOMContentLoaded', function () {
           sportsList.innerHTML = '<div class="sidebar-loading" style="color:#888;">Nincs találat.</div>';
           return;
       }
+
+      // N/A országok és bajnokságok szűrése a sidebarból
+      filtered = filtered.map(sport => {
+          const cleanCountries = (sport.countries || [])
+              .filter(c => !c.country_name || c.country_name.trim().toLowerCase() !== 'n/a')
+              .map(c => ({
+                  ...c,
+                  competitions: (c.competitions || []).filter(
+                      comp => !comp.competition_name || comp.competition_name.trim().toLowerCase() !== 'n/a'
+                  )
+              }));
+          return { ...sport, countries: cleanCountries };
+      });
 
       let html = '';
       filtered.forEach(sport => {
@@ -286,6 +351,8 @@ document.addEventListener('DOMContentLoaded', function () {
           .then(res => res.text())
           .then(html => {
               matchesContainer.innerHTML = html;
+              filterNARows();
+              sortMatchesByPriority();
               attachMatchClickHandlers();
               attachOddsButtonHandlers();
               applyPagination();
