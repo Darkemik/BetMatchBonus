@@ -198,26 +198,23 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         Promise.all([
             fetch("../../backend/ApiRequest/get_matches_live.php").then(function(res) { return res.json(); }),
-            fetch("../../backend/ApiRequest/esport_today.php").then(function(res) { return res.json(); })
+            fetch("../../backend/ApiRequest/mainmenu_matches.php?sport_id=" + ESPORT_SPORT_ID).then(function(res) { return res.text(); })
         ])
         .then(function(results) {
             var liveResult = results[0];
-            var todayResult = results[1];
+            var todayHtml = results[1];
 
             if (liveResult && liveResult.sports) {
                 var esportLive = liveResult.sports[ESPORT_SPORT_ID] || 0;
                 updateLiveCount(esportLive);
             }
 
-            if (todayResult && todayResult.total !== undefined) {
-                updateTodayCount(todayResult.total);
-            }
+            todayContainer.innerHTML = todayHtml;
 
-            return fetch("../../backend/ApiRequest/esport_today_table.php");
-        })
-        .then(function(res) { return res.text(); })
-        .then(function(html) {
-            todayContainer.innerHTML = html;
+            // Badge frissítés: megszámoljuk a renderelt meccseket
+            var matchRows = todayContainer.querySelectorAll('.match-row');
+            updateTodayCount(matchRows.length);
+
             attachMatchClickHandlers(todayContainer);
             applyTranslation(todayContainer);
             if (typeof window.refreshAllOddsButtons === 'function') {

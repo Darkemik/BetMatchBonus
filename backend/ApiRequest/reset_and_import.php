@@ -9,13 +9,10 @@ $conn->query("SET FOREIGN_KEY_CHECKS = 1;");
 
 echo "Táblák ürítve.\n";
 
-// 2) BAJNOKSÁGOK IMPORT
-include "get_championships.php";
-
-// 3) ÉLŐ MECCSEK IMPORT
+// 2) ÉLŐ MECCSEK IMPORT
 include "get_matches_live.php";
 
-// 4) NAPI MECCSEK (HA KELL)
+// 3) NAPI MECCSEK + BAJNOKSÁGOK IMPORT (a get_matches_date.php bajnokságokat is importál)
 include "get_matches_date.php";
 
 echo "\nSikeres reset + import!";

@@ -507,15 +507,34 @@ function checkIfPickWon($pick, $market, $homeScore, $awayScore, $homeTeam, $away
 }
 
 // Ha közvetlenül hívják (nem include), futtassuk a bejelentkezett user ticketjeit
+// VAGY ?action=evaluate_all → az ÖSSZES user ÖSSZES nyitott ticketjét kiértékeli (cron/admin)
 if (basename($_SERVER['SCRIPT_FILENAME']) === basename(__FILE__)) {
-    session_start();
-    header('Content-Type: application/json; charset=utf-8');
+    $action = $_GET['action'] ?? '';
     
-    if (!isset($_SESSION['user_id'])) {
-        echo json_encode(['status' => 'error', 'message' => 'Nem vagy bejelentkezve']);
-        exit;
+    if ($action === 'evaluate_all') {
+        // Cron job / admin: összes user kiértékelése
+        header('Content-Type: application/json; charset=utf-8');
+        $startTime = microtime(true);
+        $evaluatedUsers = evaluateAllOpenTickets($conn);
+        $elapsed = round((microtime(true) - $startTime) * 1000);
+        echo json_encode([
+            'status' => 'ok',
+            'message' => "Kiértékelés kész: $evaluatedUsers user szelvényei ellenőrizve.",
+            'evaluated_users' => $evaluatedUsers,
+            'elapsed_ms' => $elapsed,
+            'timestamp' => date('Y-m-d H:i:s')
+        ]);
+    } else {
+        // Bejelentkezett user ticketjei
+        session_start();
+        header('Content-Type: application/json; charset=utf-8');
+        
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['status' => 'error', 'message' => 'Nem vagy bejelentkezve']);
+            exit;
+        }
+        
+        evaluateOpenTickets($conn, (int)$_SESSION['user_id']);
+        echo json_encode(['status' => 'ok', 'message' => 'Kiértékelés kész']);
     }
-    
-    evaluateOpenTickets($conn, (int)$_SESSION['user_id']);
-    echo json_encode(['status' => 'ok', 'message' => 'Kiértékelés kész']);
 }
