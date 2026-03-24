@@ -79,54 +79,59 @@ require_once "../../backend/ApiRequest/connect.php";
     </nav>
 </header>
 
-  <div class="main_content">
-
-    <aside class="left-sidebar">
-      <div class="time-bar">
-        <span id="currentDateTime"></span>
-      </div>
-
-      <div class="sports-menu-container">
-          <div class="specialis-menu">
-            <div class="specialis-menu-header">
-              <i class="fas fa-star"></i> Speciális
-            </div>
-            <div class="specialis-menu-items">
-              <a href="../../frontend/Bonus/bonus.php" class="specialis-menu-item">
-                <i class="fas fa-rocket"></i>
-                <span>Oddsűrhajó</span>
-              </a>
-            </div>
-          </div>
-
-          <div class="sports-list" id="sportsList">
-            <div class="sidebar-loading"><i class="fas fa-spinner fa-spin"></i> Betöltés...</div>
-          </div>
-
-          <div class="sport-detail-panel" id="sportDetailPanel" style="display:none;">
-            <button class="sidebar-back-btn" id="sidebarBackBtn"><i class="fas fa-arrow-left"></i> Összes sport</button>
-            <div id="sportDetailContent"></div>
-          </div>
-      </div>
-    </aside>
-
-    <main class="center-content">
-      <div class="center-header">
-        <h2 class="section-title" id="centerTitle"><i class="fas fa-calendar-day"></i> Mai meccsek</h2>
-        <div class="center-search">
-          <input type="search" id="matchSearch" class="match-search-input" placeholder="Meccs keresése...">
-        </div>
-      </div>
-
-      <div id="matches-container">
-        <div class="loading-details"><i class="fas fa-spinner fa-spin"></i> Meccsek betöltése...</div>
-      </div>
-    </main>
-
-    <aside class="right-sidebar">
+  <div class="content-parent">
+    <div class="right-container">
       <?php include '../../frontend/Components/betslip.php'; ?>
-    </aside>
+    </div>
 
+    <div class="main_content">
+
+      <aside class="left-sidebar">
+        <div class="time-bar">
+          <span id="currentDateTime"></span>
+        </div>
+
+        <div class="sports-menu-container">
+            <div class="specialis-menu">
+              <div class="specialis-menu-header">
+                <i class="fas fa-star"></i> Speciális
+              </div>
+              <div class="specialis-menu-items">
+                <a href="../../frontend/Bonus/bonus.php" class="specialis-menu-item">
+                  <i class="fas fa-rocket"></i>
+                  <span>Oddsűrhajó</span>
+                </a>
+              </div>
+            </div>
+
+            <div class="sports-list" id="sportsList">
+              <div class="sidebar-loading"><i class="fas fa-spinner fa-spin"></i> Betöltés...</div>
+            </div>
+
+            <div class="sport-detail-panel" id="sportDetailPanel" style="display:none;">
+              <button class="sidebar-back-btn" id="sidebarBackBtn"><i class="fas fa-arrow-left"></i> Összes sport</button>
+              <div id="sportDetailContent"></div>
+            </div>
+        </div>
+      </aside>
+
+      <main class="center-content">
+        <div class="center-header">
+          <h2 class="section-title" id="centerTitle"><i class="fas fa-calendar-day"></i> Mai meccsek</h2>
+          <div class="center-search">
+            <input type="search" id="matchSearch" class="match-search-input" placeholder="Meccs keresése...">
+          </div>
+        </div>
+
+        <div id="matches-container">
+          <div class="loading-details"><i class="fas fa-spinner fa-spin"></i> Meccsek betöltése...</div>
+        </div>
+      </main>
+
+      <!-- remove the old right-sidebar block entirely -->
+      <?php /* right-sidebar removed: betslip is rendered in .content-parent like on live.php */ ?>
+
+    </div>
   </div>
 
   <?php include '../../frontend/Components/footer.php';?>

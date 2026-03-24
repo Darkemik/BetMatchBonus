@@ -22,11 +22,7 @@
 }
 
 .right-sidebar {
-  width: 300px;
-  min-width: 280px;
-  overflow-y: auto;
-  background: #1e2028;
-  border-left: 1px solid rgba(255,255,255,0.06);
+  display: none;
 }
 
 /* Custom scrollbar — override global display:none from layout.css */
@@ -753,4 +749,61 @@
 .match-row.highlight {
   background: rgba(76, 175, 80, 0.2) !important;
   transition: background 0.5s ease;
+}
+
+/* ===== JOBB OLDALI BETSLIP KONTÉNER (Live-al egyező) ===== */
+.right-sidebar .right-container {
+  float: right;
+  overflow-y: auto;
+  width: 20%;
+  margin-right: auto;
+  display: flex;
+  justify-content: center;
+  height: max-content;
+}
+
+@media (max-width: 1100px) {
+  .right-sidebar .right-container {
+    width: 100%;
+    float: none;
+  }
+}
+
+/* ===== LIVE-LIKE BETSLIP PLACEMENT (MainMenu) ===== */
+.content-parent {
+  width: 100%;
+}
+
+/* MainMenu previously had a flex right-sidebar; hide it if any older markup remains */
+.right-sidebar {
+  display: none;
+}
+
+/* Use the same container name as live.php */
+.content-parent > .right-container {
+  float: right;
+  overflow-y: auto;
+  width: 20%;
+  margin-right: auto;
+  display: flex;
+  justify-content: center;
+  height: max-content;
+  padding: 0 10px;
+}
+
+/* Ensure the main flex area doesn't go under the floated betslip */
+.content-parent > .main_content {
+  width: 80%;
+}
+
+@media (max-width: 1100px) {
+  .content-parent > .right-container {
+    float: none;
+    width: 100%;
+    padding: 10px;
+  }
+
+  .content-parent > .main_content {
+    width: 100%;
+  }
 }
