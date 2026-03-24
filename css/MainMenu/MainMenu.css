@@ -46,11 +46,12 @@
 
 /* ===== SPECIÁLIS MENÜ ===== */
 .specialis-menu {
-  margin: 12px 12px 0;
-  border-radius: 10px;
+  margin: 6px 12px 12px; /* reduce top margin (was 12px) */
+  border-radius: 12px;
   overflow: hidden;
-  border: 1px solid rgba(245,197,24,0.18);
-  background: rgba(245,197,24,0.05);
+  border: 1px solid rgba(245,197,24,0.22);
+  background: rgba(245,197,24,0.06);
+  box-shadow: 0 10px 26px rgba(0,0,0,0.30);
 }
 
 .specialis-menu-header {
@@ -72,7 +73,7 @@
 }
 
 .specialis-menu-items {
-  padding: 4px;
+  padding: 8px; /* more inner spacing */
 }
 
 .specialis-menu-item {
@@ -148,7 +149,7 @@
 
 /* ===== SIDEBAR SEARCH ===== */
 .sports-menu-container {
-  padding: 12px;
+  padding: 8px 12px 12px; /* was 12px; reduce top padding to move special box up */
 }
 
 .search {
@@ -192,6 +193,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  margin-top: 6px;
 }
 
 .sidebar-sport-item {
@@ -406,25 +408,42 @@
 }
 
 .center-search {
-  flex: 0 0 auto;
+  flex: 1;
+  display: flex;
+  justify-content: center;
 }
 
 .match-search-input {
-  padding: 8px 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.1);
-  background: rgba(0,0,0,0.25);
+  width: min(760px, 100%);
+  font-size: 1.15rem;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(0,0,0,0.22);
   color: #fff;
-  font-size: 13px;
   outline: none;
-  width: 220px;
-  transition: border-color 0.2s;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
 }
-.match-search-input:focus {
-  border-color: rgba(76,175,80,0.5);
-}
+
 .match-search-input::placeholder {
-  color: rgba(255,255,255,0.35);
+  color: rgba(255,255,255,0.65);
+}
+
+.match-search-input:focus {
+  border-color: rgba(233,69,96,0.55);
+  box-shadow: 0 12px 34px rgba(0,0,0,0.22), 0 0 0 4px rgba(233,69,96,0.16);
+  background: rgba(0,0,0,0.28);
+}
+
+/* New: center sports section under search */
+.center-sports,
+.center-sports__header,
+.center-sports__title,
+.center-sports__link,
+.center-sports__body,
+.center-sports-list {
+  display: none !important;
 }
 
 /* ===== MATCHES TABLE (from live.css) ===== */
