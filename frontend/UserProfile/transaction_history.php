@@ -130,5 +130,6 @@ $stmt->close();
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     <script src="../../js/UserProfile/user_profile.js"></script>
+    <?php include '../../frontend/Components/chatbot.php'; ?>
 </body>
 </html>

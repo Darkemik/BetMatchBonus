@@ -603,3 +603,99 @@
         padding: 8px 12px;
     }
 }
+
+/* ===== ESPORT SPORT NAV ===== */
+.esport-sports-nav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+    padding: 10px 0;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(186, 104, 200, 0.3) transparent;
+}
+
+.esport-sports-nav::-webkit-scrollbar {
+    height: 4px;
+}
+.esport-sports-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+.esport-sports-nav::-webkit-scrollbar-thumb {
+    background: rgba(186, 104, 200, 0.3);
+    border-radius: 4px;
+}
+
+.esport-sport-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(186, 104, 200, 0.06);
+    border: 1px solid rgba(186, 104, 200, 0.12);
+    border-radius: 10px;
+    color: #aab;
+    font-size: 0.92rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.esport-sport-item:hover {
+    background: rgba(186, 104, 200, 0.15);
+    border-color: rgba(186, 104, 200, 0.35);
+    color: #BA68C8;
+    text-decoration: none;
+}
+
+.esport-sport-item.active {
+    background: rgba(186, 104, 200, 0.18);
+    border-color: #BA68C8;
+    color: #BA68C8;
+    font-weight: 700;
+    box-shadow: 0 0 12px rgba(186, 104, 200, 0.15);
+}
+
+.esport-sport-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: rgba(186, 104, 200, 0.1);
+    font-size: 14px;
+    color: inherit;
+    flex-shrink: 0;
+}
+
+.esport-sport-item.active .esport-sport-icon {
+    background: rgba(186, 104, 200, 0.25);
+    color: #BA68C8;
+}
+
+.esport-sport-name {
+    font-size: 0.88rem;
+}
+
+.esport-sport-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(186, 104, 200, 0.15);
+    color: #BA68C8;
+    margin-left: 2px;
+}
+
+.esport-sport-count.has-live {
+    background: #BA68C8;
+    color: #fff;
+}

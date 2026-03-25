@@ -219,5 +219,6 @@ foreach ($bonuses as $bonus) {
         });
     });
     </script>
+    <?php include '../../frontend/Components/chatbot.php'; ?>
 </body>
 </html>

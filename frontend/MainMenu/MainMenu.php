@@ -151,5 +151,6 @@ require_once "../../backend/ApiRequest/connect.php";
   <script src="../../js/Betslip/betslip.js"></script>
   <script src="../../js/MainMenu/main.js"></script>
 
+  <?php include '../../frontend/Components/chatbot.php'; ?>
 </body>
 </html>

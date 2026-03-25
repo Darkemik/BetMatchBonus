@@ -104,6 +104,68 @@ function markOldLiveMatchesGlobal($conn) {
 
 $apiBaseUrl = "http://localhost:5000/api";
 
+// Sport ikon mapping (ismert sportok)
+$sportIcons = [
+    66  => 'fa-futbol',
+    67  => 'fa-basketball-ball',
+    78  => 'fa-bullseye',
+    83  => 'fa-swimmer',
+    73  => 'fa-hand-rock',
+    70  => 'fa-hockey-puck',
+    145 => 'fa-gamepad',
+    146 => 'fa-futbol',           // e-Labdarúgás
+    147 => 'fa-basketball-ball',  // e-Kosárlabda
+    148 => 'fa-hockey-puck',     // e-Jégkorong
+    77  => 'fa-table-tennis',
+    76  => 'fa-running',       // Futsal
+    90  => 'fa-hockey-puck',   // Floorball
+    68  => 'fa-baseball-ball', // Baseball
+    69  => 'fa-football-ball', // Amerikai foci
+    71  => 'fa-volleyball-ball', // Röplabda
+    72  => 'fa-golf-ball',     // Golf
+    74  => 'fa-fist-raised',   // MMA/Küzdősport
+    75  => 'fa-biking',        // Kerékpár
+    79  => 'fa-skiing',        // Síelés
+    80  => 'fa-snowflake',     // Téli sport
+    84  => 'fa-table-tennis',  // Badminton
+    85  => 'fa-chess',         // Sakk
+    109 => 'fa-volleyball-ball', // Strandröplabda
+    110 => 'fa-futbol',        // Futsal (alt)
+    138 => 'fa-running',       // Krikett
+    151 => 'fa-trophy',        // Snooker
+];
+
+// Sport név mapping (ismert sportok - magyar)
+$sportNames = [
+    66  => 'Labdarúgás',
+    67  => 'Kosárlabda',
+    78  => 'Darts',
+    83  => 'Vízilabda',
+    73  => 'Kézilabda',
+    70  => 'Jégkorong',
+    145 => 'E-sportok',
+    146 => 'e-Labdarúgás',
+    147 => 'e-Kosárlabda',
+    148 => 'e-Jégkorong',
+    77  => 'Pingpong',
+    76  => 'Futsal',
+    90  => 'Floorball',
+    68  => 'Baseball',
+    69  => 'Amerikai foci',
+    71  => 'Röplabda',
+    72  => 'Golf',
+    74  => 'MMA',
+    75  => 'Kerékpár',
+    79  => 'Síelés',
+    80  => 'Téli sport',
+    84  => 'Badminton',
+    85  => 'Sakk',
+    109 => 'Strandröplabda',
+    110 => 'Futsal',
+    138 => 'Krikett',
+    151 => 'Snooker',
+];
+
 // 1) Sportok lekérése
 $sportsUrl = "$apiBaseUrl/sports";
 $ch = curl_init($sportsUrl);
@@ -114,23 +176,29 @@ $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 curl_close($ch);
 
 if ($httpCode !== 200 || !$sportsResponse) {
-    echo json_encode(['error' => 'Sportok lekérése sikertelen', 'sports' => []]);
+    echo json_encode(['error' => 'Sportok lekérése sikertelen', 'sports' => [], 'sportDetails' => []]);
     exit;
 }
 
 $sports = json_decode($sportsResponse, true);
 if (!is_array($sports)) {
-    echo json_encode(['error' => 'Sportok parse hiba', 'sports' => []]);
+    echo json_encode(['error' => 'Sportok parse hiba', 'sports' => [], 'sportDetails' => []]);
     exit;
 }
 
-$result = ['sports' => []];
+$result = ['sports' => [], 'sportDetails' => []];
 
 // 2) Minden sport esetén élő meccsek lekérése
 foreach ($sports as $sport) {
     $sportId = $sport['id'] ?? 0;
     $sportName = $sport['name'] ?? 'Ismeretlen';
     $hasLive = $sport['hasLiveEvents'] ?? false;
+
+    // Sport részletek mentése (név, ikon) - minden sporthoz, nem csak az élőkhöz
+    $result['sportDetails'][$sportId] = [
+        'name' => $sportNames[$sportId] ?? $sportName,
+        'icon' => $sportIcons[$sportId] ?? 'fa-trophy'
+    ];
 
     if (!$hasLive) {
         $result['sports'][$sportId] = 0;

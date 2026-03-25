@@ -45,6 +45,7 @@
     <script src="../../js/Main/auth_ui.js"></script>
     <script src="../../js/Register/registermodal2.js"></script>
     <script src="../../js/Main/layout.js"></script>
+    <?php include '../../frontend/Components/chatbot.php'; ?>
 </body>
 
 </html>

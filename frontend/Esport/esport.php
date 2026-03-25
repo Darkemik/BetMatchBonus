@@ -85,6 +85,11 @@ require_once "../../backend/ApiRequest/connect.php";
             <div class="elo-container">
                 <h1 class="elo-title"><i class="fas fa-gamepad"></i> eSport</h1>
 
+                <!-- eSport sport szűrő nav -->
+                <nav class="esport-sports-nav" id="esportSportsNav">
+                    <!-- JS-ből épül fel dinamikusan -->
+                </nav>
+
                 <div class="tabs-container">
                     <button class="tab-button active" data-tab="today">
                         <i class="fas fa-calendar-day"></i> Összes mai meccs
@@ -105,10 +110,7 @@ require_once "../../backend/ApiRequest/connect.php";
 
                 <div class="tab-content" id="tab-live">
                     <div id="matches-container">
-                        <?php
-                        $_GET['sport_id'] = 145;
-                        include '../../backend/ApiRequest/live_table.php';
-                        ?>
+                        <div class="loading-details"><i class="fas fa-spinner fa-spin"></i> Élő meccsek betöltése...</div>
                     </div>
                 </div>
 
@@ -129,6 +131,7 @@ require_once "../../backend/ApiRequest/connect.php";
     <?php include '../../frontend/Components/loginmodal.php'; ?>
     <?php include '../../frontend/Components/registermodal.php'; ?>
     <?php include '../../frontend/Components/registermodal2.php'; ?>
+    <?php include '../../frontend/Components/chatbot.php'; ?>
 </body>
 
 </html>

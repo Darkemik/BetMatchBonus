@@ -14,7 +14,23 @@ $sportIcons = [
     73  => 'fa-hand-rock',
     70  => 'fa-hockey-puck',
     145 => 'fa-gamepad',
-    77  => 'fa-table-tennis'
+    77  => 'fa-table-tennis',
+    76  => 'fa-running',
+    90  => 'fa-hockey-puck',
+    68  => 'fa-baseball-ball',
+    69  => 'fa-football-ball',
+    71  => 'fa-volleyball-ball',
+    72  => 'fa-golf-ball',
+    74  => 'fa-fist-raised',
+    75  => 'fa-biking',
+    79  => 'fa-skiing',
+    80  => 'fa-snowflake',
+    84  => 'fa-table-tennis',
+    85  => 'fa-chess',
+    109 => 'fa-volleyball-ball',
+    110 => 'fa-futbol',
+    138 => 'fa-running',
+    151 => 'fa-trophy',
 ];
 
 $priorityOrder = "

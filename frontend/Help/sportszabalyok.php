@@ -40,6 +40,7 @@
     <script src="../../js/Register/registermodal2.js"></script>
     <script src="../../js/Main/layout.js"></script>
     <script src="../../js/Help/sportszabalyok.js"></script>
+    <?php include '../../frontend/Components/chatbot.php'; ?>
 </body>
 
 </html>
