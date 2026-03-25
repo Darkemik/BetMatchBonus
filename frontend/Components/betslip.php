@@ -14,6 +14,13 @@
 
     <!-- TICKET TARTALOM -->
     <div class="betslip-content active" id="betslip-ticket">
+
+        <!-- EGYES / KÖTÉS SUB-TABS -->
+        <div class="betslip-type-tabs">
+            <button class="betslip-type-tab active" id="tab-egyes" data-type="egyes">Egyes</button>
+            <button class="betslip-type-tab" id="tab-kotes" data-type="kotes">Kötés</button>
+        </div>
+
         <div class="betslip-empty" id="betslip-empty">
             <i class="fas fa-inbox"></i>
             <p id="empty-message">Nincs aktív fogadás</p>

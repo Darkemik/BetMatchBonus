@@ -173,6 +173,23 @@ document.addEventListener('DOMContentLoaded', function() {
         refreshAllOddsButtons();
     };
 
+    // ===== EGYES / KÖTÉS SUB-TAB AUTOMATIKUS VÁLTÁS =====
+    function updateTypeTabs() {
+        const tabEgyes = document.getElementById('tab-egyes');
+        const tabKotes = document.getElementById('tab-kotes');
+        if (!tabEgyes || !tabKotes) return;
+
+        if (ticketItems.length >= 2) {
+            // 2+ fogadás → Kötés aktív
+            tabEgyes.classList.remove('active');
+            tabKotes.classList.add('active');
+        } else {
+            // 0-1 fogadás → Egyes aktív
+            tabEgyes.classList.add('active');
+            tabKotes.classList.remove('active');
+        }
+    }
+
     // ===== TICKET RENDERELÉS =====
     function renderTicket() {
         console.log('[BETSLIP] renderTicket() kezdés, items:', ticketItems.length);
@@ -203,6 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (clearBtn) clearBtn.style.display = 'none';
             if (summary) summary.style.display = 'none';
             if (betslipCountEl) betslipCountEl.textContent = '0';
+            updateTypeTabs();
             return;
         }
 
@@ -249,6 +267,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (totalOddsEl) totalOddsEl.textContent = totalOdds.toFixed(3);
         updatePotentialWin(totalOdds);
         updatePlaceBetButton();
+        updateTypeTabs();
         
         console.log('[BETSLIP] renderTicket() vége, totalOdds:', totalOdds);
     }
@@ -378,7 +397,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                     </h5>
                                 </div>
                                 <div class="modal-body">
-                                    <p><strong>Szelvény ID:</strong> ${data.ticket_id || '-'}</p>
                                     <p><strong>Tét:</strong> ${stake.toLocaleString('hu-HU')} Ft</p>
                                     <p><strong>Lehetséges nyeremény:</strong> ${Math.round(stake * totalOdds).toLocaleString('hu-HU')} Ft</p>
                                 </div>
