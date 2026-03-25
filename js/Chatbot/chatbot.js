@@ -163,6 +163,32 @@
                 'A bal oldali menüben sportáganként böngészheted a meccseket! A <a href="../../frontend/MainMenu/MainMenu.php">Főoldalon</a> a mai nap meccseit láthatod.'
         },
         {
+            keywords: ['milyen sport', 'mire fogad', 'sportok', 'sportágak', 'milyen sportág', 'elérhető sport', 'sport kínálat', 'hány sport', 'mit fogad', 'fogadhatok sport'],
+            answer: '🏆 <b>Milyen sportokra fogadhatsz?</b><br><br>' +
+                'Az oldalunkon az alábbi sportágakra tudsz fogadni:<br><br>' +
+                '⚽ <b>Labdarúgás</b> – a legnépszerűbb sportág, rengeteg bajnoksággal<br>' +
+                '🏀 <b>Kosárlabda</b> – NBA, Euroliga és még sok más<br>' +
+                '🏒 <b>Jégkorong</b> – NHL, KHL, hazai és nemzetközi ligák<br>' +
+                '🤾 <b>Kézilabda</b> – BL, EHF és magyar bajnokság<br>' +
+                '🎯 <b>Darts</b> – PDC, WDF versenyek<br>' +
+                '🤽 <b>Vízilabda</b> – OB, BL, nemzetközi tornák<br>' +
+                '🏓 <b>Pingpong</b> – WTT, nemzetközi versenyek<br>' +
+                '⚾ <b>Baseball</b> – MLB és más ligák<br>' +
+                '🏈 <b>Amerikai foci</b> – NFL<br>' +
+                '🏐 <b>Röplabda</b> – hazai és nemzetközi<br>' +
+                '⛳ <b>Golf</b> – PGA, European Tour<br>' +
+                '🥊 <b>MMA</b> – UFC, Bellator<br>' +
+                '🚴 <b>Kerékpár</b> – Tour de France és más versenyek<br>' +
+                '⛷️ <b>Síelés</b> – alpesi és északi számok<br>' +
+                '🏸 <b>Badminton</b> – BWF versenyek<br>' +
+                '♟️ <b>Sakk</b> – nemzetközi tornák<br>' +
+                '🏖️ <b>Strandröplabda</b> – FIVB<br>' +
+                '🏏 <b>Krikett</b> – nemzetközi mérkőzések<br>' +
+                '🎱 <b>Snooker</b> – World Snooker Tour<br>' +
+                '🎮 <b>eSport</b> – e-Labdarúgás, e-Kosárlabda, e-Jégkorong<br><br>' +
+                'A sportágakat a <a href="../../frontend/MainMenu/MainMenu.php">Főoldalon</a> a bal oldali menüben találod, az élő meccseket pedig az <a href="../../frontend/Live/live.php">Élő</a> menüben! 🔥'
+        },
+        {
             keywords: ['1x2', 'piac', 'market', 'over', 'under', 'gólszám', 'hendikep', 'handicap', 'mindkét', 'btts', 'dupla esély'],
             answer: '📈 <b>Fogadási piacok</b><br><br>' +
                 '• <b>1X2</b> – Hazai győzelem / Döntetlen / Vendég győzelem.<br>' +

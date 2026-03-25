@@ -29,6 +29,7 @@
 
     <div class="chatbot-suggestions" id="chatbotSuggestions">
         <button class="chatbot-suggestion" data-question="Hogyan fogadhatok?">🎯 Hogyan fogadhatok?</button>
+        <button class="chatbot-suggestion" data-question="Milyen sportokra fogadhatok?">🏆 Sportágak</button>
         <button class="chatbot-suggestion" data-question="Milyen bónuszok vannak?">🎁 Bónuszok</button>
         <button class="chatbot-suggestion" data-question="Hogyan fizethetek be?">💳 Befizetés</button>
         <button class="chatbot-suggestion" data-question="Hogyan kérhetek kifizetést?">💰 Kifizetés</button>
