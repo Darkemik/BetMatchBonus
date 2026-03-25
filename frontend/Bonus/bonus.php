@@ -15,6 +15,8 @@
 </head>
 
 <body>
+    <?php include '../../frontend/Components/cookie_consent.php'; ?>
+
     <header class="header">
         <div class="header-top-row">
             <button class="navbar-toggler navbar-dark" type="button" data-bs-toggle="collapse"

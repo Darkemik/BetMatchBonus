@@ -32,6 +32,7 @@ $stmt->close();
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 </head>
 <body>
+    <?php include '../../frontend/Components/cookie_consent.php'; ?>
     <?php require_once "../Components/header.php"; ?>
     <div class="container profile-container">
         <div class="row">

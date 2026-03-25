@@ -80,6 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 </head>
 <body>
+    <?php include '../../frontend/Components/cookie_consent.php'; ?>
     <?php require_once "../Components/header.php"; ?>
     <div class="container profile-container">
         <div class="row">
