@@ -478,7 +478,7 @@ CREATE TABLE IF NOT EXISTS Transactions (
 -- ============================================================
 -- 27) ACTIVITY LOG (Tevékenységi Napló)
 -- ============================================================
-CREATE TABLE IF NOT EXISTS ActivityLog (
+CREATE TABLE IF NOT EXISTS activitylog (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     activity_type VARCHAR(50) NOT NULL,
