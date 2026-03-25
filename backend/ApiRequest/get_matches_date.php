@@ -4,6 +4,178 @@ require_once "connect.php";
 $apiBaseUrl = "http://localhost:5000/api";
 $date = date('Y-m-d');
 
+// Ország kód → magyar név mapping
+$countryNameMap = [
+    'INT' => 'Nemzetközi',
+    'HUN' => 'Magyarország',
+    'GBR' => 'Egyesült Királyság',
+    'ENG' => 'Anglia',
+    'SCT' => 'Skócia',
+    'WLS' => 'Wales',
+    'NIR' => 'Észak-Írország',
+    'DEU' => 'Németország',
+    'GER' => 'Németország',
+    'FRA' => 'Franciaország',
+    'ESP' => 'Spanyolország',
+    'ITA' => 'Olaszország',
+    'PRT' => 'Portugália',
+    'NLD' => 'Hollandia',
+    'BEL' => 'Belgium',
+    'AUT' => 'Ausztria',
+    'CHE' => 'Svájc',
+    'SUI' => 'Svájc',
+    'POL' => 'Lengyelország',
+    'CZE' => 'Csehország',
+    'SVK' => 'Szlovákia',
+    'HRV' => 'Horvátország',
+    'CRO' => 'Horvátország',
+    'SRB' => 'Szerbia',
+    'ROU' => 'Románia',
+    'BGR' => 'Bulgária',
+    'BUL' => 'Bulgária',
+    'GRC' => 'Görögország',
+    'GRE' => 'Görögország',
+    'TUR' => 'Törökország',
+    'RUS' => 'Oroszország',
+    'UKR' => 'Ukrajna',
+    'SWE' => 'Svédország',
+    'NOR' => 'Norvégia',
+    'DNK' => 'Dánia',
+    'DEN' => 'Dánia',
+    'FIN' => 'Finnország',
+    'ISL' => 'Izland',
+    'IRL' => 'Írország',
+    'USA' => 'Egyesült Államok',
+    'CAN' => 'Kanada',
+    'MEX' => 'Mexikó',
+    'BRA' => 'Brazília',
+    'ARG' => 'Argentína',
+    'COL' => 'Kolumbia',
+    'CHL' => 'Chile',
+    'URY' => 'Uruguay',
+    'PRY' => 'Paraguay',
+    'PER' => 'Peru',
+    'ECU' => 'Ecuador',
+    'BOL' => 'Bolívia',
+    'VEN' => 'Venezuela',
+    'JPN' => 'Japán',
+    'KOR' => 'Dél-Korea',
+    'CHN' => 'Kína',
+    'AUS' => 'Ausztrália',
+    'NZL' => 'Új-Zéland',
+    'ZAF' => 'Dél-Afrika',
+    'RSA' => 'Dél-Afrika',
+    'EGY' => 'Egyiptom',
+    'MAR' => 'Marokkó',
+    'NGA' => 'Nigéria',
+    'GHA' => 'Ghána',
+    'CMR' => 'Kamerun',
+    'SEN' => 'Szenegál',
+    'TUN' => 'Tunézia',
+    'DZA' => 'Algéria',
+    'ALG' => 'Algéria',
+    'SAU' => 'Szaúd-Arábia',
+    'KSA' => 'Szaúd-Arábia',
+    'ARE' => 'Egyesült Arab Emírségek',
+    'UAE' => 'Egyesült Arab Emírségek',
+    'QAT' => 'Katar',
+    'IRN' => 'Irán',
+    'IRQ' => 'Irak',
+    'IND' => 'India',
+    'IDN' => 'Indonézia',
+    'THA' => 'Thaiföld',
+    'VNM' => 'Vietnam',
+    'MYS' => 'Malajzia',
+    'SGP' => 'Szingapúr',
+    'PHL' => 'Fülöp-szigetek',
+    'ISR' => 'Izrael',
+    'CYP' => 'Ciprus',
+    'GEO' => 'Grúzia',
+    'ARM' => 'Örményország',
+    'AZE' => 'Azerbajdzsán',
+    'KAZ' => 'Kazahsztán',
+    'UZB' => 'Üzbegisztán',
+    'BLR' => 'Fehéroroszország',
+    'MDA' => 'Moldova',
+    'LTU' => 'Litvánia',
+    'LVA' => 'Lettország',
+    'EST' => 'Észtország',
+    'SVN' => 'Szlovénia',
+    'SLO' => 'Szlovénia',
+    'BIH' => 'Bosznia-Hercegovina',
+    'MNE' => 'Montenegró',
+    'MKD' => 'Észak-Macedónia',
+    'ALB' => 'Albánia',
+    'KOS' => 'Koszovó',
+    'XKX' => 'Koszovó',
+    'LUX' => 'Luxemburg',
+    'MLT' => 'Málta',
+    'AND' => 'Andorra',
+    'MCO' => 'Monaco',
+    'LIE' => 'Liechtenstein',
+    'SMR' => 'San Marino',
+    'FRO' => 'Feröer-szigetek',
+    'GIB' => 'Gibraltár',
+    'ABW' => 'Aruba',
+    'CRI' => 'Costa Rica',
+    'PAN' => 'Panama',
+    'JAM' => 'Jamaica',
+    'HND' => 'Honduras',
+    'SLV' => 'El Salvador',
+    'GTM' => 'Guatemala',
+    'CUB' => 'Kuba',
+    'DOM' => 'Dominikai Köztársaság',
+    'TTO' => 'Trinidad és Tobago',
+    'ETH' => 'Etiópia',
+    'KEN' => 'Kenya',
+    'TZA' => 'Tanzánia',
+    'UGA' => 'Uganda',
+    'COD' => 'Kongói DK',
+    'CIV' => 'Elefántcsontpart',
+    'MLI' => 'Mali',
+    'BFA' => 'Burkina Faso',
+    'MOZ' => 'Mozambik',
+    'ZMB' => 'Zambia',
+    'ZWE' => 'Zimbabwe',
+    'BWA' => 'Botswana',
+    'NAM' => 'Namíbia',
+    'MWI' => 'Malawi',
+    'RWA' => 'Ruanda',
+    'GAB' => 'Gabon',
+    'BEN' => 'Benin',
+    'TGO' => 'Togó',
+    'NER' => 'Niger',
+    'GIN' => 'Guinea',
+    'SLE' => 'Sierra Leone',
+    'LBR' => 'Libéria',
+    'MRT' => 'Mauritánia',
+    'MDG' => 'Madagaszkár',
+    'LBY' => 'Líbia',
+    'SDN' => 'Szudán',
+    'JOR' => 'Jordánia',
+    'LBN' => 'Libanon',
+    'OMN' => 'Omán',
+    'BHR' => 'Bahrein',
+    'KWT' => 'Kuvait',
+    'YEM' => 'Jemen',
+    'SYR' => 'Szíria',
+    'PAK' => 'Pakisztán',
+    'BGD' => 'Banglades',
+    'LKA' => 'Srí Lanka',
+    'MMR' => 'Myanmar',
+    'KHM' => 'Kambodzsa',
+    'LAO' => 'Laosz',
+    'MNG' => 'Mongólia',
+    'TWN' => 'Tajvan',
+    'HKG' => 'Hongkong',
+    'MAC' => 'Makaó',
+    'PRK' => 'Észak-Korea',
+    'NPL' => 'Nepál',
+    'AFG' => 'Afganisztán',
+    'FJI' => 'Fidzsi',
+    'PNG' => 'Pápua Új-Guinea',
+];
+
 // Helper: cURL GET → associative array, or null on failure
 function curlGetJson($url) {
     $ch = curl_init($url);
@@ -70,7 +242,8 @@ foreach ($sports as $sport) {
     }
 
     // 2) Bajnokságok lekérése és mentése
-    $championships = curlGetJson("$apiBaseUrl/championships?sportId=$sportApiId");
+    $championshipsMap = []; // leagueId → name mapping a fallback-hez
+    $championships = curlGetJson("$apiBaseUrl/sports/championships?sportId=$sportApiId");
     if (is_array($championships)) {
         foreach ($championships as $champ) {
             $champApiId  = (int)($champ['id'] ?? 0);
@@ -78,8 +251,15 @@ foreach ($sports as $sport) {
             $countryCode = trim($champ['countryCode'] ?? '');
             if ($champApiId <= 0) continue;
 
+            // Mentjük a map-be a fallback-hez
+            $championshipsMap[$champApiId] = [
+                'name' => $champName,
+                'countryCode' => $countryCode
+            ];
+
             $cCode = $countryCode !== '' ? $countryCode : 'INT';
-            $cName = $countryCode !== '' ? $countryCode : 'International';
+            // Ország név: mapping-ből vesszük, ha van
+            $cName = $countryNameMap[$cCode] ?? ($countryCode !== '' ? $countryCode : 'Nemzetközi');
 
             $stmtUpsertCountry->bind_param("ss", $cCode, $cName);
             $stmtUpsertCountry->execute();
@@ -127,19 +307,27 @@ foreach ($sports as $sport) {
         $compRow = $resComp->fetch_assoc();
 
         if (!$compRow) {
-            // Auto-create competition with International country
-            $intCode = 'INT';
-            $intName = 'International';
-            $stmtUpsertCountry->bind_param("ss", $intCode, $intName);
+            // Bajnokság nem található - először az API championshipsMap-ből próbáljuk
+            if (isset($championshipsMap[$leagueId])) {
+                $champName = $championshipsMap[$leagueId]['name'];
+                $champCountryCode = $championshipsMap[$leagueId]['countryCode'];
+            } else {
+                $champName = "Bajnokság {$leagueId}";
+                $champCountryCode = '';
+            }
+
+            $cCode = $champCountryCode !== '' ? $champCountryCode : 'INT';
+            $cName = $countryNameMap[$cCode] ?? ($champCountryCode !== '' ? $champCountryCode : 'Nemzetközi');
+
+            $stmtUpsertCountry->bind_param("ss", $cCode, $cName);
             $stmtUpsertCountry->execute();
 
-            $stmtFindCountry->bind_param("s", $intCode);
+            $stmtFindCountry->bind_param("s", $cCode);
             $stmtFindCountry->execute();
             $resCountry = $stmtFindCountry->get_result();
             $countryRow = $resCountry->fetch_assoc();
             $countryId  = $countryRow ? (int)$countryRow['id'] : null;
 
-            $champName = "Ismeretlen bajnokság (ID: {$leagueId})";
             $stmtUpsertComp->bind_param("iiis", $leagueId, $internalSportId, $countryId, $champName);
             $stmtUpsertComp->execute();
 
@@ -186,3 +374,4 @@ $stmtUpsertComp->close();
 $stmtUpsertMatch->close();
 
 echo "Napi meccsek importja kész. Összesen {$totalImported} meccs importálva.\n";
+?>

@@ -173,6 +173,132 @@ echo json_encode($result);
 function importMatches($conn, $matches, $sportId) {
     if (!is_array($matches)) return;
 
+    $apiBaseUrl = "http://localhost:5000/api";
+
+    // Ország kód → magyar név mapping
+    $countryNameMap = [
+        'INT' => 'Nemzetközi',
+        'HUN' => 'Magyarország',
+        'GBR' => 'Egyesült Királyság',
+        'ENG' => 'Anglia',
+        'SCT' => 'Skócia',
+        'WLS' => 'Wales',
+        'NIR' => 'Észak-Írország',
+        'DEU' => 'Németország',
+        'GER' => 'Németország',
+        'FRA' => 'Franciaország',
+        'ESP' => 'Spanyolország',
+        'ITA' => 'Olaszország',
+        'PRT' => 'Portugália',
+        'NLD' => 'Hollandia',
+        'BEL' => 'Belgium',
+        'AUT' => 'Ausztria',
+        'CHE' => 'Svájc',
+        'SUI' => 'Svájc',
+        'POL' => 'Lengyelország',
+        'CZE' => 'Csehország',
+        'SVK' => 'Szlovákia',
+        'HRV' => 'Horvátország',
+        'CRO' => 'Horvátország',
+        'SRB' => 'Szerbia',
+        'ROU' => 'Románia',
+        'BGR' => 'Bulgária',
+        'BUL' => 'Bulgária',
+        'GRC' => 'Görögország',
+        'GRE' => 'Görögország',
+        'TUR' => 'Törökország',
+        'RUS' => 'Oroszország',
+        'UKR' => 'Ukrajna',
+        'SWE' => 'Svédország',
+        'NOR' => 'Norvégia',
+        'DNK' => 'Dánia',
+        'DEN' => 'Dánia',
+        'FIN' => 'Finnország',
+        'ISL' => 'Izland',
+        'IRL' => 'Írország',
+        'USA' => 'Egyesült Államok',
+        'CAN' => 'Kanada',
+        'MEX' => 'Mexikó',
+        'BRA' => 'Brazília',
+        'ARG' => 'Argentína',
+        'COL' => 'Kolumbia',
+        'CHL' => 'Chile',
+        'URY' => 'Uruguay',
+        'PRY' => 'Paraguay',
+        'PER' => 'Peru',
+        'ECU' => 'Ecuador',
+        'BOL' => 'Bolívia',
+        'VEN' => 'Venezuela',
+        'JPN' => 'Japán',
+        'KOR' => 'Dél-Korea',
+        'CHN' => 'Kína',
+        'AUS' => 'Ausztrália',
+        'NZL' => 'Új-Zéland',
+        'ZAF' => 'Dél-Afrika',
+        'RSA' => 'Dél-Afrika',
+        'EGY' => 'Egyiptom',
+        'MAR' => 'Marokkó',
+        'NGA' => 'Nigéria',
+        'GHA' => 'Ghána',
+        'CMR' => 'Kamerun',
+        'SEN' => 'Szenegál',
+        'TUN' => 'Tunézia',
+        'DZA' => 'Algéria',
+        'ALG' => 'Algéria',
+        'SAU' => 'Szaúd-Arábia',
+        'KSA' => 'Szaúd-Arábia',
+        'ARE' => 'Egyesült Arab Emírségek',
+        'UAE' => 'Egyesült Arab Emírségek',
+        'QAT' => 'Katar',
+        'IRN' => 'Irán',
+        'IRQ' => 'Irak',
+        'IND' => 'India',
+        'IDN' => 'Indonézia',
+        'THA' => 'Thaiföld',
+        'VNM' => 'Vietnam',
+        'MYS' => 'Malajzia',
+        'SGP' => 'Szingapúr',
+        'PHL' => 'Fülöp-szigetek',
+        'ISR' => 'Izrael',
+        'CYP' => 'Ciprus',
+        'GEO' => 'Grúzia',
+        'ARM' => 'Örményország',
+        'AZE' => 'Azerbajdzsán',
+        'KAZ' => 'Kazahsztán',
+        'UZB' => 'Üzbegisztán',
+        'BLR' => 'Fehéroroszország',
+        'MDA' => 'Moldova',
+        'LTU' => 'Litvánia',
+        'LVA' => 'Lettország',
+        'EST' => 'Észtország',
+        'SVN' => 'Szlovénia',
+        'SLO' => 'Szlovénia',
+        'BIH' => 'Bosznia-Hercegovina',
+        'MNE' => 'Montenegró',
+        'MKD' => 'Észak-Macedónia',
+        'ALB' => 'Albánia',
+        'KOS' => 'Koszovó',
+        'XKX' => 'Koszovó',
+        'LUX' => 'Luxemburg',
+        'MLT' => 'Málta',
+        'AND' => 'Andorra',
+        'MCO' => 'Monaco',
+        'LIE' => 'Liechtenstein',
+        'SMR' => 'San Marino',
+        'FRO' => 'Feröer-szigetek',
+        'GIB' => 'Gibraltár',
+        'ABW' => 'Aruba',
+        'CRI' => 'Costa Rica',
+        'PAN' => 'Panama',
+        'JAM' => 'Jamaica',
+        'HND' => 'Honduras',
+        'SLV' => 'El Salvador',
+        'GTM' => 'Guatemala',
+        'CUB' => 'Kuba',
+        'DOM' => 'Dominikai Köztársaság',
+        'TTO' => 'Trinidad és Tobago',
+    ];
+
     // Sport belső id keresése
     $stmtSport = $conn->prepare("SELECT id FROM Sports WHERE api_id = ?");
     $stmtSport->bind_param("i", $sportId);
@@ -196,9 +322,11 @@ function importMatches($conn, $matches, $sportId) {
     // Championship/Competition keresése vagy létrehozása
     $stmtChamp = $conn->prepare("SELECT id FROM Competitions WHERE api_id = ?");
     $stmtCountry = $conn->prepare("SELECT id FROM Countries WHERE code = ?");
+    $stmtInsertCountry = $conn->prepare("INSERT INTO Countries (code, name) VALUES (?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name)");
     $stmtInsertChamp = $conn->prepare("
         INSERT INTO Competitions (api_id, sport_id, country_id, name, is_active)
         VALUES (?, ?, ?, ?, 1)
+        ON DUPLICATE KEY UPDATE name = VALUES(name), country_id = VALUES(country_id)
     ");
     $stmtInsertMatch = $conn->prepare("
         INSERT INTO Events (api_id, sport_id, competition_id, name, home_team_name, away_team_name, start_time, is_live, live_time, status_id, home_score, away_score)
@@ -210,6 +338,31 @@ function importMatches($conn, $matches, $sportId) {
             away_score = VALUES(away_score),
             status_id = CASE WHEN VALUES(is_live) = 1 THEN 2 ELSE status_id END
     ");
+
+    // Bajnokságok lekérése az API-ból, hogy a valódi neveket kapjuk
+    $championsUrl = "$apiBaseUrl/sports/championships?sportId=$sportId";
+    $chCurl = curl_init($championsUrl);
+    curl_setopt($chCurl, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($chCurl, CURLOPT_TIMEOUT, 10);
+    $champResponse = curl_exec($chCurl);
+    $champHttpCode = curl_getinfo($chCurl, CURLINFO_HTTP_CODE);
+    curl_close($chCurl);
+
+    $championshipsMap = [];
+    if ($champHttpCode === 200 && $champResponse) {
+        $champList = json_decode($champResponse, true);
+        if (is_array($champList)) {
+            foreach ($champList as $c) {
+                $cId = (int)($c['id'] ?? 0);
+                if ($cId > 0) {
+                    $championshipsMap[$cId] = [
+                        'name' => $c['name'] ?? "Bajnokság {$cId}",
+                        'countryCode' => trim($c['countryCode'] ?? '')
+                    ];
+                }
+            }
+        }
+    }
 
     foreach ($matches as $match) {
         $matchId = $match['id'] ?? 0;
@@ -244,9 +397,30 @@ function importMatches($conn, $matches, $sportId) {
         $resChamp = $stmtChamp->get_result();
         
         if ($resChamp->num_rows === 0) {
-            // Championship nem létezik, létrehozzuk
+            // Championship nem létezik - API-ból kapjuk a nevet
             $countryId = null;
-            $champName = "Bajnokság {$leagueId}";
+            
+            if (isset($championshipsMap[$leagueId])) {
+                $champName = $championshipsMap[$leagueId]['name'];
+                $countryCode = $championshipsMap[$leagueId]['countryCode'];
+            } else {
+                $champName = "Bajnokság {$leagueId}";
+                $countryCode = '';
+            }
+
+            // Ország kezelése
+            if ($countryCode !== '') {
+                $cName = $countryNameMap[$countryCode] ?? $countryCode;
+                $stmtInsertCountry->bind_param("ss", $countryCode, $cName);
+                $stmtInsertCountry->execute();
+                $stmtCountry->bind_param("s", $countryCode);
+                $stmtCountry->execute();
+                $resCountry = $stmtCountry->get_result();
+                $countryRow = $resCountry->fetch_assoc();
+                if ($countryRow) {
+                    $countryId = (int)$countryRow['id'];
+                }
+            }
             
             $stmtInsertChamp->bind_param("iiis", $leagueId, $internalSportId, $countryId, $champName);
             $stmtInsertChamp->execute();
@@ -279,6 +453,7 @@ function importMatches($conn, $matches, $sportId) {
 
     $stmtChamp->close();
     $stmtCountry->close();
+    $stmtInsertCountry->close();
     $stmtInsertChamp->close();
     $stmtInsertMatch->close();
 }

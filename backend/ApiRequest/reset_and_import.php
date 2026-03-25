@@ -5,6 +5,7 @@ require_once "connect.php";
 $conn->query("SET FOREIGN_KEY_CHECKS = 0;");
 $conn->query("TRUNCATE TABLE Events;");
 $conn->query("TRUNCATE TABLE Competitions;");
+$conn->query("TRUNCATE TABLE Countries;");
 $conn->query("SET FOREIGN_KEY_CHECKS = 1;");
 
 echo "Táblák ürítve.\n";

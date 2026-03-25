@@ -128,6 +128,28 @@ if (empty($matches)) {
     exit;
 }
 
+// Bajnokság nevek lekérése az adatbázisból a leagueId-k alapján
+$leagueIds = [];
+foreach ($matches as $m) {
+    $lid = (int)($m['leagueId'] ?? 0);
+    if ($lid > 0) $leagueIds[$lid] = true;
+}
+$leagueNamesMap = [];
+if (!empty($leagueIds)) {
+    $placeholders = implode(',', array_fill(0, count($leagueIds), '?'));
+    $types = str_repeat('i', count($leagueIds));
+    $sqlLeague = "SELECT api_id, name FROM Competitions WHERE api_id IN ($placeholders)";
+    $stmtLeague = $conn->prepare($sqlLeague);
+    $ids = array_keys($leagueIds);
+    $stmtLeague->bind_param($types, ...$ids);
+    $stmtLeague->execute();
+    $resLeague = $stmtLeague->get_result();
+    while ($row = $resLeague->fetch_assoc()) {
+        $leagueNamesMap[(int)$row['api_id']] = $row['name'];
+    }
+    $stmtLeague->close();
+}
+
 $sportIcons = [
     66 => 'fa-futbol',
     67 => 'fa-basketball-ball',
@@ -154,7 +176,8 @@ $sportIcon = $sportIcons[$sport_id] ?? 'fa-futbol';
     <tbody>
         <?php foreach ($matches as $match):
             $matchId = $match['id'] ?? 0;
-            $leagueName = $match['leagueName'] ?? 'Ismeretlen';
+            $leagueId = (int)($match['leagueId'] ?? 0);
+            $leagueName = $leagueNamesMap[$leagueId] ?? ($match['leagueName'] ?? 'Ismeretlen');
             $name = $match['name'] ?? '';
             $startUtc = $match['startDateUtc'] ?? '';
             $isLive = !empty($match['isLive']) ? 1 : 0;

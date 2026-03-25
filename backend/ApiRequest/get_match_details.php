@@ -61,7 +61,16 @@ if (!is_array($apiData)) {
 $dbScore = null;
 $dbLiveTime = null;
 $dbIsLive = null;
-$stmtDb = $conn->prepare("SELECT home_score, away_score, is_live, live_time FROM Events WHERE api_id = ? LIMIT 1");
+$dbCountryName = null;
+$dbLeagueName = null;
+$stmtDb = $conn->prepare("
+    SELECT e.home_score, e.away_score, e.is_live, e.live_time,
+           comp.name AS league_name, c.name AS country_name
+    FROM Events e
+    LEFT JOIN Competitions comp ON e.competition_id = comp.id
+    LEFT JOIN Countries c ON comp.country_id = c.id
+    WHERE e.api_id = ? LIMIT 1
+");
 if ($stmtDb) {
     $stmtDb->bind_param("i", $eventId);
     $stmtDb->execute();
@@ -74,6 +83,8 @@ if ($stmtDb) {
         }
         $dbIsLive = (int)$dbRow['is_live'];
         $dbLiveTime = $dbRow['live_time'];
+        $dbCountryName = $dbRow['country_name'];
+        $dbLeagueName = $dbRow['league_name'];
     }
 }
 
@@ -88,8 +99,8 @@ $response_data = [
         'isLive' => !empty($apiData['isLive']) ? true : false,
         'liveTime' => $apiData['liveTime'] ?? null,
         'liveStatus' => $apiData['liveStatus'] ?? null,
-        'country' => $apiData['countryCode'] ?? 'Ismeretlen',
-        'championship' => $apiData['leagueName'] ?? 'Ismeretlen',
+        'country' => $dbCountryName ?: ($apiData['countryCode'] ?? 'Ismeretlen'),
+        'championship' => $dbLeagueName ?: ($apiData['leagueName'] ?? 'Ismeretlen'),
         'startUtc' => $apiData['startDateUtc'] ?? null,
     ],
     'markets' => []
