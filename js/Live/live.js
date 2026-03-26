@@ -200,23 +200,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== LIVE SPORT COUNTS LEKÉRÉSE =====
     function fetchLiveSportCounts() {
-        return fetch('../../backend/ApiRequest/get_matches_live.php')
+        return fetch('../../backend/ApiRequest/get_sidebar_sports.php?mode=live')
             .then(response => response.json())
             .then(data => {
-                const sports = data.sports || {};
-                
-                // Save sport details from backend (names, icons)
-                if (data.sportDetails) {
-                    sportDetails = data.sportDetails;
-                }
-                
-                // Only keep sports with count > 0
+                // data = [{sport_api_id, sport_name, icon, match_count, countries: [...]}, ...]
                 const liveSports = {};
-                for (const [id, count] of Object.entries(sports)) {
-                    if (count > 0) {
-                        liveSports[parseInt(id)] = count;
+
+                // Save sport details from the unified endpoint
+                data.forEach(sport => {
+                    const id = sport.sport_api_id;
+                    sportDetails[id] = {
+                        name: sport.sport_name,
+                        icon: sport.icon
+                    };
+                    if (sport.match_count > 0) {
+                        liveSports[id] = sport.match_count;
                     }
-                }
+                });
+
                 return liveSports;
             })
             .catch(error => {
