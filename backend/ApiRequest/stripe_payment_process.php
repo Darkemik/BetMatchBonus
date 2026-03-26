@@ -33,6 +33,13 @@ if (empty($cardholder_name) || strlen($cardholder_name) < 3) {
     exit;
 }
 
+// Validate cardholder name - only letters and spaces (including Hungarian characters)
+if (!preg_match('/^[a-záéíóöőüűA-ZÁÉÍÓÖŐÜŰ\s]+$/', $cardholder_name)) {
+    $_SESSION['error_message'] = '❌ A kártyatulajdonos neve csak betűket és szóközöket tartalmazhat!';
+    header('Location: /BetMatchBonus/frontend/UserProfile/stripe_payment_form.php?amount=' . $amount);
+    exit;
+}
+
 // Validate card number (must be exactly 16 digits)
 if (strlen($card_number) !== 16 || !ctype_digit($card_number)) {
     $_SESSION['error_message'] = '❌ A kártyaszám 16 számjegyből kell, hogy álljon';
@@ -43,6 +50,21 @@ if (strlen($card_number) !== 16 || !ctype_digit($card_number)) {
 // Validate expiry date
 if (empty($card_expiry) || !preg_match('/^\d{2}\/\d{2}$/', $card_expiry)) {
     $_SESSION['error_message'] = '❌ Hibás lejárati dátum (MM/YY formátum szükséges)';
+    header('Location: /BetMatchBonus/frontend/UserProfile/stripe_payment_form.php?amount=' . $amount);
+    exit;
+}
+
+// Validate expiry date is in the future
+list($exp_month, $exp_year) = explode('/', $card_expiry);
+$current_date = new DateTime();
+$current_month = $current_date->format('m');
+$current_year = $current_date->format('y');
+
+$expiry_date_str = $exp_year . $exp_month;
+$current_date_str = $current_year . $current_month;
+
+if ((int)$expiry_date_str <= (int)$current_date_str) {
+    $_SESSION['error_message'] = '❌ A kártya lejárati dátuma már lejárt! Válassz egy későbbi dátumot.';
     header('Location: /BetMatchBonus/frontend/UserProfile/stripe_payment_form.php?amount=' . $amount);
     exit;
 }

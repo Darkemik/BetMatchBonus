@@ -28,6 +28,7 @@ if ($amount < 3000 || $amount > 600000) {
     <link rel="stylesheet" href="../../css/UserProfile/user_profile.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/cleave.js@1.6.0/dist/cleave.min.js"></script>
     <style>
         .payment-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -96,7 +97,7 @@ if ($amount < 3000 || $amount > 600000) {
                         </div>
                         <div>
                             <div style="opacity: 0.7; font-size: 11px;">Lejárat</div>
-                            <div id="cardExpiry">MM/YY</div>
+                            <div id="cardExpiryDisplay">MM/YY</div>
                         </div>
                     </div>
                 </div>
@@ -108,7 +109,7 @@ if ($amount < 3000 || $amount > 600000) {
                     <div class="form-group mb-3">
                         <label for="cardholderName">Kártyatulajdonos Neve *</label>
                         <input type="text" class="form-control" id="cardholderName" name="cardholder_name"
-                            placeholder="Pl: Kovács János" required maxlength="50">
+                            placeholder="Pl: Kovács János" required maxlength="50" pattern="[a-záéíóöőüűA-ZÁÉÍÓÖŐÜŰ\s]+" title="Csak betűket és szóközöket fogadunk el!">
                     </div>
 
                     <div class="form-group mb-3">
@@ -120,9 +121,9 @@ if ($amount < 3000 || $amount > 600000) {
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group mb-3">
-                                <label for="cardExpiry">Lejárat (MM/YY) *</label>
-                                <input type="text" class="form-control" id="cardExpiry" name="card_expiry"
-                                    placeholder="12/25" maxlength="5" required>
+                                <label for="cardExpiryInput">Lejárat (MM/YY) *</label>
+                                <input type="text" class="form-control" id="cardExpiryInput" name="card_expiry"
+                                    placeholder="MM/YY" required maxlength="5">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -160,6 +161,22 @@ if ($amount < 3000 || $amount > 600000) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Lejárati dátum formázása (MM/YY) Vanilla JS-el
+        const expiryInput = document.getElementById('cardExpiryInput');
+        const expiryDisplay = document.getElementById('cardExpiryDisplay');
+
+        expiryInput.addEventListener('input', function (e) {
+            // Csak számokat engedünk át
+            let value = e.target.value.replace(/\D/g, '');
+
+            if (value.length > 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+
+            e.target.value = value;
+            expiryDisplay.textContent = value || 'MM/YY';
+        });
+
         // Real-time card number formatting
         const cardNumberInput = document.getElementById('cardNumber');
         const cardDisplay = document.getElementById('cardDisplay');
@@ -175,25 +192,44 @@ if ($amount < 3000 || $amount > 600000) {
             cardDisplay.textContent = displayValue || '●●●● ●●●● ●●●● ●●●●';
         });
 
-        // Cardholder name
+        // Cardholder name - only letters and spaces
         const nameInput = document.getElementById('cardholderName');
         const cardHolder = document.getElementById('cardHolder');
         nameInput.addEventListener('input', function () {
-            cardHolder.textContent = this.value.toUpperCase() || 'Adatok';
+            // Csak betűk és szóközök (magyar karakterek is)
+            let value = this.value.replace(/[^a-záéíóöőüűA-ZÁÉÍÓÖŐÜŰ\s]/g, '');
+            this.value = value;
+            cardHolder.textContent = value.toUpperCase() || 'Adatok';
         });
 
-        // Expiry date formatting
-        const expiryInput = document.getElementById('cardExpiry');
-        const expiryDisplay = document.getElementById('cardExpiry');
-        expiryInput.addEventListener('input', function () {
-            let value = this.value.replace(/\D/g, '');
-            if (value.length >= 2) {
-                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+        // Form submit validation
+        document.querySelector('form').addEventListener('submit', function (e) {
+            const expiryValue = document.getElementById('cardExpiryInput').value;
+            
+            // Check expiry date format
+            if (!expiryValue.match(/^\d{2}\/\d{2}$/)) {
+                e.preventDefault();
+                alert('❌ Hibás lejárati dátum formátum! Használd: MM/YY');
+                return false;
             }
-            this.value = value;
 
-            // Update display
-            document.getElementById('cardExpiry').textContent = value || 'MM/YY';
+            // Get current date
+            const now = new Date();
+            const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+            const currentYear = String(now.getFullYear()).slice(-2);
+
+            // Parse expiry date
+            const [expiryMonth, expiryYear] = expiryValue.split('/');
+
+            // Check if expiry date is in the future
+            const currentDateStr = currentYear + currentMonth;
+            const expiryDateStr = expiryYear + expiryMonth;
+
+            if (parseInt(expiryDateStr) <= parseInt(currentDateStr)) {
+                e.preventDefault();
+                alert('❌ A kártya lejárati dátuma már lejárt! Minimum 04/26 szükséges.');
+                return false;
+            }
         });
 
         // CVC - only numbers
