@@ -103,7 +103,13 @@ foreach ($bonuses as $bonus) {
                         <div class="card-body">
                             <h5 class="card-title" style="color: #e94560;"><i class="fas fa-ticket-alt"></i> Van promóciós kódod?</h5>
                             <form id="claimBonusForm" class="d-flex mt-3 gap-2">
-                                <input type="text" id="bonus_code" name="bonus_code" class="form-control" placeholder="Írd be ide a bónuszkódot" required style="background: #0f3460; color: #fff; border: 1px solid #333;">
+                                <style>
+                                    #bonus_code::placeholder { 
+                                        color: rgba(255, 255, 255, 0.7) !important; 
+                                        opacity: 1; 
+                                    }
+                                </style>
+                                <input type="text" id="bonus_code" name="bonus_code" class="form-control text-white" placeholder="Írd be ide a bónuszkódot" required style="background: #0f3460; color: #ffffff !important; border: 1px solid #333;">
                                 <button type="submit" class="btn btn-primary" style="background-color: #e94560; border-color: #e94560; font-weight: bold;">Beváltás</button>
                             </form>
                             <div id="bonusMessage" class="mt-2" style="display:none; font-weight: bold;"></div>

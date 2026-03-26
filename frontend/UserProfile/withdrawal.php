@@ -160,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                         <div class="form-group mb-3">
                             <label for="account_number">Bankszámlaszám</label>
                             <input type="text" class="form-control" id="account_number" name="account_number" required placeholder="Pl: 12345678-87654321">
-                            <small class="form-text text-white">Magyar bankszámlaszám: 16 számjegy (pl: 12345678-87654321)</small>
+                            <small class="form-text text-white">Magyar bankszámlaszám: Minimum 16, maximum 24 számjegy (pl: 12345678-87654321)</small>
                         </div>
                         
                         <div class="form-group mb-3">
@@ -188,6 +188,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../../js/UserProfile/user_profile.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const accHolder = document.getElementById('account_holder');
+            if (accHolder) {
+                accHolder.addEventListener('input', function(e) {
+                    // Csak betűk, szóközök, kötőjelek és pontok engedélyezése (számok kizárva)
+                    e.target.value = e.target.value.replace(/[^a-zA-ZáéíóöőüűÁÉÍÓÖŐÜŰ\s.-]/g, '');
+                });
+            }
+
+            const accNumber = document.getElementById('account_number');
+            if (accNumber) {
+                accNumber.addEventListener('input', function(e) {
+                    // Csak számokat engedünk (a kötőjelet átmenetileg kiszedjük, hogy újraformázzuk)
+                    let val = e.target.value.replace(/\D/g, '');
+                    
+                    // Magyar bankszámla: 16 vagy 24 számjegy lehet (8-8 vagy 8-8-8)
+                    // Maximum 24 számjegyet engedünk
+                    if (val.length > 24) {
+                        val = val.substring(0, 24);
+                    }
+
+                    // Kötőjelek beillesztése minden 8. karakter után
+                    let formatted = '';
+                    for (let i = 0; i < val.length; i++) {
+                        if (i > 0 && i % 8 === 0) {
+                            formatted += '-';
+                        }
+                        formatted += val[i];
+                    }
+
+                    e.target.value = formatted;
+                });
+            }
+        });
+    </script>
     <?php include '../../frontend/Components/chatbot.php'; ?>
 </body>
 </html>

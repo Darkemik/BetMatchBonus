@@ -13,7 +13,7 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 // Felhasználó adatainak lekérése
-$query = "SELECT id, username, email, full_name, phone, country, city, postal_code, address, birth_date, created_at FROM Users WHERE id = ?";
+$query = "SELECT id, username, email, full_name, mobile_number as phone, country, city, postal_code, address, birth_date, created_at FROM Users WHERE id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     $postal_code = htmlspecialchars($_POST['postal_code'] ?? '');
     $address = htmlspecialchars($_POST['address'] ?? '');
 
-    $update_query = "UPDATE Users SET full_name = ?, phone = ?, country = ?, city = ?, postal_code = ?, address = ? WHERE id = ?";
+    $update_query = "UPDATE Users SET full_name = ?, mobile_number = ?, country = ?, city = ?, postal_code = ?, address = ? WHERE id = ?";
     $update_stmt = $conn->prepare($update_query);
     $update_stmt->bind_param("ssssssi", $full_name, $phone, $country, $city, $postal_code, $address, $user_id);
     
