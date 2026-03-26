@@ -27,7 +27,7 @@
             <br>
             <h4>Keress minket bizalommal emailen keresztül!</h4>
             <br>
-            <h5>Ügyfélszolgálat: ugyfelszolgalat@betmatchbonus.com</h5>
+            <h5>Ügyfélszolgálat: ugyfelszolgalat@betmatchbonus.hu</h5>
             <br>
             <p class="additional-info">Ha további információkra van szükséged, használd a bal oldali menüpontokat.</p>
         </main>

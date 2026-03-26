@@ -438,8 +438,8 @@
 
 /* ===== PIAC KÁRTYA ===== */
 .markets-container {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 14px;
 }
 .market-card {
@@ -698,4 +698,11 @@
 .esport-sport-count.has-live {
     background: #BA68C8;
     color: #fff;
+}
+
+
+/* ===== 2 OSZLOPOS PIAC RESPONSIVE ===== */
+.no-markets { grid-column: 1 / -1; }
+@media (max-width: 768px) {
+    .markets-container { grid-template-columns: 1fr; }
 }

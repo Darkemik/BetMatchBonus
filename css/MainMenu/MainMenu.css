@@ -684,7 +684,7 @@
 }
 .markets-title i { margin-right: 8px; color: #f5c518; }
 
-.markets-container { display: flex; flex-direction: column; gap: 12px; }
+.markets-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 .market-card {
   background: rgba(255, 255, 255, 0.04);
   border-radius: 12px;
@@ -825,4 +825,10 @@
   .content-parent > .main_content {
     width: 100%;
   }
+}
+
+/* ===== 2 OSZLOPOS PIAC RESPONSIVE ===== */
+.no-markets { grid-column: 1 / -1; }
+@media (max-width: 768px) {
+    .markets-container { grid-template-columns: 1fr; }
 }

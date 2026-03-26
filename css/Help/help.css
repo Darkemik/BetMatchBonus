@@ -55,6 +55,14 @@
     padding-left: 15px;
 }
 
+.sidebar-section a.active {
+    background-color: rgba(255, 162, 0, 0.15);
+    color: #ffa200;
+    border-left-color: #ffa200;
+    padding-left: 15px;
+    font-weight: 600;
+}
+
 .main-content {
     flex: 1;
     background-color: #1e2128;

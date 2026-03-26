@@ -580,8 +580,8 @@
 
 /* ===== PIAC KÁRTYA ===== */
 .markets-container {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 14px;
 }
 .market-card {
@@ -762,4 +762,10 @@
         min-width: 80px;
         max-width: 150px;
     }
+}
+
+/* ===== 2 OSZLOPOS PIAC RESPONSIVE ===== */
+.no-markets { grid-column: 1 / -1; }
+@media (max-width: 768px) {
+    .markets-container { grid-template-columns: 1fr; }
 }
