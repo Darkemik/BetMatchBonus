@@ -13,6 +13,8 @@ date_default_timezone_set('Europe/Budapest');
 $from = (new DateTime('yesterday 00:00:00'))->format('Y-m-d H:i:s');
 $to   = (new DateTime('tomorrow 23:59:59'))->format('Y-m-d H:i:s');
 
+$mode = isset($_GET['mode']) && $_GET['mode'] === 'live' ? 'live' : 'all';
+
 $sportIcons = [
     66  => 'fa-futbol',
     67  => 'fa-basketball-ball',
@@ -96,7 +98,7 @@ WHERE e.start_time BETWEEN ? AND ?
   AND (c.name IS NULL OR (LOWER(TRIM(c.name)) != 'n/a' AND TRIM(c.name) != ''))
   AND LOWER(TRIM(comp.name)) != 'n/a'
   AND TRIM(comp.name) != ''
-ORDER BY s.api_id, c.name, comp.name, e.start_time
+" . ($mode === 'live' ? "  AND e.is_live = 1\n" : "") . "ORDER BY s.api_id, c.name, comp.name, e.start_time
 ";
 
 $stmt = $conn->prepare($sql);
