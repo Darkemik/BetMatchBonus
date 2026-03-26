@@ -1,8 +1,6 @@
 <?php
 require_once __DIR__ . "/connect.php";
 
-// ===== live_helper.php függvények (beolvasztva) =====
-// Csak akkor definiáljuk, ha még nem léteznek (ha get_matches_live.php már definiálta)
 if (!function_exists('syncLiveMatchScores')) {
     function syncLiveMatchScores($conn, $liveMatches) {
         if (!is_array($liveMatches) || empty($liveMatches)) return;
@@ -45,9 +43,7 @@ if (!function_exists('markFinishedMatchesBySport')) {
         $liveApiIds = [];
         if (is_array($currentLiveMatches)) {
             foreach ($currentLiveMatches as $m) {
-                if (isset($m['id'])) {
-                    $liveApiIds[] = (int)$m['id'];
-                }
+                if (isset($m['id'])) $liveApiIds[] = (int)$m['id'];
             }
         }
 
@@ -95,14 +91,11 @@ if (!function_exists('markOldLiveMatchesGlobal')) {
     }
 }
 
-// ===== Eredeti live_table.php logika =====
-
 $sport_id = isset($_GET['sport_id']) ? intval($_GET['sport_id']) : 66;
 
 $apiBaseUrl = "http://localhost:5000/api";
-
-// Élő meccsek lekérése az API-ból
 $liveUrl = "$apiBaseUrl/matches/live?sportId=$sport_id";
+
 $ch = curl_init($liveUrl);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_TIMEOUT, 10);
@@ -118,7 +111,6 @@ if ($httpCode !== 200 || !$response) {
 $matches = json_decode($response, true);
 if (!is_array($matches)) $matches = [];
 
-// Adatbázis szinkronizálás - élő meccsek frissítése, befejezettek jelölése
 syncLiveMatchScores($conn, $matches);
 markFinishedMatchesBySport($conn, $matches, $sport_id);
 markOldLiveMatchesGlobal($conn);
@@ -128,55 +120,37 @@ if (empty($matches)) {
     exit;
 }
 
-// Bajnokság nevek lekérése az adatbázisból a leagueId-k alapján
 $leagueIds = [];
 foreach ($matches as $m) {
     $lid = (int)($m['leagueId'] ?? 0);
     if ($lid > 0) $leagueIds[$lid] = true;
 }
-$leagueNamesMap = [];
+
+$leagueMap = [];
 if (!empty($leagueIds)) {
     $placeholders = implode(',', array_fill(0, count($leagueIds), '?'));
     $types = str_repeat('i', count($leagueIds));
-    $sqlLeague = "SELECT api_id, name FROM Competitions WHERE api_id IN ($placeholders)";
+
+    $sqlLeague = "SELECT c.api_id, c.name FROM Competitions c WHERE c.api_id IN ($placeholders)";
     $stmtLeague = $conn->prepare($sqlLeague);
     $ids = array_keys($leagueIds);
     $stmtLeague->bind_param($types, ...$ids);
     $stmtLeague->execute();
     $resLeague = $stmtLeague->get_result();
+
     while ($row = $resLeague->fetch_assoc()) {
-        $leagueNamesMap[(int)$row['api_id']] = $row['name'];
+        $leagueMap[(int)$row['api_id']] = $row['name'] ?? 'Ismeretlen';
     }
     $stmtLeague->close();
 }
 
 $sportIcons = [
-     66  => 'fa-futbol',
-     67  => 'fa-basketball-ball',
-     78  => 'fa-bullseye',
-     83  => 'fa-swimmer',
-     73  => 'fa-hand-rock',
-     70  => 'fa-hockey-puck',
-     77  => 'fa-table-tennis',
-     145 => 'fa-gamepad',
-     76  => 'fa-running',
-     90  => 'fa-hockey-puck',
-     68  => 'fa-baseball-ball',
-     69  => 'fa-football-ball',
-     71  => 'fa-volleyball-ball',
-     72  => 'fa-golf-ball',
-     74  => 'fa-fist-raised',
-     75  => 'fa-biking',
-     79  => 'fa-skiing',
-     80  => 'fa-snowflake',
-     84  => 'fa-table-tennis',
-     85  => 'fa-chess',
-     109 => 'fa-volleyball-ball',
-     110 => 'fa-futbol',
-     138 => 'fa-running',
-     151 => 'fa-trophy',
+    66=>'fa-futbol',67=>'fa-basketball-ball',78=>'fa-bullseye',83=>'fa-swimmer',73=>'fa-hand-rock',
+    70=>'fa-hockey-puck',77=>'fa-table-tennis',145=>'fa-gamepad',76=>'fa-running',90=>'fa-hockey-puck',
+    68=>'fa-baseball-ball',69=>'fa-football-ball',71=>'fa-volleyball-ball',72=>'fa-golf-ball',
+    74=>'fa-fist-raised',75=>'fa-biking',79=>'fa-skiing',80=>'fa-snowflake',84=>'fa-table-tennis',
+    85=>'fa-chess',109=>'fa-volleyball-ball',110=>'fa-futbol',138=>'fa-running',151=>'fa-trophy',
 ];
-
 $sportIcon = $sportIcons[$sport_id] ?? 'fa-trophy';
 ?>
 <table class="matches-table">
@@ -193,34 +167,35 @@ $sportIcon = $sportIcons[$sport_id] ?? 'fa-trophy';
         <?php foreach ($matches as $match):
             $matchId = $match['id'] ?? 0;
             $leagueId = (int)($match['leagueId'] ?? 0);
-            $leagueName = $leagueNamesMap[$leagueId] ?? ($match['leagueName'] ?? 'Ismeretlen');
+            $leagueName = $leagueMap[$leagueId] ?? ($match['leagueName'] ?? 'Ismeretlen');
             $name = $match['name'] ?? '';
             $startUtc = $match['startDateUtc'] ?? '';
             $isLive = !empty($match['isLive']) ? 1 : 0;
             $liveTime = $match['liveTime'] ?? '-';
             $score = $match['score'] ?? [];
-            
-            $scoreDisplay = (is_array($score) && count($score) >= 2) 
+
+            $scoreDisplay = (is_array($score) && count($score) >= 2)
                 ? htmlspecialchars($score[0] . ' - ' . $score[1])
                 : '-';
 
-            // Csapatok kinyerése
             $teams = explode(' vs. ', $name);
-            if (count($teams) < 2) {
-                $teams = explode(' - ', $name);
-            }
+            if (count($teams) < 2) $teams = explode(' - ', $name);
             $home = htmlspecialchars(trim($teams[0] ?? $name));
             $away = htmlspecialchars(trim($teams[1] ?? ''));
 
-            // Kezdés időpontja
-            $startDateTime = new DateTime($startUtc);
-            $startDateTime->setTimezone(new DateTimeZone('Europe/Budapest'));
-            $startFormatted = $startDateTime->format('H:i');
+            $startFormatted = '-';
+            if (!empty($startUtc)) {
+                try {
+                    $startDateTime = new DateTime($startUtc);
+                    $startDateTime->setTimezone(new DateTimeZone('Europe/Budapest'));
+                    $startFormatted = $startDateTime->format('H:i');
+                } catch (Throwable $e) {
+                    $startFormatted = '-';
+                }
+            }
         ?>
             <tr class="match-row clickable" data-match-id="<?php echo $matchId; ?>">
-                <td>
-                    <span class="league-name"><?php echo htmlspecialchars($leagueName); ?></span>
-                </td>
+                <td><span class="league-name"><?php echo htmlspecialchars($leagueName); ?></span></td>
                 <td class="match-cell">
                     <?php if ($away !== ''): ?>
                         <span class="team home-team"><?php echo $home; ?></span>
@@ -230,12 +205,8 @@ $sportIcon = $sportIcons[$sport_id] ?? 'fa-trophy';
                         <span class="team"><?php echo $home; ?></span>
                     <?php endif; ?>
                 </td>
-                <td>
-                    <span class="match-score"><?php echo $scoreDisplay; ?></span>
-                </td>
-                <td>
-                    <span class="start-time"><?php echo $startFormatted; ?></span>
-                </td>
+                <td><span class="match-score"><?php echo $scoreDisplay; ?></span></td>
+                <td><span class="start-time"><?php echo $startFormatted; ?></span></td>
                 <td>
                     <?php if ($isLive): ?>
                         <div class="live-time-cell">
@@ -252,5 +223,3 @@ $sportIcon = $sportIcons[$sport_id] ?? 'fa-trophy';
         <?php endforeach; ?>
     </tbody>
 </table>
-<?php
-?>

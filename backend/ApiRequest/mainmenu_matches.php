@@ -2,9 +2,13 @@
 require_once __DIR__ . "/connect.php";
 
 header('Content-Type: text/html; charset=utf-8');
+date_default_timezone_set('Europe/Budapest');
 
 $sportId = isset($_GET['sport_id']) ? (int)$_GET['sport_id'] : 0;
-$today = date('Y-m-d');
+
+// Ugyanaz az ablak, mint a sidebarban
+$from = (new DateTime('yesterday 00:00:00'))->format('Y-m-d H:i:s');
+$to   = (new DateTime('tomorrow 23:59:59'))->format('Y-m-d H:i:s');
 
 $sportIcons = [
     66  => 'fa-futbol',
@@ -79,7 +83,7 @@ if ($sportId > 0) {
     JOIN Competitions ch ON m.competition_id = ch.id
     LEFT JOIN Countries c ON ch.country_id = c.id
     WHERE s.api_id = ?
-      AND DATE(m.start_time) = ?
+      AND m.start_time BETWEEN ? AND ?
       AND m.name IS NOT NULL
       AND TRIM(m.name) != ''
       AND m.start_time IS NOT NULL
@@ -89,9 +93,9 @@ if ($sportId > 0) {
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
         echo '<div class="no-matches">Hiba az adatbázis lekérdezésnél.</div>';
-        return;
+        exit;
     }
-    $stmt->bind_param("is", $sportId, $today);
+    $stmt->bind_param("iss", $sportId, $from, $to);
 } else {
     $sql = "
     SELECT 
@@ -109,7 +113,7 @@ if ($sportId > 0) {
     JOIN Sports s ON m.sport_id = s.id
     JOIN Competitions ch ON m.competition_id = ch.id
     LEFT JOIN Countries c ON ch.country_id = c.id
-    WHERE DATE(m.start_time) = ?
+    WHERE m.start_time BETWEEN ? AND ?
       AND m.name IS NOT NULL
       AND TRIM(m.name) != ''
       AND m.start_time IS NOT NULL
@@ -119,9 +123,9 @@ if ($sportId > 0) {
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
         echo '<div class="no-matches">Hiba az adatbázis lekérdezésnél.</div>';
-        return;
+        exit;
     }
-    $stmt->bind_param("s", $today);
+    $stmt->bind_param("ss", $from, $to);
 }
 
 $stmt->execute();
@@ -130,7 +134,7 @@ $res = $stmt->get_result();
 if (!$res || $res->num_rows === 0) {
     echo '<div class="no-matches"><i class="fas fa-calendar-times" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i>Jelenleg nincs megjeleníthető meccs.</div>';
     $stmt->close();
-    return;
+    exit;
 }
 ?>
 <table class="matches-table">
@@ -148,10 +152,9 @@ if (!$res || $res->num_rows === 0) {
         <?php while ($row = $res->fetch_assoc()):
             $liveTimeRaw = $row['live_time'];
             $isLive = (int)$row['is_live'];
-            $timeDisplay = ($liveTimeRaw !== null && $liveTimeRaw !== '') ? htmlspecialchars($liveTimeRaw) : '-';
+            $timeDisplay = ($liveTimeRaw !== null && $liveTimeRaw !== '') ? htmlspecialchars((string)$liveTimeRaw) : '-';
 
-            // Meccs név validáció — kihagyjuk ha üres
-            $matchName = trim($row['match_name']);
+            $matchName = trim((string)$row['match_name']);
             if ($matchName === '' || $matchName === '-') {
                 continue;
             }
@@ -159,19 +162,24 @@ if (!$res || $res->num_rows === 0) {
             $countryName = $row['country_name'] ?? '';
             $champName   = $row['championship_name'] ?? '';
 
-            $matchParts = strpos($matchName, ' vs. ') !== false
-                ? explode(' vs. ', $matchName, 2)
-                : explode(' - ', $matchName, 2);
-            $home = htmlspecialchars(trim($matchParts[0]));
-            $away = isset($matchParts[1]) ? htmlspecialchars(trim($matchParts[1])) : '';
-
-            // Ha az egyik csapatnév üres, kihagyjuk
-            if ($home === '' || $away === '') {
-                continue;
+            // Rugalmas csapatnév bontás
+            $separators = [' vs. ', ' vs ', ' - ', ' – ', ' v '];
+            $matchParts = [$matchName];
+            foreach ($separators as $sep) {
+                if (strpos($matchName, $sep) !== false) {
+                    $matchParts = explode($sep, $matchName, 2);
+                    break;
+                }
             }
 
-            $startFormatted = date('H:i', strtotime($row['start_utc']));
-            // Állás: ha van eredmény, mutatjuk; ha még nem kezdődött, kötőjel
+            $home = htmlspecialchars(trim($matchParts[0] ?? ''));
+            $away = htmlspecialchars(trim($matchParts[1] ?? ''));
+
+            // Ha nem bontható biztonságosan, ne dobjuk el: teljes név jelenjen meg
+            $showVsFormat = ($home !== '' && $away !== '');
+
+            $startFormatted = date('H:i', strtotime((string)$row['start_utc']));
+
             $homeScore = $row['home_score'];
             $awayScore = $row['away_score'];
             if ($homeScore !== null && $awayScore !== null) {
@@ -179,6 +187,7 @@ if (!$res || $res->num_rows === 0) {
             } else {
                 $scoreDisplay = '-';
             }
+
             $apiId = (int)$row['api_id'];
             $rowSportApiId = (int)$row['sport_api_id'];
             $rowIcon = $sportIcons[$rowSportApiId] ?? 'fa-futbol';
@@ -191,9 +200,13 @@ if (!$res || $res->num_rows === 0) {
                     <span class="league-name"><?php echo htmlspecialchars($champName); ?></span>
                 </td>
                 <td class="match-cell">
-                    <span class="team home-team"><?php echo $home; ?></span>
-                    <span class="vs">vs</span>
-                    <span class="team away-team"><?php echo $away; ?></span>
+                    <?php if ($showVsFormat): ?>
+                        <span class="team home-team"><?php echo $home; ?></span>
+                        <span class="vs">vs</span>
+                        <span class="team away-team"><?php echo $away; ?></span>
+                    <?php else: ?>
+                        <span class="team full-match-name"><?php echo htmlspecialchars($matchName); ?></span>
+                    <?php endif; ?>
                 </td>
                 <td>
                     <span class="match-score"><?php echo htmlspecialchars($scoreDisplay); ?></span>

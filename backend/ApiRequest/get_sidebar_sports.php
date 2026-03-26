@@ -2,8 +2,16 @@
 require_once __DIR__ . "/connect.php";
 
 header('Content-Type: application/json; charset=utf-8');
+date_default_timezone_set('Europe/Budapest');
 
-$today = date('Y-m-d');
+/**
+ * FONTOS JAVÍTÁSOK:
+ * 1) Nem DATE(e.start_time)=today, hanem időablak (tegnap->holnap), hogy timezone miatt ne tűnjenek el meccsek.
+ * 2) Kivettük a túl szigorú "vs." / " - " névellenőrzést, mert sok valid feed más formátumot ad.
+ */
+
+$from = (new DateTime('yesterday 00:00:00'))->format('Y-m-d H:i:s');
+$to   = (new DateTime('tomorrow 23:59:59'))->format('Y-m-d H:i:s');
 
 $sportIcons = [
     66  => 'fa-futbol',
@@ -13,9 +21,9 @@ $sportIcons = [
     73  => 'fa-hand-rock',
     70  => 'fa-hockey-puck',
     145 => 'fa-gamepad',
-    146 => 'fa-futbol',           // e-Labdarúgás
-    147 => 'fa-basketball-ball',  // e-Kosárlabda
-    148 => 'fa-hockey-puck',     // e-Jégkorong
+    146 => 'fa-futbol',
+    147 => 'fa-basketball-ball',
+    148 => 'fa-hockey-puck',
     77  => 'fa-table-tennis',
     76  => 'fa-running',
     90  => 'fa-hockey-puck',
@@ -81,7 +89,7 @@ FROM Events e
 JOIN Sports s ON e.sport_id = s.id
 JOIN Competitions comp ON e.competition_id = comp.id
 LEFT JOIN Countries c ON comp.country_id = c.id
-WHERE DATE(e.start_time) = ?
+WHERE e.start_time BETWEEN ? AND ?
   AND e.name IS NOT NULL
   AND TRIM(e.name) != ''
   AND e.start_time IS NOT NULL
@@ -93,10 +101,11 @@ ORDER BY s.api_id, c.name, comp.name, e.start_time
 
 $stmt = $conn->prepare($sql);
 if (!$stmt) {
-    echo json_encode(['error' => 'SQL hiba: ' . $conn->error]);
+    echo json_encode(['error' => 'SQL hiba: ' . $conn->error], JSON_UNESCAPED_UNICODE);
     exit;
 }
-$stmt->bind_param("s", $today);
+
+$stmt->bind_param("ss", $from, $to);
 $stmt->execute();
 $res = $stmt->get_result();
 
@@ -104,92 +113,77 @@ $sports = [];
 $sportIndex = [];
 
 while ($row = $res->fetch_assoc()) {
-    $sportApiId = (int)$row['sport_api_id'];
-    $countryName = $row['country_name'] ?? 'International';
-    $compName = $row['competition_name'];
-    $matchName = trim($row['match_name']);
+    $sportApiId  = (int)($row['sport_api_id'] ?? 0);
+    $countryName = trim((string)($row['country_name'] ?? 'International'));
+    $compName    = trim((string)($row['competition_name'] ?? ''));
+    $matchName   = trim((string)($row['match_name'] ?? ''));
 
-    // Kihagyjuk az üres vagy érvénytelen nevű meccseket
+    if ($sportApiId <= 0 || $compName === '') {
+        continue;
+    }
+
+    // Csak teljesen üres / "-" meccsnév szűrése
     if ($matchName === '' || $matchName === '-') {
         continue;
     }
 
-    // Kihagyjuk ahol nincs érvényes csapatnév elválasztó (" vs. " vagy " - ")
-    $parts = strpos($matchName, ' vs. ') !== false
-        ? explode(' vs. ', $matchName, 2)
-        : explode(' - ', $matchName, 2);
-    if (count($parts) < 2 || trim($parts[0]) === '' || trim($parts[1]) === '') {
-        continue;
-    }
-
+    // SPORT
     if (!isset($sportIndex[$sportApiId])) {
         $sportIndex[$sportApiId] = count($sports);
         $sports[] = [
             'sport_api_id' => $sportApiId,
-            'sport_name' => $sportNames[$sportApiId] ?? $row['sport_name'],
-            'icon' => $sportIcons[$sportApiId] ?? 'fa-trophy',
-            'match_count' => 0,
-            'countries' => []
+            'sport_name'   => $sportNames[$sportApiId] ?? (string)$row['sport_name'],
+            'icon'         => $sportIcons[$sportApiId] ?? 'fa-trophy',
+            'match_count'  => 0,
+            'countries'    => []
         ];
     }
     $si = $sportIndex[$sportApiId];
 
-    // Find or create country
-    $countryFound = false;
-    foreach ($sports[$si]['countries'] as &$country) {
-        if ($country['country_name'] === $countryName) {
-            $countryFound = true;
-            // Find or create competition
-            $compFound = false;
-            foreach ($country['competitions'] as &$comp) {
-                if ($comp['competition_name'] === $compName) {
-                    $compFound = true;
-                    $comp['matches'][] = [
-                        'api_id' => (int)$row['match_api_id'],
-                        'name' => $row['match_name'],
-                        'start_time' => $row['start_time'],
-                        'is_live' => (int)$row['is_live'],
-                        'live_time' => $row['live_time']
-                    ];
-                    break;
-                }
-            }
-            unset($comp);
-            if (!$compFound) {
-                $country['competitions'][] = [
-                    'competition_name' => $compName,
-                    'matches' => [[
-                        'api_id' => (int)$row['match_api_id'],
-                        'name' => $row['match_name'],
-                        'start_time' => $row['start_time'],
-                        'is_live' => (int)$row['is_live'],
-                        'live_time' => $row['live_time']
-                    ]]
-                ];
-            }
+    // COUNTRY
+    $countryIdx = null;
+    foreach ($sports[$si]['countries'] as $idx => $country) {
+        if (($country['country_name'] ?? '') === $countryName) {
+            $countryIdx = $idx;
             break;
         }
     }
-    unset($country);
-
-    if (!$countryFound) {
+    if ($countryIdx === null) {
         $sports[$si]['countries'][] = [
-            'country_name' => $countryName,
-            'competitions' => [[
-                'competition_name' => $compName,
-                'matches' => [[
-                    'api_id' => (int)$row['match_api_id'],
-                    'name' => $row['match_name'],
-                    'start_time' => $row['start_time'],
-                    'is_live' => (int)$row['is_live'],
-                    'live_time' => $row['live_time']
-                ]]
-            ]]
+            'country_name' => $countryName !== '' ? $countryName : 'International',
+            'competitions' => []
         ];
+        $countryIdx = count($sports[$si]['countries']) - 1;
     }
+
+    // COMPETITION
+    $compIdx = null;
+    foreach ($sports[$si]['countries'][$countryIdx]['competitions'] as $idx => $comp) {
+        if (($comp['competition_name'] ?? '') === $compName) {
+            $compIdx = $idx;
+            break;
+        }
+    }
+    if ($compIdx === null) {
+        $sports[$si]['countries'][$countryIdx]['competitions'][] = [
+            'competition_name' => $compName,
+            'matches' => []
+        ];
+        $compIdx = count($sports[$si]['countries'][$countryIdx]['competitions']) - 1;
+    }
+
+    // MATCH
+    $sports[$si]['countries'][$countryIdx]['competitions'][$compIdx]['matches'][] = [
+        'api_id'     => (int)$row['match_api_id'],
+        'name'       => (string)$row['match_name'],
+        'start_time' => (string)$row['start_time'],
+        'is_live'    => (int)$row['is_live'],
+        'live_time'  => $row['live_time']
+    ];
 
     $sports[$si]['match_count']++;
 }
 
 $stmt->close();
+
 echo json_encode($sports, JSON_UNESCAPED_UNICODE);
