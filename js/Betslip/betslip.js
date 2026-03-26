@@ -415,6 +415,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 ticketItems = [];
                 saveToStorage();
                 renderTicket();
+                refreshAllOddsButtons();
+                checkLoginStatus();
                 loadBettingHistory();
             } else {
                 BmbPopup.error((data.message || 'Ismeretlen hiba'), 'Sikertelen fogadás');
