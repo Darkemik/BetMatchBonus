@@ -138,8 +138,85 @@ if (!$update_stmt->execute()) {
 
 $update_stmt->close();
 
+// Függőben lévő (PENDING) befizetési bónuszok aktiválása
+// Megkeressük az összes PENDING bónuszt, amelyek DEPOSIT triggerrel rendelkeznek és teljesül a min. befizetési feltétel
+$pending_stmt = $conn->prepare("
+    SELECT ub.id AS user_bonus_id, bc.bonus_amount, bc.wagering_multiplier, bc.activation_expire_hours,
+           bc.min_deposit, bc.match_percent, bc.max_bonus_amount
+    FROM UserBonuses ub
+    INNER JOIN BonusCodes bc ON ub.bonus_id = bc.id
+    WHERE ub.user_id = ?
+      AND ub.status = 'PENDING'
+      AND bc.bonus_trigger = 'DEPOSIT'
+      AND (bc.valid_to IS NULL OR bc.valid_to >= NOW())
+");
+$pending_stmt->bind_param("i", $user_id);
+$pending_stmt->execute();
+$pending_result = $pending_stmt->get_result();
+$pending_bonuses = $pending_result->fetch_all(MYSQLI_ASSOC);
+$pending_stmt->close();
+
+$bonus_credited_total = 0.00;
+
+foreach ($pending_bonuses as $pb) {
+    // Ellenőrizzük, hogy a befizetés eléri-e a minimumot
+    if (!empty($pb['min_deposit']) && $amount < (float)$pb['min_deposit']) {
+        continue;
+    }
+
+    // Bónusz összeg kiszámítása: százalékos bónusz vagy fix összeg
+    if (!empty($pb['match_percent']) && (float)$pb['match_percent'] > 0) {
+        $granted = $amount * ((float)$pb['match_percent'] / 100);
+        if (!empty($pb['max_bonus_amount']) && $granted > (float)$pb['max_bonus_amount']) {
+            $granted = (float)$pb['max_bonus_amount'];
+        }
+    } else {
+        $granted = (float)$pb['bonus_amount'];
+    }
+
+    // Forgatási követelmény kiszámítása
+    $wagering = 0.00;
+    if ($granted > 0 && !empty($pb['wagering_multiplier']) && (float)$pb['wagering_multiplier'] > 0) {
+        $wagering = $granted * (float)$pb['wagering_multiplier'];
+    }
+
+    // Lejárati dátum kiszámítása
+    $expires_at = null;
+    if (!empty($pb['activation_expire_hours']) && (int)$pb['activation_expire_hours'] > 0) {
+        $expires_at = date('Y-m-d H:i:s', strtotime('+' . (int)$pb['activation_expire_hours'] . ' hours'));
+    }
+
+    // UserBonuses rekord frissítése: PENDING → ACTIVE
+    $activate_stmt = $conn->prepare("
+        UPDATE UserBonuses
+        SET status = 'ACTIVE',
+            granted_amount = ?,
+            bonus_money_amount = ?,
+            wagering_required = ?,
+            expires_at = ?
+        WHERE id = ?
+    ");
+    $activate_stmt->bind_param("dddsi", $granted, $granted, $wagering, $expires_at, $pb['user_bonus_id']);
+    $activate_stmt->execute();
+    $activate_stmt->close();
+
+    $bonus_credited_total += $granted;
+}
+
+// Ha volt aktivált bónusz, jóváírjuk a bonus_balance-t
+if ($bonus_credited_total > 0) {
+    $bonus_update_stmt = $conn->prepare("UPDATE Users SET bonus_balance = bonus_balance + ? WHERE id = ?");
+    $bonus_update_stmt->bind_param("di", $bonus_credited_total, $user_id);
+    $bonus_update_stmt->execute();
+    $bonus_update_stmt->close();
+}
+
 // Success - set session message and redirect
-$_SESSION['success_message'] = '✅ Befizetés sikeres! +' . number_format($amount, 0, ',', ' ') . ' FT';
+$success_msg = '✅ Befizetés sikeres! +' . number_format($amount, 0, ',', ' ') . ' FT';
+if ($bonus_credited_total > 0) {
+    $success_msg .= ' | 🎁 Bónusz jóváírva: +' . number_format($bonus_credited_total, 0, ',', ' ') . ' FT';
+}
+$_SESSION['success_message'] = $success_msg;
 header('Location: /BetMatchBonus/frontend/UserProfile/deposit.php');
 exit;
 ?>
