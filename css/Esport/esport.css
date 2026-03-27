@@ -2,14 +2,35 @@
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    min-height: 80vh;
-    padding: 20px 10px 20px 10px !important;
+    height: calc(100vh - 110px);
+    overflow: hidden;
+    padding: 0 !important;
     margin-bottom: 0;
 }
 
 .elo-container {
     width: 100%;
     max-width: 1200px;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 20px 10px;
+}
+
+/* Custom scrollbar - ugyanolyan mint a MainMenu .center-content */
+.elo-container::-webkit-scrollbar {
+    display: block !important;
+    width: 6px;
+}
+.elo-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+.elo-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 3px;
+}
+.elo-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.22);
 }
 
 .elo-title {
