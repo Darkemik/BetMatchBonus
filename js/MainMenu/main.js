@@ -43,17 +43,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function filterNARows() {
       if (!matchesContainer) return;
+      // Remove league-groups with N/A league names
+      matchesContainer.querySelectorAll('.league-group').forEach(group => {
+          const name = (group.querySelector('.league-name')?.textContent || '').trim().toLowerCase();
+          if (name === 'n/a') group.remove();
+      });
+      // Remove country-groups with N/A country names
+      matchesContainer.querySelectorAll('.country-group').forEach(group => {
+          const name = (group.querySelector('.country-header .country-name')?.textContent || '').trim().toLowerCase();
+          if (name === 'n/a') group.remove();
+      });
+      // Fallback: handle legacy table rows if still present
       matchesContainer.querySelectorAll('.match-row').forEach(row => {
           const league = (row.querySelector('.league-name')?.textContent || '').trim().toLowerCase();
           const country = (row.querySelector('.country-name')?.textContent || '').trim().toLowerCase();
-          if (league === 'n/a' || country === 'n/a') {
-              row.remove();
-          }
+          if (league === 'n/a' || country === 'n/a') row.remove();
       });
   }
 
   function sortMatchesByPriority() {
       if (!matchesContainer) return;
+      // For the grouped structure, SQL already handles priority ordering.
+      // Only sort for the legacy table structure.
       const tbody = matchesContainer.querySelector('tbody');
       if (!tbody) return;
       const rows = Array.from(tbody.querySelectorAll('.match-row'));
@@ -272,6 +283,22 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // ========== LAPOZÁS ==========
+  function updateGroupVisibility() {
+      if (!matchesContainer) return;
+      // Show/hide league-groups based on whether they have any visible match rows
+      matchesContainer.querySelectorAll('.league-group').forEach(group => {
+          const allMatches = group.querySelectorAll('.match-row');
+          const anyVisible = Array.from(allMatches).some(r => r.style.display !== 'none');
+          group.style.display = (allMatches.length === 0 || anyVisible) ? '' : 'none';
+      });
+      // Show/hide country-groups based on whether they have any visible league-groups
+      matchesContainer.querySelectorAll('.country-group').forEach(group => {
+          const anyVisible = Array.from(group.querySelectorAll('.league-group'))
+              .some(l => l.style.display !== 'none');
+          group.style.display = anyVisible ? '' : 'none';
+      });
+  }
+
   function applyPagination() {
       currentPage = 1;
       const rows = matchesContainer.querySelectorAll('.match-row');
@@ -282,6 +309,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       if (rows.length <= PAGE_SIZE) {
           rows.forEach(row => { row.style.display = ''; });
+          updateGroupVisibility();
           return;
       }
 
@@ -289,6 +317,7 @@ document.addEventListener('DOMContentLoaded', function () {
           row.style.display = i < PAGE_SIZE ? '' : 'none';
       });
 
+      updateGroupVisibility();
       createLoadMoreBtn(rows.length);
   }
 
@@ -313,6 +342,7 @@ document.addEventListener('DOMContentLoaded', function () {
           allRows.forEach((row, i) => {
               if (i < currentPage * PAGE_SIZE) row.style.display = '';
           });
+          updateGroupVisibility();
           const newRemaining = Math.max(0, totalCount - currentPage * PAGE_SIZE);
           if (newRemaining === 0) {
               wrapper.remove();
@@ -353,6 +383,7 @@ document.addEventListener('DOMContentLoaded', function () {
               matchesContainer.innerHTML = html;
               filterNARows();
               sortMatchesByPriority();
+              attachGroupCollapsible();
               attachMatchClickHandlers();
               attachOddsButtonHandlers();
               applyPagination();
@@ -385,6 +416,10 @@ document.addEventListener('DOMContentLoaded', function () {
                   // Keresés ürítve: lapozás visszaállítása
                   const noResult = matchesContainer.querySelector('.search-no-result');
                   if (noResult) noResult.remove();
+                  // Csoportok visszaállítása
+                  matchesContainer.querySelectorAll('.country-group, .league-group').forEach(g => {
+                      g.style.display = '';
+                  });
                   applyPagination();
                   return;
               }
@@ -392,14 +427,20 @@ document.addEventListener('DOMContentLoaded', function () {
               // Keresési mód: minden egyező sor megjelenik (lapozástól függetlenül)
               let visibleCount = 0;
               rows.forEach(row => {
-                  const text = row.textContent.toLowerCase();
-                  if (text.includes(val)) {
+                  const rowText = row.textContent.toLowerCase();
+                  const countryText = (row.getAttribute('data-country') || '').toLowerCase();
+                  const leagueText = (row.getAttribute('data-league') || '').toLowerCase();
+                  const combined = rowText + ' ' + countryText + ' ' + leagueText;
+                  if (combined.includes(val)) {
                       row.style.display = '';
                       visibleCount++;
                   } else {
                       row.style.display = 'none';
                   }
               });
+
+              // Csoportok láthatóságának frissítése
+              updateGroupVisibility();
 
               // "Több betöltése" gomb elrejtése keresés alatt
               const loadMoreWrapper = matchesContainer.querySelector('.load-more-btn-wrapper');
@@ -418,6 +459,22 @@ document.addEventListener('DOMContentLoaded', function () {
                   noResult.remove();
               }
           }, 250);
+      });
+  }
+
+  // ========== CSOPORT ÖSSZECSUKÁS ==========
+  function attachGroupCollapsible() {
+      if (!matchesContainer) return;
+      matchesContainer.querySelectorAll('.country-header').forEach(header => {
+          header.addEventListener('click', function () {
+              this.closest('.country-group').classList.toggle('collapsed');
+          });
+      });
+      matchesContainer.querySelectorAll('.league-header').forEach(header => {
+          header.addEventListener('click', function (e) {
+              e.stopPropagation();
+              this.closest('.league-group').classList.toggle('collapsed');
+          });
       });
   }
 

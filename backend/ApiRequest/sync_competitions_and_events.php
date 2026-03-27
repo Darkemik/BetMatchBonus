@@ -234,8 +234,9 @@ try {
     $conn->begin_transaction();
 
     $sports = apiGet(EP_SPORTS_LIST);
-    $sportLocalMap = []; // sportApiId => local sport.id
-    $leagueNameMap = []; // leagueApiId => leagueName
+    $sportLocalMap   = []; // sportApiId => local sport.id
+    $leagueNameMap   = []; // leagueApiId => leagueName
+    $leagueCountryMap = []; // leagueApiId => countryId
 
     // 1) Sportok + bajnokságok
     foreach ($sports as $s) {
@@ -256,6 +257,7 @@ try {
             if ($leagueApiId <= 0 || $leagueName === '') continue;
 
             $countryId = getCountryId($conn, $countryCode);
+            if ($countryId !== null) { $leagueCountryMap[$leagueApiId] = $countryId; }
             upsertCompetition($conn, $leagueApiId, $sportLocalId, $leagueName, $countryId);
             $leagueNameMap[$leagueApiId] = $leagueName;
         }
@@ -326,7 +328,6 @@ try {
             $countryIdForLeague = null;
 
 // ha volt country a championships importból, használd újra:
-$leagueCountryMap = $leagueCountryMap ?? []; // biztosíték, ha fent még nincs
 if (isset($leagueCountryMap[$leagueApiId])) {
     $countryIdForLeague = $leagueCountryMap[$leagueApiId];
 }
