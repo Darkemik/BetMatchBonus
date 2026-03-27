@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+﻿document.addEventListener('DOMContentLoaded', function() {
     const matchesContainer = document.getElementById('matches-container');
     const sportsNav = document.getElementById('liveSportsNav');
     let currentSportId = null; // Dynamically set from first live sport
@@ -504,7 +504,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="match-meta">
                     <span class="meta-item"><i class="fas fa-globe-europe"></i> ${escapeHtml(match.country || 'Ismeretlen')}</span>
                     <span class="meta-item"><i class="fas fa-trophy"></i> ${escapeHtml(match.championship || 'Ismeretlen')}</span>
-                    <span class="meta-item"><i class="fas fa-clock"></i> ${escapeHtml(new Date(match.startUtc).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }) || '-')}</span>
+                    <span class="meta-item"><i class="fas fa-clock"></i> ${match.startUtc ? escapeHtml(new Date(match.startUtc).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' })) : '-'}</span>
                 </div>
                 <div class="match-scoreboard">
                     <div class="team-side home-side">

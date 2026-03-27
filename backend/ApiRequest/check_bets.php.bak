@@ -1,16 +1,10 @@
-﻿<?php
+<?php
 /**
- * CHECK_BETS.PHP - Nyitott szelvenyek kiertkelese az adatbazisbol
+ * CHECK_BETS.PHP - Nyitott szelvények kiértékelése az adatbázisból
  * 
- * JAVITAS: A meccseket CSAK akkor ertekeli ki, ha TENYLEG VEGET ERTEK:
- * 1) status_id = 3 (FINISHED) az adatbazisban
- * 2) liveStatus szoveg kifejezetten "ended/finished/ft" stb.
- * 3) Idobased fallback: 4+ ora eltelt ES nem elo ES van eredmeny
- * 
- * NEM ertekeli ki, ha:
- * - A meccs meg elo (is_live = 1)
- * - A meccs meg folyamatban van (van eredmeny de nincs "ended" status)
- * - A meccs meg nem kezdodott el
+ * 1) Először az ADATBÁZIS Events táblájából próbálja kiolvasni az eredményt
+ * 2) Ha ott nincs → API-ból próbálja lekérni
+ * 3) Ha az API sem ad vissza adatot ÉS a meccs 2+ órája kezdődött → befejezettnek tekinti
  */
 
 if (!isset($conn)) {
@@ -18,10 +12,10 @@ if (!isset($conn)) {
 }
 
 /**
- * Nyitott ticketek kiertkelese a bejelentkezett felhasznalonel
+ * Nyitott ticketek kiértékelése a bejelentkezett felhasználónál
  */
 function evaluateOpenTickets($conn, $userId) {
-    // 1. Nyitott ticketek lekerdese
+    // 1. Nyitott ticketek lekérése
     $stmtTickets = $conn->prepare("
         SELECT id FROM Tickets 
         WHERE user_id = ? AND status = 'OPEN'
@@ -40,7 +34,7 @@ function evaluateOpenTickets($conn, $userId) {
 
     if (empty($ticketIds)) return;
 
-    // 2. Minden nyitott ticket OPEN selectionjeit kiertekeljuk
+    // 2. Minden nyitott ticket OPEN selectionjeit kiértékeljük
     foreach ($ticketIds as $ticketId) {
         $stmtSel = $conn->prepare("
             SELECT id, match_id, event_id, home_team, away_team, pick_label, market_name, status
@@ -59,32 +53,26 @@ function evaluateOpenTickets($conn, $userId) {
 
         if (empty($selectionsToCheck)) continue;
 
-        // 3. Minden OPEN selection-hoz lekerjuk a meccs adatokat
+        // 3. Minden OPEN selection-höz lekérjük a meccs adatokat
         foreach ($selectionsToCheck as $sel) {
             $matchId = (int)$sel['match_id'];
             $eventId = $sel['event_id'] ? (int)$sel['event_id'] : null;
             if ($matchId <= 0 && !$eventId) continue;
 
-            // === LEPES 1: Adatbazisbol probaljuk kiolvasni ===
+            // === LÉPÉS 1: Adatbázisból próbáljuk kiolvasni ===
             $matchData = fetchMatchDataFromDB($conn, $matchId, $eventId);
             
-            // === LEPES 2: Ha az adatbazisban nincs eleg adat -> API ===
+            // === LÉPÉS 2: Ha az adatbázisban nincs elég adat → API ===
             if (!$matchData || !isMatchFinished($matchData)) {
                 $apiData = fetchMatchDataFromAPI($matchId);
                 if ($apiData && isset($apiData['id']) && $apiData['id'] > 0) {
-                    // API adat kiegeszitese DB adatokkal (status_id)
-                    $dbEvent = getEventFromDB($conn, $matchId, $eventId);
-                    if ($dbEvent) {
-                        $apiData['statusId'] = (int)($dbEvent['status_id'] ?? 0);
-                        $apiData['startTime'] = $dbEvent['start_time'];
-                        $apiData['isStarted'] = (strtotime($dbEvent['start_time']) <= time());
-                    }
                     $matchData = $apiData;
                 }
             }
 
-            // === LEPES 3: Idoalapu fallback - CSAK 4+ ora utan ===
+            // === LÉPÉS 3: Ha sem DB sem API nem ad eredményt → időalapú fallback ===
             if (!$matchData || !isMatchFinished($matchData)) {
+                // Ha a meccs 2+ órája kezdődött és nem élő → befejezettnek tekintjük
                 $dbEvent = getEventFromDB($conn, $matchId, $eventId);
                 if ($dbEvent) {
                     $startTime = strtotime($dbEvent['start_time']);
@@ -92,8 +80,9 @@ function evaluateOpenTickets($conn, $userId) {
                     $isLive = (int)($dbEvent['is_live'] ?? 0);
                     $hoursElapsed = ($now - $startTime) / 3600;
                     
-                    // CSAK 4+ ora eltelt ES nem elo -> befejezett
-                    if ($hoursElapsed >= 4 && !$isLive && $startTime > 0) {
+                    if ($hoursElapsed >= 2 && !$isLive && $startTime > 0) {
+                        // 2+ óra eltelt, nem élő → befejezett
+                        // Ha van score az adatbázisban, használjuk azt
                         if ($dbEvent['home_score'] !== null && $dbEvent['away_score'] !== null) {
                             $matchData = [
                                 'isLive' => false,
@@ -102,11 +91,10 @@ function evaluateOpenTickets($conn, $userId) {
                                 'homeTeam' => $dbEvent['home_team_name'],
                                 'awayTeam' => $dbEvent['away_team_name'],
                                 'isStarted' => true,
-                                'statusId' => 3,
                                 '_source' => 'time_fallback_with_score'
                             ];
                         } else {
-                            // Nincs score -> 0-0 fallbackkent
+                            // Nincs score → 0-0 fallbackként (jobb mint örökre OPEN maradjon)
                             $matchData = [
                                 'isLive' => false,
                                 'liveStatus' => 'ended',
@@ -114,13 +102,12 @@ function evaluateOpenTickets($conn, $userId) {
                                 'homeTeam' => $dbEvent['home_team_name'],
                                 'awayTeam' => $dbEvent['away_team_name'],
                                 'isStarted' => true,
-                                'statusId' => 3,
                                 '_source' => 'time_fallback_no_score'
                             ];
                         }
                         
-                        // Frissitsuk az Events tabla statuszat
-                        $stmtFixStatus = $conn->prepare("UPDATE Events SET is_live = 0, live_status = 'Ended', status_id = 3 WHERE api_id = ?");
+                        // Frissítsük az Events tábla live_status-át és status_id-ját is
+                        $stmtFixStatus = $conn->prepare("UPDATE Events SET is_live = 0, live_status = 'Ended', status_id = 3 WHERE api_id = ? AND is_live = 1");
                         $stmtFixStatus->bind_param("i", $matchId);
                         $stmtFixStatus->execute();
                         $stmtFixStatus->close();
@@ -133,7 +120,7 @@ function evaluateOpenTickets($conn, $userId) {
             $isFinished = isMatchFinished($matchData);
             if (!$isFinished) continue;
 
-            // Meccs veget ert - eredmeny kiolvasasa
+            // Meccs véget ért - eredmény kiolvasása
             $score = $matchData['score'] ?? [];
             $homeScore = 0;
             $awayScore = 0;
@@ -151,20 +138,20 @@ function evaluateOpenTickets($conn, $userId) {
             $won = checkIfPickWon($pick, $market, $homeScore, $awayScore, $homeTeam, $awayTeam);
             $newStatus = $won ? 'WON' : 'LOST';
 
-            // Selection statusz frissitese
+            // Selection státusz frissítése
             $stmtUpdate = $conn->prepare("UPDATE TicketSelections SET status = ? WHERE id = ?");
             $stmtUpdate->bind_param("si", $newStatus, $sel['id']);
             $stmtUpdate->execute();
             $stmtUpdate->close();
         }
 
-        // 4. Ticket osszesitett statusz ujraszamolasa
+        // 4. Ticket összesített státusz újraszámolása
         updateTicketStatus($conn, $ticketId, $userId);
     }
 }
 
 /**
- * Meccs adatok lekerdese az ADATBAZIS Events tablajabol
+ * Meccs adatok lekérése az ADATBÁZIS Events táblájából
  */
 function fetchMatchDataFromDB($conn, $matchApiId, $eventId = null) {
     $event = getEventFromDB($conn, $matchApiId, $eventId);
@@ -174,7 +161,6 @@ function fetchMatchDataFromDB($conn, $matchApiId, $eventId = null) {
     $liveStatus = $event['live_status'] ?? '';
     $homeScore = $event['home_score'];
     $awayScore = $event['away_score'];
-    $statusId = (int)($event['status_id'] ?? 0);
 
     return [
         'id' => (int)$event['api_id'],
@@ -186,13 +172,12 @@ function fetchMatchDataFromDB($conn, $matchApiId, $eventId = null) {
         'score' => ($homeScore !== null && $awayScore !== null) ? [(int)$homeScore, (int)$awayScore] : [],
         'isStarted' => (strtotime($event['start_time']) <= time()),
         'startTime' => $event['start_time'],
-        'statusId' => $statusId,
         '_source' => 'database'
     ];
 }
 
 /**
- * Nyers Events sor lekerdese az adatbazisbol
+ * Nyers Events sor lekérése az adatbázisból
  */
 function getEventFromDB($conn, $matchApiId, $eventId = null) {
     if ($eventId) {
@@ -210,8 +195,8 @@ function getEventFromDB($conn, $matchApiId, $eventId = null) {
 }
 
 /**
- * AZ OSSZES USER OSSZES NYITOTT TICKETJET kiertekeli.
- * Cron jobbol vagy admin dashboardrol hivhato.
+ * AZ ÖSSZES USER ÖSSZES NYITOTT TICKETJÉT kiértékeli.
+ * Cron jobból vagy admin dashboardról hívható.
  */
 function evaluateAllOpenTickets($conn) {
     $stmt = $conn->prepare("
@@ -234,9 +219,8 @@ function evaluateAllOpenTickets($conn) {
     return $evaluatedUsers;
 }
 
-
 /**
- * Ticket statusz frissitese a selectionjei alapjan
+ * Ticket státusz frissítése a selectionjei alapján
  */
 function updateTicketStatus($conn, $ticketId, $userId) {
     $stmtAll = $conn->prepare("SELECT status FROM TicketSelections WHERE ticket_id = ?");
@@ -268,7 +252,7 @@ function updateTicketStatus($conn, $ticketId, $userId) {
         $newStatus = 'OPEN';
     }
 
-    // Csak akkor frissitunk ha valtozott
+    // Csak akkor frissítünk ha változott
     $stmtCheck = $conn->prepare("SELECT status, stake, potential_win FROM Tickets WHERE id = ?");
     $stmtCheck->bind_param("i", $ticketId);
     $stmtCheck->execute();
@@ -282,7 +266,7 @@ function updateTicketStatus($conn, $ticketId, $userId) {
     $stmtUpd->execute();
     $stmtUpd->close();
 
-    // Ha NYERTES -> nyeremeny jovairasa a wallet-be
+    // Ha NYERTES → nyeremény jóváírása a wallet-be
     if ($newStatus === 'WON') {
         $potentialWin = (float)$ticketRow['potential_win'];
 
@@ -291,13 +275,13 @@ function updateTicketStatus($conn, $ticketId, $userId) {
         $stmtWallet->execute();
         $stmtWallet->close();
 
-        // Users.balance frissitese (UserProfile rendszer)
+        // Users.balance frissítése (UserProfile rendszer)
         $stmtUserBal = $conn->prepare("UPDATE Users SET balance = balance + ? WHERE id = ?");
         $stmtUserBal->bind_param("di", $potentialWin, $userId);
         $stmtUserBal->execute();
         $stmtUserBal->close();
 
-        // Wallet tranzakcio rogzitese (type_id = 4 = WIN)
+        // Wallet tranzakció rögzítése (type_id = 4 = WIN)
         $stmtTx = $conn->prepare("
             INSERT INTO WalletTransactions (wallet_id, amount, type_id, related_type, related_id, created_at)
             SELECT id, ?, 4, 'Ticket', ?, NOW() FROM Wallets WHERE user_id = ?
@@ -309,17 +293,17 @@ function updateTicketStatus($conn, $ticketId, $userId) {
 }
 
 /**
- * Meccs adatok lekerdese az API-bol (fallback)
+ * Meccs adatok lekérése az API-ból (fallback)
  */
 function fetchMatchDataFromAPI($matchId) {
     $apiBaseUrl = "http://localhost:5000/api";
     
-    // Proba 1: /matches/event?eventId=
+    // Próba 1: /matches/event?eventId=
     $url = "$apiBaseUrl/matches/event?eventId=$matchId";
     $data = curlGetJson($url);
     if ($data && isset($data['id']) && $data['id'] > 0) return $data;
 
-    // Proba 2: /matches/{id}
+    // Próba 2: /matches/{id}
     $url = "$apiBaseUrl/matches/$matchId";
     $data = curlGetJson($url);
     if ($data && isset($data['id']) && $data['id'] > 0) return $data;
@@ -342,26 +326,12 @@ function curlGetJson($url) {
 }
 
 /**
- * Ellenorzi, hogy a meccs veget ert-e
- * 
- * FONTOS: Egy meccs CSAK AKKOR tekintheto befejezettnek, ha:
- * 1) A status_id = 3 (FINISHED) az adatbazisban, VAGY
- * 2) A liveStatus szoveg kifejezetten befejezest jelez ("ended", "finished", "ft", stb.), VAGY
- * 3) A liveTime szoveg befejezest jelez, VAGY
- * 4) 4+ ora eltelt a kezdes ota ES nem elo (idoalapu fallback), VAGY
- * 5) A _source "time_fallback" (mar a hivo kod eldontotte)
- * 
- * NEM tekintjuk befejezettnek pustan azert mert van eredmeny es nem elo!
- * Egy 2:0-as allas kozben az API frissites kozott atmenetileg is_live=0 lehet.
+ * Ellenőrzi, hogy a meccs véget ért-e
  */
 function isMatchFinished($matchData) {
-    // 1) status_id = 3 (FINISHED) az adatbazisban - legmegbizhatobb
-    $statusId = $matchData['statusId'] ?? 0;
-    if ($statusId === 3) {
-        return true;
-    }
+    $isLive = !empty($matchData['isLive']);
 
-    // 2) liveStatus mezo ellenorzese - szoveges befejezesi jelzok
+    // 1) liveStatus mező ellenőrzése
     $liveStatus = $matchData['liveStatus'] ?? $matchData['status'] ?? '';
     $liveStatusLower = strtolower(trim($liveStatus));
     $finishedStatuses = ['ended', 'finished', 'final', 'ft', 'aet', 'ap', 'closed', 
@@ -374,45 +344,49 @@ function isMatchFinished($matchData) {
         }
     }
 
-    // 3) liveTime tartalmaz befejezest jelzo szoveget
-    $liveTime = $matchData['liveTime'] ?? '';
-    $liveTimeLower = strtolower(trim($liveTime));
-    if ($liveTimeLower !== '' && (
-        strpos($liveTimeLower, 'ended') !== false || 
-        strpos($liveTimeLower, 'ft') !== false ||
-        strpos($liveTimeLower, 'vege') !== false ||
-        strpos($liveTimeLower, 'final') !== false ||
-        strpos($liveTimeLower, 'finished') !== false)) {
+    // 2) Ha nincs élőben ÉS van eredmény ÉS a meccs már elkezdődött → vége
+    $score = $matchData['score'] ?? [];
+    $hasScore = is_array($score) && count($score) >= 2;
+    $hasNonZeroScore = $hasScore && ($score[0] > 0 || $score[1] > 0);
+    $isStarted = !empty($matchData['isStarted']);
+    
+    if (!$isLive && $hasNonZeroScore && $isStarted) {
         return true;
     }
 
-    // 4) Idoalapu fallback: 4+ ora eltelt ES nem elo ES mar elkezdodott
-    $isLive = !empty($matchData['isLive']);
-    $isStarted = !empty($matchData['isStarted']);
-    
+    // 3) Ha isStarted=true és isLive=false és a kezdés óta 2+ óra eltelt → vége
     if (!$isLive && $isStarted) {
         $startTime = $matchData['startTime'] ?? null;
         if ($startTime) {
             $startTs = strtotime($startTime);
             $hoursElapsed = (time() - $startTs) / 3600;
-            if ($hoursElapsed >= 4) {
+            if ($hoursElapsed >= 2) {
                 return true;
             }
         }
     }
 
-    // 5) _source = time_fallback -> biztosan befejezett (a hivo kod dontotte el)
+    // 4) liveTime tartalmaz befejezést jelző szöveget
+    $liveTime = $matchData['liveTime'] ?? '';
+    $liveTimeLower = strtolower(trim($liveTime));
+    if ($liveTimeLower !== '' && (
+        strpos($liveTimeLower, 'ended') !== false || 
+        strpos($liveTimeLower, 'ft') !== false ||
+        strpos($liveTimeLower, 'vége') !== false ||
+        strpos($liveTimeLower, 'final') !== false)) {
+        return true;
+    }
+
+    // 5) _source = time_fallback → biztosan befejezett
     if (isset($matchData['_source']) && strpos($matchData['_source'], 'time_fallback') !== false) {
         return true;
     }
 
-    // MINDEN MAS ESETBEN: NEM befejezett
-    // Meg ha van is eredmeny (pl. 2:0) es epp nem is_live, a meccs meg folyamatban lehet!
     return false;
 }
 
 /**
- * Ellenorzi, hogy egy adott fogadasi pick nyert-e az eredmeny alapjan
+ * Ellenőrzi, hogy egy adott fogadási pick nyert-e az eredmény alapján
  */
 function checkIfPickWon($pick, $market, $homeScore, $awayScore, $homeTeam, $awayTeam) {
     $pickLower = strtolower(trim($pick));
@@ -423,7 +397,7 @@ function checkIfPickWon($pick, $market, $homeScore, $awayScore, $homeTeam, $away
     // ===== 1X2 / Match Winner =====
     if (strpos($marketLower, '1x2') !== false || 
         strpos($marketLower, 'winner') !== false || 
-        strpos($marketLower, 'gyoztes') !== false ||
+        strpos($marketLower, 'győztes') !== false ||
         strpos($marketLower, 'match result') !== false ||
         strpos($marketLower, 'full time result') !== false ||
         strpos($marketLower, 'moneyline') !== false) {
@@ -434,24 +408,24 @@ function checkIfPickWon($pick, $market, $homeScore, $awayScore, $homeTeam, $away
         if ($pickLower === '2' || $pickLower === 'away' || $pickLower === $awayTeamLower) {
             return $awayScore > $homeScore;
         }
-        if ($pickLower === 'x' || $pickLower === 'draw' || $pickLower === 'dontetlen') {
+        if ($pickLower === 'x' || $pickLower === 'draw' || $pickLower === 'döntetlen') {
             return $homeScore === $awayScore;
         }
     }
 
     // ===== Over/Under =====
     if (strpos($marketLower, 'over') !== false || strpos($marketLower, 'under') !== false ||
-        strpos($marketLower, 'tobb') !== false || strpos($marketLower, 'kevesebb') !== false ||
-        strpos($marketLower, 'total') !== false || strpos($marketLower, 'golszam') !== false ||
-        strpos($marketLower, 'golok szama') !== false) {
+        strpos($marketLower, 'több') !== false || strpos($marketLower, 'kevesebb') !== false ||
+        strpos($marketLower, 'total') !== false || strpos($marketLower, 'gólszám') !== false ||
+        strpos($marketLower, 'gólok száma') !== false) {
         
         $totalGoals = $homeScore + $awayScore;
         
-        // Keressuk a vonalat a piac nevebol: "(2.5)" vagy "(4.5)" stb.
+        // Keressük a vonalat a piac nevéből: "(2.5)" vagy "(4.5)" stb.
         preg_match('/\((\d+\.?\d*)\)/', $market, $matches);
         $line = isset($matches[1]) ? floatval($matches[1]) : 0;
         
-        // Ha a pick tartalmazza a szamot: "5,5 alatt" -> line = 5.5
+        // Ha a pick tartalmazza a számot: "5,5 alatt" → line = 5.5
         if ($line == 0) {
             preg_match('/(\d+[,.]?\d*)/', $pick, $pickMatches);
             if (isset($pickMatches[1])) {
@@ -460,8 +434,8 @@ function checkIfPickWon($pick, $market, $homeScore, $awayScore, $homeTeam, $away
         }
         
         if ($line > 0) {
-            if (strpos($pickLower, 'over') !== false || strpos($pickLower, 'tobb') !== false || 
-                strpos($pickLower, 'folott') !== false || strpos($pickLower, 'felett') !== false) {
+            if (strpos($pickLower, 'over') !== false || strpos($pickLower, 'több') !== false || 
+                strpos($pickLower, 'fölött') !== false || strpos($pickLower, 'felett') !== false) {
                 return $totalGoals > $line;
             }
             if (strpos($pickLower, 'under') !== false || strpos($pickLower, 'kevesebb') !== false || 
@@ -472,22 +446,25 @@ function checkIfPickWon($pick, $market, $homeScore, $awayScore, $homeTeam, $away
     }
 
     // ===== Both Teams To Score =====
-    if (strpos($marketLower, 'both teams') !== false || strpos($marketLower, 'mindket') !== false ||
+    if (strpos($marketLower, 'both teams') !== false || strpos($marketLower, 'mindkét') !== false ||
         strpos($marketLower, 'btts') !== false) {
         $bothScored = ($homeScore > 0 && $awayScore > 0);
         if ($pickLower === 'yes' || $pickLower === 'igen') return $bothScored;
         if ($pickLower === 'no' || $pickLower === 'nem') return !$bothScored;
     }
 
-    // ===== Double Chance / Ketesely =====
+    // ===== Double Chance / Kétesély =====
     if (strpos($marketLower, 'double chance') !== false || strpos($marketLower, 'dupla') !== false ||
-        strpos($marketLower, 'ketesely') !== false) {
+        strpos($marketLower, 'kétesély') !== false) {
+        // "Döntetlen vagy Kingston City" → X2
+        // "Nunawading City vagy Döntetlen" → 1X
+        // "Nunawading City vagy Kingston City" → 12
         if ($pickLower === '1x' || $pickLower === 'home or draw') return $homeScore >= $awayScore;
         if ($pickLower === 'x2' || $pickLower === 'draw or away') return $awayScore >= $homeScore;
         if ($pickLower === '12' || $pickLower === 'home or away') return $homeScore !== $awayScore;
         
-        // Magyar szoveges formatum: "Dontetlen vagy [csapat]" / "[csapat] vagy Dontetlen"
-        $hasDraw = strpos($pickLower, 'dontetlen') !== false || strpos($pickLower, 'draw') !== false;
+        // Magyar szöveges formátum: "Döntetlen vagy [csapat]" / "[csapat] vagy Döntetlen"
+        $hasDraw = strpos($pickLower, 'döntetlen') !== false || strpos($pickLower, 'draw') !== false;
         $hasHome = strpos($pickLower, $homeTeamLower) !== false;
         $hasAway = strpos($pickLower, $awayTeamLower) !== false;
         
@@ -511,13 +488,13 @@ function checkIfPickWon($pick, $market, $homeScore, $awayScore, $homeTeam, $away
 
     // ===== Odd/Even =====
     if (strpos($marketLower, 'odd') !== false || strpos($marketLower, 'even') !== false ||
-        strpos($marketLower, 'paros') !== false || strpos($marketLower, 'paratlan') !== false) {
+        strpos($marketLower, 'páros') !== false || strpos($marketLower, 'páratlan') !== false) {
         $total = $homeScore + $awayScore;
-        if ($pickLower === 'odd' || $pickLower === 'paratlan') return ($total % 2) !== 0;
-        if ($pickLower === 'even' || $pickLower === 'paros') return ($total % 2) === 0;
+        if ($pickLower === 'odd' || $pickLower === 'páratlan') return ($total % 2) !== 0;
+        if ($pickLower === 'even' || $pickLower === 'páros') return ($total % 2) === 0;
     }
 
-    // ===== Csapatnev alapu match (1X2 piacon kivul is) =====
+    // ===== Csapatnév alapú match (1X2 piacon kívül is) =====
     if ($pickLower === $homeTeamLower && !empty($homeTeamLower)) {
         return $homeScore > $awayScore;
     }
@@ -525,24 +502,24 @@ function checkIfPickWon($pick, $market, $homeScore, $awayScore, $homeTeam, $away
         return $awayScore > $homeScore;
     }
 
-    // Ha nem tudtuk megallapitani -> vesztes
+    // Ha nem tudtuk megállapítani → vesztes
     return false;
 }
 
-// Ha kozvetlenul hivjak (nem include), futtassuk a bejelentkezett user ticketjeit
-// VAGY ?action=evaluate_all -> az OSSZES user OSSZES nyitott ticketjet kiertekeli (cron/admin)
+// Ha közvetlenül hívják (nem include), futtassuk a bejelentkezett user ticketjeit
+// VAGY ?action=evaluate_all → az ÖSSZES user ÖSSZES nyitott ticketjét kiértékeli (cron/admin)
 if (basename($_SERVER['SCRIPT_FILENAME']) === basename(__FILE__)) {
     $action = $_GET['action'] ?? '';
     
     if ($action === 'evaluate_all') {
-        // Cron job / admin: osszes user kiertkelese
+        // Cron job / admin: összes user kiértékelése
         header('Content-Type: application/json; charset=utf-8');
         $startTime = microtime(true);
         $evaluatedUsers = evaluateAllOpenTickets($conn);
         $elapsed = round((microtime(true) - $startTime) * 1000);
         echo json_encode([
             'status' => 'ok',
-            'message' => "Kiertekeles kesz: $evaluatedUsers user szelvenyei ellenorizve.",
+            'message' => "Kiértékelés kész: $evaluatedUsers user szelvényei ellenőrizve.",
             'evaluated_users' => $evaluatedUsers,
             'elapsed_ms' => $elapsed,
             'timestamp' => date('Y-m-d H:i:s')
@@ -558,6 +535,6 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === basename(__FILE__)) {
         }
         
         evaluateOpenTickets($conn, (int)$_SESSION['user_id']);
-        echo json_encode(['status' => 'ok', 'message' => 'Kiertekeles kesz']);
+        echo json_encode(['status' => 'ok', 'message' => 'Kiértékelés kész']);
     }
 }

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once __DIR__ . '/connect.php';
 
 date_default_timezone_set('Europe/Budapest');
@@ -353,8 +353,24 @@ $competitionId = upsertCompetition(
     $countryIdForLeague
 );
 
-            // Status mapping: 1=NOT_STARTED, 2=LIVE
-            $statusId = $isLive ? 2 : 1;
+            // Status mapping: 1=NOT_STARTED, 2=LIVE, 3=FINISHED
+            if ($isLive) {
+                $statusId = 2;
+            } else {
+                $stmtOldStatus = $conn->prepare("SELECT status_id FROM Events WHERE api_id = ? LIMIT 1");
+                $stmtOldStatus->bind_param("i", $eventApiId);
+                $stmtOldStatus->execute();
+                $oldRow = $stmtOldStatus->get_result()->fetch_assoc();
+                $stmtOldStatus->close();
+
+                if ($oldRow && (int)$oldRow["status_id"] === 3) {
+                    $statusId = 3; // Mar FINISHED volt, ne valtoztassuk vissza
+                } elseif ($oldRow && (int)$oldRow["status_id"] === 2) {
+                    $statusId = 3; // Korabban LIVE volt, most mar nem -> befejezett
+                } else {
+                    $statusId = 1; // Meg nem kezdodott el
+                }
+            }
 
             upsertEvent(
                 $conn,
@@ -388,3 +404,4 @@ $competitionId = upsertCompetition(
     ], JSON_UNESCAPED_UNICODE);
     
 }
+
