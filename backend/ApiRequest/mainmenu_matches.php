@@ -10,33 +10,6 @@ $sportId = isset($_GET['sport_id']) ? (int)$_GET['sport_id'] : 0;
 $from = (new DateTime('yesterday 00:00:00'))->format('Y-m-d H:i:s');
 $to   = (new DateTime('tomorrow 23:59:59'))->format('Y-m-d H:i:s');
 
-$sportIcons = [
-    66  => 'fa-futbol',
-    67  => 'fa-basketball-ball',
-    78  => 'fa-bullseye',
-    83  => 'fa-swimmer',
-    73  => 'fa-hand-rock',
-    70  => 'fa-hockey-puck',
-    145 => 'fa-gamepad',
-    77  => 'fa-table-tennis',
-    76  => 'fa-running',
-    90  => 'fa-hockey-puck',
-    68  => 'fa-baseball-ball',
-    69  => 'fa-football-ball',
-    71  => 'fa-volleyball-ball',
-    72  => 'fa-golf-ball',
-    74  => 'fa-fist-raised',
-    75  => 'fa-biking',
-    79  => 'fa-skiing',
-    80  => 'fa-snowflake',
-    84  => 'fa-table-tennis',
-    85  => 'fa-chess',
-    109 => 'fa-volleyball-ball',
-    110 => 'fa-futbol',
-    138 => 'fa-running',
-    151 => 'fa-trophy',
-];
-
 $priorityOrder = "
     CASE
         WHEN ch.name LIKE '%Champions League%'    THEN 1
@@ -76,8 +49,7 @@ if ($sportId > 0) {
         m.home_score,
         m.away_score,
         c.name AS country_name,
-        ch.name AS championship_name,
-        s.api_id AS sport_api_id
+        ch.name AS championship_name
     FROM Events m
     JOIN Sports s ON m.sport_id = s.id
     JOIN Competitions ch ON m.competition_id = ch.id
@@ -107,8 +79,7 @@ if ($sportId > 0) {
         m.home_score,
         m.away_score,
         c.name AS country_name,
-        ch.name AS championship_name,
-        s.api_id AS sport_api_id
+        ch.name AS championship_name
     FROM Events m
     JOIN Sports s ON m.sport_id = s.id
     JOIN Competitions ch ON m.competition_id = ch.id
@@ -136,94 +107,117 @@ if (!$res || $res->num_rows === 0) {
     $stmt->close();
     exit;
 }
+
+// Collect rows into country → championship groups (preserving SQL order)
+$groups = [];
+while ($row = $res->fetch_assoc()) {
+    $matchName = trim((string)$row['match_name']);
+    if ($matchName === '' || $matchName === '-') {
+        continue;
+    }
+
+    $countryName = $row['country_name'] ?? '';
+    $champName   = $row['championship_name'] ?? '';
+
+    // Split team names
+    $separators = [' vs. ', ' vs ', ' - ', ' – ', ' v '];
+    $matchParts = [$matchName];
+    foreach ($separators as $sep) {
+        if (strpos($matchName, $sep) !== false) {
+            $matchParts = explode($sep, $matchName, 2);
+            break;
+        }
+    }
+    $home = trim($matchParts[0] ?? '');
+    $away = trim($matchParts[1] ?? '');
+    $showVsFormat = ($home !== '' && $away !== '');
+
+    $startFormatted = date('H:i', strtotime((string)$row['start_utc']));
+
+    $homeScore = $row['home_score'];
+    $awayScore = $row['away_score'];
+    $scoreDisplay = ($homeScore !== null && $awayScore !== null)
+        ? (int)$homeScore . ' - ' . (int)$awayScore
+        : '-';
+
+    $countryKey = $countryName ?: '—';
+    $champKey   = $champName ?: '—';
+
+    $groups[$countryKey][$champKey][] = [
+        'api_id'       => (int)$row['api_id'],
+        'home'         => htmlspecialchars($home),
+        'away'         => htmlspecialchars($away),
+        'matchName'    => htmlspecialchars($matchName),
+        'showVsFormat' => $showVsFormat,
+        'scoreDisplay' => htmlspecialchars($scoreDisplay),
+        'startFormatted' => $startFormatted,
+        'isLive'       => (int)$row['is_live'],
+        'timeDisplay'  => ($row['live_time'] !== null && $row['live_time'] !== '')
+            ? htmlspecialchars((string)$row['live_time'])
+            : '-',
+        'country'      => htmlspecialchars($countryKey),
+        'league'       => htmlspecialchars($champKey),
+    ];
+}
+$stmt->close();
+
+if (empty($groups)) {
+    echo '<div class="no-matches"><i class="fas fa-calendar-times" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i>Jelenleg nincs megjeleníthető meccs.</div>';
+    exit;
+}
 ?>
-<table class="matches-table">
-    <thead>
-        <tr>
-            <th><i class="fas fa-globe-europe"></i> Ország</th>
-            <th><i class="fas fa-trophy"></i> Bajnokság</th>
-            <th><i class="fas fa-futbol"></i> Meccs</th>
-            <th><i class="fas fa-star"></i> Állás</th>
-            <th><i class="fas fa-clock"></i> Kezdés</th>
-            <th><i class="fas fa-stopwatch"></i> Státusz</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php while ($row = $res->fetch_assoc()):
-            $liveTimeRaw = $row['live_time'];
-            $isLive = (int)$row['is_live'];
-            $timeDisplay = ($liveTimeRaw !== null && $liveTimeRaw !== '') ? htmlspecialchars((string)$liveTimeRaw) : '-';
-
-            $matchName = trim((string)$row['match_name']);
-            if ($matchName === '' || $matchName === '-') {
-                continue;
-            }
-
-            $countryName = $row['country_name'] ?? '';
-            $champName   = $row['championship_name'] ?? '';
-
-            // Rugalmas csapatnév bontás
-            $separators = [' vs. ', ' vs ', ' - ', ' – ', ' v '];
-            $matchParts = [$matchName];
-            foreach ($separators as $sep) {
-                if (strpos($matchName, $sep) !== false) {
-                    $matchParts = explode($sep, $matchName, 2);
-                    break;
-                }
-            }
-
-            $home = htmlspecialchars(trim($matchParts[0] ?? ''));
-            $away = htmlspecialchars(trim($matchParts[1] ?? ''));
-
-            // Ha nem bontható biztonságosan, ne dobjuk el: teljes név jelenjen meg
-            $showVsFormat = ($home !== '' && $away !== '');
-
-            $startFormatted = date('H:i', strtotime((string)$row['start_utc']));
-
-            $homeScore = $row['home_score'];
-            $awayScore = $row['away_score'];
-            if ($homeScore !== null && $awayScore !== null) {
-                $scoreDisplay = (int)$homeScore . ' - ' . (int)$awayScore;
-            } else {
-                $scoreDisplay = '-';
-            }
-
-            $apiId = (int)$row['api_id'];
-            $rowSportApiId = (int)$row['sport_api_id'];
-            $rowIcon = $sportIcons[$rowSportApiId] ?? 'fa-futbol';
-        ?>
-            <tr class="match-row clickable" data-match-id="<?php echo $apiId; ?>">
-                <td>
-                    <span class="country-name"><?php echo htmlspecialchars($countryName ?: '—'); ?></span>
-                </td>
-                <td>
-                    <span class="league-name"><?php echo htmlspecialchars($champName); ?></span>
-                </td>
-                <td class="match-cell">
-                    <?php if ($showVsFormat): ?>
-                        <span class="team home-team"><?php echo $home; ?></span>
-                        <span class="vs">vs</span>
-                        <span class="team away-team"><?php echo $away; ?></span>
-                    <?php else: ?>
-                        <span class="team full-match-name"><?php echo htmlspecialchars($matchName); ?></span>
-                    <?php endif; ?>
-                </td>
-                <td>
-                    <span class="match-score"><?php echo htmlspecialchars($scoreDisplay); ?></span>
-                </td>
-                <td>
-                    <span class="start-time"><?php echo $startFormatted; ?></span>
-                </td>
-                <td class="live-time-cell">
-                    <?php if ($isLive): ?>
-                        <span class="live-dot"></span>
-                        <span class="live-time-value"><?php echo $timeDisplay; ?></span>
-                    <?php else: ?>
-                        <span class="status-upcoming"><i class="fas fa-clock"></i> <?php echo $startFormatted; ?></span>
-                    <?php endif; ?>
-                </td>
-            </tr>
-        <?php endwhile; ?>
-    </tbody>
-</table>
-<?php $stmt->close(); ?>
+<div class="matches-grouped">
+<?php foreach ($groups as $country => $championships):
+    $countryMatchCount = 0;
+    foreach ($championships as $champMatches) {
+        $countryMatchCount += count($champMatches);
+    }
+?>
+    <div class="country-group">
+        <div class="country-header">
+            <i class="fas fa-globe-europe"></i>
+            <span class="country-name"><?php echo htmlspecialchars($country); ?></span>
+            <span class="country-match-count"><?php echo $countryMatchCount; ?></span>
+            <i class="fas fa-chevron-down country-chevron"></i>
+        </div>
+        <div class="country-content">
+        <?php foreach ($championships as $championship => $matches): ?>
+            <div class="league-group">
+                <div class="league-header">
+                    <i class="fas fa-trophy"></i>
+                    <span class="league-name"><?php echo htmlspecialchars($championship); ?></span>
+                </div>
+                <div class="league-matches">
+                <?php foreach ($matches as $m): ?>
+                    <div class="match-row clickable"
+                         data-match-id="<?php echo $m['api_id']; ?>"
+                         data-country="<?php echo $m['country']; ?>"
+                         data-league="<?php echo $m['league']; ?>">
+                        <span class="match-teams">
+                        <?php if ($m['showVsFormat']): ?>
+                            <span class="team home-team"><?php echo $m['home']; ?></span>
+                            <span class="vs">vs</span>
+                            <span class="team away-team"><?php echo $m['away']; ?></span>
+                        <?php else: ?>
+                            <span class="team full-match-name"><?php echo $m['matchName']; ?></span>
+                        <?php endif; ?>
+                        </span>
+                        <span class="match-score"><?php echo $m['scoreDisplay']; ?></span>
+                        <span class="start-time"><?php echo $m['startFormatted']; ?></span>
+                        <span class="live-time-cell">
+                        <?php if ($m['isLive']): ?>
+                            <span class="live-dot"></span>
+                            <span class="live-time-value"><?php echo $m['timeDisplay']; ?></span>
+                        <?php else: ?>
+                            <span class="status-upcoming"><i class="fas fa-clock"></i> <?php echo $m['startFormatted']; ?></span>
+                        <?php endif; ?>
+                        </span>
+                    </div>
+                <?php endforeach; ?>
+                </div>
+            </div>
+        <?php endforeach; ?>
+        </div>
+    </div>
+<?php endforeach; ?>
+</div>
