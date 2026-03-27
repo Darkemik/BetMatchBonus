@@ -10,13 +10,14 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 // Felhasználó aktuális egyenlege
-$query = "SELECT balance FROM Users WHERE id = ?";
+$query = "SELECT balance, bonus_balance FROM Users WHERE id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 $balance = $user['balance'] ?? 0;
+$bonus_balance = $user['bonus_balance'] ?? 0;
 $stmt->close();
 
 // Aktív befizetési bónuszok
@@ -76,6 +77,11 @@ $bonus_stmt->close();
                     <div class="alert alert-info">
                         <strong>Jelenlegi egyenlege:</strong> <span
                             class="badge bg-success"><?php echo number_format($balance, 0, ',', ' '); ?> FT</span>
+                        <?php if ($bonus_balance > 0): ?>
+                        &nbsp;|&nbsp;
+                        <strong>Bónusz egyenleg:</strong> <span
+                            class="badge bg-warning text-dark"><?php echo number_format($bonus_balance, 0, ',', ' '); ?> FT</span>
+                        <?php endif; ?>
                     </div>
 
                     <?php if (isset($_SESSION['success_message'])): ?>
