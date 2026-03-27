@@ -9,6 +9,17 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
+// Felhasználó bónusz egyenlegének lekérése
+$balance_stmt = $conn->prepare("SELECT balance, bonus_balance FROM Users WHERE id = ?");
+$balance_stmt->bind_param("i", $user_id);
+$balance_stmt->execute();
+$balance_result = $balance_stmt->get_result();
+$user_balances = $balance_result->fetch_assoc();
+$balance_stmt->close();
+
+$regular_balance = $user_balances['balance'] ?? 0;
+$bonus_balance   = $user_balances['bonus_balance'] ?? 0;
+
 // Felhasználó bónuszainak lekérése az aktív bónuszokkal együtt
 $query = "SELECT ub.id, ub.bonus_id, bc.name as bonus_name, ub.granted_amount, ub.status, ub.expires_at, ub.wagering_progress, ub.wagering_required, ub.used, ub.created_at 
           FROM UserBonuses ub
@@ -72,7 +83,7 @@ foreach ($bonuses as $bonus) {
                     <h1><i class="fas fa-gift"></i> Bónuszaim</h1>
                     
                     <div class="row mb-4">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="card bonus-card">
                                 <div class="card-body">
                                     <h6 class="card-title">Aktív Bónuszok</h6>
@@ -80,7 +91,7 @@ foreach ($bonuses as $bonus) {
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="card bonus-card">
                                 <div class="card-body">
                                     <h6 class="card-title">Teljes Bónusz Érték</h6>
@@ -88,11 +99,20 @@ foreach ($bonuses as $bonus) {
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="card bonus-card">
                                 <div class="card-body">
                                     <h6 class="card-title">Lejárt/Felhasznált</h6>
                                     <h2 class="text-danger"><?php echo $expired_bonuses; ?></h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bonus-card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Bónusz Egyenleg</h6>
+                                    <h2 class="text-warning"><?php echo number_format($bonus_balance, 0, ',', ' '); ?> FT</h2>
+                                    <small class="text-muted">Rendes: <?php echo number_format($regular_balance, 0, ',', ' '); ?> FT</small>
                                 </div>
                             </div>
                         </div>
