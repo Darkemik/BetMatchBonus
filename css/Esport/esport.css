@@ -257,7 +257,7 @@
 }
 
 /* ===== JOBB OLDALI BETSLIP KONTÉNER ===== */
-.right-container {
+.content-parent > .right-container {
     float: right;
     overflow-y: auto;
     width: 20%;
@@ -265,6 +265,23 @@
     display: flex;
     justify-content: center;
     height: max-content;
+    padding: 0 10px;
+}
+
+.content-parent > .elo-main {
+    width: 80%;
+}
+
+@media (max-width: 1100px) {
+    .content-parent > .right-container {
+        float: none;
+        width: 100%;
+        padding: 10px;
+    }
+
+    .content-parent > .elo-main {
+        width: 100%;
+    }
 }
 
 /* ===== ESPORT BADGE ===== */
