@@ -95,22 +95,22 @@ require_once "../../backend/ApiRequest/connect.php";
         <div class="sports-menu-container">
             <div class="specialis-menu">
               <div class="specialis-menu-header">
-                <i class="fas fa-star"></i> Speciális
+                <i class="fas fa-star"></i> <span data-i18n="mainMenu.special">Speciális</span>
               </div>
               <div class="specialis-menu-items">
                 <a href="../../frontend/Bonus/bonus.php" class="specialis-menu-item">
                   <i class="fas fa-rocket"></i>
-                  <span>Oddsűrhajó</span>
+                  <span data-i18n="mainMenu.oddsShip">Oddsűrhajó</span>
                 </a>
               </div>
             </div>
 
             <div class="sports-list" id="sportsList">
-              <div class="sidebar-loading"><i class="fas fa-spinner fa-spin"></i> Betöltés...</div>
+              <div class="sidebar-loading"><i class="fas fa-spinner fa-spin"></i> <span data-i18n="mainMenu.loading">Betöltés...</span></div>
             </div>
 
             <div class="sport-detail-panel" id="sportDetailPanel" style="display:none;">
-              <button class="sidebar-back-btn" id="sidebarBackBtn"><i class="fas fa-arrow-left"></i> Összes sport</button>
+              <button class="sidebar-back-btn" id="sidebarBackBtn"><i class="fas fa-arrow-left"></i> <span data-i18n="mainMenu.allSports">Összes sport</span></button>
               <div id="sportDetailContent"></div>
             </div>
         </div>
@@ -118,14 +118,14 @@ require_once "../../backend/ApiRequest/connect.php";
 
       <main class="center-content">
         <div class="center-header">
-          <h2 class="section-title" id="centerTitle"><i class="fas fa-calendar-day"></i> Mai meccsek</h2>
+          <h2 class="section-title" id="centerTitle"><i class="fas fa-calendar-day"></i> <span data-i18n="mainMenu.todayMatches">Mai meccsek</span></h2>
           <div class="center-search">
-            <input type="search" id="matchSearch" class="match-search-input" placeholder="Meccs keresése...">
+            <input type="search" id="matchSearch" class="match-search-input" placeholder="Meccs keresése..." data-i18n-placeholder="mainMenu.searchPlaceholder">
           </div>
         </div>
 
         <div id="matches-container">
-          <div class="loading-details"><i class="fas fa-spinner fa-spin"></i> Meccsek betöltése...</div>
+          <div class="loading-details"><i class="fas fa-spinner fa-spin"></i> <span data-i18n="mainMenu.loadingMatches">Meccsek betöltése...</span></div>
         </div>
       </main>
 
@@ -146,6 +146,7 @@ require_once "../../backend/ApiRequest/connect.php";
   <script src="../../js/Register/registermodal.js"></script>
   <script src="../../js/Register/registermodal2.js"></script>
   <script src="../../js/Forgotmypassword/forgotmypassword.js"></script>
+  <script src="../../js/Main/language.js"></script>
   <script src="../../js/Main/layout.js"></script>
   <script src="../../js/Main/popup.js"></script>
   <script src="../../js/Betslip/betslip.js"></script>

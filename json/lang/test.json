@@ -1,0 +1,21 @@
+{
+  "nav": {
+    "home": "Főoldal",
+    "live": "Élő",
+    "esport": "eSport",
+    "bonuses": "Bónuszok",
+    "help": "Segítség"
+  },
+  "auth": {
+    "login": "Bejelentkezés",
+    "register": "Regisztráció",
+    "logout": "Kijelentkezés",
+    "personalData": "Személyes Adatok",
+    "changePassword": "Jelszó Módosítás",
+    "deposit": "Befizetés",
+    "withdrawal": "Kifizetés",
+    "transactionHistory": "Tranzakciótörténet",
+    "myBonuses": "Bónuszaim",
+    "activityLog": "Napló"
+  }
+}

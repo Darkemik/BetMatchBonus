@@ -9,7 +9,7 @@
                     <a href="../../frontend/MainMenu/MainMenu.php">
                         <img src="../../img/logo.png" alt="logo">
                     </a>
-                    Elfelejtettem a jelszavam
+                    <span data-i18n="forgotPassword.title">Elfelejtettem a jelszavam</span>
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -35,7 +35,7 @@
                     <p id="forgotPasswordResult" class="mt-2 mb-3"></p>
 
                     <div class="modal-footer d-flex flex-column px-0">
-                        <button type="submit" class="btn btn-success w-100 mb-2">Új jelszó beállítása</button>
+                        <button type="submit" class="btn btn-success w-100 mb-2" data-i18n="forgotPassword.submitBtn">Új jelszó beállítása</button>
                         <p class="m-0" style="margin-top: 10px !important;">
                             Még nincs fiókod?
                             <a href="#" class="modal-link" id="switchToRegisterFromForgot">Regisztrálj!</a>
@@ -59,7 +59,7 @@
                     <a href="../../frontend/MainMenu/MainMenu.php">
                         <img src="../../img/logo.png" alt="logo">
                     </a>
-                    Felhasználónév helyreállítása
+                    <span data-i18n="forgotUsername.title">Felhasználónév helyreállítása</span>
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -75,14 +75,14 @@
                     <input type="email" name="email" id="username-help-email" class="form-control mb-3"
                         placeholder="E-mail cím" required>
 
-                    <label class="form-label">Születési idő</label>
+                    <label class="form-label" data-i18n="forgotUsername.birthDate">Születési idő</label>
                     <input type="date" name="birthdate" id="username-help-birthdate" class="form-control mb-3"
                         placeholder="Dátum kiválasztása" required>
 
                     <p id="forgotUsernameResult" class="mt-2 mb-3"></p>
 
                     <div class="modal-footer d-flex flex-column px-0">
-                        <button type="submit" class="btn btn-success w-100 mb-2">Felhasználónév megküldése</button>
+                        <button type="submit" class="btn btn-success w-100 mb-2" data-i18n="forgotUsername.submitBtn">Felhasználónév megküldése</button>
                         <p class="m-0" style="margin-top: 10px !important;">
                             <a href="#" class="small modal-link" id="switchBackToForgotPassword">← Vissza a jelszó
                                 helyreállításához</a>

@@ -51,11 +51,11 @@
     ?>
 
     <nav class="nav collapse navbar-collapse" id="mainNavbar">
-        <a href="<?php echo dirname(dirname($_SERVER['PHP_SELF'])); ?>/MainMenu/MainMenu.php" <?php if (!$is_in_userprofile && $current_page === 'MainMenu') echo 'class="active"'; ?>>Főoldal</a>
-        <a href="<?php echo dirname(dirname($_SERVER['PHP_SELF'])); ?>/Live/live.php" <?php if (!$is_in_userprofile && $current_page === 'live') echo 'class="active"'; ?>>Élő</a>
-        <a href="<?php echo dirname(dirname($_SERVER['PHP_SELF'])); ?>/Esport/esport.php" <?php if (!$is_in_userprofile && $current_page === 'esport') echo 'class="active"'; ?>>eSport</a>
-        <a href="<?php echo dirname(dirname($_SERVER['PHP_SELF'])); ?>/Bonus/bonus.php" <?php if (!$is_in_userprofile && $current_page === 'bonus') echo 'class="active"'; ?>>Bónuszok</a>
-        <a href="<?php echo dirname(dirname($_SERVER['PHP_SELF'])); ?>/Help/help.php" <?php if (!$is_in_userprofile && $current_page === 'help') echo 'class="active"'; ?>>Segítség</a>
+        <a href="<?php echo dirname(dirname($_SERVER['PHP_SELF'])); ?>/MainMenu/MainMenu.php" <?php if (!$is_in_userprofile && $current_page === 'MainMenu') echo 'class="active"'; ?>><span data-i18n="nav.home">Főoldal</span></a>
+        <a href="<?php echo dirname(dirname($_SERVER['PHP_SELF'])); ?>/Live/live.php" <?php if (!$is_in_userprofile && $current_page === 'live') echo 'class="active"'; ?>><span data-i18n="nav.live">Élő</span></a>
+        <a href="<?php echo dirname(dirname($_SERVER['PHP_SELF'])); ?>/Esport/esport.php" <?php if (!$is_in_userprofile && $current_page === 'esport') echo 'class="active"'; ?>><span data-i18n="nav.esport">eSport</span></a>
+        <a href="<?php echo dirname(dirname($_SERVER['PHP_SELF'])); ?>/Bonus/bonus.php" <?php if (!$is_in_userprofile && $current_page === 'bonus') echo 'class="active"'; ?>><span data-i18n="nav.bonuses">Bónuszok</span></a>
+        <a href="<?php echo dirname(dirname($_SERVER['PHP_SELF'])); ?>/Help/help.php" <?php if (!$is_in_userprofile && $current_page === 'help') echo 'class="active"'; ?>><span data-i18n="nav.help">Segítség</span></a>
     </nav>
 </header>
 
