@@ -3,7 +3,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 require_once "../../backend/Auth/check_session.php";
-require_once "../../backend/ApiRequest/connect.php";
+require_once "../../backend/connect.php";
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: /frontend/MainMenu/MainMenu.php");

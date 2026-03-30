@@ -4,6 +4,7 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
+    const t = (key, fallback) => (typeof window.i18n === 'function' ? window.i18n(key, fallback) : (fallback || key));
     console.log('[BETSLIP] Inicializálás...');
 
     let ticketItems = [];
@@ -144,14 +145,14 @@ document.addEventListener('DOMContentLoaded', function() {
             // De KÜLÖNBÖZŐ piacokról lehet több fogadás ugyanarról a meccsről
             if (window.BetslipLogic.hasSelectionInMarket(homeTeam, awayTeam, market)) {
                 console.log('[BETSLIP] Már van választás ebben a piacban, nem lehet hozzáadni másikat ugyanarról a piacról');
-                BmbPopup.warning('Már van választásod ebben a piacon! Másik piacról válassz vagy módosítsd a jelenlegi választást.', 'Piac ütközés');
+                BmbPopup.warning(t('betslip.marketConflictMsg', 'Már van választásod ebben a piacon! Másik piacról válassz vagy módosítsd a jelenlegi választást.'), t('betslip.marketConflictTitle', 'Piac ütközés'));
                 return;
             }
 
             if (window.BetslipLogic.isCorrectScoreMarket(market) && 
                 window.BetslipLogic.isConflictingScore(pick, homeTeam, awayTeam)) {
                 console.log('[BETSLIP] Ütköző pontos végeredmény');
-                BmbPopup.warning('Ez a választás ütköző az 1X2 piacon már meglévő választásoddal!', 'Ütköző választás');
+                BmbPopup.warning(t('betslip.conflictSelectionMsg', 'Ez a választás ütköző az 1X2 piacon már meglévő választásoddal!'), t('betslip.conflictSelectionTitle', 'Ütköző választás'));
                 return;
             }
 
@@ -252,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function() {
             el.innerHTML = `
                 <div class="betslip-item-header">
                     <span>${escapeHtml(item.homeTeam)} vs ${escapeHtml(item.awayTeam)}</span>
-                    <button class="betslip-remove" data-index="${idx}" title="Eltávolítás">×</button>
+                    <button class="betslip-remove" data-index="${idx}" title="${t('betslip.remove', 'Eltávolítás')}">×</button>
                 </div>
                 <div class="betslip-item-market">${escapeHtml(item.market)}</div>
                 <div class="betslip-item-pick">${escapeHtml(item.pick)}</div>
@@ -317,13 +318,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!isLoggedIn || userBalance === 0 || userBalance < stake || ticketItems.length === 0) {
             submitBtn.disabled = true;
             if (!isLoggedIn) {
-                submitBtn.title = 'Be kell jelentkezned a fogadáshoz';
+                submitBtn.title = t('betslip.mustLogin', 'Be kell jelentkezned a fogadáshoz');
             } else if (userBalance === 0) {
-                submitBtn.title = 'Nincs elegendő egyenleg! Kérjük, töltsd fel az accountot.';
+                submitBtn.title = t('betslip.noBalance', 'Nincs elegendő egyenleg! Kérjük, töltsd fel az accountot.');
             } else if (userBalance < stake) {
-                submitBtn.title = 'Nincs elegendő egyenleg az adott téthez!';
+                submitBtn.title = t('betslip.insufficientStakeBalance', 'Nincs elegendő egyenleg az adott téthez!');
             } else if (ticketItems.length === 0) {
-                submitBtn.title = 'Legalább egy fogadás szükséges';
+                submitBtn.title = t('betslip.minOneBet', 'Legalább egy fogadás szükséges');
             }
         } else {
             submitBtn.disabled = false;
@@ -337,17 +338,17 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const stake = parseFloat(document.getElementById('stake-input').value) || 0;
             if (stake < 100) {
-                BmbPopup.warning('Minimum tét: 100 Ft', 'Érvénytelen tét');
+                BmbPopup.warning(t('betslip.minStakeMsg', 'Minimum tét: 100 Ft'), t('betslip.invalidStakeTitle', 'Érvénytelen tét'));
                 return;
             }
 
             if (!isLoggedIn) {
-                BmbPopup.info('A fogadáshoz be kell jelentkezned!', 'Bejelentkezés szükséges');
+                BmbPopup.info(t('betslip.loginRequiredMsg', 'A fogadáshoz be kell jelentkezned!'), t('betslip.loginRequiredTitle', 'Bejelentkezés szükséges'));
                 return;
             }
 
             if (userBalance === 0 || userBalance < stake) {
-                BmbPopup.warning('Nincs elegendő egyenleg! Kérjük, töltsd fel az accountot.', 'Nincs elegendő pénz');
+                BmbPopup.warning(t('betslip.noBalance', 'Nincs elegendő egyenleg! Kérjük, töltsd fel az accountot.'), t('betslip.noMoneyTitle', 'Nincs elegendő pénz'));
                 return;
             }
 
@@ -393,15 +394,15 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="modal-content bg-dark text-light" style="border: 1px solid rgba(76, 175, 80, 0.3);">
                                 <div class="modal-header border-bottom border-success">
                                     <h5 class="modal-title">
-                                        <i class="fas fa-check-circle text-success"></i> Szelvény sikeresen leadva!
+                                        <i class="fas fa-check-circle text-success"></i> ${t('betslip.ticketSuccess', 'Szelvény sikeresen leadva!')}
                                     </h5>
                                 </div>
                                 <div class="modal-body">
-                                    <p><strong>Tét:</strong> ${stake.toLocaleString('hu-HU')} Ft</p>
-                                    <p><strong>Lehetséges nyeremény:</strong> ${Math.round(stake * totalOdds).toLocaleString('hu-HU')} Ft</p>
+                                    <p><strong>${t('betslip.stakeLabel', 'Tét:')}</strong> ${stake.toLocaleString('hu-HU')} Ft</p>
+                                    <p><strong>${t('betslip.potentialWinLabel', 'Lehetséges nyeremény:')}</strong> ${Math.round(stake * totalOdds).toLocaleString('hu-HU')} Ft</p>
                                 </div>
                                 <div class="modal-footer border-top border-secondary">
-                                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Bezárás</button>
+                                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">${t('betslip.close', 'Bezárás')}</button>
                                 </div>
                             </div>
                         </div>
@@ -419,12 +420,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 checkLoginStatus();
                 loadBettingHistory();
             } else {
-                BmbPopup.error((data.message || 'Ismeretlen hiba'), 'Sikertelen fogadás');
+                BmbPopup.error((data.message || t('mainMenu.unknown', 'Ismeretlen')), t('betslip.betFailedTitle', 'Sikertelen fogadás'));
             }
         })
         .catch(e => {
             console.error('Hiba:', e);
-            BmbPopup.error('Szerverhiba! Kérjük próbáld újra később.', 'Szerverhiba');
+            BmbPopup.error(t('betslip.serverErrorMsg', 'Szerverhiba! Kérjük próbáld újra később.'), t('live.serverError', 'Szerverhiba'));
         });
     }
 
@@ -436,13 +437,13 @@ document.addEventListener('DOMContentLoaded', function() {
         clearBtn.parentNode.replaceChild(newClearBtn, clearBtn);
         
         newClearBtn.addEventListener('click', () => {
-            BmbPopup.confirm('Biztosan törlöd az összes fogadást?', function() {
+            BmbPopup.confirm(t('betslip.confirmClearAll', 'Biztosan törlöd az összes fogadást?'), function() {
                 ticketItems = [];
                 saveToStorage();
                 renderTicket();
                 refreshAllOddsButtons();
                 console.log('[BETSLIP] All bets cleared');
-            }, null, 'Összes törlése');
+            }, null, t('betslip.clearAll', 'Összes törlése'));
         });
     }
 
@@ -522,9 +523,9 @@ document.addEventListener('DOMContentLoaded', function() {
         container.innerHTML = '';
 
         bettingHistory.forEach(ticket => {
-            const statusText = ticket.status === 'OPEN' ? '⏳ Függőben' : 
-                              ticket.status === 'WON' ? '✅ Nyertes' : 
-                              ticket.status === 'LOST' ? '❌ Vesztes' : '❓ Ismeretlen';
+            const statusText = ticket.status === 'OPEN' ? '⏳ ' + t('betslip.pending', 'Függőben') : 
+                              ticket.status === 'WON' ? '✅ ' + t('betslip.won', 'Nyertes') : 
+                              ticket.status === 'LOST' ? '❌ ' + t('betslip.lost', 'Vesztes') : '❓ ' + t('mainMenu.unknown', 'Ismeretlen');
             
             const statusClass = ticket.status.toLowerCase();
             
@@ -543,7 +544,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 ${escapeHtml(item.homeTeam)} vs ${escapeHtml(item.awayTeam)}
                             </div>
                             <div class="elozmeny-market">${escapeHtml(item.market)}</div>
-                            <div class="elozmeny-pick">Tipp: <strong>${escapeHtml(item.pick)}</strong> @ ${parseFloat(item.odds).toFixed(2)}</div>
+                            <div class="elozmeny-pick">${t('betslip.tipLabel', 'Tipp:')} <strong>${escapeHtml(item.pick)}</strong> @ ${parseFloat(item.odds).toFixed(2)}</div>
                         </div>
                     `;
                 });
@@ -562,9 +563,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div class="elozmeny-items-list">${itemsHtml}</div>
                 <div class="elozmeny-summary">
-                    <span><strong>Tét:</strong> ${parseFloat(ticket.stake).toLocaleString('hu-HU')} Ft</span>
-                    <span><strong>Odds:</strong> ${parseFloat(ticket.total_odds).toFixed(3)}</span>
-                    <span class="${ticket.status === 'WON' ? 'won-amount' : ''}"><strong>${ticket.status === 'WON' ? 'Nyeremény:' : 'Potenciális:'}</strong> ${parseFloat(ticket.potential_win).toLocaleString('hu-HU')} Ft</span>
+                    <span><strong>${t('betslip.stakeLabel', 'Tét:')}</strong> ${parseFloat(ticket.stake).toLocaleString('hu-HU')} Ft</span>
+                    <span><strong>${t('betslip.oddsLabel', 'Odds:')}</strong> ${parseFloat(ticket.total_odds).toFixed(3)}</span>
+                    <span class="${ticket.status === 'WON' ? 'won-amount' : ''}"><strong>${ticket.status === 'WON' ? t('betslip.winLabel', 'Nyeremény:') : t('betslip.potentialLabel', 'Potenciális:')}</strong> ${parseFloat(ticket.potential_win).toLocaleString('hu-HU')} Ft</span>
                 </div>
             `;
             container.appendChild(el);

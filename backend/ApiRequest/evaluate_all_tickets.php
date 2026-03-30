@@ -4,7 +4,7 @@
  * Ez a fájl megmaradt a visszafelé kompatibilitás miatt (cron job, admin link).
  * A tényleges logika a check_bets.php-ban van.
  */
-require_once __DIR__ . "/connect.php";
+require_once dirname(__DIR__) . "/connect.php";
 require_once __DIR__ . "/check_bets.php";
 
 header('Content-Type: application/json; charset=utf-8');

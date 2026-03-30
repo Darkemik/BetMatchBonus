@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../../backend/Auth/admin_guard.php';
 admin_guard('MOD');
 
-require_once __DIR__ . '/../../backend/ApiRequest/connect.php';
+require_once __DIR__ . '/../../backend/connect.php';
 
 // Statistics
 $userCount  = $conn->query("SELECT COUNT(*) AS c FROM Users")->fetch_assoc()['c'];

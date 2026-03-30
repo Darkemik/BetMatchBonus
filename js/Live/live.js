@@ -1,4 +1,5 @@
 ﻿document.addEventListener('DOMContentLoaded', function() {
+    const t = (key, fallback) => (typeof window.i18n === 'function' ? window.i18n(key, fallback) : (fallback || key));
     const matchesContainer = document.getElementById('matches-container');
     const sportsNav = document.getElementById('liveSportsNav');
     let currentSportId = null; // Dynamically set from first live sport
@@ -101,7 +102,7 @@
             })
             .catch(error => {
                 console.error('[LIVE.JS] Hiba a meccs adatok lekérésekor:', error);
-                BmbPopup.error('Hiba a meccs adatok lekérésekor', 'Szerverhiba');
+                    BmbPopup.error(t('live.errorFetchingMatch', 'Hiba a meccs adatok lekérésekor'), t('live.serverError', 'Szerverhiba'));
             });
     });
 
@@ -116,7 +117,7 @@
             .filter(id => liveSports[id] > 0 && !ESPORT_SPORT_IDS.includes(id));
 
         if (liveSportIds.length === 0) {
-            sportsNav.innerHTML = '<div class="sports-nav-empty"><i class="fas fa-info-circle"></i> Jelenleg nincs élő meccs egyetlen sportágban sem.</div>';
+            sportsNav.innerHTML = '<div class="sports-nav-empty"><i class="fas fa-info-circle"></i> ' + t('live.noLiveAnySport', 'Jelenleg nincs élő meccs egyetlen sportágban sem.') + '</div>';
             currentSportId = null;
             return;
         }
@@ -317,7 +318,7 @@
                     <div class="modal-content bg-dark text-light">
                         <div class="modal-header border-bottom border-secondary">
                             <div>
-                                <h5 class="modal-title">${escapeHtml(match.name || 'Meccs')}</h5>
+                                <h5 class="modal-title">${escapeHtml(match.name || t('live.matchDefaultName', 'Meccs'))}</h5>
                                 <small class="text-muted">${escapeHtml((match.country || '') + ' - ' + (match.championship || ''))}</small>
                             </div>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
@@ -326,7 +327,7 @@
                             <div class="match-info mb-4">
                                 <div class="text-center">
                                     <div class="fs-5 mb-2">${escapeHtml((match.homeTeam || '') + ' ')} <strong>${escapeHtml(match.score || '0 - 0')}</strong> ${escapeHtml((match.awayTeam || ''))}</div>
-                                    ${match.isLive ? `<div class="live-indicator"><span class="badge bg-danger">ÉLŐBEN</span> ${escapeHtml(match.liveTime || '')}</div>` : '<div class="text-muted small">Nem élő</div>'}
+                                    ${match.isLive ? `<div class="live-indicator"><span class="badge bg-danger">${t('live.liveBadge', 'ÉLŐBEN')}</span> ${escapeHtml(match.liveTime || '')}</div>` : '<div class="text-muted small">' + t('live.notLive', 'Nem élő') + '</div>'}
                                 </div>
                             </div>
         `;
@@ -361,7 +362,7 @@
             
             modalHTML += '</div>';
         } else {
-            modalHTML += '<div class="alert alert-info">Nincsenek elérhető piacok ehhez a mérkőzéshez.</div>';
+            modalHTML += '<div class="alert alert-info">' + t('live.noMarkets', 'Nincsenek elérhető piacok ehhez a mérkőzéshez.') + '</div>';
         }
 
         modalHTML += `
@@ -394,7 +395,7 @@
         refreshRequestId++;
         
         const container = matchesContainer;
-        container.innerHTML = '<div class="loading-details"><i class="fas fa-spinner fa-spin"></i> Meccs adatok betöltése...</div>';
+        container.innerHTML = '<div class="loading-details"><i class="fas fa-spinner fa-spin"></i> ' + t('live.loadingMatchDetails', 'Meccs adatok betöltése...') + '</div>';
         
         fetch('../../backend/ApiRequest/get_match_details.php?eventId=' + eventId)
             .then(response => {
@@ -481,14 +482,14 @@
 
         if (!matchData || matchData.error) {
             console.error('[LIVE.JS] Hiba a match data-ban:', matchData);
-            matchesContainer.innerHTML = '<div class="error-msg"><i class="fas fa-exclamation-triangle"></i> Hiba: ' + (matchData ? matchData.error : 'Ismeretlen hiba') + '</div>';
+            matchesContainer.innerHTML = '<div class="error-msg"><i class="fas fa-exclamation-triangle"></i> ' + t('live.errorPrefix', 'Hiba:') + ' ' + (matchData ? matchData.error : t('mainMenu.unknown', 'Ismeretlen')) + '</div>';
             return;
         }
 
         const match = matchData.match;
         if (!match) {
             console.error('[LIVE.JS] Nincs match objektum a válaszban');
-            matchesContainer.innerHTML = '<div class="error-msg"><i class="fas fa-exclamation-triangle"></i> Hiba: Nincsenek meccs adatok</div>';
+            matchesContainer.innerHTML = '<div class="error-msg"><i class="fas fa-exclamation-triangle"></i> ' + t('live.noMatchData', 'Nincsenek meccs adatok') + '</div>';
             return;
         }
 
@@ -497,13 +498,13 @@
 
         let html = `
             <button class="back-btn" id="back-to-matches">
-                <i class="fas fa-arrow-left"></i> Vissza az élő meccsekhez
+                <i class="fas fa-arrow-left"></i> ${t('live.backToLive', 'Vissza az élő meccsekhez')}
             </button>
 
             <div class="match-header-card">
                 <div class="match-meta">
-                    <span class="meta-item"><i class="fas fa-globe-europe"></i> ${escapeHtml(match.country || 'Ismeretlen')}</span>
-                    <span class="meta-item"><i class="fas fa-trophy"></i> ${escapeHtml(match.championship || 'Ismeretlen')}</span>
+                    <span class="meta-item"><i class="fas fa-globe-europe"></i> ${escapeHtml(match.country || t('mainMenu.unknown', 'Ismeretlen'))}</span>
+                    <span class="meta-item"><i class="fas fa-trophy"></i> ${escapeHtml(match.championship || t('mainMenu.unknown', 'Ismeretlen'))}</span>
                     <span class="meta-item"><i class="fas fa-clock"></i> ${match.startUtc ? escapeHtml(new Date(match.startUtc).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' })) : '-'}</span>
                 </div>
                 <div class="match-scoreboard">
@@ -512,7 +513,7 @@
                     </div>
                     <div class="score-center">
                         <div class="score-big">${escapeHtml(match.score || '0 - 0')}</div>
-                        ${match.isLive ? `<div class="live-badge"><span class="live-dot-big"></span><span class="live-time-big">${escapeHtml(match.liveTime || '-')}</span></div>` : '<div class="not-started-badge"><i class="fas fa-clock"></i> Nem élő</div>'}
+                        ${match.isLive ? `<div class="live-badge"><span class="live-dot-big"></span><span class="live-time-big">${escapeHtml(match.liveTime || '-')}</span></div>` : '<div class="not-started-badge"><i class="fas fa-clock"></i> ' + t('live.notLive', 'Nem élő') + '</div>'}
                     </div>
                     <div class="team-side away-side">
                         <span class="team-name-big">${escapeHtml(match.awayTeam || '')}</span>
@@ -520,7 +521,7 @@
                 </div>
             </div>
 
-            <h3 class="markets-title"><i class="fas fa-chart-bar"></i> Fogadási piacok</h3>
+            <h3 class="markets-title"><i class="fas fa-chart-bar"></i> ${t('mainMenu.bettingMarkets', 'Fogadási piacok')}</h3>
         `;
 
         if (markets.length > 0) {
@@ -553,10 +554,11 @@
             
             html += '</div>';
         } else {
-            html += '<div class="alert alert-info">Nincsenek elérhető piacok ehhez a mérkőzéshez.</div>';
+            html += '<div class="alert alert-info">' + t('live.noMarkets', 'Nincsenek elérhető piacok ehhez a mérkőzéshez.') + '</div>';
         }
 
         matchesContainer.innerHTML = html;
+        if (typeof window.applyI18n === 'function') window.applyI18n(matchesContainer);
 
         if (typeof window.refreshAllOddsButtons === 'function') {
             window.refreshAllOddsButtons(50);
@@ -586,7 +588,7 @@
         if (currentSportId) {
             refreshMatches();
         } else {
-            matchesContainer.innerHTML = '<div class="no-matches"><i class="fas fa-futbol" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i>Jelenleg nincs élő meccs egyetlen sportágban sem.</div>';
+            matchesContainer.innerHTML = '<div class="no-matches"><i class="fas fa-futbol" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i>' + t('live.noLiveAnySport', 'Jelenleg nincs élő meccs egyetlen sportágban sem.') + '</div>';
         }
     });
     
@@ -601,7 +603,7 @@
                 if (currentSportId) {
                     refreshMatches();
                 } else {
-                    matchesContainer.innerHTML = '<div class="no-matches"><i class="fas fa-futbol" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i>Jelenleg nincs élő meccs egyetlen sportágban sem.</div>';
+                    matchesContainer.innerHTML = '<div class="no-matches"><i class="fas fa-futbol" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i>' + t('live.noLiveAnySport', 'Jelenleg nincs élő meccs egyetlen sportágban sem.') + '</div>';
                 }
             });
         }

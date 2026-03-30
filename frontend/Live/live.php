@@ -1,5 +1,5 @@
 <?php
-require_once "../../backend/ApiRequest/connect.php";
+require_once "../../backend/connect.php";
 ?>
 <!DOCTYPE html>
 <html lang="hu">
@@ -31,11 +31,11 @@ require_once "../../backend/ApiRequest/connect.php";
             </button>
 
             <div class="logo-box">
-                <a href="../frontend/index.html">
+                <a href="../../frontend/MainMenu/MainMenu.php">
                     <img class="kep" src="../../img/logo.png" alt="logo">
                 </a>
                 <div class="logo">
-                    <a href="../frontend/index.html" class="mainpage">BetMatchBonus</a>
+                    <a href="../../frontend/MainMenu/MainMenu.php" class="mainpage">BetMatchBonus</a>
                 </div>
             </div>
 

@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../../backend/Auth/admin_guard.php';
 admin_guard('ADMIN');
 
-require_once __DIR__ . '/../../backend/ApiRequest/connect.php';
+require_once __DIR__ . '/../../backend/connect.php';
 
 $role = $_SESSION['admin_role'];
 

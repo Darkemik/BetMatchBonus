@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+    const t = (key, fallback) => (typeof window.i18n === 'function' ? window.i18n(key, fallback) : (fallback || key));
     const liveContainer = document.getElementById("matches-container");
     const todayContainer = document.getElementById("today-matches-container");
     const esportSportsNav = document.getElementById("esportSportsNav");
@@ -89,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function buildMarketsHtml(markets, homeTeam, awayTeam) {
         var validMarkets = markets.filter(function(m) { return m.selections && m.selections.length > 0; });
         if (validMarkets.length === 0) {
-            return '<div class="no-markets">Jelenleg nincsenek elérhető fogadási piacok ehhez a meccshez.</div>';
+            return '<div class="no-markets">' + t('esport.noMarkets', 'Jelenleg nincsenek elérhető fogadási piacok ehhez a meccshez.') + '</div>';
         }
         var html = '';
         validMarkets.forEach(function(market) {
@@ -134,7 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
         allBtn.className = 'esport-sport-item' + (currentEsportId === null ? ' active' : '');
         allBtn.innerHTML = `
             <div class="esport-sport-icon"><i class="fas fa-gamepad"></i></div>
-            <span class="esport-sport-name">Összes</span>
+            <span class="esport-sport-name">${t('esport.all', 'Összes')}</span>
             <span class="esport-sport-count${allCount > 0 ? ' has-live' : ''}">${allCount}</span>
         `;
         allBtn.addEventListener('click', function(e) {
@@ -274,12 +275,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (!htmlParts) return;
                 var combinedHtml = htmlParts.join('');
                 if (combinedHtml.trim() === '' || combinedHtml.indexOf('Nincs élő') !== -1 && htmlParts.every(function(h) { return h.indexOf('match-row') === -1; })) {
-                    liveContainer.innerHTML = '<div class="no-matches"><i class="fas fa-gamepad" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i>Jelenleg nincs élő eSport meccs.</div>';
+                    liveContainer.innerHTML = '<div class="no-matches"><i class="fas fa-gamepad" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i>' + t('esport.noLiveEsport', 'Jelenleg nincs élő eSport meccs.') + '</div>';
                 } else {
                     liveContainer.innerHTML = combinedHtml;
                 }
                 attachMatchClickHandlers(liveContainer);
-                applyTranslation(liveContainer);
+                if (typeof window.applyI18n === 'function') window.applyI18n(liveContainer);
                 if (typeof window.refreshAllOddsButtons === 'function') {
                     window.refreshAllOddsButtons();
                 }
@@ -351,7 +352,7 @@ document.addEventListener("DOMContentLoaded", () => {
             buildEsportSportsNav(liveCounts, todayCounts);
 
             attachMatchClickHandlers(todayContainer);
-            applyTranslation(todayContainer);
+            if (typeof window.applyI18n === 'function') window.applyI18n(todayContainer);
             if (typeof window.refreshAllOddsButtons === 'function') {
                 window.refreshAllOddsButtons();
             }
@@ -359,14 +360,6 @@ document.addEventListener("DOMContentLoaded", () => {
         .catch(function(err) {
             console.error("Hiba a mai eSport meccsek frissítésekor:", err);
         });
-    }
-
-    // ===== NYELV ALKALMAZÁS =====
-    function applyTranslation(container) {
-        var savedLang = localStorage.getItem('lang') || 'hu';
-        if (savedLang !== 'hu' && typeof changeLanguageForContainer === 'function') {
-            changeLanguageForContainer(container, savedLang);
-        }
     }
 
     // ===== MECCS KATTINTÁS KEZELŐ =====
@@ -388,7 +381,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function loadMatchDetails(eventId) {
         currentMatchId = eventId;
         var container = getActiveContainer();
-        container.innerHTML = '<div class="loading-details"><i class="fas fa-spinner fa-spin"></i> Meccs adatok betöltése...</div>';
+        container.innerHTML = '<div class="loading-details"><i class="fas fa-spinner fa-spin"></i> ' + t('esport.loadingMatch', 'Meccs adatok betöltése...') + '</div>';
         fetch("../../backend/ApiRequest/get_match_details.php?eventId=" + eventId)
             .then(function(res) { return res.json(); })
             .then(function(data) {
@@ -400,7 +393,7 @@ document.addEventListener("DOMContentLoaded", () => {
             })
             .catch(function(err) {
                 console.error("Hiba:", err);
-                container.innerHTML = '<div class="error-msg"><i class="fas fa-exclamation-triangle"></i> Hiba történt.</div>';
+                container.innerHTML = '<div class="error-msg"><i class="fas fa-exclamation-triangle"></i> ' + t('esport.errorOccurred', 'Hiba történt.') + '</div>';
             });
     }
 
@@ -459,7 +452,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         var marketsHtml = buildMarketsHtml(markets, homeTeam, awayTeam);
 
-        var backLabel = activeTab === 'live' ? 'Vissza az élő meccsekhez' : 'Vissza a mai meccsekhez';
+        var backLabel = activeTab === 'live' ? t('esport.backToLive', 'Vissza az élő meccsekhez') : t('esport.backToToday', 'Vissza a mai meccsekhez');
 
         var liveSection = '';
         if (isLive) {
@@ -486,9 +479,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     '<div class="team-side away-side"><span class="team-name-big">' + escapeHtml(awayTeam) + '</span></div>' +
                 '</div>' +
             '</div>' +
-            '<h3 class="markets-title"><i class="fas fa-chart-bar"></i> Fogadási piacok</h3>' +
+            '<h3 class="markets-title"><i class="fas fa-chart-bar"></i> ' + t('mainMenu.bettingMarkets', 'Fogadási piacok') + '</h3>' +
             '<div class="markets-container">' + marketsHtml + '</div>' +
         '</div>';
+
+        if (typeof window.applyI18n === 'function') window.applyI18n(container);
 
         var backBtn = document.getElementById('back-to-matches');
         if (backBtn) {

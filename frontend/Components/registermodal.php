@@ -65,15 +65,15 @@
                         <div class="form-check">
                             <input type="checkbox" class="form-check-input" id="modal-terms_rules" name="terms_rules" value="1" required>
                             <label class="form-check-label" for="modal-terms_rules">
-                                Elolvastam és elfogadom a
-                                <a href="../../frontend/Help/reszveteli-szabalyzat.php" target="_blank" class="modal-link">Részvételi szabályzatot</a>
+                                <span data-i18n="registerModal.acceptRules">Elolvastam és elfogadom a</span>
+                                <a href="../../frontend/Help/reszveteli-szabalyzat.php" target="_blank" class="modal-link" data-i18n="registerModal.participationRules">Részvételi szabályzatot</a>
                             </label>
                         </div>
                         <div class="form-check">
                             <input type="checkbox" class="form-check-input" id="modal-terms_privacy" name="terms_privacy" value="1" required>
                             <label class="form-check-label" for="modal-terms_privacy">
-                                Elolvastam és elfogadom az
-                                <a href="../../frontend/Help/adatkezelesi_tajekoztatok.php" target="_blank" class="modal-link">Adatkezelési tájékoztatót</a>
+                                <span data-i18n="registerModal.acceptPrivacy">Elolvastam és elfogadom az</span>
+                                <a href="../../frontend/Help/adatkezelesi_tajekoztatok.php" target="_blank" class="modal-link" data-i18n="registerModal.privacyPolicy">Adatkezelési tájékoztatót</a>
                             </label>
                         </div>
                     </div>
@@ -84,8 +84,8 @@
 
             <div class="modal-footer d-flex flex-column">
                 <p class="m-0">
-                    Már van fiókod?
-                    <a href="#" class="modal-link" id="switchToLogin">Jelentkezz be!</a>
+                    <span data-i18n="registerModal.hasAccount">Már van fiókod?</span>
+                    <a href="#" class="modal-link" id="switchToLogin" data-i18n="registerModal.loginLink">Jelentkezz be!</a>
                 </p>
             </div>
 

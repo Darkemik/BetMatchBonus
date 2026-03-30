@@ -14,7 +14,7 @@
  */
 
 if (!isset($conn)) {
-    require_once __DIR__ . "/connect.php";
+    require_once dirname(__DIR__) . "/connect.php";
 }
 
 /**
