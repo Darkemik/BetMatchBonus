@@ -355,14 +355,7 @@ document.addEventListener('DOMContentLoaded', function () {
               sortMatchesByPriority();
               attachMatchClickHandlers();
               attachOddsButtonHandlers();
-              applyPagination();
-
-              if (typeof window.changeLanguageForContainer === 'function') {
-                  const lang = localStorage.getItem('lang') || 'hu';
-                  if (lang !== 'hu') {
-                      window.changeLanguageForContainer(matchesContainer, lang);
-                  }
-              }
+              applyPagination();
           })
           .catch(err => {
               console.error('[MAIN] Meccsek betöltési hiba:', err);
@@ -587,13 +580,7 @@ document.addEventListener('DOMContentLoaded', function () {
       // Odds gombok
       attachOddsButtonHandlers();
 
-      // Nyelv
-      if (typeof window.changeLanguageForContainer === 'function') {
-          const lang = localStorage.getItem('lang') || 'hu';
-          if (lang !== 'hu') {
-              window.changeLanguageForContainer(matchesContainer, lang);
-          }
-      }
+      // Nyelv
   }
 
   // ========== AUTO REFRESH (60 másodpercenként) ==========
