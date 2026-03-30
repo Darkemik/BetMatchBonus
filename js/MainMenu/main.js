@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
+    const t = (key, fallback) => (typeof window.i18n === 'function' ? window.i18n(key, fallback) : (fallback || key));
 
   // ========== ELEMEK ==========
   const sportsList = document.getElementById('sportsList');
@@ -99,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function () {
           })
           .catch(err => {
               console.error('[MAIN] Sidebar betöltési hiba:', err);
-              sportsList.innerHTML = '<div class="sidebar-loading" style="color:#e74c3c;">Hiba a sportok betöltésekor.</div>';
+              sportsList.innerHTML = '<div class="sidebar-loading" style="color:#e74c3c;">' + t('mainMenu.sidebarLoadError', 'Hiba a sportok betöltésekor.') + '</div>';
           });
   }
 
@@ -146,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       if (filtered.length === 0) {
-          sportsList.innerHTML = '<div class="sidebar-loading" style="color:#888;">Nincs találat.</div>';
+          sportsList.innerHTML = '<div class="sidebar-loading" style="color:#888;">' + t('mainMenu.noSearchResult', 'Nincs találat a keresésre.') + '</div>';
           return;
       }
 
@@ -305,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       const btn = document.createElement('button');
       btn.className = 'load-more-btn';
-      btn.innerHTML = `<i class="fas fa-chevron-down"></i> Több betöltése (${remaining} meccs)`;
+    btn.innerHTML = `<i class="fas fa-chevron-down"></i> ${t('mainMenu.loadMore', 'Több betöltése')} (${remaining} ${t('mainMenu.matchesWord', 'meccsek')})`;
 
       btn.addEventListener('click', () => {
           currentPage++;
@@ -317,7 +318,7 @@ document.addEventListener('DOMContentLoaded', function () {
           if (newRemaining === 0) {
               wrapper.remove();
           } else {
-              btn.innerHTML = `<i class="fas fa-chevron-down"></i> Több betöltése (${newRemaining} meccs)`;
+              btn.innerHTML = `<i class="fas fa-chevron-down"></i> ${t('mainMenu.loadMore', 'Több betöltése')} (${newRemaining} ${t('mainMenu.matchesWord', 'meccsek')})`;
           }
       });
 
@@ -329,7 +330,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function loadMatches(sportId) {
       if (!matchesContainer) return;
 
-      matchesContainer.innerHTML = '<div class="loading-details"><i class="fas fa-spinner fa-spin"></i> Meccsek betöltése...</div>';
+    matchesContainer.innerHTML = '<div class="loading-details"><i class="fas fa-spinner fa-spin"></i> ' + t('mainMenu.loadingMatches', 'Meccsek betöltése...') + '</div>';
 
       let url = '../../backend/ApiRequest/mainmenu_matches.php';
       if (sportId && sportId > 0) {
@@ -341,9 +342,9 @@ document.addEventListener('DOMContentLoaded', function () {
           if (sportId && sportId > 0) {
               const sport = sportsData.find(s => s.sport_api_id === sportId);
               const sportName = sport ? sport.sport_name : 'Sport';
-              centerTitle.innerHTML = `<i class="fas ${sport ? sport.icon : 'fa-trophy'}"></i> ${escapeHtml(sportName)} meccsek`;
+              centerTitle.innerHTML = `<i class="fas ${sport ? sport.icon : 'fa-trophy'}"></i> ${escapeHtml(sportName)} ${t('mainMenu.matchesWord', 'meccsek')}`;
           } else {
-              centerTitle.innerHTML = '<i class="fas fa-calendar-day"></i> Mai meccsek';
+              centerTitle.innerHTML = '<i class="fas fa-calendar-day"></i> ' + t('mainMenu.todayMatches', 'Mai meccsek');
           }
       }
 
@@ -355,11 +356,13 @@ document.addEventListener('DOMContentLoaded', function () {
               sortMatchesByPriority();
               attachMatchClickHandlers();
               attachOddsButtonHandlers();
-              applyPagination();
+              applyPagination();
+              if (typeof window.applyI18n === 'function') window.applyI18n(matchesContainer);
+
           })
           .catch(err => {
               console.error('[MAIN] Meccsek betöltési hiba:', err);
-              matchesContainer.innerHTML = '<div class="no-matches"><i class="fas fa-exclamation-triangle" style="font-size:40px;color:#e74c3c;margin-bottom:12px;display:block;"></i>Hiba a meccsek betöltésekor.</div>';
+              matchesContainer.innerHTML = '<div class="no-matches"><i class="fas fa-exclamation-triangle" style="font-size:40px;color:#e74c3c;margin-bottom:12px;display:block;"></i>' + t('mainMenu.errorLoading', 'Hiba a meccsek betöltésekor.') + '</div>';
           });
   }
 
@@ -404,7 +407,7 @@ document.addEventListener('DOMContentLoaded', function () {
                       noResult = document.createElement('div');
                       noResult.className = 'search-no-result no-matches';
                       noResult.style.marginTop = '16px';
-                      noResult.textContent = 'Nincs találat a keresésre.';
+                      noResult.textContent = t('mainMenu.noSearchResult', 'Nincs találat a keresésre.');
                       matchesContainer.appendChild(noResult);
                   }
               } else if (noResult) {
@@ -468,7 +471,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function loadMatchDetails(eventId) {
       if (!matchesContainer) return;
 
-      matchesContainer.innerHTML = '<div class="loading-details"><i class="fas fa-spinner fa-spin"></i> Meccs adatok betöltése...</div>';
+    matchesContainer.innerHTML = '<div class="loading-details"><i class="fas fa-spinner fa-spin"></i> ' + t('mainMenu.loadingMatchDetails', 'Meccs adatok betöltése...') + '</div>';
 
       fetch('../../backend/ApiRequest/get_match_details.php?eventId=' + eventId)
           .then(res => res.json())
@@ -477,20 +480,20 @@ document.addEventListener('DOMContentLoaded', function () {
           })
           .catch(err => {
               console.error('[MAIN] Meccs részletek hiba:', err);
-              matchesContainer.innerHTML = '<div class="no-matches"><i class="fas fa-exclamation-triangle" style="font-size:40px;color:#e74c3c;margin-bottom:12px;display:block;"></i>Hiba a meccs adatok betöltésekor.</div>';
+              matchesContainer.innerHTML = '<div class="no-matches"><i class="fas fa-exclamation-triangle" style="font-size:40px;color:#e74c3c;margin-bottom:12px;display:block;"></i>' + t('mainMenu.errorMatchDetails', 'Hiba a meccs adatok betöltésekor.') + '</div>';
           });
   }
 
   // ========== MECCS RÉSZLETEK RENDERELÉSE ==========
   function renderMatchDetails(matchData) {
       if (!matchData || matchData.error) {
-          matchesContainer.innerHTML = '<div class="error-msg"><i class="fas fa-exclamation-triangle"></i> Hiba: ' + escapeHtml(matchData ? matchData.error : 'Ismeretlen hiba') + '</div>';
+          matchesContainer.innerHTML = '<div class="error-msg"><i class="fas fa-exclamation-triangle"></i> ' + t('mainMenu.errorPrefix', 'Hiba:') + ' ' + escapeHtml(matchData ? matchData.error : t('mainMenu.unknown', 'Ismeretlen')) + '</div>';
           return;
       }
 
       const match = matchData.match;
       if (!match) {
-          matchesContainer.innerHTML = '<div class="error-msg"><i class="fas fa-exclamation-triangle"></i> Nincsenek meccs adatok.</div>';
+          matchesContainer.innerHTML = '<div class="error-msg"><i class="fas fa-exclamation-triangle"></i> ' + t('mainMenu.noMatchData', 'Nincsenek meccs adatok.') + '</div>';
           return;
       }
 
@@ -498,13 +501,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
       let html = `
           <button class="back-btn" id="back-to-matches">
-              <i class="fas fa-arrow-left"></i> Vissza a meccsekhez
+              <i class="fas fa-arrow-left"></i> ${t('mainMenu.backToMatches', 'Vissza a meccsekhez')}
           </button>
 
           <div class="match-header-card">
               <div class="match-meta">
-                  <span class="meta-item"><i class="fas fa-globe-europe"></i> ${escapeHtml(match.country || 'Ismeretlen')}</span>
-                  <span class="meta-item"><i class="fas fa-trophy"></i> ${escapeHtml(match.championship || 'Ismeretlen')}</span>
+                  <span class="meta-item"><i class="fas fa-globe-europe"></i> ${escapeHtml(match.country || t('mainMenu.unknown', 'Ismeretlen'))}</span>
+                  <span class="meta-item"><i class="fas fa-trophy"></i> ${escapeHtml(match.championship || t('mainMenu.unknown', 'Ismeretlen'))}</span>
                   <span class="meta-item"><i class="fas fa-clock"></i> ${escapeHtml(match.startUtc ? new Date(match.startUtc).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }) : '-')}</span>
               </div>
               <div class="match-scoreboard">
@@ -515,7 +518,7 @@ document.addEventListener('DOMContentLoaded', function () {
                       <div class="score-big">${escapeHtml(match.score || '0 - 0')}</div>
                       ${match.isLive
               ? `<div class="live-badge"><span class="live-dot-big"></span><span class="live-time-big">${escapeHtml(match.liveTime || '-')}</span></div>`
-              : '<div class="not-started-badge"><i class="fas fa-clock"></i> Nem élő</div>'}
+              : '<div class="not-started-badge"><i class="fas fa-clock"></i> ' + t('mainMenu.notLive', 'Nem élő') + '</div>'}
                   </div>
                   <div class="team-side away-side">
                       <span class="team-name-big">${escapeHtml(match.awayTeam || '')}</span>
@@ -523,7 +526,7 @@ document.addEventListener('DOMContentLoaded', function () {
               </div>
           </div>
 
-          <h3 class="markets-title"><i class="fas fa-chart-bar"></i> Fogadási piacok</h3>
+          <h3 class="markets-title"><i class="fas fa-chart-bar"></i> ${t('mainMenu.bettingMarkets', 'Fogadási piacok')}</h3>
       `;
 
       if (markets.length > 0) {
@@ -564,10 +567,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
           html += '</div>';
       } else {
-          html += '<div class="no-markets"><i class="fas fa-info-circle"></i> Nincsenek elérhető piacok ehhez a mérkőzéshez.</div>';
+          html += '<div class="no-markets"><i class="fas fa-info-circle"></i> ' + t('mainMenu.noMarkets', 'Nincsenek elérhető piacok ehhez a mérkőzéshez.') + '</div>';
       }
 
       matchesContainer.innerHTML = html;
+    if (typeof window.applyI18n === 'function') window.applyI18n(matchesContainer);
 
       // Vissza gomb
       const backBtn = document.getElementById('back-to-matches');
@@ -580,7 +584,8 @@ document.addEventListener('DOMContentLoaded', function () {
       // Odds gombok
       attachOddsButtonHandlers();
 
-      // Nyelv
+      // Nyelv
+
   }
 
   // ========== AUTO REFRESH (60 másodpercenként) ==========

@@ -2,14 +2,14 @@
     <div class="betslip-header">
         <h3 class="betslip-title">
             <i class="fas fa-ticket-alt"></i>
-            <span id="betslip-label">Ticket</span>
+            <span id="betslip-label" data-i18n="betslip.ticket">Ticket</span>
             <span class="betslip-count" id="betslip-count">0</span>
         </h3>
     </div>
 
     <div class="betslip-tabs">
-        <button class="betslip-tab active" data-tab="ticket">🎫 Ticket</button>
-        <button class="betslip-tab" data-tab="elozmeny">📊 Előzmények</button>
+        <button class="betslip-tab active" data-tab="ticket">🎫 <span data-i18n="betslip.ticket">Ticket</span></button>
+        <button class="betslip-tab" data-tab="elozmeny">📊 <span data-i18n="betslip.history">Előzmények</span></button>
     </div>
 
     <!-- TICKET TARTALOM -->
@@ -17,14 +17,14 @@
 
         <!-- EGYES / KÖTÉS SUB-TABS -->
         <div class="betslip-type-tabs">
-            <button class="betslip-type-tab active" id="tab-egyes" data-type="egyes">Egyes</button>
-            <button class="betslip-type-tab" id="tab-kotes" data-type="kotes">Kötés</button>
+            <button class="betslip-type-tab active" id="tab-egyes" data-type="egyes" data-i18n="betslip.single">Egyes</button>
+            <button class="betslip-type-tab" id="tab-kotes" data-type="kotes" data-i18n="betslip.combo">Kötés</button>
         </div>
 
         <div class="betslip-empty" id="betslip-empty">
             <i class="fas fa-inbox"></i>
-            <p id="empty-message">Nincs aktív fogadás</p>
-            <span style="font-size: 12px; color: #999;">Válassz meccseket és odds-okat!</span>
+            <p id="empty-message" data-i18n="betslip.emptyTitle">Nincs aktív fogadás</p>
+            <span style="font-size: 12px; color: #999;" data-i18n="betslip.emptySubtitle">Válassz meccseket és odds-okat!</span>
         </div>
 
         <div class="betslip-bets" id="betslip-bets" style="display: none;">
@@ -33,11 +33,11 @@
 
         <div class="betslip-summary" id="betslip-summary" style="display: none;">
             <div class="summary-row">
-                <span id="summary-label">Összesített odds:</span>
+                <span id="summary-label" data-i18n="betslip.totalOdds">Összesített odds:</span>
                 <span class="summary-value" id="total-odds">1.00</span>
             </div>
             <div class="summary-row">
-                <span id="stake-label">Tét (Ft):</span>
+                <span id="stake-label" data-i18n="betslip.stake">Tét (Ft):</span>
                 <input 
                     type="number" 
                     id="stake-input" 
@@ -50,7 +50,7 @@
                 >
             </div>
             <div class="summary-row highlight">
-                <span id="payout-label">Lehetséges nyeremény:</span>
+                <span id="payout-label" data-i18n="betslip.potentialPayout">Lehetséges nyeremény:</span>
                 <span class="summary-value highlight-value" id="potential-payout">100 Ft</span>
             </div>
         </div>
@@ -61,7 +61,7 @@
             style="display: none;"
             aria-label="Fogadás elhelyezése"
         >
-            <i class="fas fa-check"></i> Ticket leadása
+            <i class="fas fa-check"></i> <span data-i18n="betslip.placeBet">Ticket leadása</span>
         </button>
 
         <button 
@@ -70,7 +70,7 @@
             style="display: none;"
             aria-label="Összes fogadás törlése"
         >
-            <i class="fas fa-trash"></i> Összes törlése
+            <i class="fas fa-trash"></i> <span data-i18n="betslip.clearAll">Összes törlése</span>
         </button>
     </div>
 
@@ -78,8 +78,8 @@
     <div class="betslip-content" id="betslip-elozmeny">
         <div class="elozmeny-empty" id="elozmeny-empty">
             <i class="fas fa-history"></i>
-            <p>Még nincs korábbi fogadás</p>
-            <span style="font-size: 12px; color: #999;">Az első ticket itt jelenik meg</span>
+            <p data-i18n="betslip.noHistory">Még nincs korábbi fogadás</p>
+            <span style="font-size: 12px; color: #999;" data-i18n="betslip.noHistorySubtitle">Az első ticket itt jelenik meg</span>
         </div>
 
         <div class="elozmeny-items" id="elozmeny-items" style="display: none;">

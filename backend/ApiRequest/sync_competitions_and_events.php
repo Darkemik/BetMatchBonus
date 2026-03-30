@@ -1,5 +1,9 @@
 ﻿<?php
+<<<<<<< HEAD
  
+=======
+require_once dirname(__DIR__) . '/connect.php';
+>>>>>>> 47932adc6c2f9ace3d9e55e3c68b7c4c48772b9e
 
 date_default_timezone_set('Europe/Budapest');
 header('Content-Type: application/json; charset=utf-8');

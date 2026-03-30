@@ -7,7 +7,7 @@
                     <a href="../../frontend/MainMenu/MainMenu.php">
                         <img src="../../img/logo.png" alt="logo">
                     </a>
-                    Regisztráció
+                    <span data-i18n="registerModal.title">Regisztráció</span>
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -15,21 +15,21 @@
             <div class="modal-body">
                 
                 <form id="registerModalForm">
-                    <label class="form-label">Felhasználónév</label>
-                    <input type="text" name="username" class="form-control mb-3" placeholder="Felhasználónév" required>
+                    <label class="form-label" data-i18n="registerModal.username">Felhasználónév</label>
+                    <input type="text" name="username" class="form-control mb-3" placeholder="Felhasználónév" data-i18n-placeholder="registerModal.usernamePlaceholder" required>
 
-                    <label class="form-label">Email</label>
-                    <input type="email" id="modal-email" name="email" class="form-control mb-3" placeholder="Email" required>
+                    <label class="form-label" data-i18n="registerModal.email">Email</label>
+                    <input type="email" id="modal-email" name="email" class="form-control mb-3" placeholder="Email" data-i18n-placeholder="registerModal.emailPlaceholder" required>
 
-                    <label class="form-label">Email újra</label>
-                    <input type="email" id="modal-email2" class="form-control mb-3" placeholder="Email újra" required>
+                    <label class="form-label" data-i18n="registerModal.emailAgain">Email újra</label>
+                    <input type="email" id="modal-email2" class="form-control mb-3" placeholder="Email újra" data-i18n-placeholder="registerModal.emailAgainPlaceholder" required>
 
-                    <label class="form-label">Telefonszám</label>
-                    <input type="tel" name="phone" id="modal-phone" class="form-control mb-3" placeholder="Pl.:06308469165" inputmode="numeric" pattern="[0-9]+" minlength="11" required>
+                    <label class="form-label" data-i18n="registerModal.phone">Telefonszám</label>
+                    <input type="tel" name="phone" id="modal-phone" class="form-control mb-3" placeholder="Pl.:06308469165" data-i18n-placeholder="registerModal.phonePlaceholder" inputmode="numeric" pattern="[0-9]+" minlength="11" required>
 
-                    <label class="form-label">Jelszó</label>
+                    <label class="form-label" data-i18n="registerModal.password">Jelszó</label>
                     <div class="input-group mb-3">
-                        <input type="password" id="modal-password" name="password" class="form-control" placeholder="Jelszó" required>
+                        <input type="password" id="modal-password" name="password" class="form-control" placeholder="Jelszó" data-i18n-placeholder="registerModal.passwordPlaceholder" required>
                         <button type="button" class="btn btn-outline-secondary toggle-password" data-target="modal-password" tabindex="-1">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="eye-icon" viewBox="0 0 16 16">
                                 <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
@@ -43,9 +43,9 @@
                         </button>
                     </div>
 
-                    <label class="form-label">Jelszó újra</label>
+                    <label class="form-label" data-i18n="registerModal.passwordAgain">Jelszó újra</label>
                     <div class="input-group mb-3">
-                        <input type="password" id="modal-password2" class="form-control" placeholder="Jelszó újra" required>
+                        <input type="password" id="modal-password2" class="form-control" placeholder="Jelszó újra" data-i18n-placeholder="registerModal.passwordAgainPlaceholder" required>
                         <button type="button" class="btn btn-outline-secondary toggle-password" data-target="modal-password2" tabindex="-1">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="eye-icon" viewBox="0 0 16 16">
                                 <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
@@ -65,27 +65,27 @@
                         <div class="form-check">
                             <input type="checkbox" class="form-check-input" id="modal-terms_rules" name="terms_rules" value="1" required>
                             <label class="form-check-label" for="modal-terms_rules">
-                                Elolvastam és elfogadom a
-                                <a href="../../frontend/Help/reszveteli-szabalyzat.php" target="_blank" class="modal-link">Részvételi szabályzatot</a>
+                                <span data-i18n="registerModal.acceptRules">Elolvastam és elfogadom a</span>
+                                <a href="../../frontend/Help/reszveteli-szabalyzat.php" target="_blank" class="modal-link" data-i18n="registerModal.participationRules">Részvételi szabályzatot</a>
                             </label>
                         </div>
                         <div class="form-check">
                             <input type="checkbox" class="form-check-input" id="modal-terms_privacy" name="terms_privacy" value="1" required>
                             <label class="form-check-label" for="modal-terms_privacy">
-                                Elolvastam és elfogadom az
-                                <a href="../../frontend/Help/adatkezelesi_tajekoztatok.php" target="_blank" class="modal-link">Adatkezelési tájékoztatót</a>
+                                <span data-i18n="registerModal.acceptPrivacy">Elolvastam és elfogadom az</span>
+                                <a href="../../frontend/Help/adatkezelesi_tajekoztatok.php" target="_blank" class="modal-link" data-i18n="registerModal.privacyPolicy">Adatkezelési tájékoztatót</a>
                             </label>
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-success w-100 mb-2">Folytatás</button>
+                    <button type="submit" class="btn btn-success w-100 mb-2" data-i18n="registerModal.continueBtn">Folytatás</button>
                 </form>
             </div>
 
             <div class="modal-footer d-flex flex-column">
                 <p class="m-0">
-                    Már van fiókod?
-                    <a href="#" class="modal-link" id="switchToLogin">Jelentkezz be!</a>
+                    <span data-i18n="registerModal.hasAccount">Már van fiókod?</span>
+                    <a href="#" class="modal-link" id="switchToLogin" data-i18n="registerModal.loginLink">Jelentkezz be!</a>
                 </p>
             </div>
 

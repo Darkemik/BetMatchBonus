@@ -7,7 +7,7 @@
                     <a href="../../frontend/MainMenu/MainMenu.php">
                         <img src="../../img/logo.png" alt="logo">
                     </a>
-                    Regisztráció - 2. lépés
+                    <span data-i18n="registerModal2.title">Regisztráció - 2. lépés</span>
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -16,22 +16,22 @@
             <form id="registerModal2Form">
                     <div class="row">
                         <div class="col-md-6">
-                            <label class="form-label">Előnév (ha van)</label>
-                            <input type="text" name="Pre_name" class="form-control mb-3" placeholder="Előnév">
+                            <label class="form-label" data-i18n="registerModal2.preName">Előnév (ha van)</label>
+                            <input type="text" name="Pre_name" class="form-control mb-3" placeholder="Előnév" data-i18n-placeholder="registerModal2.preNamePlaceholder">
 
-                            <label class="form-label">Vezetéknév</label>
-                            <input type="text" name="family_name" class="form-control mb-3" placeholder="Vezetéknév" required>
+                            <label class="form-label" data-i18n="registerModal2.familyName">Vezetéknév</label>
+                            <input type="text" name="family_name" class="form-control mb-3" placeholder="Vezetéknév" data-i18n-placeholder="registerModal2.familyNamePlaceholder" required>
 
-                            <label class="form-label">Keresztnév</label>
-                            <input type="text" name="Sure_name" class="form-control mb-3" placeholder="Keresztnév" required>
+                            <label class="form-label" data-i18n="registerModal2.sureName">Keresztnév</label>
+                            <input type="text" name="Sure_name" class="form-control mb-3" placeholder="Keresztnév" data-i18n-placeholder="registerModal2.sureNamePlaceholder" required>
 
-                            <label class="form-label">Anyja leánykori neve</label>
-                            <input type="text" name="mother_full_name" class="form-control mb-3" placeholder="Anyja leánykori neve" required>
+                            <label class="form-label" data-i18n="registerModal2.motherName">Anyja leánykori neve</label>
+                            <input type="text" name="mother_full_name" class="form-control mb-3" placeholder="Anyja leánykori neve" data-i18n-placeholder="registerModal2.motherNamePlaceholder" required>
 
-                            <label class="form-label">Születési hely</label>
-                            <input type="text" name="birthplace" id="modal2-birthplace" class="form-control mb-3" placeholder="pl. Budapest" required>
+                            <label class="form-label" data-i18n="registerModal2.birthPlace">Születési hely</label>
+                            <input type="text" name="birthplace" id="modal2-birthplace" class="form-control mb-3" placeholder="pl. Budapest" data-i18n-placeholder="registerModal2.birthPlacePlaceholder" required>
 
-                            <label class="form-label">Születési dátum</label>
+                            <label class="form-label" data-i18n="registerModal2.birthDate">Születési dátum</label>
                             <input type="date" id="modal2-date-input" name="birthdate" class="form-control mb-1" required>
                             <input type="hidden" name="calculated_age" id="modal2-calculated_age">
                             <input type="hidden" name="birthplace_city_id" id="modal2-birthplace_city_id" value="1">
@@ -39,15 +39,15 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Személyi igazolvány (eleje)</label>
+                            <label class="form-label" data-i18n="registerModal2.idFront">Személyi igazolvány (eleje)</label>
                             <input type="file" id="modal2-id_image_first" class="form-control mb-2" accept="image/*" required>
                             <img id="modal2-id_preview_first" class="img-thumbnail mb-3 modal-img-preview">
 
-                            <label class="form-label">Személyi igazolvány (hátulja)</label>
+                            <label class="form-label" data-i18n="registerModal2.idBack">Személyi igazolvány (hátulja)</label>
                             <input type="file" id="modal2-id_image_second" class="form-control mb-2" accept="image/*" required>
                             <img id="modal2-id_preview_second" class="img-thumbnail mb-3 modal-img-preview">
 
-                            <label class="form-label">Lakcímkártya</label>
+                            <label class="form-label" data-i18n="registerModal2.addressCard">Lakcímkártya</label>
                             <input type="file" id="modal2-address_image" class="form-control mb-2" accept="image/*" required>
                             <img id="modal2-address_preview" class="img-thumbnail mb-3 modal-img-preview">
                         </div>
@@ -55,13 +55,13 @@
 
                     <p id="registerModal2Result"></p>
 
-                    <button type="submit" class="btn btn-success w-100 mb-2">Regisztráció befejezése</button>
+                    <button type="submit" class="btn btn-success w-100 mb-2" data-i18n="registerModal2.finishBtn">Regisztráció befejezése</button>
                 </form>
             </div>
 
             <div class="modal-footer d-flex flex-column">
                 <p class="m-0">
-                    <a href="#" class="modal-link" id="backToRegister1">← Vissza az előző lépéshez</a>
+                    <a href="#" class="modal-link" id="backToRegister1" data-i18n="registerModal2.backLink">← Vissza az előző lépéshez</a>
                 </p>
             </div>
 

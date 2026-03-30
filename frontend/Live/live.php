@@ -1,5 +1,5 @@
 <?php
-require_once "../../backend/ApiRequest/connect.php";
+require_once "../../backend/connect.php";
 ?>
 <!DOCTYPE html>
 <html lang="hu">
@@ -31,11 +31,11 @@ require_once "../../backend/ApiRequest/connect.php";
             </button>
 
             <div class="logo-box">
-                <a href="../frontend/index.html">
+                <a href="../../frontend/MainMenu/MainMenu.php">
                     <img class="kep" src="../../img/logo.png" alt="logo">
                 </a>
                 <div class="logo">
-                    <a href="../frontend/index.html" class="mainpage">BetMatchBonus</a>
+                    <a href="../../frontend/MainMenu/MainMenu.php" class="mainpage">BetMatchBonus</a>
                 </div>
             </div>
 
@@ -84,18 +84,18 @@ require_once "../../backend/ApiRequest/connect.php";
         </div>
         <div class="elo-main">
             <div class="elo-container">
-                <h1 class="elo-title" id="elo-title">Élő meccsek</h1>
+                <h1 class="elo-title" id="elo-title" data-i18n="live.title">Élő meccsek</h1>
 
                 <div class="sports-nav-wrapper">
                     <nav class="sports-nav" id="liveSportsNav">
-                        <div class="sports-nav-loading"><i class="fas fa-spinner fa-spin"></i> Sportok betöltése...</div>
+                        <div class="sports-nav-loading"><i class="fas fa-spinner fa-spin"></i> <span data-i18n="live.loadingSports">Sportok betöltése...</span></div>
                     </nav>
                 </div>
                 <br>
 
                 
                 <div class="tabs-container">
-                    <button class="tab-button active">Élő meccsek</button>
+                    <button class="tab-button active" data-i18n="live.liveMatches">Élő meccsek</button>
                 </div>
 
                 <div id="matches-container">
@@ -114,6 +114,7 @@ require_once "../../backend/ApiRequest/connect.php";
     <script src="../../js/Login/loginmodal.js"></script>
     <script src="../../js/Register/registermodal.js"></script>
     <script src="../../js/Register/registermodal2.js"></script>
+    <script src="../../js/Main/language.js"></script>
     <script src="../../js/Main/layout.js"></script>
     <script src="../../js/Main/popup.js"></script>
     <script src="../../js/Betslip/betslip.js"></script>

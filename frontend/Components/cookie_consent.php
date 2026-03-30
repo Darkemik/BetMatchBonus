@@ -6,15 +6,11 @@
             <i class="fas fa-cookie-bite"></i>
         </div>
         <div class="cookie-text">
-            <h3>🍪 Süti (Cookie) beállítások</h3>
+            <h3 data-i18n="cookie.title">🍪 Süti (Cookie) beállítások</h3>
             <p>
-                A BetMatchBonus weboldalon sütiket használunk a felhasználói élmény javítása, 
-                a munkamenet kezelése és statisztikai célok érdekében. 
-                A sütik segítenek abban, hogy az oldal megfelelően működjön, 
-                megjegyezze a bejelentkezési állapotot és személyre szabott tartalmat nyújtson.
-            </p>
+                <span data-i18n="cookie.description">A BetMatchBonus weboldalon sütiket használunk a felhasználói élmény javítása, a munkamenet kezelése és statisztikai célok érdekében. A sütik segítenek abban, hogy az oldal megfelelően működjön, megjegyezze a bejelentkezési állapotot és személyre szabott tartalmat nyújtson.</span></p>
             <p class="cookie-details">
-                További információkért olvasd el az 
+                <span data-i18n="cookie.moreInfo">További információkért olvasd el az</span>
                 <a href="<?php 
                     $cookieBasePath = '';
                     $currentPath = $_SERVER['PHP_SELF'];
@@ -31,18 +27,18 @@
                     } else {
                         echo $cookieBasePath . 'adatkezelesi_tajekoztatok.php';
                     }
-                ?>" class="cookie-link">Adatkezelési Tájékoztatót</a>.
+                ?>" class="cookie-link" data-i18n="cookie.privacyLink">Adatkezelési Tájékoztatót</a>.
             </p>
         </div>
         <div class="cookie-actions">
             <button class="cookie-btn cookie-btn-accept" id="cookieAcceptAll">
-                <i class="fas fa-check"></i> Összes elfogadása
+                <i class="fas fa-check"></i> <span data-i18n="cookie.acceptAll">Összes elfogadása</span>
             </button>
             <button class="cookie-btn cookie-btn-necessary" id="cookieAcceptNecessary">
-                <i class="fas fa-shield-alt"></i> Csak szükségesek
+                <i class="fas fa-shield-alt"></i> <span data-i18n="cookie.acceptNecessary">Csak szükségesek</span>
             </button>
             <button class="cookie-btn cookie-btn-decline" id="cookieDecline">
-                <i class="fas fa-times"></i> Elutasítás
+                <i class="fas fa-times"></i> <span data-i18n="cookie.decline">Elutasítás</span>
             </button>
         </div>
     </div>

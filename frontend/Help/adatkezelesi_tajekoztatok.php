@@ -38,6 +38,7 @@
     <script src="../../js/Login/loginmodal.js"></script>
     <script src="../../js/Register/registermodal.js"></script>
     <script src="../../js/Register/registermodal2.js"></script>
+    <script src="../../js/Main/language.js"></script>
     <script src="../../js/Main/layout.js"></script>
     <?php include '../../frontend/Components/chatbot.php'; ?>
 </body>

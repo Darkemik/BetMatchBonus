@@ -38,6 +38,7 @@
     <script src="../../js/Register/registermodal.js"></script>
     <script src="../../js/Main/auth_ui.js"></script>
     <script src="../../js/Register/registermodal2.js"></script>
+    <script src="../../js/Main/language.js"></script>
     <script src="../../js/Main/layout.js"></script>
     <script src="../../js/Help/sportszabalyok.js"></script>
     <?php include '../../frontend/Components/chatbot.php'; ?>

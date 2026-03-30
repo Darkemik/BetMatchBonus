@@ -1,5 +1,5 @@
 ﻿<?php
-require_once __DIR__ . "/connect.php";
+require_once dirname(__DIR__) . "/connect.php";
 
 // ===== syncLiveMatchScores fuggveny =====
 // Frissiti az API altal visszaadott meccsek allasat a DB-ben.

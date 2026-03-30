@@ -1,5 +1,5 @@
 <?php
-require_once "../../backend/ApiRequest/connect.php";
+require_once "../../backend/connect.php";
 ?>
 <!DOCTYPE html>
 <html lang="hu">
@@ -83,7 +83,7 @@ require_once "../../backend/ApiRequest/connect.php";
         </div>
         <div class="elo-main">
             <div class="elo-container">
-                <h1 class="elo-title"><i class="fas fa-gamepad"></i> eSport</h1>
+                <h1 class="elo-title"><i class="fas fa-gamepad"></i> <span data-i18n="esport.title">eSport</span></h1>
 
                 <!-- eSport sport szűrő nav -->
                 <nav class="esport-sports-nav" id="esportSportsNav">
@@ -92,25 +92,25 @@ require_once "../../backend/ApiRequest/connect.php";
 
                 <div class="tabs-container">
                     <button class="tab-button active" data-tab="today">
-                        <i class="fas fa-calendar-day"></i> Összes mai meccs
+                        <i class="fas fa-calendar-day"></i> <span data-i18n="esport.allTodayMatches">Összes mai meccs</span>
                         <span class="esport-today-count" id="esport-today-badge">-</span>
                     </button>
                     <button class="tab-button" data-tab="live">
-                        <i class="fas fa-broadcast-tower"></i> Élő meccsek
+                        <i class="fas fa-broadcast-tower"></i> <span data-i18n="esport.liveMatches">Élő meccsek</span>
                         <span class="esport-live-count" id="esport-live-badge">-</span>
                     </button>
                 </div>
 
                 <div class="tab-content active" id="tab-today">
                     <div id="today-matches-container">
-                        <div class="loading-details"><i class="fas fa-spinner fa-spin"></i> Mai meccsek betöltése...
+                        <div class="loading-details"><i class="fas fa-spinner fa-spin"></i> <span data-i18n="esport.loadingToday">Mai meccsek betöltése...</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="tab-content" id="tab-live">
                     <div id="matches-container">
-                        <div class="loading-details"><i class="fas fa-spinner fa-spin"></i> Élő meccsek betöltése...</div>
+                        <div class="loading-details"><i class="fas fa-spinner fa-spin"></i> <span data-i18n="esport.loadingLive">Élő meccsek betöltése...</span></div>
                     </div>
                 </div>
 
@@ -123,6 +123,7 @@ require_once "../../backend/ApiRequest/connect.php";
     <script src="../../js/Login/loginmodal.js"></script>
     <script src="../../js/Register/registermodal.js"></script>
     <script src="../../js/Register/registermodal2.js"></script>
+    <script src="../../js/Main/language.js"></script>
     <script src="../../js/Main/layout.js"></script>
     <script src="../../js/Main/popup.js"></script>
     <script src="../../js/Main/auth_ui.js"></script>
