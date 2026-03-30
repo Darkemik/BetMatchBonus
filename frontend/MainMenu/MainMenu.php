@@ -1,5 +1,5 @@
 <?php
-require_once "../../backend/ApiRequest/connect.php";
+require_once "../../backend/connect.php";
 ?>
 <!DOCTYPE html>
 <html lang="hu">

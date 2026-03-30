@@ -231,9 +231,16 @@ CREATE TABLE IF NOT EXISTS Users (
   birthplace          VARCHAR(150)  DEFAULT NULL,
   birth_date          DATE          NOT NULL,
   mobile_number       VARCHAR(20)   DEFAULT NULL,
+  phone               VARCHAR(20)   DEFAULT NULL,
+  country             VARCHAR(100)  DEFAULT NULL,
+  city                VARCHAR(100)  DEFAULT NULL,
+  postal_code         VARCHAR(20)   DEFAULT NULL,
+  address             VARCHAR(255)  DEFAULT NULL,
   id_image_first      VARCHAR(255)  DEFAULT NULL,
   id_image_second     VARCHAR(255)  DEFAULT NULL,
   address_image       VARCHAR(255)  DEFAULT NULL,
+  balance             DECIMAL(12,2) NOT NULL DEFAULT 50000.00,
+  bonus_balance       DECIMAL(12,2) NOT NULL DEFAULT 0.00,
   is_verified         TINYINT(1)    NOT NULL DEFAULT 0,
   is_active           TINYINT(1)    NOT NULL DEFAULT 1,
   remember_token      VARCHAR(64)   DEFAULT NULL,
@@ -243,7 +250,6 @@ CREATE TABLE IF NOT EXISTS Users (
   created_at          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
-
 -- ============================================================
 -- 15) USER SESSIONS
 -- ============================================================
@@ -1214,10 +1220,3 @@ VALUES
 -- ============================================================
 -- 30) USERS TABLE - Hiányzó oszlopok hozzáadása
 -- ============================================================
-ALTER TABLE Users ADD COLUMN IF NOT EXISTS balance DECIMAL(10, 2) DEFAULT 0;
-ALTER TABLE Users ADD COLUMN IF NOT EXISTS bonus_balance DECIMAL(10, 2) NOT NULL DEFAULT 0.00;
-ALTER TABLE Users ADD COLUMN IF NOT EXISTS phone VARCHAR(20);
-ALTER TABLE Users ADD COLUMN IF NOT EXISTS country VARCHAR(100);
-ALTER TABLE Users ADD COLUMN IF NOT EXISTS city VARCHAR(100);
-ALTER TABLE Users ADD COLUMN IF NOT EXISTS postal_code VARCHAR(20);
-ALTER TABLE Users ADD COLUMN IF NOT EXISTS address VARCHAR(255);

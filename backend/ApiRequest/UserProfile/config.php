@@ -282,23 +282,19 @@ function getTransactionStatusLabel($status) {
     return TRANSACTION_STATUSES[$status] ?? $status;
 }
 
-/**
- * Format Currency
- * @param float $amount Amount to format
- * @param string $currency Currency code
- * @return string Formatted amount
- */
-function formatCurrency($amount, $currency = 'INR') {
+function formatCurrency($amount, $currency = 'HUF') {
     $symbols = [
-        'INR' => '₹',
-        'USD' => '$',
+        'HUF' => 'Ft',
         'EUR' => '€',
-        'GBP' => '£'
     ];
     $symbol = $symbols[$currency] ?? $currency;
-    return $symbol . ' ' . number_format($amount, 2);
-}
 
+    // HUF-nal nincs tizedes (kerekitjuk egesz szamra)
+    if ($currency === 'HUF') {
+        return number_format($amount, 0, ',', '.') . ' ' . $symbol;
+    }
+    return $symbol . ' ' . number_format($amount, 2, ',', '.');
+}
 /**
  * Validate Email
  * @param string $email Email to validate

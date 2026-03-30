@@ -42,6 +42,7 @@ if ((int)$user['is_active'] !== 1) {
 
 $_SESSION['user_id'] = (int)$user['id'];
 $_SESSION['username'] = $user['username'];
+$_SESSION['last_activity'] = time();
 
 // Wallet inicializáció - ha nincs wallet, akkor 50k-val létrehozzuk
 $stmtCheckWallet = $conn->prepare("SELECT id FROM Wallets WHERE user_id = ?");

@@ -283,21 +283,17 @@ function updateTicketStatus($conn, $ticketId, $userId) {
     $stmtUpd->close();
 
     // Ha NYERTES -> nyeremeny jovairasa a wallet-be
+        // Ha NYERTES -> nyeremeny jovairasa CSAK a Users.balance-be (egyetlen forras)
     if ($newStatus === 'WON') {
         $potentialWin = (float)$ticketRow['potential_win'];
 
-        $stmtWallet = $conn->prepare("UPDATE Wallets SET balance = balance + ? WHERE user_id = ?");
-        $stmtWallet->bind_param("di", $potentialWin, $userId);
-        $stmtWallet->execute();
-        $stmtWallet->close();
-
-        // Users.balance frissitese (UserProfile rendszer)
+        // Users.balance jovairasa (egyetlen egyenleg-forras)
         $stmtUserBal = $conn->prepare("UPDATE Users SET balance = balance + ? WHERE id = ?");
         $stmtUserBal->bind_param("di", $potentialWin, $userId);
         $stmtUserBal->execute();
         $stmtUserBal->close();
 
-        // Wallet tranzakcio rogzitese (type_id = 4 = WIN)
+        // Wallet tranzakcio rogzitese naplozas celjabol (type_id = 4 = WIN)
         $stmtTx = $conn->prepare("
             INSERT INTO WalletTransactions (wallet_id, amount, type_id, related_type, related_id, created_at)
             SELECT id, ?, 4, 'Ticket', ?, NOW() FROM Wallets WHERE user_id = ?
