@@ -1,61 +1,23 @@
 <?php
+/**
+ * MAINMENU_MATCHES.PHP — Főoldal kiemelt meccsek (CSAK DB-ből)
+ * 
+ * Query: ?sport_id=66 (opcionális)
+ * Output: HTML tábla
+ */
+
 require_once dirname(__DIR__) . "/connect.php";
+require_once dirname(__DIR__) . "/config.php";
 
 header('Content-Type: text/html; charset=utf-8');
 date_default_timezone_set('Europe/Budapest');
 
 $sportId = isset($_GET['sport_id']) ? (int)$_GET['sport_id'] : 0;
 
-// Ugyanaz az ablak, mint a sidebarban
 $from = (new DateTime('yesterday 00:00:00'))->format('Y-m-d H:i:s');
 $to   = (new DateTime('tomorrow 23:59:59'))->format('Y-m-d H:i:s');
 
-$sportIcons = [
-    66  => 'fa-futbol',
-    67  => 'fa-basketball-ball',
-    78  => 'fa-bullseye',
-    83  => 'fa-swimmer',
-    73  => 'fa-hand-rock',
-    70  => 'fa-hockey-puck',
-    145 => 'fa-gamepad',
-    77  => 'fa-table-tennis',
-    76  => 'fa-running',
-    90  => 'fa-hockey-puck',
-    68  => 'fa-baseball-ball',
-    69  => 'fa-football-ball',
-    71  => 'fa-volleyball-ball',
-    72  => 'fa-golf-ball',
-    74  => 'fa-fist-raised',
-    75  => 'fa-biking',
-    79  => 'fa-skiing',
-    80  => 'fa-snowflake',
-    84  => 'fa-table-tennis',
-    85  => 'fa-chess',
-    109 => 'fa-volleyball-ball',
-    110 => 'fa-futbol',
-    138 => 'fa-running',
-    151 => 'fa-trophy',
-];
-
-$priorityOrder = "
-    CASE
-        WHEN ch.name LIKE '%Champions League%'    THEN 1
-        WHEN ch.name LIKE '%World Cup%'           THEN 2
-        WHEN ch.name LIKE '%Europa League%'       THEN 3
-        WHEN ch.name LIKE '%Conference League%'   THEN 4
-        WHEN ch.name LIKE '%Premier League%'      THEN 5
-        WHEN ch.name LIKE '%La Liga%'             THEN 6
-        WHEN ch.name LIKE '%Bundesliga%'          THEN 7
-        WHEN ch.name LIKE '%Serie A%'             THEN 8
-        WHEN ch.name LIKE '%Ligue 1%'             THEN 9
-        WHEN ch.name LIKE '%NB I%'
-          OR ch.name LIKE '%NB1%'
-          OR ch.name LIKE '%Nemzeti Bajnokság%'   THEN 10
-        WHEN ch.name LIKE '%Eredivisie%'          THEN 11
-        WHEN ch.name LIKE '%Primeira Liga%'       THEN 12
-        ELSE 99
-    END ASC
-";
+$priorityOrder = str_replace('comp.', 'ch.', LEAGUE_PRIORITY_SQL);
 
 $naFilter = "
     AND m.api_id IS NOT NULL
@@ -190,7 +152,7 @@ if (!$res || $res->num_rows === 0) {
 
             $apiId = (int)$row['api_id'];
             $rowSportApiId = (int)$row['sport_api_id'];
-            $rowIcon = $sportIcons[$rowSportApiId] ?? 'fa-futbol';
+            $rowIcon = getSportIcon($rowSportApiId);
         ?>
             <tr class="match-row clickable" data-match-id="<?php echo $apiId; ?>">
                 <td>

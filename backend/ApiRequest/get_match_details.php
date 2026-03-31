@@ -1,232 +1,158 @@
 ﻿<?php
+/**
+ * GET_MATCH_DETAILS.PHP — Meccs részletek + odds
+ * 
+ * Meccs alapadatok: DB-ből (Events + Competitions + Countries)
+ * Odds/piacok: API-ból real-time (mert másodpercenként változnak)
+ * 
+ * Query: ?eventId=12345
+ * Output: JSON { match: {...}, markets: [...] }
+ */
+
 require_once dirname(__DIR__) . "/connect.php";
+require_once dirname(__DIR__) . "/config.php";
 
 header('Content-Type: application/json; charset=utf-8');
 
 $eventId = isset($_GET['eventId']) ? intval($_GET['eventId']) : 0;
 
-
 if ($eventId <= 0) {
     http_response_code(400);
-    echo json_encode(['error' => 'Hianyzo vagy ervenytelen eventId']);
+    echo json_encode(['error' => 'Hiányzó vagy érvénytelen eventId']);
     exit;
 }
 
-$apiBaseUrl = "http://localhost:5000/api";
-
-// Proba 1: /matches/event?eventId=
-$eventUrl = "$apiBaseUrl/matches/event?eventId=$eventId";
-$ch = curl_init($eventUrl);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-$response = curl_exec($ch);
-$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-curl_close($ch);
-
-// Proba 2
-if ($httpCode !== 200 || !$response) {
-    $eventUrl = "$apiBaseUrl/matches/$eventId";
-    $ch = curl_init($eventUrl);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-}
-
-// Proba 3
-if ($httpCode !== 200 || !$response) {
-    $eventUrl = "$apiBaseUrl/matches?id=$eventId";
-    $ch = curl_init($eventUrl);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-}
-
-if ($httpCode !== 200 || !$response) {
-    http_response_code(404);
-    echo json_encode(['error' => 'Meccs nem talalhato az API-ban (eventId: ' . $eventId . ')']);
-    exit;
-}
-
-$apiData = json_decode($response, true);
-if (!is_array($apiData)) {
-    http_response_code(500);
-    echo json_encode(['error' => 'API valasz parse hiba']);
-    exit;
-}
-
-// ===== Adatbazisbol lekerjuk az eredmenyt (megbizhato forras) =====
-$dbScore = null;
-$dbLiveTime = null;
-$dbIsLive = null;
-$dbCountryName = null;
-$dbLeagueName = null;
-$dbStartTime = null;
-$stmtDb = $conn->prepare("
-    SELECT e.home_score, e.away_score, e.is_live, e.live_time, e.start_time,
-           comp.name AS league_name, c.name AS country_name
+// ── 1) MECCS ALAPADATOK DB-BŐL ──────────────────
+$stmt = $conn->prepare("
+    SELECT 
+        e.api_id, e.name, e.start_time, e.is_live, e.live_time,
+        e.home_score, e.away_score, e.status_id,
+        comp.name AS league_name,
+        c.name AS country_name
     FROM Events e
     LEFT JOIN Competitions comp ON e.competition_id = comp.id
     LEFT JOIN Countries c ON comp.country_id = c.id
-    WHERE e.api_id = ? LIMIT 1
+    WHERE e.api_id = ?
+    LIMIT 1
 ");
-if ($stmtDb) {
-    $stmtDb->bind_param("i", $eventId);
-    $stmtDb->execute();
-    $dbResult = $stmtDb->get_result();
-    $dbRow = $dbResult->fetch_assoc();
-    $stmtDb->close();
-    if ($dbRow) {
-        if ($dbRow['home_score'] !== null && $dbRow['away_score'] !== null) {
-            $dbScore = (int)$dbRow['home_score'] . ' - ' . (int)$dbRow['away_score'];
-        }
-        $dbIsLive = (int)$dbRow['is_live'];
-        $dbLiveTime = $dbRow['live_time'];
-        $dbCountryName = $dbRow['country_name'];
-        $dbLeagueName = $dbRow['league_name'];
-        $dbStartTime = $dbRow['start_time'];
+$stmt->bind_param("i", $eventId);
+$stmt->execute();
+$dbRow = $stmt->get_result()->fetch_assoc();
+$stmt->close();
+
+// Csapatnevek kinyerése a meccs nevéből
+$matchName = $dbRow['name'] ?? 'Ismeretlen meccs';
+$homeTeam = '';
+$awayTeam = '';
+$separators = [' vs. ', ' vs ', ' - ', ' – '];
+foreach ($separators as $sep) {
+    if (strpos($matchName, $sep) !== false) {
+        $parts = explode($sep, $matchName, 2);
+        $homeTeam = trim($parts[0]);
+        $awayTeam = trim($parts[1]);
+        break;
     }
 }
 
-// startUtc: API-bol vagy DB fallback
-$startUtcValue = $apiData['startDateUtc'] ?? null;
-if (empty($startUtcValue) && !empty($dbStartTime)) {
+// Score DB-ből
+$score = '';
+if ($dbRow && $dbRow['home_score'] !== null && $dbRow['away_score'] !== null) {
+    $score = (int)$dbRow['home_score'] . ' - ' . (int)$dbRow['away_score'];
+}
+
+// Start time → UTC formátum
+$startUtcValue = null;
+if (!empty($dbRow['start_time'])) {
     try {
-        $dtStart = new DateTime($dbStartTime, new DateTimeZone('Europe/Budapest'));
-        $dtStart->setTimezone(new DateTimeZone('UTC'));
-        $startUtcValue = $dtStart->format('Y-m-d\TH:i:s\Z');
+        $dt = new DateTime($dbRow['start_time'], new DateTimeZone('Europe/Budapest'));
+        $dt->setTimezone(new DateTimeZone('UTC'));
+        $startUtcValue = $dt->format('Y-m-d\TH:i:s\Z');
     } catch (Exception $e) {
-        $startUtcValue = $dbStartTime;
+        $startUtcValue = $dbRow['start_time'];
     }
 }
 
-// Valasz osszeallitasa
 $response_data = [
     'match' => [
-        'id' => (int)($apiData['id'] ?? $eventId),
-        'name' => $apiData['name'] ?? 'Ismeretlen meccs',
-        'homeTeam' => $apiData['homeTeam'] ?? '',
-        'awayTeam' => $apiData['awayTeam'] ?? '',
-        'score' => '',
-        'isLive' => !empty($apiData['isLive']) ? true : false,
-        'liveTime' => $apiData['liveTime'] ?? null,
-        'liveStatus' => $apiData['liveStatus'] ?? null,
-        'country' => $dbCountryName ?: ($apiData['countryCode'] ?? 'Ismeretlen'),
-        'championship' => $dbLeagueName ?: ($apiData['leagueName'] ?? 'Ismeretlen'),
-        'startUtc' => $startUtcValue,
+        'id'           => $eventId,
+        'name'         => $matchName,
+        'homeTeam'     => $homeTeam,
+        'awayTeam'     => $awayTeam,
+        'score'        => $score ?: '0 - 0',
+        'isLive'       => $dbRow ? (bool)$dbRow['is_live'] : false,
+        'liveTime'     => $dbRow['live_time'] ?? null,
+        'liveStatus'   => null,
+        'country'      => $dbRow['country_name'] ?? 'Ismeretlen',
+        'championship' => $dbRow['league_name'] ?? 'Ismeretlen',
+        'startUtc'     => $startUtcValue,
     ],
     'markets' => []
 ];
 
-// Eredmeny osszeallitasa
-$scoreFound = false;
+// ── 2) ODDS/PIACOK API-BÓL (real-time) ──────────
+try {
+    $apiData = apiGet(EP_MATCH_DETAILS . '/' . $eventId);
 
-if (isset($apiData['score']) && is_array($apiData['score']) && count($apiData['score']) >= 2) {
-    $response_data['match']['score'] = $apiData['score'][0] . ' - ' . $apiData['score'][1];
-    $scoreFound = true;
-} elseif (isset($apiData['score']) && is_string($apiData['score']) && trim($apiData['score']) !== '') {
-    $response_data['match']['score'] = str_replace(':', ' - ', $apiData['score']);
-    $scoreFound = true;
-} elseif (isset($apiData['homeScore']) && isset($apiData['awayScore'])) {
-    $response_data['match']['score'] = $apiData['homeScore'] . ' - ' . $apiData['awayScore'];
-    $scoreFound = true;
-} elseif (isset($apiData['scores']) && is_array($apiData['scores'])) {
-    if (isset($apiData['scores']['home']) && isset($apiData['scores']['away'])) {
-        $response_data['match']['score'] = $apiData['scores']['home'] . ' - ' . $apiData['scores']['away'];
-        $scoreFound = true;
-    } elseif (count($apiData['scores']) >= 2) {
-        $response_data['match']['score'] = $apiData['scores'][0] . ' - ' . $apiData['scores'][1];
-        $scoreFound = true;
+    // Ha az API-nak van frissebb score/live adat, felülírjuk
+    if (!empty($apiData['isLive'])) {
+        $response_data['match']['isLive'] = true;
     }
-}
+    if (!empty($apiData['liveTime'])) {
+        $response_data['match']['liveTime'] = $apiData['liveTime'];
+    }
+    if (!empty($apiData['liveStatus'])) {
+        $response_data['match']['liveStatus'] = $apiData['liveStatus'];
+    }
+    if (!empty($apiData['homeTeam'])) {
+        $response_data['match']['homeTeam'] = $apiData['homeTeam'];
+    }
+    if (!empty($apiData['awayTeam'])) {
+        $response_data['match']['awayTeam'] = $apiData['awayTeam'];
+    }
 
-if (!$scoreFound || $response_data['match']['score'] === '0 - 0') {
-    $foundFromLiveApi = false;
+    // Score: API-ból ha van, különben DB marad
+    if (isset($apiData['score']) && is_array($apiData['score']) && count($apiData['score']) >= 2) {
+        $response_data['match']['score'] = $apiData['score'][0] . ' - ' . $apiData['score'][1];
+    }
 
-    $liveUrl = "$apiBaseUrl/matches/live";
-    $chLive = curl_init($liveUrl);
-    curl_setopt($chLive, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($chLive, CURLOPT_TIMEOUT, 5);
-    $liveResponse = curl_exec($chLive);
-    $liveHttpCode = curl_getinfo($chLive, CURLINFO_HTTP_CODE);
-    curl_close($chLive);
+    // Piacok feldolgozása
+    if (isset($apiData['markets']) && is_array($apiData['markets'])) {
+        $seen = [];
+        foreach ($apiData['markets'] as $market) {
+            $marketName = $market['name'] ?? '';
+            $specialVal = $market['specialValue'] ?? null;
+            $marketKey  = $marketName . '||' . ($specialVal ?? '');
 
-    if ($liveHttpCode === 200 && $liveResponse) {
-        $liveMatches = json_decode($liveResponse, true);
-        if (is_array($liveMatches)) {
-            foreach ($liveMatches as $liveMatch) {
-                if (isset($liveMatch['id']) && (int)$liveMatch['id'] === $eventId) {
-                    if (isset($liveMatch['score']) && is_array($liveMatch['score']) && count($liveMatch['score']) >= 2) {
-                        $response_data['match']['score'] = $liveMatch['score'][0] . ' - ' . $liveMatch['score'][1];
-                        $foundFromLiveApi = true;
-                    }
-                    if (isset($liveMatch['liveTime'])) {
-                        $response_data['match']['liveTime'] = $liveMatch['liveTime'];
-                    }
-                    if (isset($liveMatch['isLive'])) {
-                        $response_data['match']['isLive'] = !empty($liveMatch['isLive']);
-                    }
-                    break;
+            if (isset($seen[$marketKey])) continue;
+            $seen[$marketKey] = true;
+
+            $marketData = [
+                'name'         => $marketName,
+                'specialValue' => $specialVal,
+                'selections'   => []
+            ];
+
+            if (isset($market['selections']) && is_array($market['selections'])) {
+                $seenSel = [];
+                foreach ($market['selections'] as $selection) {
+                    $selName = $selection['name'] ?? '';
+                    if (isset($seenSel[$selName])) continue;
+                    $seenSel[$selName] = true;
+                    $marketData['selections'][] = [
+                        'name' => $selName,
+                        'odds' => (float)($selection['odd'] ?? 1.0)
+                    ];
                 }
             }
-        }
-    }
 
-    if (!$foundFromLiveApi && $dbScore !== null) {
-        $response_data['match']['score'] = $dbScore;
-    }
-
-    if (empty($response_data['match']['score'])) {
-        $response_data['match']['score'] = '0 - 0';
-    }
-}
-
-if ($dbIsLive !== null && !$response_data['match']['isLive'] && $dbIsLive === 1) {
-    $response_data['match']['isLive'] = true;
-}
-if ($dbLiveTime !== null && empty($response_data['match']['liveTime'])) {
-    $response_data['match']['liveTime'] = $dbLiveTime;
-}
-
-// Piacok feldolgozasa
-if (isset($apiData['markets']) && is_array($apiData['markets'])) {
-    $seen = [];
-    
-    foreach ($apiData['markets'] as $market) {
-        $marketName = $market['name'] ?? '';
-        $specialVal = $market['specialValue'] ?? null;
-        $marketKey = $marketName . '||' . ($specialVal ?? '');
-        
-        if (isset($seen[$marketKey])) continue;
-        $seen[$marketKey] = true;
-        
-        $marketData = [
-            'name' => $marketName,
-            'specialValue' => $specialVal,
-            'selections' => []
-        ];
-        
-        if (isset($market['selections']) && is_array($market['selections'])) {
-            $seenSel = [];
-            foreach ($market['selections'] as $selection) {
-                $selName = $selection['name'] ?? '';
-                if (isset($seenSel[$selName])) continue;
-                $seenSel[$selName] = true;
-                $marketData['selections'][] = [
-                    'name' => $selName,
-                    'odds' => (float)($selection['odd'] ?? 1.0)
-                ];
+            if (!empty($marketData['selections'])) {
+                $response_data['markets'][] = $marketData;
             }
         }
-        
-        if (!empty($marketData['selections'])) {
-            $response_data['markets'][] = $marketData;
-        }
     }
+} catch (Throwable $e) {
+    // API nem elérhető → meccs adatok DB-ből akkor is visszaadjuk, csak odds nélkül
+    error_log("get_match_details odds API hiba eventId={$eventId}: " . $e->getMessage());
 }
 
 echo json_encode($response_data, JSON_UNESCAPED_UNICODE);
-?>

@@ -16,6 +16,7 @@
 if (!isset($conn)) {
     require_once dirname(__DIR__) . "/connect.php";
 }
+require_once dirname(__DIR__) . "/config.php";
 
 /**
  * Nyitott ticketek kiertkelese a bejelentkezett felhasznalonel
@@ -308,15 +309,13 @@ function updateTicketStatus($conn, $ticketId, $userId) {
  * Meccs adatok lekerdese az API-bol (fallback)
  */
 function fetchMatchDataFromAPI($matchId) {
-    $apiBaseUrl = "http://localhost:5000/api";
-    
     // Proba 1: /matches/event?eventId=
-    $url = "$apiBaseUrl/matches/event?eventId=$matchId";
+    $url = rtrim(API_BASE_URL, '/') . "/api/matches/event?eventId=$matchId";
     $data = curlGetJson($url);
     if ($data && isset($data['id']) && $data['id'] > 0) return $data;
 
     // Proba 2: /matches/{id}
-    $url = "$apiBaseUrl/matches/$matchId";
+    $url = rtrim(API_BASE_URL, '/') . "/api/matches/$matchId";
     $data = curlGetJson($url);
     if ($data && isset($data['id']) && $data['id'] > 0) return $data;
 

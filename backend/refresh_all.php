@@ -1,49 +1,52 @@
 <?php
 /**
- * REFRESH_ALL.PHP
+ * REFRESH_ALL.PHP — ⭐ EGY GOMBNYOMÁS = MINDEN FRISSÜL
  * 
- * Egy fájl, amit lefuttatsz és frissül minden:
- *   1) Bónusz aktivitás (hétköznap/hétvége)
- *   2) Meccsek szinkronizálása az API-ból
- *   3) Szelvények kiértékelése
+ * Lépések:
+ *   1) Bónusz aktivitás frissítés (hétköznap/hétvége)
+ *   2) Sportadatok szinkronizálása (API → DB) via sync_competitions_and_events.php
+ *   3) Nyitott szelvények kiértékelése via check_bets.php
  * 
  * Használat:
  *   Böngésző: http://localhost/backend/refresh_all.php
  *   Terminál: php backend/refresh_all.php
+ *   CRON:     every 2 min — php /path/to/backend/refresh_all.php
  */
 
 date_default_timezone_set('Europe/Budapest');
 $startTime = microtime(true);
-$results = [];
-$hasError = false;
+$results   = [];
+$hasError  = false;
 
 $isCli = (php_sapi_name() === 'cli');
 if (!$isCli) {
     header('Content-Type: application/json; charset=utf-8');
 }
 
-// DB kapcsolat
 require_once __DIR__ . '/connect.php';
 
-// ── 1. Bónusz frissítés ──────────────────────────
+// ── 1. BÓNUSZ FRISSÍTÉS ─────────────────────────
 $stepStart = microtime(true);
 try {
-    $isWeekday = (date('N') <= 5); // H-P = 1-5
+    $isWeekday = (date('N') <= 5);
     $active = $isWeekday ? 1 : 0;
     $conn->query("UPDATE BonusCodes SET is_active = {$active} WHERE code = 'BONUSZHETKOZNAP5K'");
 
+    $weekendActive = $isWeekday ? 0 : 1;
+    $conn->query("UPDATE BonusCodes SET is_active = {$weekendActive} WHERE code = 'BONUSZHETVEGE5K'");
+
     $results[] = [
-        'step' => 'Bónusz frissítés',
-        'status' => 'ok',
-        'message' => 'Hétköznapi bónusz: ' . ($isWeekday ? 'AKTÍV' : 'INAKTÍV'),
-        'ms' => round((microtime(true) - $stepStart) * 1000),
+        'step'    => 'Bónusz frissítés',
+        'status'  => 'ok',
+        'message' => 'Hétköznapi: ' . ($isWeekday ? 'AKTÍV' : 'INAKTÍV') . ' | Hétvégi: ' . (!$isWeekday ? 'AKTÍV' : 'INAKTÍV'),
+        'ms'      => round((microtime(true) - $stepStart) * 1000),
     ];
 } catch (Throwable $e) {
     $hasError = true;
     $results[] = ['step' => 'Bónusz frissítés', 'status' => 'hiba', 'message' => $e->getMessage()];
 }
 
-// ── 2. Meccsek szinkronizálása ───────────────────
+// ── 2. SPORTADATOK SZINKRONIZÁLÁSA (API → DB) ───
 $stepStart = microtime(true);
 try {
     ob_start();
@@ -55,18 +58,20 @@ try {
         throw new RuntimeException($json['error'] ?? 'Szinkron hiba');
     }
 
+    $stats = $json['stats'] ?? [];
     $results[] = [
-        'step' => 'Meccs szinkron',
-        'status' => 'ok',
-        'message' => 'Sportok + meccsek frissítve',
-        'ms' => round((microtime(true) - $stepStart) * 1000),
+        'step'    => 'Sportadatok szinkron',
+        'status'  => 'ok',
+        'message' => sprintf('%d sport, %d bajnokság szinkronizálva, %d meccs lezárva',
+            $stats['sports'] ?? 0, $stats['competitions'] ?? 0, $stats['finished'] ?? 0),
+        'ms'      => round((microtime(true) - $stepStart) * 1000),
     ];
 } catch (Throwable $e) {
     $hasError = true;
-    $results[] = ['step' => 'Meccs szinkron', 'status' => 'hiba', 'message' => $e->getMessage()];
+    $results[] = ['step' => 'Sportadatok szinkron', 'status' => 'hiba', 'message' => $e->getMessage()];
 }
 
-// ── 3. Szelvények kiértékelése ───────────────────
+// ── 3. SZELVÉNYEK KIÉRTÉKELÉSE ───────────────────
 $stepStart = microtime(true);
 try {
     if (!function_exists('evaluateAllOpenTickets')) {
@@ -76,10 +81,10 @@ try {
     $evaluatedUsers = evaluateAllOpenTickets($conn);
 
     $results[] = [
-        'step' => 'Szelvény kiértékelés',
-        'status' => 'ok',
+        'step'    => 'Szelvény kiértékelés',
+        'status'  => 'ok',
         'message' => "{$evaluatedUsers} felhasználó szelvényei ellenőrizve",
-        'ms' => round((microtime(true) - $stepStart) * 1000),
+        'ms'      => round((microtime(true) - $stepStart) * 1000),
     ];
 } catch (Throwable $e) {
     $hasError = true;
@@ -100,9 +105,9 @@ if ($isCli) {
 } else {
     if ($hasError) http_response_code(500);
     echo json_encode([
-        'success' => !$hasError,
+        'success'  => !$hasError,
         'total_ms' => $totalMs,
-        'időpont' => date('Y-m-d H:i:s'),
-        'lépések' => $results,
+        'időpont'  => date('Y-m-d H:i:s'),
+        'lépések'  => $results,
     ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 }
