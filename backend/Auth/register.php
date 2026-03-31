@@ -4,7 +4,7 @@ ini_set('display_errors', '0');
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 
-require_once __DIR__ . '/../ApiRequest/connect.php';
+require_once __DIR__ . '/../connect.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Érvénytelen kérés.']);

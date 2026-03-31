@@ -3,7 +3,7 @@ session_start();
 
 // Check if user is logged in
 require_once '../Auth/check_session.php';
-require_once 'connect.php';
+require_once '../../backend/connect.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     $_SESSION['error_message'] = '❌ Érvénytelen kérés';

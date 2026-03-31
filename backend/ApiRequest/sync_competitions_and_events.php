@@ -141,42 +141,35 @@ function upsertEvent(
     $stmt->close();
 }
 
-/**
- * Meccs status_id meghatározása az API live jelzés és a korábbi DB állapot alapján
- * 1 = NOT_STARTED, 2 = LIVE, 3 = FINISHED
- */
-function resolveStatusId(mysqli $conn, int $eventApiId, bool $isLive): int {
-    if ($isLive) return 2;
-
-    $stmt = $conn->prepare("SELECT status_id FROM Events WHERE api_id = ? LIMIT 1");
-    $stmt->bind_param("i", $eventApiId);
-    $stmt->execute();
-    $row = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
-
-    if (!$row) return 1; // Új meccs, még nem volt DB-ben
-
-    $oldStatus = (int)$row['status_id'];
-    if ($oldStatus === 3) return 3; // Már FINISHED, ne állítsuk vissza
-    if ($oldStatus === 2) return 3; // Korábban LIVE volt, most nem → FINISHED
-
-    return 1; // NOT_STARTED
-}
-
-/**
- * Score kinyerése az API match objektumból
- */
-function extractScore(array $match): array {
-    $homeScore = null;
-    $awayScore = null;
-    if (isset($match['score']) && is_array($match['score']) && count($match['score']) >= 2) {
-        $homeScore = is_numeric($match['score'][0]) ? (int)$match['score'][0] : null;
-        $awayScore = is_numeric($match['score'][1]) ? (int)$match['score'][1] : null;
+function markMissingLiveMatches(mysqli $conn, int $sportLocalId, array $liveMatches): void {
+    $liveIds = [];
+    foreach ($liveMatches as $m) {
+        $eid = (int)($m['id'] ?? 0);
+        if ($eid > 0) $liveIds[] = $eid;
     }
-    return [$homeScore, $awayScore];
+
+    if (count($liveIds) > 0) {
+        $placeholders = implode(',', array_fill(0, count($liveIds), '?'));
+        $types = 'i' . str_repeat('i', count($liveIds));
+        $sql = "UPDATE Events
+                SET is_live = 0, status_id = 3, live_status = 'Ended'
+                WHERE sport_id = ? AND is_live = 1 AND start_time <= NOW() AND api_id NOT IN ($placeholders)";
+        $stmt = $conn->prepare($sql);
+        $params = array_merge([$sportLocalId], $liveIds);
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+        $stmt->close();
+    } else {
+        $stmt = $conn->prepare("UPDATE Events
+                SET is_live = 0, status_id = 3, live_status = 'Ended'
+                WHERE sport_id = ? AND is_live = 1 AND start_time <= NOW()");
+        $stmt->bind_param('i', $sportLocalId);
+        $stmt->execute();
+        $stmt->close();
+    }
 }
 
-/* ========================= FŐ IMPORT LOGIKA ========================= */
+/* ------------------------- IMPORT ------------------------- */
 
 try {
     $conn->begin_transaction();
@@ -225,8 +218,17 @@ try {
         // Mai meccsek
         $dateMatches = apiGet(EP_MATCHES_DATE, ['sportId' => $sportApiId, 'date' => $today]);
 
-        // Élő meccsek ID-it gyűjtjük
-        foreach ($liveMatches as $m) {
+        // If matches drop from live, mark them finished for this sport
+        if (is_array($liveMatches)) {
+            markMissingLiveMatches($conn, $sportLocalId, $liveMatches);
+        }
+
+        $dateMatches = apiGet(EP_MATCHES_DATE, ['sportId' => $sportApiId, 'date' => $date]);
+        if (is_array($dateMatches)) $allMatches = array_merge($allMatches, $dateMatches);
+
+        // deduplikálás event ID alapján
+        $byId = [];
+        foreach ($allMatches as $m) {
             $eid = (int)($m['id'] ?? 0);
             if ($eid > 0 && !empty($m['isLive'])) {
                 $allLiveApiIds[] = $eid;

@@ -10,14 +10,25 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 // Felhasználó aktuális egyenlege
-$query = "SELECT balance, bonus_balance FROM Users WHERE id = ?";
+$hasBonusBalance = false;
+$colStmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Users' AND COLUMN_NAME = 'bonus_balance'");
+$colStmt->execute();
+$colRes = $colStmt->get_result()->fetch_assoc();
+$colStmt->close();
+if ($colRes && (int)$colRes['cnt'] > 0) {
+    $hasBonusBalance = true;
+}
+
+$query = $hasBonusBalance
+    ? "SELECT balance, bonus_balance FROM Users WHERE id = ?"
+    : "SELECT balance FROM Users WHERE id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 $balance = $user['balance'] ?? 0;
-$bonus_balance = $user['bonus_balance'] ?? 0;
+$bonus_balance = $hasBonusBalance ? ($user['bonus_balance'] ?? 0) : 0;
 $stmt->close();
 
 // Aktív befizetési bónuszok
