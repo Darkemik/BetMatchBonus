@@ -10,7 +10,7 @@
  *   super_user / password123  (role_id = 3 – SUPERADMIN)
  */
 
-require_once __DIR__ . '/../ApiRequest/connect.php';
+require_once __DIR__ . '/../connect.php';
 
 $admins = [
     [
