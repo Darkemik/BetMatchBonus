@@ -10,6 +10,21 @@
 
 require_once dirname(__DIR__) . "/connect.php";
 
+function getSportIcon($sportId) {
+    $sportIcons = [
+        66 => 'fa-futbol', 67 => 'fa-basketball-ball', 78 => 'fa-bullseye',
+        83 => 'fa-swimmer', 73 => 'fa-hand-rock', 70 => 'fa-hockey-puck',
+        77 => 'fa-table-tennis', 145 => 'fa-gamepad', 76 => 'fa-running',
+        90 => 'fa-hockey-puck', 68 => 'fa-baseball-ball', 69 => 'fa-football-ball',
+        71 => 'fa-volleyball-ball', 72 => 'fa-golf-ball', 74 => 'fa-fist-raised',
+        75 => 'fa-biking', 79 => 'fa-skiing', 80 => 'fa-snowflake',
+        84 => 'fa-table-tennis', 85 => 'fa-chess', 109 => 'fa-volleyball-ball',
+        110 => 'fa-futbol', 138 => 'fa-running', 151 => 'fa-trophy'
+    ];
+
+    return $sportIcons[$sportId] ?? 'fa-trophy';
+}
+
 // ===== syncLiveMatchScores fuggveny =====
 // Frissiti az API altal visszaadott meccsek allasat a DB-ben.
 // Ha egy meccs az API-ban mar NEM elo (isLive=false) DE korabban elo volt a DB-ben,
@@ -180,21 +195,16 @@ $stmt->bind_param("i", $sport_id);
 $stmt->execute();
 $res = $stmt->get_result();
 
-// CSAK az API altal visszaadott meccsek score/live frissitese - mas sportokat NEM bantunk
-syncLiveMatchScores($conn, $matches);
-// Ha egy elo meccs eltunik a live feedbol, jeloljuk befejezettnek (csak az adott sportra)
-markMissingLiveMatchesBySport($conn, $sport_id, $matches);
-
-if (empty($matches)) {
-    echo '<div class="no-matches"><i class="fas fa-futbol" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i>Jelenleg nincs elo meccs ehhez a sporthoz.</div>';
-    exit;
-}
-
 $matches = [];
 while ($row = $res->fetch_assoc()) {
     $matches[] = $row;
 }
 $stmt->close();
+
+if (empty($matches)) {
+    echo '<div class="no-matches"><i class="fas fa-futbol" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i>Jelenleg nincs elo meccs ehhez a sporthoz.</div>';
+    exit;
+}
 ?>
 <table class="matches-table">
     <thead>

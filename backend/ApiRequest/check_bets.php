@@ -406,14 +406,23 @@ function isMatchFinished($matchData) {
     return false;
 }
 
+function normalizeText($text) {
+    $text = strtolower(trim((string)$text));
+    $map = [
+        'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ö' => 'o', 'ő' => 'o',
+        'ú' => 'u', 'ü' => 'u', 'ű' => 'u'
+    ];
+    return strtr($text, $map);
+}
+
 /**
  * Ellenorzi, hogy egy adott fogadasi pick nyert-e az eredmeny alapjan
  */
 function checkIfPickWon($pick, $market, $homeScore, $awayScore, $homeTeam, $awayTeam) {
-    $pickLower = strtolower(trim($pick));
-    $marketLower = strtolower(trim($market));
-    $homeTeamLower = strtolower(trim($homeTeam));
-    $awayTeamLower = strtolower(trim($awayTeam));
+    $pickLower = normalizeText($pick);
+    $marketLower = normalizeText($market);
+    $homeTeamLower = normalizeText($homeTeam);
+    $awayTeamLower = normalizeText($awayTeam);
 
     // ===== 1X2 / Match Winner =====
     if (strpos($marketLower, '1x2') !== false || 
