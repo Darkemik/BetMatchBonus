@@ -10,7 +10,19 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 // Felhasználó bónusz egyenlegének lekérése
-$balance_stmt = $conn->prepare("SELECT balance, bonus_balance FROM Users WHERE id = ?");
+$hasBonusBalance = false;
+$colStmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Users' AND COLUMN_NAME = 'bonus_balance'");
+$colStmt->execute();
+$colRes = $colStmt->get_result()->fetch_assoc();
+$colStmt->close();
+if ($colRes && (int)$colRes['cnt'] > 0) {
+    $hasBonusBalance = true;
+}
+
+$balance_stmt = $conn->prepare($hasBonusBalance
+    ? "SELECT balance, bonus_balance FROM Users WHERE id = ?"
+    : "SELECT balance FROM Users WHERE id = ?"
+);
 $balance_stmt->bind_param("i", $user_id);
 $balance_stmt->execute();
 $balance_result = $balance_stmt->get_result();
@@ -18,7 +30,7 @@ $user_balances = $balance_result->fetch_assoc();
 $balance_stmt->close();
 
 $regular_balance = $user_balances['balance'] ?? 0;
-$bonus_balance   = $user_balances['bonus_balance'] ?? 0;
+$bonus_balance   = $hasBonusBalance ? ($user_balances['bonus_balance'] ?? 0) : 0;
 
 // Felhasználó bónuszainak lekérése az aktív bónuszokkal együtt
 $query = "SELECT ub.id, ub.bonus_id, bc.name as bonus_name, ub.granted_amount, ub.status, ub.expires_at, ub.wagering_progress, ub.wagering_required, ub.used, ub.created_at 
