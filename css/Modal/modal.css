@@ -146,6 +146,75 @@
     display: none;
 }
 
+#registerModal2 .birthdate-shell {
+    position: relative;
+    border: 1px solid rgba(255, 162, 0, 0.35);
+    border-radius: 12px;
+    padding: 6px;
+    background: linear-gradient(135deg, rgba(255, 162, 0, 0.07), rgba(38, 44, 53, 0.95));
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+#registerModal2 .birthdate-shell:hover {
+    border-color: rgba(255, 162, 0, 0.55);
+}
+
+#registerModal2 .birthdate-shell:focus-within {
+    border-color: #ffa200;
+    box-shadow: 0 0 0 0.2rem rgba(255, 162, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+#registerModal2 .birthdate-row {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr 0.8fr;
+    gap: 8px;
+}
+
+#registerModal2 .birthdate-select {
+    background-color: #262c35;
+    color: #ffffff;
+    border: 1px solid rgba(255, 162, 0, 0.25);
+    border-radius: 9px;
+    min-height: 44px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+
+#registerModal2 .birthdate-select:focus {
+    border-color: #ffa200;
+    box-shadow: 0 0 0 0.15rem rgba(255, 162, 0, 0.25);
+}
+
+#registerModal2 .birthdate-help {
+    color: #c3cad8;
+    margin-left: 2px;
+}
+
+#registerModal2 .birthdate-age-result {
+    min-height: 20px;
+    color: #b8c0cf;
+    font-weight: 500;
+}
+
+#registerModal2 .birthdate-age-result.is-ok {
+    color: #7fe0a6;
+}
+
+#registerModal2 .birthdate-age-result.is-error {
+    color: #ff8b8b;
+}
+
+#registerModal2 .birthdate-shell.is-valid {
+    border-color: rgba(127, 224, 166, 0.9);
+    box-shadow: 0 0 0 0.2rem rgba(127, 224, 166, 0.14);
+}
+
+#registerModal2 .birthdate-shell.is-invalid {
+    border-color: rgba(255, 99, 99, 0.85);
+    box-shadow: 0 0 0 0.2rem rgba(255, 99, 99, 0.14);
+}
+
 /* Logout button styling */
 #logoutBtn {
     background: none !important;

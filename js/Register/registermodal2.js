@@ -1,25 +1,97 @@
 document.addEventListener('DOMContentLoaded', function () {
     var dateInput = document.getElementById('modal2-date-input');
+    var yearSelect = document.getElementById('modal2-birth-year');
+    var monthSelect = document.getElementById('modal2-birth-month');
+    var daySelect = document.getElementById('modal2-birth-day');
     var ageResult = document.getElementById('modal2-age-result');
     var calcAge = document.getElementById('modal2-calculated_age');
     var form = document.getElementById('registerModal2Form');
     var result = document.getElementById('registerModal2Result');
     var birthplaceInput = document.getElementById('modal2-birthplace');
+    var dateShell = dateInput ? dateInput.closest('.birthdate-shell') : null;
 
-    // Prevent typing in date input
-    dateInput.addEventListener('keydown', function (e) { e.preventDefault(); });
-    dateInput.addEventListener('click', function () {
-        if (dateInput.showPicker) dateInput.showPicker();
-    });
+    function pad2(value) {
+        return value < 10 ? '0' + value : String(value);
+    }
 
-    // Age validation
-    dateInput.addEventListener('change', function () {
-        if (!this.value) {
+    function setBirthdateVisualState(state) {
+        if (!dateShell || !ageResult) return;
+        dateShell.classList.remove('is-valid', 'is-invalid');
+        ageResult.classList.remove('is-ok', 'is-error');
+
+        if (state === 'valid') {
+            dateShell.classList.add('is-valid');
+            ageResult.classList.add('is-ok');
+        } else if (state === 'invalid') {
+            dateShell.classList.add('is-invalid');
+            ageResult.classList.add('is-error');
+        }
+    }
+
+    function populateYears() {
+        if (!yearSelect) return;
+        var now = new Date();
+        var maxYear = now.getFullYear() - 18;
+        var minYear = now.getFullYear() - 100;
+        for (var y = maxYear; y >= minYear; y--) {
+            var option = document.createElement('option');
+            option.value = String(y);
+            option.textContent = String(y);
+            yearSelect.appendChild(option);
+        }
+    }
+
+    function populateMonths() {
+        if (!monthSelect) return;
+        for (var m = 1; m <= 12; m++) {
+            var option = document.createElement('option');
+            option.value = String(m);
+            option.textContent = pad2(m);
+            monthSelect.appendChild(option);
+        }
+    }
+
+    function populateDays(year, month) {
+        if (!daySelect) return;
+        var existing = daySelect.value;
+        daySelect.innerHTML = '<option value="">Nap</option>';
+
+        if (!year || !month) return;
+        var daysInMonth = new Date(year, month, 0).getDate();
+        for (var d = 1; d <= daysInMonth; d++) {
+            var option = document.createElement('option');
+            option.value = String(d);
+            option.textContent = pad2(d);
+            daySelect.appendChild(option);
+        }
+
+        if (existing && parseInt(existing, 10) <= daysInMonth) {
+            daySelect.value = existing;
+        }
+    }
+
+    function updateBirthdateValue() {
+        if (!yearSelect || !monthSelect || !daySelect) return;
+        var year = yearSelect.value;
+        var month = monthSelect.value;
+        var day = daySelect.value;
+
+        if (!year || !month || !day) {
+            dateInput.value = '';
             ageResult.textContent = '';
             calcAge.value = '';
+            dateInput.removeAttribute('aria-invalid');
+            setBirthdateVisualState('neutral');
+            if (result.textContent === '18 éves kor alatt nem lehet regisztrálni!') {
+                result.textContent = '';
+            }
             return;
         }
-        var birth = new Date(this.value);
+
+        var isoDate = year + '-' + pad2(parseInt(month, 10)) + '-' + pad2(parseInt(day, 10));
+        dateInput.value = isoDate;
+
+        var birth = new Date(isoDate);
         var now = new Date();
         var age = now.getFullYear() - birth.getFullYear();
         var m = now.getMonth() - birth.getMonth();
@@ -29,10 +101,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (age < 18) {
             result.textContent = '18 éves kor alatt nem lehet regisztrálni!';
+            dateInput.setAttribute('aria-invalid', 'true');
+            setBirthdateVisualState('invalid');
         } else {
             result.textContent = '';
+            dateInput.removeAttribute('aria-invalid');
+            setBirthdateVisualState('valid');
         }
-    });
+    }
+
+    populateYears();
+    populateMonths();
+    populateDays(yearSelect.value, monthSelect.value);
+
+    if (yearSelect && monthSelect && daySelect) {
+        yearSelect.addEventListener('change', function () {
+            populateDays(yearSelect.value, monthSelect.value);
+            updateBirthdateValue();
+        });
+        monthSelect.addEventListener('change', function () {
+            populateDays(yearSelect.value, monthSelect.value);
+            updateBirthdateValue();
+        });
+        daySelect.addEventListener('change', updateBirthdateValue);
+    }
 
     // Image previews
     function setupPreview(inputId, imgId) {
@@ -69,6 +161,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (isNaN(age) || age < 18) {
             result.textContent = '18 éves kor alatt nem lehet regisztrálni!';
             result.style.color = 'red';
+            dateInput.setAttribute('aria-invalid', 'true');
+            setBirthdateVisualState('invalid');
             return;
         }
 

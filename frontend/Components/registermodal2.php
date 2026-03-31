@@ -32,10 +32,24 @@
                             <input type="text" name="birthplace" id="modal2-birthplace" class="form-control mb-3" placeholder="pl. Budapest" data-i18n-placeholder="registerModal2.birthPlacePlaceholder" required>
 
                             <label class="form-label" data-i18n="registerModal2.birthDate">Születési dátum</label>
-                            <input type="date" id="modal2-date-input" name="birthdate" class="form-control mb-1" required>
+                            <div class="birthdate-shell mb-1">
+                                <div class="birthdate-row">
+                                    <select id="modal2-birth-year" class="form-select birthdate-select" required>
+                                        <option value="">Év</option>
+                                    </select>
+                                    <select id="modal2-birth-month" class="form-select birthdate-select" required>
+                                        <option value="">Hónap</option>
+                                    </select>
+                                    <select id="modal2-birth-day" class="form-select birthdate-select" required>
+                                        <option value="">Nap</option>
+                                    </select>
+                                </div>
+                                <input type="hidden" id="modal2-date-input" name="birthdate" required>
+                            </div>
                             <input type="hidden" name="calculated_age" id="modal2-calculated_age">
                             <input type="hidden" name="birthplace_city_id" id="modal2-birthplace_city_id" value="1">
-                            <p id="modal2-age-result" class="small text-muted mb-3"></p>
+                            <p class="small birthdate-help mb-1">Válaszd ki az évet, hónapot és napot.</p>
+                            <p id="modal2-age-result" class="small birthdate-age-result mb-3"></p>
                         </div>
 
                         <div class="col-md-6">
