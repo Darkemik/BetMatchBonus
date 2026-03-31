@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * SYNC_COMPETITIONS_AND_EVENTS.PHP
  * 
