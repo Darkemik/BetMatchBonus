@@ -2,7 +2,7 @@
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 
-require_once __DIR__ . '/../ApiRequest/connect.php';
+require_once __DIR__ . '/../connect.php';
 
 // Session törlése
 session_unset();

@@ -228,6 +228,34 @@ function upsertEvent(
     $stmt->close();
 }
 
+function markMissingLiveMatches(mysqli $conn, int $sportLocalId, array $liveMatches): void {
+    $liveIds = [];
+    foreach ($liveMatches as $m) {
+        $eid = (int)($m['id'] ?? 0);
+        if ($eid > 0) $liveIds[] = $eid;
+    }
+
+    if (count($liveIds) > 0) {
+        $placeholders = implode(',', array_fill(0, count($liveIds), '?'));
+        $types = 'i' . str_repeat('i', count($liveIds));
+        $sql = "UPDATE Events
+                SET is_live = 0, status_id = 3, live_status = 'Ended'
+                WHERE sport_id = ? AND is_live = 1 AND start_time <= NOW() AND api_id NOT IN ($placeholders)";
+        $stmt = $conn->prepare($sql);
+        $params = array_merge([$sportLocalId], $liveIds);
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+        $stmt->close();
+    } else {
+        $stmt = $conn->prepare("UPDATE Events
+                SET is_live = 0, status_id = 3, live_status = 'Ended'
+                WHERE sport_id = ? AND is_live = 1 AND start_time <= NOW()");
+        $stmt->bind_param('i', $sportLocalId);
+        $stmt->execute();
+        $stmt->close();
+    }
+}
+
 /* ------------------------- IMPORT ------------------------- */
 
 try {
@@ -271,6 +299,11 @@ try {
 
         $liveMatches = apiGet(EP_MATCHES_LIVE, ['sportId' => $sportApiId]);
         if (is_array($liveMatches)) $allMatches = array_merge($allMatches, $liveMatches);
+
+        // If matches drop from live, mark them finished for this sport
+        if (is_array($liveMatches)) {
+            markMissingLiveMatches($conn, $sportLocalId, $liveMatches);
+        }
 
         $dateMatches = apiGet(EP_MATCHES_DATE, ['sportId' => $sportApiId, 'date' => $date]);
         if (is_array($dateMatches)) $allMatches = array_merge($allMatches, $dateMatches);

@@ -89,6 +89,48 @@ if (!function_exists('syncLiveMatchScores')) {
     }
 }
 
+// Mark live matches as finished when they disappear from the live feed (sport-scoped)
+if (!function_exists('markMissingLiveMatchesBySport')) {
+    function markMissingLiveMatchesBySport($conn, $sportApiId, $liveMatches) {
+        $stmtSport = $conn->prepare("SELECT id FROM Sports WHERE api_id = ? LIMIT 1");
+        $stmtSport->bind_param("i", $sportApiId);
+        $stmtSport->execute();
+        $sportRow = $stmtSport->get_result()->fetch_assoc();
+        $stmtSport->close();
+
+        if (!$sportRow) return;
+
+        $sportLocalId = (int)$sportRow['id'];
+        $liveIds = [];
+        if (is_array($liveMatches)) {
+            foreach ($liveMatches as $m) {
+                $mid = (int)($m['id'] ?? 0);
+                if ($mid > 0) $liveIds[] = $mid;
+            }
+        }
+
+        if (count($liveIds) > 0) {
+            $placeholders = implode(',', array_fill(0, count($liveIds), '?'));
+            $types = 'i' . str_repeat('i', count($liveIds));
+            $sql = "UPDATE Events
+                    SET is_live = 0, status_id = 3, live_status = 'Ended'
+                    WHERE sport_id = ? AND is_live = 1 AND start_time <= NOW() AND api_id NOT IN ($placeholders)";
+            $stmtUpd = $conn->prepare($sql);
+            $params = array_merge([$sportLocalId], $liveIds);
+            $stmtUpd->bind_param($types, ...$params);
+            $stmtUpd->execute();
+            $stmtUpd->close();
+        } else {
+            $stmtUpd = $conn->prepare("UPDATE Events
+                    SET is_live = 0, status_id = 3, live_status = 'Ended'
+                    WHERE sport_id = ? AND is_live = 1 AND start_time <= NOW()" );
+            $stmtUpd->bind_param('i', $sportLocalId);
+            $stmtUpd->execute();
+            $stmtUpd->close();
+        }
+    }
+}
+
 // FONTOS: markFinishedMatchesBySport es markOldLiveMatchesGlobal KIKERULT innen.
 // Ok: live_table.php EGYETLEN sport elo meccseit keri le az API-bol,
 // a markFinished fuggvenyek pedig a DB-ben is_live=0-ra allitjak azokat a meccseket
@@ -119,6 +161,8 @@ if (!is_array($matches)) $matches = [];
 
 // CSAK az API altal visszaadott meccsek score/live frissitese - mas sportokat NEM bantunk
 syncLiveMatchScores($conn, $matches);
+// Ha egy elo meccs eltunik a live feedbol, jeloljuk befejezettnek (csak az adott sportra)
+markMissingLiveMatchesBySport($conn, $sport_id, $matches);
 
 if (empty($matches)) {
     echo '<div class="no-matches"><i class="fas fa-futbol" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i>Jelenleg nincs elo meccs ehhez a sporthoz.</div>';
