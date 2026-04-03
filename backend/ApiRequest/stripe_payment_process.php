@@ -1,5 +1,6 @@
 <?php
 session_start();
+date_default_timezone_set('Europe/Budapest');
 
 // Check if user is logged in
 require_once '../Auth/check_session.php';
@@ -141,12 +142,17 @@ $update_stmt->close();
 // Függőben lévő (PENDING) befizetési bónuszok aktiválása
 // Megkeressük az összes PENDING bónuszt, amelyek DEPOSIT triggerrel rendelkeznek és teljesül a min. befizetési feltétel
 $pending_stmt = $conn->prepare("
-    SELECT ub.id AS user_bonus_id, bc.bonus_amount, bc.wagering_multiplier, bc.activation_expire_hours,
-           bc.min_deposit, bc.match_percent, bc.max_bonus_amount
+    SELECT ub.id AS user_bonus_id, ub.created_at,
+        bc.bonus_amount, bc.wagering_multiplier, bc.activation_expire_hours,
+            bc.min_deposit, bc.match_percent, bc.max_bonus_amount, bc.valid_weekdays_only,
+            bc.bet_reward_type
     FROM UserBonuses ub
     INNER JOIN BonusCodes bc ON ub.bonus_id = bc.id
     WHERE ub.user_id = ?
-      AND ub.status = 'PENDING'
+    AND (
+        (ub.status = 'PENDING' AND ub.used = 0)
+       OR (ub.status = 'ACTIVE' AND ub.used = 0 AND COALESCE(ub.granted_amount, 0) = 0)
+    )
       AND bc.bonus_trigger = 'DEPOSIT'
       AND (bc.valid_to IS NULL OR bc.valid_to >= NOW())
 ");
@@ -157,8 +163,27 @@ $pending_bonuses = $pending_result->fetch_all(MYSQLI_ASSOC);
 $pending_stmt->close();
 
 $bonus_credited_total = 0.00;
+$bonus_credit_to_balance = 0.00;
+$bonus_credit_to_bonus_balance = 0.00;
+$isWeekday = ((int)date('N') <= 5);
+$isAfterDailyRefresh = (date('H:i') >= '00:01');
+$isWeekdayWindow = ($isWeekday && $isAfterDailyRefresh);
+$todayStart = new DateTime(date('Y-m-d 00:01:00'));
+$tomorrowStart = (clone $todayStart)->modify('+1 day');
 
 foreach ($pending_bonuses as $pb) {
+    // Hétköznapi napi bónusz csak hétköznap 00:01-23:59 között és csak a mai aktiválásból írható jóvá.
+    if (!empty($pb['valid_weekdays_only'])) {
+        if (!$isWeekdayWindow) {
+            continue;
+        }
+
+        $claimedAt = new DateTime($pb['created_at']);
+        if ($claimedAt < $todayStart || $claimedAt >= $tomorrowStart) {
+            continue;
+        }
+    }
+
     // Ellenőrizzük, hogy a befizetés eléri-e a minimumot
     if (!empty($pb['min_deposit']) && $amount < (float)$pb['min_deposit']) {
         continue;
@@ -186,7 +211,7 @@ foreach ($pending_bonuses as $pb) {
         $expires_at = date('Y-m-d H:i:s', strtotime('+' . (int)$pb['activation_expire_hours'] . ' hours'));
     }
 
-    // UserBonuses rekord frissítése: PENDING → ACTIVE
+    // UserBonuses aktiválása: jóváírás után ACTIVE állapot, forgatás követhető marad
     $activate_stmt = $conn->prepare("
         UPDATE UserBonuses
         SET status = 'ACTIVE',
@@ -201,12 +226,25 @@ foreach ($pending_bonuses as $pb) {
     $activate_stmt->close();
 
     $bonus_credited_total += $granted;
+    if (strtoupper((string)($pb['bet_reward_type'] ?? '')) === 'BONUS_MONEY') {
+        $bonus_credit_to_balance += $granted;
+    } else {
+        $bonus_credit_to_bonus_balance += $granted;
+    }
 }
 
-// Ha volt aktivált bónusz, jóváírjuk a bonus_balance-t
-if ($bonus_credited_total > 0) {
+// BONUS_MONEY bónusz a normál egyenlegre kerül jóváírásra (azonnal felhasználható)
+if ($bonus_credit_to_balance > 0) {
+    $main_bonus_update_stmt = $conn->prepare("UPDATE Users SET balance = balance + ? WHERE id = ?");
+    $main_bonus_update_stmt->bind_param("di", $bonus_credit_to_balance, $user_id);
+    $main_bonus_update_stmt->execute();
+    $main_bonus_update_stmt->close();
+}
+
+// Egyéb bónuszok (pl. free bet keret) külön bónusz egyenlegre kerülnek
+if ($bonus_credit_to_bonus_balance > 0) {
     $bonus_update_stmt = $conn->prepare("UPDATE Users SET bonus_balance = bonus_balance + ? WHERE id = ?");
-    $bonus_update_stmt->bind_param("di", $bonus_credited_total, $user_id);
+    $bonus_update_stmt->bind_param("di", $bonus_credit_to_bonus_balance, $user_id);
     $bonus_update_stmt->execute();
     $bonus_update_stmt->close();
 }

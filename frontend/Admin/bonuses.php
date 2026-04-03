@@ -3,8 +3,15 @@ require_once __DIR__ . '/../../backend/Auth/admin_guard.php';
 admin_guard('ADMIN');
 
 require_once __DIR__ . '/../../backend/connect.php';
+date_default_timezone_set('Europe/Budapest');
 
 $role = $_SESSION['admin_role'];
+
+// Hétköznap-only bónuszok automatikus aktiválása hétfő 00:01 - péntek 23:59 között
+$isWeekday = ((int)date('N') <= 5);
+$isAfterDailyRefresh = (date('H:i') >= '00:01');
+$weekdayActive = ($isWeekday && $isAfterDailyRefresh) ? 1 : 0;
+$conn->query("UPDATE BonusCodes SET is_active = {$weekdayActive} WHERE valid_weekdays_only = 1 OR code = 'BONUSZHETKOZNAP5K'");
 
 // Gombnyomásra bónusz státusz módosítása (Aktiválás / Inaktiválás)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_bonus_id'])) {

@@ -28,9 +28,13 @@ require_once __DIR__ . '/connect.php';
 // ── 1. BÓNUSZ FRISSÍTÉS ─────────────────────────
 $stepStart = microtime(true);
 try {
-    $isWeekday = (date('N') <= 5);
-    $active = $isWeekday ? 1 : 0;
-    $conn->query("UPDATE BonusCodes SET is_active = {$active} WHERE code = 'BONUSZHETKOZNAP5K'");
+    $isWeekday = ((int)date('N') <= 5);
+    $isAfterDailyRefresh = (date('H:i') >= '00:01');
+    $weekdayActive = ($isWeekday && $isAfterDailyRefresh) ? 1 : 0;
+
+    // Minden hétköznap-only bónusz automatikus időablak szerint megy:
+    // hétfő 00:01 -> péntek 23:59
+    $conn->query("UPDATE BonusCodes SET is_active = {$weekdayActive} WHERE valid_weekdays_only = 1 OR code = 'BONUSZHETKOZNAP5K'");
 
     $weekendActive = $isWeekday ? 0 : 1;
     $conn->query("UPDATE BonusCodes SET is_active = {$weekendActive} WHERE code = 'BONUSZHETVEGE5K'");
@@ -38,7 +42,7 @@ try {
     $results[] = [
         'step'    => 'Bónusz frissítés',
         'status'  => 'ok',
-        'message' => 'Hétköznapi: ' . ($isWeekday ? 'AKTÍV' : 'INAKTÍV') . ' | Hétvégi: ' . (!$isWeekday ? 'AKTÍV' : 'INAKTÍV'),
+        'message' => 'Hétköznapi (00:01-23:59): ' . ($weekdayActive ? 'AKTÍV' : 'INAKTÍV') . ' | Hétvégi: ' . (!$isWeekday ? 'AKTÍV' : 'INAKTÍV'),
         'ms'      => round((microtime(true) - $stepStart) * 1000),
     ];
 } catch (Throwable $e) {

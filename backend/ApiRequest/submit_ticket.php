@@ -163,6 +163,57 @@ try {
     $stmtTransaction->execute();
     $stmtTransaction->close();
 
+    // 6.5. Korábbi hibából lezárt, de valójában nem teljesített DEPOSIT bónuszok visszanyitása
+    $stmtReopenInconsistentBonus = $conn->prepare(" 
+        UPDATE UserBonuses ub
+        INNER JOIN BonusCodes bc ON bc.id = ub.bonus_id
+        SET ub.status = 'ACTIVE',
+            ub.used = 0,
+            ub.used_at = NULL
+        WHERE ub.user_id = ?
+          AND ub.status = 'COMPLETED'
+          AND ub.used = 1
+          AND bc.bonus_trigger = 'DEPOSIT'
+          AND COALESCE(ub.wagering_required, 0) > 0
+          AND COALESCE(ub.wagering_progress, 0) < ub.wagering_required
+    ");
+    $stmtReopenInconsistentBonus->bind_param("i", $userId);
+    $stmtReopenInconsistentBonus->execute();
+    $stmtReopenInconsistentBonus->close();
+
+    // 7. AKTÍV BÓNUSZOK FORGATÁSI HALADÁSÁNAK FRISSÍTÉSE
+    $stmtUpdateWagering = $conn->prepare(" 
+        UPDATE UserBonuses
+        SET wagering_progress = LEAST(
+                COALESCE(wagering_progress, 0) + ?,
+                COALESCE(wagering_required, COALESCE(wagering_progress, 0) + ?)
+            )
+        WHERE user_id = ?
+          AND status = 'ACTIVE'
+          AND used = 0
+          AND COALESCE(wagering_required, 0) > 0
+          AND (expires_at IS NULL OR expires_at > NOW())
+    ");
+    $stmtUpdateWagering->bind_param("ddi", $stake, $stake, $userId);
+    $stmtUpdateWagering->execute();
+    $stmtUpdateWagering->close();
+
+    // Ha teljesítve lett a forgatási követelmény, lezárjuk a bónuszt
+    $stmtCompleteBonus = $conn->prepare(" 
+        UPDATE UserBonuses
+        SET status = 'COMPLETED',
+            used = 1,
+            used_at = NOW()
+        WHERE user_id = ?
+          AND status = 'ACTIVE'
+          AND used = 0
+          AND COALESCE(wagering_required, 0) > 0
+          AND COALESCE(wagering_progress, 0) >= wagering_required
+    ");
+    $stmtCompleteBonus->bind_param("i", $userId);
+    $stmtCompleteBonus->execute();
+    $stmtCompleteBonus->close();
+
     // TRANZAKCIÓ COMMIT
     $conn->commit();
 

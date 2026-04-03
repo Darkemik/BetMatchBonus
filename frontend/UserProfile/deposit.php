@@ -35,7 +35,7 @@ $stmt->close();
 $bonus_query = "SELECT ub.id, bc.name, bc.bonus_amount, bc.match_percent, bc.min_deposit, ub.granted_amount 
                 FROM UserBonuses ub
                 LEFT JOIN BonusCodes bc ON ub.bonus_id = bc.id
-                WHERE ub.user_id = ? AND ub.status = 'ACTIVE' AND bc.bonus_trigger = 'DEPOSIT' 
+                WHERE ub.user_id = ? AND ub.status = 'PENDING' AND bc.bonus_trigger = 'DEPOSIT' 
                 AND (ub.expires_at IS NULL OR ub.expires_at > NOW())
                 LIMIT 1";
 $bonus_stmt = $conn->prepare($bonus_query);
