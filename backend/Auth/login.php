@@ -44,15 +44,15 @@ $_SESSION['user_id'] = (int)$user['id'];
 $_SESSION['username'] = $user['username'];
 $_SESSION['last_activity'] = time();
 
-// Wallet inicializáció - ha nincs wallet, akkor 50k-val létrehozzuk
+// Wallet inicializáció - ha nincs wallet, akkor 0 Ft-tal létrehozzuk
 $stmtCheckWallet = $conn->prepare("SELECT id FROM Wallets WHERE user_id = ?");
 $stmtCheckWallet->bind_param("i", $user['id']);
 $stmtCheckWallet->execute();
 $walletResult = $stmtCheckWallet->get_result();
 
 if ($walletResult->num_rows === 0) {
-    // Nincs wallet - létrehozunk 50k-val
-    $initialBalance = 50000;
+  // Nincs wallet - létrehozunk 0 Ft-tal
+  $initialBalance = 0;
     $stmtCreateWallet = $conn->prepare("INSERT INTO Wallets (user_id, balance, created_at, updated_at) VALUES (?, ?, NOW(), NOW())");
     $stmtCreateWallet->bind_param("id", $user['id'], $initialBalance);
     $stmtCreateWallet->execute();

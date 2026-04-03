@@ -81,10 +81,10 @@ $password_hash = password_hash($password, PASSWORD_DEFAULT);
 // birth_date konvertálása DATE formátumra
 $birthdate_formatted = date('Y-m-d', strtotime($birthdate));
 
-// INSERT a Users táblába
+// INSERT a Users táblába (kezdő egyenleg: 0 Ft)
 $stmt = $conn->prepare(
-    "INSERT INTO Users (username, email, password_hash, full_name, pre_name, family_name, sure_name, mother_full_name, birthplace, birth_date, mobile_number) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    "INSERT INTO Users (username, email, password_hash, full_name, pre_name, family_name, sure_name, mother_full_name, birthplace, birth_date, mobile_number, balance) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0.00)"
 );
 
 if (!$stmt) {
@@ -104,8 +104,8 @@ $userId = $stmt->insert_id;
 $_SESSION['user_id']  = $userId;
 $_SESSION['username'] = $username;
 
-// Wallet létrehozása 50000 Ft alapegyenleggel
-$initialBalance = 50000.00;
+// Wallet létrehozása 0 Ft alapegyenleggel
+$initialBalance = 0.00;
 $walletStmt = $conn->prepare(
     "INSERT INTO Wallets (user_id, balance) VALUES (?, ?)"
 );

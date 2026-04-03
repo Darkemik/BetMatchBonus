@@ -239,7 +239,7 @@ CREATE TABLE IF NOT EXISTS Users (
   id_image_first      VARCHAR(255)  DEFAULT NULL,
   id_image_second     VARCHAR(255)  DEFAULT NULL,
   address_image       VARCHAR(255)  DEFAULT NULL,
-  balance             DECIMAL(12,2) NOT NULL DEFAULT 50000.00,
+  balance             DECIMAL(12,2) NOT NULL DEFAULT 0.00,
   bonus_balance       DECIMAL(12,2) NOT NULL DEFAULT 0.00,
   is_verified         TINYINT(1)    NOT NULL DEFAULT 0,
   is_active           TINYINT(1)    NOT NULL DEFAULT 1,
