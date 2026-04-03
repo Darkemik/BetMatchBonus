@@ -214,6 +214,18 @@ try {
     $stmtCompleteBonus->execute();
     $stmtCompleteBonus->close();
 
+    // Aktuális egyenleg lekérdezése azonnali frontend frissítéshez
+    $newBalance = null;
+    $stmtBalance = $conn->prepare("SELECT balance FROM Users WHERE id = ? LIMIT 1");
+    $stmtBalance->bind_param("i", $userId);
+    $stmtBalance->execute();
+    $balanceRes = $stmtBalance->get_result();
+    $balanceRow = $balanceRes->fetch_assoc();
+    $stmtBalance->close();
+    if ($balanceRow && isset($balanceRow['balance'])) {
+        $newBalance = (float)$balanceRow['balance'];
+    }
+
     // TRANZAKCIÓ COMMIT
     $conn->commit();
 
@@ -222,7 +234,8 @@ try {
         'message' => 'Ticket sikeresen leadva!',
         'ticket_id' => $ticketId,
         'stake' => $stake,
-        'potential_win' => $potentialWin
+        'potential_win' => $potentialWin,
+        'new_balance' => $newBalance
     ]);
 
 } catch (Exception $e) {

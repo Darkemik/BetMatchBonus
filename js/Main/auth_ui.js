@@ -41,6 +41,11 @@ async function refreshAuthUI() {
 document.addEventListener('DOMContentLoaded', () => {
   refreshAuthUI();
 
+  // Csak egyenleg-frissítéshez (pl. szelvény leadás után), oldal újratöltés nélkül
+  document.addEventListener('balance:changed', () => {
+    refreshAuthUI();
+  });
+
   // login/register után ezt hívjuk
   document.addEventListener('auth:changed', () => {
     refreshAuthUI();

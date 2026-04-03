@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== BEJELENTKEZÉS ELLENŐRZÉSE =====
     function checkLoginStatus() {
-        fetch('../../backend/Auth/me.php')
+        fetch('/BetMatchBonus/backend/Auth/me.php', { cache: 'no-store' })
             .then(r => r.json())
             .then(data => {
                 isLoggedIn = data.loggedIn === true;
@@ -417,6 +417,49 @@ document.addEventListener('DOMContentLoaded', function() {
                 saveToStorage();
                 renderTicket();
                 refreshAllOddsButtons();
+
+                // Azonnali lokális egyenlegfrissítés (jobb felső sarok)
+                if (typeof data.new_balance === 'number' && !Number.isNaN(data.new_balance)) {
+                    userBalance = data.new_balance;
+                } else {
+                    userBalance = Math.max(0, (parseFloat(userBalance) || 0) - stake);
+                }
+
+                const usernameEl = document.getElementById('userMenuUsername');
+                if (usernameEl) {
+                    const formatted = userBalance.toLocaleString('hu-HU', {
+                        style: 'currency',
+                        currency: 'HUF'
+                    }).replace('Ft', 'FT').trim();
+                    usernameEl.textContent = formatted;
+                }
+
+                updatePlaceBetButton();
+                document.dispatchEvent(new CustomEvent('balance:changed'));
+
+                // Biztos frissítés szerverről cache nélkül, hogy ne maradjon beragadt érték
+                fetch('/BetMatchBonus/backend/Auth/me.php', { cache: 'no-store' })
+                    .then(r => r.json())
+                    .then(me => {
+                        if (me && me.loggedIn && me.user) {
+                            const freshBalance = parseFloat(me.user.balance) || 0;
+                            userBalance = freshBalance;
+
+                            const liveUsernameEl = document.getElementById('userMenuUsername');
+                            if (liveUsernameEl) {
+                                const freshFormatted = freshBalance.toLocaleString('hu-HU', {
+                                    style: 'currency',
+                                    currency: 'HUF'
+                                }).replace('Ft', 'FT').trim();
+                                liveUsernameEl.textContent = freshFormatted;
+                            }
+                            updatePlaceBetButton();
+                        }
+                    })
+                    .catch(() => {
+                        // Csendes fallback, a lokális frissítés már megtörtént
+                    });
+
                 checkLoginStatus();
                 loadBettingHistory();
             } else {
