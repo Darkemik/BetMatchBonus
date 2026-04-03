@@ -70,6 +70,37 @@ if ($bonusId > 0 && empty($code) && !empty($bonus['code'])) {
     exit();
 }
 
+// DARTS bónusz csak akkor igényelhető, ha holnap van darts meccs,
+// és az előző nap már elmúlt 12:00.
+$isDartsBonus = (strtoupper((string)($bonus['code'] ?? '')) === 'DARTSBONUSZ5K');
+if ($isDartsBonus) {
+    $todayNoon = date('Y-m-d 12:00:00');
+    $tomorrowStart = date('Y-m-d 00:00:00', strtotime('+1 day'));
+    $dayAfterTomorrowStart = date('Y-m-d 00:00:00', strtotime('+2 day'));
+
+    $isDartsClaimWindow = false;
+    if (date('Y-m-d H:i:s') >= $todayNoon) {
+        $dartsTomorrowStmt = $conn->prepare(" 
+            SELECT 1
+            FROM Events e
+            INNER JOIN Sports s ON s.id = e.sport_id
+            WHERE e.start_time >= ?
+              AND e.start_time < ?
+              AND (UPPER(s.name) = 'DARTS' OR s.api_id = 78)
+            LIMIT 1
+        ");
+        $dartsTomorrowStmt->bind_param("ss", $tomorrowStart, $dayAfterTomorrowStart);
+        $dartsTomorrowStmt->execute();
+        $isDartsClaimWindow = $dartsTomorrowStmt->get_result()->num_rows > 0;
+        $dartsTomorrowStmt->close();
+    }
+
+    if (!$isDartsClaimWindow) {
+        echo json_encode(['success' => false, 'message' => 'A darts bónusz ma csak akkor elérhető, ha holnap van darts mérkőzés, és már elmúlt 12:00.']);
+        exit();
+    }
+}
+
 // Hétköznap-only bónusz csak hétfő 00:01 - péntek 23:59 között aktiválható
 if (!empty($bonus['valid_weekdays_only']) && !$isWeekdayWindow) {
     echo json_encode(['success' => false, 'message' => 'Ez a bónuszkód csak hétköznapokon 00:01 és 23:59 között aktiválható!']);
@@ -80,6 +111,65 @@ if (!empty($bonus['valid_weekdays_only']) && !$isWeekdayWindow) {
 if (empty($bonus['valid_weekdays_only']) && (int)$bonus['is_active'] !== 1) {
     echo json_encode(['success' => false, 'message' => 'Ez a bónuszkód jelenleg inaktív.']);
     exit();
+}
+
+// Többlépcsős bónusznál (2. lépcsőtől) csak akkor engedjük a claimet,
+// ha az előző lépcső COMPLETED.
+if ((int)($bonus['is_step_bonus'] ?? 0) === 1 && (int)($bonus['step_number'] ?? 0) > 1) {
+    $currentStep = (int)$bonus['step_number'];
+    $previousStep = $currentStep - 1;
+    $parentBonusId = isset($bonus['parent_bonus_id']) ? (int)$bonus['parent_bonus_id'] : 0;
+
+    if ($parentBonusId > 0) {
+        $prevBonusStmt = $conn->prepare(" 
+            SELECT id
+            FROM BonusCodes
+            WHERE is_step_bonus = 1
+              AND bonus_type_id = ?
+              AND step_number = ?
+              AND (id = ? OR parent_bonus_id = ?)
+            LIMIT 1
+        ");
+        $prevBonusStmt->bind_param("iiii", $bonus['bonus_type_id'], $previousStep, $parentBonusId, $parentBonusId);
+    } else {
+        $prevBonusStmt = $conn->prepare(" 
+            SELECT id
+            FROM BonusCodes
+            WHERE is_step_bonus = 1
+              AND bonus_type_id = ?
+              AND step_number = ?
+            LIMIT 1
+        ");
+        $prevBonusStmt->bind_param("ii", $bonus['bonus_type_id'], $previousStep);
+    }
+    $prevBonusStmt->execute();
+    $prevBonusRes = $prevBonusStmt->get_result();
+    $prevBonusRow = $prevBonusRes->fetch_assoc();
+    $prevBonusStmt->close();
+
+    if (!$prevBonusRow || empty($prevBonusRow['id'])) {
+        echo json_encode(['success' => false, 'message' => 'Az előző bónuszlépcső nem található.']);
+        exit();
+    }
+
+    $prevCompletedStmt = $conn->prepare(" 
+        SELECT id
+        FROM UserBonuses
+        WHERE user_id = ?
+          AND bonus_id = ?
+          AND status = 'COMPLETED'
+        LIMIT 1
+    ");
+    $prevCompletedStmt->bind_param("ii", $user_id, $prevBonusRow['id']);
+    $prevCompletedStmt->execute();
+    $prevCompletedRes = $prevCompletedStmt->get_result();
+    $isPrevCompleted = $prevCompletedRes->num_rows > 0;
+    $prevCompletedStmt->close();
+
+    if (!$isPrevCompleted) {
+        echo json_encode(['success' => false, 'message' => 'Előbb az előző üdvözlő lépcsőt kell teljesítened.']);
+        exit();
+    }
 }
 
 // 2. Leellenőrizzük, hogy a user használta-e már ezt a bónuszt
@@ -133,8 +223,10 @@ if ($already_claimed) {
 }
 
 // 3. Bónusz összeg és státusz meghatározása
-$isDepositTriggered = (strtoupper((string)($bonus['bonus_trigger'] ?? '')) === 'DEPOSIT');
-$status = $isDepositTriggered ? 'PENDING' : 'ACTIVE';
+$bonusTrigger = strtoupper((string)($bonus['bonus_trigger'] ?? ''));
+$isDepositTriggered = ($bonusTrigger === 'DEPOSIT');
+$isBetTriggered = ($bonusTrigger === 'BET');
+$status = ($isDepositTriggered || $isBetTriggered) ? 'PENDING' : 'ACTIVE';
 
 // Granted amount kiszámítása
 $granted_amount = 0.00;
@@ -184,6 +276,17 @@ if ($insert_stmt->execute()) {
         $msg = 'Bónusz aktiválva! A jóváírás a befizetés után történik.';
         if ($minDeposit > 0) {
             $msg .= ' Minimum befizetés: ' . number_format($minDeposit, 0, ',', ' ') . ' FT.';
+        }
+    } elseif ($isBetTriggered) {
+        $minStake = (float)($bonus['min_deposit'] ?? 0);
+        $minCombo = (int)($bonus['min_combo'] ?? 0);
+        $minOdds = (float)($bonus['min_odds'] ?? 0);
+        $msg = 'Bónusz aktiválva! A jóváírás a kvalifikáló fogadás után történik.';
+        if ($minStake > 0) {
+            $msg .= ' Minimum tét: ' . number_format($minStake, 0, ',', ' ') . ' FT.';
+        }
+        if ($minCombo > 0 || $minOdds > 0) {
+            $msg .= ' Követelmény: legalább ' . max(1, $minCombo) . '-es kötés, min. ' . number_format($minOdds, 0, ',', ' ') . '-es össz odds.';
         }
     } else {
         $msg = 'Bónusz sikeresen beváltva! ' . number_format($granted_amount, 0, ',', ' ') . ' FT jóváírva a fiókodban.';

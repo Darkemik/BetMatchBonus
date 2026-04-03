@@ -288,9 +288,25 @@ function updateTicketStatus($conn, $ticketId, $userId) {
     if ($newStatus === 'WON') {
         $potentialWin = (float)$ticketRow['potential_win'];
 
+        $hasWinningsBalance = false;
+        $winningsColStmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Users' AND COLUMN_NAME = 'winnings_balance'");
+        $winningsColStmt->execute();
+        $winningsColRes = $winningsColStmt->get_result()->fetch_assoc();
+        $winningsColStmt->close();
+        if ($winningsColRes && (int)$winningsColRes['cnt'] > 0) {
+            $hasWinningsBalance = true;
+        }
+
         // Users.balance jovairasa (egyetlen egyenleg-forras)
-        $stmtUserBal = $conn->prepare("UPDATE Users SET balance = balance + ? WHERE id = ?");
-        $stmtUserBal->bind_param("di", $potentialWin, $userId);
+        $stmtUserBal = $conn->prepare($hasWinningsBalance
+            ? "UPDATE Users SET balance = balance + ?, winnings_balance = winnings_balance + ? WHERE id = ?"
+            : "UPDATE Users SET balance = balance + ? WHERE id = ?"
+        );
+        if ($hasWinningsBalance) {
+            $stmtUserBal->bind_param("ddi", $potentialWin, $potentialWin, $userId);
+        } else {
+            $stmtUserBal->bind_param("di", $potentialWin, $userId);
+        }
         $stmtUserBal->execute();
         $stmtUserBal->close();
 

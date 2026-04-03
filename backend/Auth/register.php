@@ -103,6 +103,8 @@ if (!$stmt->execute()) {
 $userId = $stmt->insert_id;
 $_SESSION['user_id']  = $userId;
 $_SESSION['username'] = $username;
+$_SESSION['session_bet_total'] = 0.0;
+$_SESSION['login_started_at'] = time();
 
 // Wallet létrehozása 0 Ft alapegyenleggel
 $initialBalance = 0.00;

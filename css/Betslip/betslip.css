@@ -478,6 +478,19 @@
     font-weight: 500;
 }
 
+#freebet-option-row {
+    background: rgba(76, 175, 80, 0.08);
+    border: 1px solid rgba(76, 175, 80, 0.25);
+    border-radius: 6px;
+    padding: 8px 10px;
+}
+
+#freebet-option-row input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #4caf50;
+}
+
 .summary-value {
     color: #fff;
     font-weight: 600;

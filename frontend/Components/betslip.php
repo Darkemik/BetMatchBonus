@@ -49,6 +49,13 @@
                     aria-label="Tét összege"
                 >
             </div>
+            <div class="summary-row" id="freebet-option-row" style="display:none;">
+                <label style="display:flex; align-items:center; gap:8px; color:#9be7ff; font-weight:600; cursor:pointer;">
+                    <input type="checkbox" id="use-freebet-toggle">
+                    <span>Ingyenes fogadás:</span>
+                    <span class="summary-value" id="freebet-amount-display">0 Ft</span>
+                </label>
+            </div>
             <div class="summary-row highlight">
                 <span id="payout-label" data-i18n="betslip.potentialPayout">Lehetséges nyeremény:</span>
                 <span class="summary-value highlight-value" id="potential-payout">100 Ft</span>

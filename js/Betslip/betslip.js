@@ -13,6 +13,58 @@ document.addEventListener('DOMContentLoaded', function() {
     let isLoggedIn = false;
     let currentUserId = null;
     let userBalance = 0;
+    let availableFreeBetAmount = 0;
+    let availableFreeBetId = 0;
+    let manualStakeBeforeFreeBet = 100;
+
+    function formatFt(value) {
+        return (parseFloat(value) || 0).toLocaleString('hu-HU', {
+            maximumFractionDigits: 0,
+            minimumFractionDigits: 0
+        }) + ' Ft';
+    }
+
+    function renderFreeBetOption() {
+        const row = document.getElementById('freebet-option-row');
+        const amountEl = document.getElementById('freebet-amount-display');
+        const toggle = document.getElementById('use-freebet-toggle');
+        const stakeInput = document.getElementById('stake-input');
+        if (!row || !amountEl || !toggle || !stakeInput) return;
+
+        if (isLoggedIn && availableFreeBetAmount > 0 && availableFreeBetId > 0 && ticketItems.length > 0) {
+            row.style.display = 'flex';
+            amountEl.textContent = formatFt(availableFreeBetAmount);
+        } else {
+            row.style.display = 'none';
+            toggle.checked = false;
+            stakeInput.readOnly = false;
+            stakeInput.removeAttribute('aria-disabled');
+        }
+    }
+
+    function applyFreeBetSelectionState() {
+        const toggle = document.getElementById('use-freebet-toggle');
+        const stakeInput = document.getElementById('stake-input');
+        if (!toggle || !stakeInput) return;
+
+        if (toggle.checked && availableFreeBetAmount > 0) {
+            manualStakeBeforeFreeBet = parseFloat(stakeInput.value) || manualStakeBeforeFreeBet || 100;
+            stakeInput.value = String(Math.round(availableFreeBetAmount));
+            stakeInput.readOnly = true;
+            stakeInput.setAttribute('aria-disabled', 'true');
+        } else {
+            stakeInput.readOnly = false;
+            stakeInput.removeAttribute('aria-disabled');
+            if ((parseFloat(stakeInput.value) || 0) === Math.round(availableFreeBetAmount) && manualStakeBeforeFreeBet > 0) {
+                stakeInput.value = String(Math.round(manualStakeBeforeFreeBet));
+            }
+        }
+
+        let totalOdds = 1;
+        ticketItems.forEach(item => totalOdds *= item.odds);
+        updatePotentialWin(totalOdds);
+        updatePlaceBetButton();
+    }
 
     // ===== BEJELENTKEZÉS ELLENŐRZÉSE =====
     function checkLoginStatus() {
@@ -22,13 +74,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 isLoggedIn = data.loggedIn === true;
                 currentUserId = data.user?.id || null;
                 userBalance = parseFloat(data.user?.balance) || 0;
+                availableFreeBetAmount = parseFloat(data.user?.available_free_bet_amount) || 0;
+                availableFreeBetId = parseInt(data.user?.available_free_bet_id, 10) || 0;
                 console.log('[BETSLIP] Login status:', isLoggedIn, 'User ID:', currentUserId, 'Balance:', userBalance);
+                renderFreeBetOption();
+                applyFreeBetSelectionState();
                 updatePlaceBetButton();
             })
             .catch(e => {
                 console.error('[BETSLIP] Login check error:', e);
                 isLoggedIn = false;
                 userBalance = 0;
+                availableFreeBetAmount = 0;
+                availableFreeBetId = 0;
+                renderFreeBetOption();
                 updatePlaceBetButton();
             });
     }
@@ -221,6 +280,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (clearBtn) clearBtn.style.display = 'none';
             if (summary) summary.style.display = 'none';
             if (betslipCountEl) betslipCountEl.textContent = '0';
+            renderFreeBetOption();
             updateTypeTabs();
             return;
         }
@@ -267,6 +327,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const totalOddsEl = document.getElementById('total-odds');
         if (totalOddsEl) totalOddsEl.textContent = totalOdds.toFixed(3);
         updatePotentialWin(totalOdds);
+        renderFreeBetOption();
         updatePlaceBetButton();
         updateTypeTabs();
         
@@ -313,18 +374,22 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!submitBtn) return;
         
         const stake = parseFloat(document.getElementById('stake-input')?.value) || 0;
+        const useFreeBet = !!document.getElementById('use-freebet-toggle')?.checked;
+        const freeBetCoversStake = useFreeBet && availableFreeBetAmount >= stake && availableFreeBetId > 0;
         
         // Letiltás feltételei:
-        if (!isLoggedIn || userBalance === 0 || userBalance < stake || ticketItems.length === 0) {
+        if (!isLoggedIn || ticketItems.length === 0 || (!freeBetCoversStake && (userBalance === 0 || userBalance < stake))) {
             submitBtn.disabled = true;
             if (!isLoggedIn) {
                 submitBtn.title = t('betslip.mustLogin', 'Be kell jelentkezned a fogadáshoz');
+            } else if (ticketItems.length === 0) {
+                submitBtn.title = t('betslip.minOneBet', 'Legalább egy fogadás szükséges');
+            } else if (useFreeBet && !freeBetCoversStake) {
+                submitBtn.title = 'Az ingyenes fogadás összege nem fedezi a tétet.';
             } else if (userBalance === 0) {
                 submitBtn.title = t('betslip.noBalance', 'Nincs elegendő egyenleg! Kérjük, töltsd fel az accountot.');
             } else if (userBalance < stake) {
                 submitBtn.title = t('betslip.insufficientStakeBalance', 'Nincs elegendő egyenleg az adott téthez!');
-            } else if (ticketItems.length === 0) {
-                submitBtn.title = t('betslip.minOneBet', 'Legalább egy fogadás szükséges');
             }
         } else {
             submitBtn.disabled = false;
@@ -337,6 +402,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (ticketItems.length === 0) return;
             
             const stake = parseFloat(document.getElementById('stake-input').value) || 0;
+            const useFreeBet = !!document.getElementById('use-freebet-toggle')?.checked;
             if (stake < 100) {
                 BmbPopup.warning(t('betslip.minStakeMsg', 'Minimum tét: 100 Ft'), t('betslip.invalidStakeTitle', 'Érvénytelen tét'));
                 return;
@@ -347,7 +413,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            if (userBalance === 0 || userBalance < stake) {
+            if (useFreeBet) {
+                if (!(availableFreeBetId > 0 && availableFreeBetAmount >= stake)) {
+                    BmbPopup.warning('Az ingyenes fogadás összege nem elegendő ehhez a téthez.', 'Ingyenes fogadás hiba');
+                    return;
+                }
+            } else if (userBalance === 0 || userBalance < stake) {
                 BmbPopup.warning(t('betslip.noBalance', 'Nincs elegendő egyenleg! Kérjük, töltsd fel az accountot.'), t('betslip.noMoneyTitle', 'Nincs elegendő pénz'));
                 return;
             }
@@ -371,7 +442,9 @@ document.addEventListener('DOMContentLoaded', function() {
             stake: stake,
             totalOdds: totalOdds,
             potentialWin: Math.round(stake * totalOdds),
-            items: ticketItems
+            items: ticketItems,
+            useFreeBet: !!document.getElementById('use-freebet-toggle')?.checked,
+            freeBetUserBonusId: parseInt(document.getElementById('use-freebet-toggle')?.checked ? availableFreeBetId : 0, 10) || 0
         };
 
         fetch('../../backend/ApiRequest/submit_ticket.php', {
@@ -382,6 +455,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(r => r.json())
         .then(data => {
             if (data.status === 'ok') {
+                const usedFreeBet = !!data.free_bet_used;
                 // Success modal
                 let successModal = document.getElementById('betslip-success-modal');
                 if (!successModal) {
@@ -399,6 +473,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </div>
                                 <div class="modal-body">
                                     <p><strong>${t('betslip.stakeLabel', 'Tét:')}</strong> ${stake.toLocaleString('hu-HU')} Ft</p>
+                                    ${usedFreeBet ? `<p><strong>Ingyenes fogadás:</strong> ${stake.toLocaleString('hu-HU')} Ft</p>` : ''}
                                     <p><strong>${t('betslip.potentialWinLabel', 'Lehetséges nyeremény:')}</strong> ${Math.round(stake * totalOdds).toLocaleString('hu-HU')} Ft</p>
                                 </div>
                                 <div class="modal-footer border-top border-secondary">
@@ -417,6 +492,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 saveToStorage();
                 renderTicket();
                 refreshAllOddsButtons();
+
+                if (usedFreeBet) {
+                    availableFreeBetAmount = Math.max(0, availableFreeBetAmount - stake);
+                    if (availableFreeBetAmount <= 0) {
+                        availableFreeBetId = 0;
+                    }
+                }
 
                 // Azonnali lokális egyenlegfrissítés (jobb felső sarok)
                 if (typeof data.new_balance === 'number' && !Number.isNaN(data.new_balance)) {
@@ -471,6 +553,12 @@ document.addEventListener('DOMContentLoaded', function() {
             BmbPopup.error(t('betslip.serverErrorMsg', 'Szerverhiba! Kérjük próbáld újra később.'), t('live.serverError', 'Szerverhiba'));
         });
     }
+
+    document.addEventListener('change', (e) => {
+        if (e.target && e.target.id === 'use-freebet-toggle') {
+            applyFreeBetSelectionState();
+        }
+    });
 
     // ===== CLEAR BUTTON =====
     const clearBtn = document.getElementById('clear-bets-btn');

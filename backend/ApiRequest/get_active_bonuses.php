@@ -9,7 +9,7 @@ $isAfterDailyRefresh = (date('H:i') >= '00:01');
 $isWeekdayWindow = ($isWeekday && $isAfterDailyRefresh);
 
 // Csak az aktív bónuszokat kérjük le
-$query = "SELECT id, code, name, description, bonus_amount, min_deposit, max_bonus_amount, match_percent, is_step_bonus, step_number, bonus_type_id, bet_reward_type, valid_weekdays_only 
+$query = "SELECT id, code, name, description, bonus_amount, min_deposit, max_bonus_amount, match_percent, is_step_bonus, step_number, parent_bonus_id, bonus_type_id, bet_reward_type, valid_weekdays_only 
           FROM BonusCodes 
           WHERE is_active = 1 OR valid_weekdays_only = 1
           ORDER BY id DESC";
@@ -21,6 +21,28 @@ $userId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
 $todayFrom = date('Y-m-d 00:01:00');
 $tomorrowFrom = date('Y-m-d 00:01:00', strtotime('+1 day'));
 $isBrandNewUser = false;
+$isDartsPrematchWindow = false;
+
+$todayNoon = date('Y-m-d 12:00:00');
+$tomorrowStart = date('Y-m-d 00:00:00', strtotime('+1 day'));
+$dayAfterTomorrowStart = date('Y-m-d 00:00:00', strtotime('+2 day'));
+
+if (date('Y-m-d H:i:s') >= $todayNoon) {
+        $dartsTomorrowStmt = $conn->prepare(" 
+                SELECT 1
+                FROM Events e
+                INNER JOIN Sports s ON s.id = e.sport_id
+                WHERE e.start_time >= ?
+                    AND e.start_time < ?
+                    AND (UPPER(s.name) = 'DARTS' OR s.api_id = 78)
+                LIMIT 1
+        ");
+        $dartsTomorrowStmt->bind_param("ss", $tomorrowStart, $dayAfterTomorrowStart);
+        $dartsTomorrowStmt->execute();
+        $dartsTomorrowRes = $dartsTomorrowStmt->get_result();
+        $isDartsPrematchWindow = $dartsTomorrowRes->num_rows > 0;
+        $dartsTomorrowStmt->close();
+}
 
 if ($userId > 0) {
     $freshStmt = $conn->prepare(" 
@@ -45,10 +67,78 @@ if ($result) {
             continue;
         }
 
+        // DARTS bónusz csak akkor látszódjon, ha holnap van darts meccs,
+        // és már legalább az előző nap 12:00 van.
+        $isDartsBonus = (strtoupper((string)($row['code'] ?? '')) === 'DARTSBONUSZ5K');
+        if ($isDartsBonus && !$isDartsPrematchWindow) {
+            continue;
+        }
+
         // Üdvözlő 1. lépés kizárólag vadonatúj fiókoknál jelenjen meg.
         $isWelcomeStep1 = ((int)$row['bonus_type_id'] === 1 && (int)$row['is_step_bonus'] === 1 && (int)$row['step_number'] === 1);
         if ($isWelcomeStep1 && $userId > 0) {
             if (!$isBrandNewUser) {
+                continue;
+            }
+        }
+
+        // Többlépcsős bónusznál a következő lépcső csak akkor jelenjen meg,
+        // ha az előző lépcső a felhasználónál COMPLETED.
+        if ((int)($row['is_step_bonus'] ?? 0) === 1 && (int)($row['step_number'] ?? 0) > 1) {
+            if ($userId <= 0) {
+                continue;
+            }
+
+            $currentStep = (int)$row['step_number'];
+            $parentBonusId = isset($row['parent_bonus_id']) ? (int)$row['parent_bonus_id'] : 0;
+            $previousStep = $currentStep - 1;
+
+            if ($parentBonusId > 0) {
+                $prevBonusStmt = $conn->prepare(" 
+                    SELECT id
+                    FROM BonusCodes
+                    WHERE is_step_bonus = 1
+                      AND bonus_type_id = ?
+                      AND step_number = ?
+                      AND (id = ? OR parent_bonus_id = ?)
+                    LIMIT 1
+                ");
+                $prevBonusStmt->bind_param("iiii", $row['bonus_type_id'], $previousStep, $parentBonusId, $parentBonusId);
+            } else {
+                $prevBonusStmt = $conn->prepare(" 
+                    SELECT id
+                    FROM BonusCodes
+                    WHERE is_step_bonus = 1
+                      AND bonus_type_id = ?
+                      AND step_number = ?
+                    LIMIT 1
+                ");
+                $prevBonusStmt->bind_param("ii", $row['bonus_type_id'], $previousStep);
+            }
+            $prevBonusStmt->execute();
+            $prevBonusRes = $prevBonusStmt->get_result();
+            $prevBonusRow = $prevBonusRes->fetch_assoc();
+            $prevBonusStmt->close();
+
+            if (!$prevBonusRow || empty($prevBonusRow['id'])) {
+                continue;
+            }
+
+            $prevCompletedStmt = $conn->prepare(" 
+                SELECT id
+                FROM UserBonuses
+                WHERE user_id = ?
+                  AND bonus_id = ?
+                  AND status = 'COMPLETED'
+                LIMIT 1
+            ");
+            $prevCompletedStmt->bind_param("ii", $userId, $prevBonusRow['id']);
+            $prevCompletedStmt->execute();
+            $prevCompletedRes = $prevCompletedStmt->get_result();
+            $isPrevCompleted = $prevCompletedRes->num_rows > 0;
+            $prevCompletedStmt->close();
+
+            if (!$isPrevCompleted) {
                 continue;
             }
         }

@@ -2,6 +2,21 @@ async function refreshAuthUI() {
   const loginBtn = document.querySelector('.loginbtn');
   const regBtn = document.querySelector('.registrationbtn');
   const userMenu = document.getElementById('userMenu');
+  const sessionBetEl = document.getElementById('sessionBetDisplay');
+  const sessionLoginDurationEl = document.getElementById('sessionLoginDurationDisplay');
+
+  if (window.__sessionLoginDurationTimer) {
+    clearInterval(window.__sessionLoginDurationTimer);
+    window.__sessionLoginDurationTimer = null;
+  }
+
+  const formatDuration = (totalSeconds) => {
+    const sec = Math.max(0, Math.floor(totalSeconds || 0));
+    const hh = String(Math.floor(sec / 3600)).padStart(2, '0');
+    const mm = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+    const ss = String(sec % 60).padStart(2, '0');
+    return `${hh}:${mm}:${ss}`;
+  };
 
   if (!userMenu) return;
 
@@ -14,6 +29,8 @@ async function refreshAuthUI() {
       if (loginBtn) loginBtn.style.display = '';
       if (regBtn) regBtn.style.display = '';
       userMenu.style.display = 'none';
+      if (sessionBetEl) sessionBetEl.textContent = '0 FT';
+      if (sessionLoginDurationEl) sessionLoginDurationEl.textContent = '00:00:00';
       return;
     }
 
@@ -29,8 +46,23 @@ async function refreshAuthUI() {
     // Balance megjelenítése formázva
     const balance = parseFloat(u.balance) || 0;
     const balanceFormatted = balance.toLocaleString('hu-HU', { style: 'currency', currency: 'HUF' }).replace('Ft', 'FT').trim();
+    const sessionBetTotal = parseFloat(u.session_bet_total) || 0;
+    const sessionBetFormatted = sessionBetTotal.toLocaleString('hu-HU', {
+      maximumFractionDigits: 0,
+      minimumFractionDigits: 0
+    }) + ' FT';
+    const loginStartedAt = parseInt(u.login_started_at, 10) || Math.floor(Date.now() / 1000);
     
     if (usernameEl) usernameEl.textContent = balanceFormatted;
+    if (sessionBetEl) sessionBetEl.textContent = sessionBetFormatted;
+    if (sessionLoginDurationEl) {
+      const updateDuration = () => {
+        const nowSec = Math.floor(Date.now() / 1000);
+        sessionLoginDurationEl.textContent = formatDuration(nowSec - loginStartedAt);
+      };
+      updateDuration();
+      window.__sessionLoginDurationTimer = setInterval(updateDuration, 1000);
+    }
     if (fullNameEl) fullNameEl.textContent = u.full_name || u.username || '-';
     if (emailEl) emailEl.textContent = u.email || '-';
   } catch (e) {

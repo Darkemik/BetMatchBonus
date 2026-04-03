@@ -56,12 +56,56 @@ try {
         $conn->query(" 
                 UPDATE BonusCodes
                 SET is_active = 1,
-                        activation_expire_hours = 48
+                bonus_trigger = 'DEPOSIT',
+                bet_reward_type = 'BONUS_MONEY',
+                min_deposit = 3000.00,
+                match_percent = 100.00,
+                max_bonus_amount = 20000.00,
+                min_combo = 2,
+                min_odds = 2.00,
+                wagering_multiplier = 3.00,
+                activation_expire_hours = 48
                 WHERE bonus_type_id = 1
                     AND is_step_bonus = 1
                     AND step_number = 1
                     AND code IS NULL
         ");
+
+                // Üdvözlő 2. lépés: minimum 10.000 Ft feltöltés esetén 5.000 Ft ingyenes fogadás.
+                $conn->query(" 
+                    UPDATE BonusCodes
+                    SET is_active = 1,
+                        bonus_trigger = 'DEPOSIT',
+                        bet_reward_type = 'FREE_BET',
+                        min_deposit = 10000.00,
+                        bonus_amount = 5000.00,
+                        max_bonus_amount = 5000.00,
+                        match_percent = 0.00,
+                        min_combo = 2,
+                        min_odds = 2.00,
+                        wagering_multiplier = 0.00
+                    WHERE bonus_type_id = 1
+                      AND is_step_bonus = 1
+                      AND step_number = 2
+                      AND code IS NULL
+                ");
+
+    // Darts bónusz alapbeállítás: aktív, 10.000 Ft kvalifikáló fogadás,
+    // 2-es kötés, minimum 2-es össz odds, jutalom 5.000 Ft.
+    $conn->query(" 
+        UPDATE BonusCodes
+        SET is_active = 1,
+            bonus_trigger = 'BET',
+            sport_restriction = 'DARTS',
+            min_deposit = 10000.00,
+            min_combo = 2,
+            min_odds = 2.00,
+            bonus_amount = 5000.00,
+            max_bonus_amount = 5000.00,
+            match_percent = 0.00,
+            activation_expire_hours = 48
+        WHERE code = 'DARTSBONUSZ5K'
+    ");
 
     $weekendActive = $isWeekday ? 0 : 1;
     $conn->query("UPDATE BonusCodes SET is_active = {$weekendActive} WHERE code = 'BONUSZHETVEGE5K'");

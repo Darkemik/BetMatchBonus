@@ -215,16 +215,21 @@ foreach ($pending_bonuses as $pb) {
     }
 
     // UserBonuses aktiválása: jóváírás után ACTIVE állapot, forgatás követhető marad
-    $activate_stmt = $conn->prepare("
+    $isFreeBetReward = (strtoupper((string)($pb['bet_reward_type'] ?? '')) === 'FREE_BET');
+    $bonusMoneyAmount = $isFreeBetReward ? 0.00 : $granted;
+    $freeBetAmount = $isFreeBetReward ? $granted : 0.00;
+
+    $activate_stmt = $conn->prepare(" 
         UPDATE UserBonuses
         SET status = 'ACTIVE',
             granted_amount = ?,
             bonus_money_amount = ?,
+            free_bet_amount = ?,
             wagering_required = ?,
             expires_at = ?
         WHERE id = ?
     ");
-    $activate_stmt->bind_param("dddsi", $granted, $granted, $wagering, $expires_at, $pb['user_bonus_id']);
+    $activate_stmt->bind_param("ddddsi", $granted, $bonusMoneyAmount, $freeBetAmount, $wagering, $expires_at, $pb['user_bonus_id']);
     $activate_stmt->execute();
     $activate_stmt->close();
 
@@ -236,7 +241,7 @@ foreach ($pending_bonuses as $pb) {
     // Üdvözlő 1. lépés mindig a bónusz egyenlegre menjen (nem kiutalható).
     if (!$isWelcomeStep1 && strtoupper((string)($pb['bet_reward_type'] ?? '')) === 'BONUS_MONEY') {
         $bonus_credit_to_balance += $granted;
-    } else {
+    } elseif (!$isFreeBetReward) {
         $bonus_credit_to_bonus_balance += $granted;
     }
 }

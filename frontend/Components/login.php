@@ -1,6 +1,14 @@
 <button class="loginbtn" data-i18n="auth.login" data-bs-toggle="modal" data-bs-target="#loginModal">Bejelentkezés</button>
 <button class="registrationbtn" data-i18n="auth.register" data-bs-toggle="modal" data-bs-target="#registerModal">Regisztráció</button>
 <div id="userMenu" class="dropdown" style="display:none;">
+    <div class="session-login-badge" title="Belépés óta eltelt idő">
+        <span class="session-login-icon" aria-hidden="true">⏱</span>
+        <span id="sessionLoginDurationDisplay">00:00:00</span>
+    </div>
+    <div class="session-bet-badge" title="Belépés óta fogadott összeg">
+        <span class="session-bet-icon" aria-hidden="true">💸</span>
+        <span id="sessionBetDisplay">0 FT</span>
+    </div>
     <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
         <span id="userMenuUsername">-</span>
     </button>

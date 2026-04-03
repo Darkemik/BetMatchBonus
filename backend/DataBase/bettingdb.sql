@@ -240,6 +240,7 @@ CREATE TABLE IF NOT EXISTS Users (
   id_image_second     VARCHAR(255)  DEFAULT NULL,
   address_image       VARCHAR(255)  DEFAULT NULL,
   balance             DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  winnings_balance    DECIMAL(12,2) NOT NULL DEFAULT 0.00,
   bonus_balance       DECIMAL(12,2) NOT NULL DEFAULT 0.00,
   is_verified         TINYINT(1)    NOT NULL DEFAULT 0,
   is_active           TINYINT(1)    NOT NULL DEFAULT 1,
@@ -600,7 +601,7 @@ VALUES
   'Fogadjon 10.000 Ft értékben 2-es kötésben kizárólag darts mérkőzésekre. Sikeres fogadás után 5.000 Ft bónusz jár, amit 2x kell megforgatni.',
   4,                          -- EVENT_SPECIFIC
   5000.00,
-  0.00,
+  10000.00,
   5000.00,
   0.00,
   'BONUS_MONEY',
@@ -627,7 +628,7 @@ VALUES
   1,
   '2026-01-01 00:00:00',
   NULL,
-  0                           -- Csak admin
+  1                           -- Aktív
 );
 
 -- 3. HÁROM LÉPCSŐS ÜDVÖZLŐ BÓNUSZ (NINCS KÓD)
@@ -673,7 +674,7 @@ VALUES
   1,
   '2026-01-01 00:00:00',
   NULL,
-  0                           -- Csak admin
+  1                           -- Aktív
 );
 
 -- 3.2 Második lépcső: 10.000 Ft feltöltés -> 5.000 Ft ingyenes fogadás
