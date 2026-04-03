@@ -23,16 +23,14 @@ $stmt->close();
 
 // POST kérelmen adatok módosítása
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
-    $full_name = htmlspecialchars($_POST['full_name'] ?? '');
-    $phone = htmlspecialchars($_POST['phone'] ?? '');
     $country = htmlspecialchars($_POST['country'] ?? '');
     $city = htmlspecialchars($_POST['city'] ?? '');
     $postal_code = htmlspecialchars($_POST['postal_code'] ?? '');
     $address = htmlspecialchars($_POST['address'] ?? '');
 
-    $update_query = "UPDATE Users SET full_name = ?, mobile_number = ?, country = ?, city = ?, postal_code = ?, address = ? WHERE id = ?";
+    $update_query = "UPDATE Users SET country = ?, city = ?, postal_code = ?, address = ? WHERE id = ?";
     $update_stmt = $conn->prepare($update_query);
-    $update_stmt->bind_param("ssssssi", $full_name, $phone, $country, $city, $postal_code, $address, $user_id);
+    $update_stmt->bind_param("ssssi", $country, $city, $postal_code, $address, $user_id);
     
     if ($update_stmt->execute()) {
         $_SESSION['success_message'] = "Személyes adatok sikeresen frissítve!";
@@ -76,6 +74,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
             <div class="col-md-9">
                 <div class="profile-content">
                     <h1><i class="fas fa-user"></i> Személyes Adatok</h1>
+
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        A kifizetés előtt kötelező kitölteni a lakcímadatokat (ország, város, irányítószám, cím). A fiókodat egy admin ellenőrzi, hogy a megadott adatok helyesek-e.
+                    </div>
                     
                     <?php if (isset($_SESSION['success_message'])): ?>
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -106,12 +109,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                         
                         <div class="form-group mb-3">
                             <label for="full_name">Teljes Név</label>
-                            <input type="text" class="form-control" id="full_name" name="full_name" value="<?php echo htmlspecialchars($user['full_name'] ?? ''); ?>" required>
+                            <input type="text" class="form-control" id="full_name" value="<?php echo htmlspecialchars($user['full_name'] ?? ''); ?>" disabled>
+                            <small class="form-text" style="color: white;">A teljes név nem módosítható</small>
                         </div>
                         
                         <div class="form-group mb-3">
                             <label for="phone">Telefon</label>
-                            <input type="tel" class="form-control" id="phone" name="phone" value="<?php echo htmlspecialchars($user['phone'] ?? ''); ?>">
+                            <input type="tel" class="form-control" id="phone" value="<?php echo htmlspecialchars($user['phone'] ?? ''); ?>" disabled>
+                            <small class="form-text" style="color: white;">A telefonszám nem módosítható</small>
                         </div>
                         
                         <div class="form-group mb-3">
