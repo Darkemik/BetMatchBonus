@@ -106,16 +106,8 @@ foreach ($bonuses as $bonus) {
                         <div class="col-md-3">
                             <div class="card bonus-card">
                                 <div class="card-body">
-                                    <h6 class="card-title">Teljes Bónusz Érték</h6>
+                                    <h6 class="card-title">Ingyenes Fogadások</h6>
                                     <h2 class="text-primary"><?php echo number_format($total_bonus_amount, 0, ',', ' '); ?> FT</h2>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card bonus-card">
-                                <div class="card-body">
-                                    <h6 class="card-title">Lejárt/Felhasznált</h6>
-                                    <h2 class="text-danger"><?php echo $expired_bonuses; ?></h2>
                                 </div>
                             </div>
                         </div>
@@ -124,7 +116,14 @@ foreach ($bonuses as $bonus) {
                                 <div class="card-body">
                                     <h6 class="card-title">Bónusz Egyenleg</h6>
                                     <h2 class="text-warning"><?php echo number_format($bonus_balance, 0, ',', ' '); ?> FT</h2>
-                                    <small class="text-muted">Rendes: <?php echo number_format($regular_balance, 0, ',', ' '); ?> FT</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bonus-card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Lejárt/Felhasznált</h6>
+                                    <h2 class="text-danger"><?php echo $expired_bonuses; ?></h2>
                                 </div>
                             </div>
                         </div>
