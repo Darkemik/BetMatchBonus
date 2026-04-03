@@ -115,7 +115,10 @@ if (!$isDepositTriggered) {
 
 // Lejárati dátum
 $expires_at = null;
-if (!$isDepositTriggered && isset($bonus['activation_expire_hours']) && $bonus['activation_expire_hours'] > 0) {
+if (!empty($bonus['valid_weekdays_only'])) {
+    $daysUntilFriday = max(0, 5 - (int)date('N'));
+    $expires_at = date('Y-m-d 23:59:00', strtotime('+' . $daysUntilFriday . ' day'));
+} elseif (!$isDepositTriggered && isset($bonus['activation_expire_hours']) && $bonus['activation_expire_hours'] > 0) {
     $expires_at = date('Y-m-d H:i:s', strtotime("+{$bonus['activation_expire_hours']} hours"));
 }
 

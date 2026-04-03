@@ -33,7 +33,7 @@ $regular_balance = $user_balances['balance'] ?? 0;
 $bonus_balance   = $hasBonusBalance ? ($user_balances['bonus_balance'] ?? 0) : 0;
 
 // Felhasználó bónuszainak lekérése az aktív bónuszokkal együtt
-$query = "SELECT ub.id, ub.bonus_id, bc.name as bonus_name, ub.granted_amount, ub.status, ub.expires_at, ub.wagering_progress, ub.wagering_required, ub.used, ub.created_at 
+$query = "SELECT ub.id, ub.bonus_id, bc.name as bonus_name, bc.valid_weekdays_only, ub.granted_amount, ub.status, ub.expires_at, ub.wagering_progress, ub.wagering_required, ub.used, ub.created_at 
           FROM UserBonuses ub
           LEFT JOIN BonusCodes bc ON ub.bonus_id = bc.id
           WHERE ub.user_id = ? 
@@ -179,7 +179,20 @@ foreach ($bonuses as $bonus) {
                                                 </p>
                                                 <p class="card-text mb-1">
                                                     <strong>Lejárat:</strong> 
-                                                    <?php echo $bonus['expires_at'] ? date('Y-m-d H:i', strtotime($bonus['expires_at'])) : '<span class="text-muted">Nincs megadva</span>'; ?>
+                                                    <?php
+                                                        if (!empty($bonus['expires_at'])) {
+                                                            echo date('Y-m-d H:i', strtotime($bonus['expires_at']));
+                                                        } elseif (!empty($bonus['valid_weekdays_only']) && !empty($bonus['created_at'])) {
+                                                            $createdAt = new DateTime($bonus['created_at']);
+                                                            $weekday = (int)$createdAt->format('N');
+                                                            $daysUntilFriday = max(0, 5 - $weekday);
+                                                            $createdAt->modify('+' . $daysUntilFriday . ' day');
+                                                            $createdAt->setTime(23, 59, 0);
+                                                            echo $createdAt->format('Y-m-d H:i');
+                                                        } else {
+                                                            echo '<span class="text-white">Nincs megadva</span>';
+                                                        }
+                                                    ?>
                                                 </p>
                                             </div>
                                             <div class="col-md-4 text-end">

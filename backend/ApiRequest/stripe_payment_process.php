@@ -207,7 +207,10 @@ foreach ($pending_bonuses as $pb) {
 
     // Lejárati dátum kiszámítása
     $expires_at = null;
-    if (!empty($pb['activation_expire_hours']) && (int)$pb['activation_expire_hours'] > 0) {
+    if (!empty($pb['valid_weekdays_only'])) {
+        $daysUntilFriday = max(0, 5 - (int)date('N'));
+        $expires_at = date('Y-m-d 23:59:00', strtotime('+' . $daysUntilFriday . ' day'));
+    } elseif (!empty($pb['activation_expire_hours']) && (int)$pb['activation_expire_hours'] > 0) {
         $expires_at = date('Y-m-d H:i:s', strtotime('+' . (int)$pb['activation_expire_hours'] . ' hours'));
     }
 
