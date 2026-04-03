@@ -10,21 +10,27 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 $error_message = '';
 
+function normalize_name($name) {
+    $name = preg_replace('/\s+/u', ' ', trim((string)$name));
+    return mb_strtolower($name, 'UTF-8');
+}
+
 // Felhasználó aktuális egyenlege
-$query = "SELECT balance FROM Users WHERE id = ?";
+$query = "SELECT balance, full_name FROM Users WHERE id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 $balance = $user['balance'] ?? 0;
+$registered_full_name = $user['full_name'] ?? '';
 $stmt->close();
 
 // POST kérelmen kivét feldolgozása
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal'])) {
     $amount = floatval($_POST['amount'] ?? 0);
     $payment_method = htmlspecialchars($_POST['payment_method'] ?? '');
-    $account_holder = htmlspecialchars($_POST['account_holder'] ?? '');
+    $account_holder = trim($_POST['account_holder'] ?? '');
     $account_number = htmlspecialchars($_POST['account_number'] ?? '');
     $agreement = isset($_POST['agreement']) ? true : false;
 
@@ -36,6 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
         $error_message = "Csak banki átutalás lehetséges!";
     } elseif (empty($account_holder) || empty($account_number)) {
         $error_message = "Tölts ki minden szükséges mezőt!";
+    } elseif (normalize_name($account_holder) !== normalize_name($registered_full_name)) {
+        $error_message = "Számlán Szereplő Név nem egyezik a regisztráció során megadott Teljes névvel!";
     } elseif (!$agreement) {
         $error_message = "El kell fogadnod a nyereménykifizetési nyilatkozatot!";
     } elseif (!preg_match('/^\d{8}-?\d{8}$/', str_replace(' ', '', $account_number))) {
@@ -154,7 +162,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                         
                         <div class="form-group mb-3">
                             <label for="account_holder">Számlán Szereplő Név</label>
-                            <input type="text" class="form-control" id="account_holder" name="account_holder" required>
+                            <input type="text" class="form-control" id="account_holder" name="account_holder" required placeholder="Írd be a számlán szereplő nevet">
+                            <small class="form-text text-white">A névnek pontosan egyeznie kell a regisztrációkor megadott teljes névvel.</small>
                         </div>
                         
                         <div class="form-group mb-3">
