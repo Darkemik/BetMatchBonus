@@ -36,7 +36,8 @@ $bonus_balance   = $hasBonusBalance ? ($user_balances['bonus_balance'] ?? 0) : 0
 $query = "SELECT ub.id, ub.bonus_id, bc.name as bonus_name, bc.description as bonus_description,
                  bc.valid_weekdays_only, bc.min_deposit, bc.match_percent, bc.max_bonus_amount,
                  bc.wagering_multiplier, bc.min_combo, bc.min_odds, bc.min_odds_per_event,
-                 bc.bonus_trigger, ub.granted_amount, ub.status, ub.expires_at, ub.wagering_progress,
+                 bc.activation_expire_hours,
+                 bc.bonus_trigger, bc.bet_reward_type, ub.granted_amount, ub.status, ub.expires_at, ub.wagering_progress,
                  ub.wagering_required, ub.used, ub.created_at 
           FROM UserBonuses ub
           LEFT JOIN BonusCodes bc ON ub.bonus_id = bc.id
@@ -52,7 +53,7 @@ $stmt->close();
 // Aktív és lejárt bónuszok száma
 $active_bonuses = 0;
 $expired_bonuses = 0;
-$total_bonus_amount = 0;
+$total_free_bet_amount = 0;
 
 foreach ($bonuses as $bonus) {
     $isActiveAndValid = ($bonus['status'] === 'ACTIVE')
@@ -60,7 +61,9 @@ foreach ($bonuses as $bonus) {
 
     if ($isActiveAndValid) {
         $active_bonuses++;
-        $total_bonus_amount += $bonus['granted_amount'];
+        if (strtoupper((string)($bonus['bet_reward_type'] ?? '')) === 'FREE_BET') {
+            $total_free_bet_amount += (float)$bonus['granted_amount'];
+        }
     } elseif ($bonus['status'] === 'PENDING') {
         // A pending nem lejárt és nem is aktív még
     } else {
@@ -114,7 +117,7 @@ foreach ($bonuses as $bonus) {
                             <div class="card bonus-card">
                                 <div class="card-body">
                                     <h6 class="card-title">Ingyenes Fogadások</h6>
-                                    <h2 class="text-primary"><?php echo number_format($total_bonus_amount, 0, ',', ' '); ?> FT</h2>
+                                    <h2 class="text-primary"><?php echo number_format($total_free_bet_amount, 0, ',', ' '); ?> FT</h2>
                                 </div>
                             </div>
                         </div>
@@ -123,7 +126,6 @@ foreach ($bonuses as $bonus) {
                                 <div class="card-body">
                                     <h6 class="card-title">Bónusz Egyenleg</h6>
                                     <h2 class="text-warning"><?php echo number_format($bonus_balance, 0, ',', ' '); ?> FT</h2>
-                                    <small class="text-muted" style="display:block; line-height:1.25;">Nem kiutalható, csak fogadásra használható.</small>
                                 </div>
                             </div>
                         </div>
@@ -173,9 +175,6 @@ foreach ($bonuses as $bonus) {
                                                 <p class="card-text mb-1">
                                                     <strong>Érték:</strong> <span class="text-success"><?php echo number_format($bonus['granted_amount'], 0, ',', ' '); ?> FT</span>
                                                 </p>
-                                                <p class="card-text mb-1" style="color:#f5c518;">
-                                                    <strong>Jóváírás:</strong> <?php echo number_format($bonus['granted_amount'], 0, ',', ' '); ?> FT a bónusz egyenlegbe (nem kiutalható)
-                                                </p>
                                                 <p class="card-text mb-1">
                                                     <strong>Szükséges forgatás:</strong> 
                                                     <?php 
@@ -193,6 +192,10 @@ foreach ($bonuses as $bonus) {
                                                     <?php
                                                         if (!empty($bonus['expires_at'])) {
                                                             echo date('Y-m-d H:i', strtotime($bonus['expires_at']));
+                                                        } elseif (!empty($bonus['activation_expire_hours']) && (int)$bonus['activation_expire_hours'] > 0 && !empty($bonus['created_at'])) {
+                                                            $fallbackExpire = new DateTime($bonus['created_at']);
+                                                            $fallbackExpire->modify('+' . (int)$bonus['activation_expire_hours'] . ' hours');
+                                                            echo $fallbackExpire->format('Y-m-d H:i');
                                                         } elseif (!empty($bonus['valid_weekdays_only']) && !empty($bonus['created_at'])) {
                                                             $createdAt = new DateTime($bonus['created_at']);
                                                             $weekday = (int)$createdAt->format('N');

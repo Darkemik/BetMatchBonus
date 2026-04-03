@@ -55,7 +55,8 @@ try {
         // Üdvözlő 1. lépés mindig aktív legyen az új fiókok számára.
         $conn->query(" 
                 UPDATE BonusCodes
-                SET is_active = 1
+                SET is_active = 1,
+                        activation_expire_hours = 48
                 WHERE bonus_type_id = 1
                     AND is_step_bonus = 1
                     AND step_number = 1
