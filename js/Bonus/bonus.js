@@ -53,6 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <div class="doboz-tartalom">
                                     <p 
                                     class="doboz-cim">${bonus.title}</p>
+                                    ${bonus.status ? `<div class="bonus-feltetel" style="color:#36e28f; font-weight:700;">● ${bonus.status}</div>` : ''}
                                     <div class="bonus-feltetel">${bonus.condition}</div>
                                     <div class="doboz-gombok">
                                         ${buttonHTML}
@@ -109,7 +110,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     container.appendChild(box);
                 });
             })
-            .catch(err => console.error("Hiba az adatbazis bonuszainak betoltesekor:", err));
+            .catch(err => {
+                console.error("Hiba az adatbazis bonuszainak betoltesekor:", err);
+                container.innerHTML = '<p style="color: #ff6b6b; text-align: center; width: 100%;">A bónuszok betöltése sikertelen. Frissítsd az oldalt, vagy próbáld újra később.</p>';
+            });
     } catch (err) {
         console.error('Auth check error:', err);
     }
