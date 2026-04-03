@@ -115,7 +115,7 @@ if ($amount < 3000 || $amount > 600000) {
                     <div class="form-group mb-3">
                         <label for="cardNumber">Kártya Szám *</label>
                         <input type="text" class="form-control" id="cardNumber" name="card_number"
-                            placeholder="1234 5678 9012 3456" maxlength="19" required>
+                            placeholder="1234 5678 9012 3456" maxlength="19" inputmode="numeric" pattern="[0-9 ]{19}" title="Csak számokat adhatsz meg a kártyaszámhoz!" required>
                     </div>
 
                     <div class="row">
@@ -182,8 +182,9 @@ if ($amount < 3000 || $amount > 600000) {
         const cardDisplay = document.getElementById('cardDisplay');
 
         cardNumberInput.addEventListener('input', function () {
-            let value = this.value.replace(/\s/g, '');
-            let formattedValue = value.replace(/(\d{4})/g, '$1 ').trim();
+            // Csak számjegyeket engedünk, max 16 karakterig
+            let value = this.value.replace(/\D/g, '').substring(0, 16);
+            let formattedValue = value.replace(/(\d{4})(?=\d)/g, '$1 ');
             this.value = formattedValue;
 
             // Display masked
@@ -205,6 +206,13 @@ if ($amount < 3000 || $amount > 600000) {
         // Form submit validation
         document.querySelector('form').addEventListener('submit', function (e) {
             const expiryValue = document.getElementById('cardExpiryInput').value;
+            const cardNumberValue = document.getElementById('cardNumber').value.replace(/\D/g, '');
+
+            if (!/^\d{16}$/.test(cardNumberValue)) {
+                e.preventDefault();
+                alert('❌ A kártyaszámnak pontosan 16 számjegyből kell állnia!');
+                return false;
+            }
             
             // Check expiry date format
             if (!expiryValue.match(/^\d{2}\/\d{2}$/)) {
