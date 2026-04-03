@@ -29,11 +29,23 @@ $stake = (float)$input['stake'];
 $totalOdds = (float)$input['totalOdds'];
 $potentialWin = (float)$input['potentialWin'];
 $items = $input['items'] ?? [];
+$selectionCount = count($items);
+$ticketMinOdds = null;
 
 if ($stake < 100 || count($items) === 0) {
     http_response_code(400);
     echo json_encode(['status' => 'error', 'message' => 'Minimum tét: 100 Ft, legalább 1 tétel szükséges']);
     exit;
+}
+
+foreach ($items as $oddsItem) {
+    $itemOdds = isset($oddsItem['odds']) ? (float)$oddsItem['odds'] : 0.0;
+    if ($ticketMinOdds === null || $itemOdds < $ticketMinOdds) {
+        $ticketMinOdds = $itemOdds;
+    }
+}
+if ($ticketMinOdds === null) {
+    $ticketMinOdds = 0.0;
 }
 
 // Wallet ellenőrzése
@@ -183,18 +195,22 @@ try {
 
     // 7. AKTÍV BÓNUSZOK FORGATÁSI HALADÁSÁNAK FRISSÍTÉSE
     $stmtUpdateWagering = $conn->prepare(" 
-        UPDATE UserBonuses
-        SET wagering_progress = LEAST(
-                COALESCE(wagering_progress, 0) + ?,
-                COALESCE(wagering_required, COALESCE(wagering_progress, 0) + ?)
+        UPDATE UserBonuses ub
+        INNER JOIN BonusCodes bc ON bc.id = ub.bonus_id
+        SET ub.wagering_progress = LEAST(
+                COALESCE(ub.wagering_progress, 0) + ?,
+                COALESCE(ub.wagering_required, COALESCE(ub.wagering_progress, 0) + ?)
             )
-        WHERE user_id = ?
-          AND status = 'ACTIVE'
-          AND used = 0
-          AND COALESCE(wagering_required, 0) > 0
-          AND (expires_at IS NULL OR expires_at > NOW())
+        WHERE ub.user_id = ?
+          AND ub.status = 'ACTIVE'
+          AND ub.used = 0
+          AND COALESCE(ub.wagering_required, 0) > 0
+          AND (ub.expires_at IS NULL OR ub.expires_at > NOW())
+          AND (bc.min_combo IS NULL OR bc.min_combo = 0 OR bc.min_combo <= ?)
+          AND (bc.min_odds IS NULL OR bc.min_odds = 0 OR bc.min_odds <= ?)
+          AND (bc.min_odds_per_event IS NULL OR bc.min_odds_per_event = 0 OR bc.min_odds_per_event <= ?)
     ");
-    $stmtUpdateWagering->bind_param("ddi", $stake, $stake, $userId);
+    $stmtUpdateWagering->bind_param("ddiidd", $stake, $stake, $userId, $selectionCount, $totalOdds, $ticketMinOdds);
     $stmtUpdateWagering->execute();
     $stmtUpdateWagering->close();
 

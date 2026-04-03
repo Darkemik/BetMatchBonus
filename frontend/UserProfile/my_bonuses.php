@@ -33,7 +33,11 @@ $regular_balance = $user_balances['balance'] ?? 0;
 $bonus_balance   = $hasBonusBalance ? ($user_balances['bonus_balance'] ?? 0) : 0;
 
 // Felhasználó bónuszainak lekérése az aktív bónuszokkal együtt
-$query = "SELECT ub.id, ub.bonus_id, bc.name as bonus_name, bc.valid_weekdays_only, ub.granted_amount, ub.status, ub.expires_at, ub.wagering_progress, ub.wagering_required, ub.used, ub.created_at 
+$query = "SELECT ub.id, ub.bonus_id, bc.name as bonus_name, bc.description as bonus_description,
+                 bc.valid_weekdays_only, bc.min_deposit, bc.match_percent, bc.max_bonus_amount,
+                 bc.wagering_multiplier, bc.min_combo, bc.min_odds, bc.min_odds_per_event,
+                 bc.bonus_trigger, ub.granted_amount, ub.status, ub.expires_at, ub.wagering_progress,
+                 ub.wagering_required, ub.used, ub.created_at 
           FROM UserBonuses ub
           LEFT JOIN BonusCodes bc ON ub.bonus_id = bc.id
           WHERE ub.user_id = ? 
@@ -51,7 +55,10 @@ $expired_bonuses = 0;
 $total_bonus_amount = 0;
 
 foreach ($bonuses as $bonus) {
-    if ($bonus['status'] === 'ACTIVE' && $bonus['expires_at'] && strtotime($bonus['expires_at']) > time()) {
+    $isActiveAndValid = ($bonus['status'] === 'ACTIVE')
+        && (empty($bonus['expires_at']) || strtotime($bonus['expires_at']) > time());
+
+    if ($isActiveAndValid) {
         $active_bonuses++;
         $total_bonus_amount += $bonus['granted_amount'];
     } elseif ($bonus['status'] === 'PENDING') {
@@ -116,6 +123,7 @@ foreach ($bonuses as $bonus) {
                                 <div class="card-body">
                                     <h6 class="card-title">Bónusz Egyenleg</h6>
                                     <h2 class="text-warning"><?php echo number_format($bonus_balance, 0, ',', ' '); ?> FT</h2>
+                                    <small class="text-muted" style="display:block; line-height:1.25;">Nem kiutalható, csak fogadásra használható.</small>
                                 </div>
                             </div>
                         </div>
@@ -165,6 +173,9 @@ foreach ($bonuses as $bonus) {
                                                 <p class="card-text mb-1">
                                                     <strong>Érték:</strong> <span class="text-success"><?php echo number_format($bonus['granted_amount'], 0, ',', ' '); ?> FT</span>
                                                 </p>
+                                                <p class="card-text mb-1" style="color:#f5c518;">
+                                                    <strong>Jóváírás:</strong> <?php echo number_format($bonus['granted_amount'], 0, ',', ' '); ?> FT a bónusz egyenlegbe (nem kiutalható)
+                                                </p>
                                                 <p class="card-text mb-1">
                                                     <strong>Szükséges forgatás:</strong> 
                                                     <?php 
@@ -194,6 +205,27 @@ foreach ($bonuses as $bonus) {
                                                         }
                                                     ?>
                                                 </p>
+                                                <div class="mt-3">
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-sm bonus-desc-btn"
+                                                        style="background: linear-gradient(135deg, #1f8f5f 0%, #166748 100%); color: #fff; border: none; font-weight: 600; padding: 8px 12px; border-radius: 8px;"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#bonusDescriptionModal"
+                                                        data-bonus-name="<?= htmlspecialchars($bonus['bonus_name'] ?? 'Ismeretlen Bónusz', ENT_QUOTES, 'UTF-8') ?>"
+                                                        data-bonus-description="<?= htmlspecialchars($bonus['bonus_description'] ?? 'Nincs külön leírás ehhez a bónuszhoz.', ENT_QUOTES, 'UTF-8') ?>"
+                                                        data-min-deposit="<?= number_format((float)($bonus['min_deposit'] ?? 0), 0, ',', ' ') ?>"
+                                                        data-match-percent="<?= number_format((float)($bonus['match_percent'] ?? 0), 0, ',', ' ') ?>"
+                                                        data-max-bonus="<?= number_format((float)($bonus['max_bonus_amount'] ?? 0), 0, ',', ' ') ?>"
+                                                        data-wagering-multiplier="<?= number_format((float)($bonus['wagering_multiplier'] ?? 0), 1, ',', ' ') ?>"
+                                                        data-min-combo="<?= (int)($bonus['min_combo'] ?? 0) ?>"
+                                                        data-min-odds="<?= number_format((float)($bonus['min_odds'] ?? 0), 2, ',', ' ') ?>"
+                                                        data-min-odds-event="<?= number_format((float)($bonus['min_odds_per_event'] ?? 0), 2, ',', ' ') ?>"
+                                                        data-bonus-trigger="<?= htmlspecialchars((string)($bonus['bonus_trigger'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                                    >
+                                                        <i class="fas fa-info-circle"></i> Bónusz leírása
+                                                    </button>
+                                                </div>
                                             </div>
                                             <div class="col-md-4 text-end">
                                                 <?php 
@@ -226,6 +258,25 @@ foreach ($bonuses as $bonus) {
     </div>
 
     <?php require_once "../Components/footer.php"; ?>
+
+    <div class="modal fade" id="bonusDescriptionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: #16213e; color: #eee; border: 1px solid #e94560;">
+                <div class="modal-header" style="border-bottom: 1px solid rgba(233, 69, 96, 0.35);">
+                    <h5 class="modal-title" id="bonusDescTitle" style="color: #e94560;">Bónusz leírása</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Bezárás"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="bonusDescText" class="mb-3" style="line-height: 1.5;">Nincs leírás.</p>
+                    <ul class="list-group" id="bonusRequirementsList">
+                    </ul>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid rgba(233, 69, 96, 0.35);">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Bezárás</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../../js/UserProfile/user_profile.js"></script>
@@ -266,6 +317,58 @@ foreach ($bonuses as $bonus) {
             msgDiv.className = 'mt-2 text-danger';
             msgDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Hálózati hiba történt.';
             btn.disabled = false;
+        });
+    });
+
+    document.querySelectorAll('.bonus-desc-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const title = btn.getAttribute('data-bonus-name') || 'Bónusz leírása';
+            const description = btn.getAttribute('data-bonus-description') || 'Nincs külön leírás ehhez a bónuszhoz.';
+            const minDeposit = btn.getAttribute('data-min-deposit') || '0';
+            const matchPercent = btn.getAttribute('data-match-percent') || '0';
+            const maxBonus = btn.getAttribute('data-max-bonus') || '0';
+            const wageringMultiplier = btn.getAttribute('data-wagering-multiplier') || '0';
+            const minCombo = btn.getAttribute('data-min-combo') || '0';
+            const minOdds = btn.getAttribute('data-min-odds') || '0';
+            const minOddsEvent = btn.getAttribute('data-min-odds-event') || '0';
+            const bonusTrigger = btn.getAttribute('data-bonus-trigger') || '';
+
+            document.getElementById('bonusDescTitle').textContent = title;
+            document.getElementById('bonusDescText').textContent = description;
+
+            const reqList = document.getElementById('bonusRequirementsList');
+            reqList.innerHTML = '';
+
+            const addReq = (label, value) => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                li.style.background = '#0f3460';
+                li.style.color = '#fff';
+                li.style.border = '1px solid rgba(255,255,255,0.1)';
+                li.innerHTML = `<span>${label}</span><strong>${value}</strong>`;
+                reqList.appendChild(li);
+            };
+
+            addReq('Aktiválás módja', bonusTrigger === 'DEPOSIT' ? 'Befizetéshez kötött' : 'Azonnali');
+            addReq('Minimum befizetés', `${minDeposit} FT`);
+
+            if (Number(String(matchPercent).replace(',', '.')) > 0) {
+                addReq('Bónusz mértéke', `${matchPercent}% (max ${maxBonus} FT)`);
+            } else {
+                addReq('Maximális bónusz', `${maxBonus} FT`);
+            }
+
+            addReq('Forgatási követelmény', `${wageringMultiplier}x`);
+
+            if (parseInt(minCombo, 10) > 0) {
+                addReq('Minimum kötés', `${minCombo} esemény`);
+            }
+            if (Number(String(minOdds).replace(',', '.')) > 0) {
+                addReq('Minimum össz odds', minOdds);
+            }
+            if (Number(String(minOddsEvent).replace(',', '.')) > 0) {
+                addReq('Minimum odds eseményenként', minOddsEvent);
+            }
         });
     });
     </script>

@@ -17,15 +17,21 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $user_id = $_SESSION['user_id'];
 $code = isset($_POST['bonus_code']) ? trim(strtoupper($_POST['bonus_code'])) : '';
+$bonusId = isset($_POST['bonus_id']) ? (int)$_POST['bonus_id'] : 0;
 
-if (empty($code)) {
-    echo json_encode(['success' => false, 'message' => 'Kérlek, adj meg egy bónuszkódot!']);
+if (empty($code) && $bonusId <= 0) {
+    echo json_encode(['success' => false, 'message' => 'Kérlek, adj meg egy bónuszkódot, vagy válassz bónuszt!']);
     exit();
 }
 
-// 1. Megkeressük a kódot a BonusCodes táblában
-$stmt = $conn->prepare("SELECT * FROM BonusCodes WHERE code = ? LIMIT 1");
-$stmt->bind_param("s", $code);
+// 1. Megkeressük a bónuszt (kód alapján vagy kód nélküli bónusznál ID alapján)
+if (!empty($code)) {
+    $stmt = $conn->prepare("SELECT * FROM BonusCodes WHERE code = ? LIMIT 1");
+    $stmt->bind_param("s", $code);
+} else {
+    $stmt = $conn->prepare("SELECT * FROM BonusCodes WHERE id = ? LIMIT 1");
+    $stmt->bind_param("i", $bonusId);
+}
 $stmt->execute();
 $result = $stmt->get_result();
 $bonus = $result->fetch_assoc();
@@ -36,6 +42,11 @@ $isAfterDailyRefresh = (date('H:i') >= '00:01');
 $isWeekdayWindow = ($isWeekday && $isAfterDailyRefresh);
 
 if (!$bonus) {
+    if ($bonusId > 0 && empty($code)) {
+        echo json_encode(['success' => false, 'message' => 'Ez a bónusz jelenleg nem elérhető.']);
+        exit();
+    }
+
     // Megnézzük, hogy létezik-e egyáltalán a kód (de inaktív)
     $check = $conn->prepare("SELECT code, valid_weekdays_only FROM BonusCodes WHERE code = ? LIMIT 1");
     $check->bind_param("s", $code);
@@ -54,6 +65,11 @@ if (!$bonus) {
     exit();
 }
 
+if ($bonusId > 0 && empty($code) && !empty($bonus['code'])) {
+    echo json_encode(['success' => false, 'message' => 'Ehhez a bónuszhoz kód szükséges.']);
+    exit();
+}
+
 // Hétköznap-only bónusz csak hétfő 00:01 - péntek 23:59 között aktiválható
 if (!empty($bonus['valid_weekdays_only']) && !$isWeekdayWindow) {
     echo json_encode(['success' => false, 'message' => 'Ez a bónuszkód csak hétköznapokon 00:01 és 23:59 között aktiválható!']);
@@ -67,7 +83,7 @@ if (empty($bonus['valid_weekdays_only']) && (int)$bonus['is_active'] !== 1) {
 }
 
 // 2. Leellenőrizzük, hogy a user használta-e már ezt a bónuszt
-$check_query = "SELECT id FROM UserBonuses WHERE user_id = ? AND bonus_id = ?";
+$check_query = "SELECT id, status FROM UserBonuses WHERE user_id = ? AND bonus_id = ?";
 $bind_types = "ii";
 $today_from = null;
 $tomorrow_from = null;
@@ -89,9 +105,26 @@ if (!empty($bonus['valid_weekdays_only'])) {
 $check_stmt->execute();
 $check_result = $check_stmt->get_result();
 $already_claimed = $check_result->num_rows > 0;
+$existing_claim = $already_claimed ? $check_result->fetch_assoc() : null;
 $check_stmt->close();
 
 if ($already_claimed) {
+    if ($bonusId > 0 && empty($code)) {
+        $isDepositTriggered = (strtoupper((string)($bonus['bonus_trigger'] ?? '')) === 'DEPOSIT');
+        if ($isDepositTriggered) {
+            $minDeposit = (float)($bonus['min_deposit'] ?? 0);
+            $msg = 'Bónusz már aktiválva van nálad. A jóváírás a befizetés után történik.';
+            if ($minDeposit > 0) {
+                $msg .= ' Minimum befizetés: ' . number_format($minDeposit, 0, ',', ' ') . ' FT.';
+            }
+            echo json_encode(['success' => true, 'message' => $msg, 'status' => $existing_claim['status'] ?? null]);
+            exit();
+        }
+
+        echo json_encode(['success' => true, 'message' => 'Bónusz már aktiválva van a fiókodban.', 'status' => $existing_claim['status'] ?? null]);
+        exit();
+    }
+
     $msg = !empty($bonus['valid_weekdays_only'])
         ? 'Ezt a hétköznapi bónuszt ma már beváltottad! Holnap 00:01 után újra aktiválhatod.'
         : 'Ezt a bónuszt már beváltottad!';

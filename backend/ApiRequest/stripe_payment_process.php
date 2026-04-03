@@ -145,7 +145,7 @@ $pending_stmt = $conn->prepare("
     SELECT ub.id AS user_bonus_id, ub.created_at,
         bc.bonus_amount, bc.wagering_multiplier, bc.activation_expire_hours,
             bc.min_deposit, bc.match_percent, bc.max_bonus_amount, bc.valid_weekdays_only,
-            bc.bet_reward_type
+            bc.bet_reward_type, bc.bonus_type_id, bc.is_step_bonus, bc.step_number
     FROM UserBonuses ub
     INNER JOIN BonusCodes bc ON ub.bonus_id = bc.id
     WHERE ub.user_id = ?
@@ -229,7 +229,12 @@ foreach ($pending_bonuses as $pb) {
     $activate_stmt->close();
 
     $bonus_credited_total += $granted;
-    if (strtoupper((string)($pb['bet_reward_type'] ?? '')) === 'BONUS_MONEY') {
+    $isWelcomeStep1 = ((int)($pb['bonus_type_id'] ?? 0) === 1)
+        && ((int)($pb['is_step_bonus'] ?? 0) === 1)
+        && ((int)($pb['step_number'] ?? 0) === 1);
+
+    // Üdvözlő 1. lépés mindig a bónusz egyenlegre menjen (nem kiutalható).
+    if (!$isWelcomeStep1 && strtoupper((string)($pb['bet_reward_type'] ?? '')) === 'BONUS_MONEY') {
         $bonus_credit_to_balance += $granted;
     } else {
         $bonus_credit_to_bonus_balance += $granted;

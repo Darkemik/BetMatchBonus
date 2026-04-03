@@ -582,7 +582,7 @@ VALUES
   1,
   '2026-01-01 00:00:00',
   NULL,
-  0                           -- Csak admin
+  1                           -- Aktív
 );
 
 -- 2. DARTS BÓNUSZ (VAN KÓDJA)

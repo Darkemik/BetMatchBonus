@@ -52,6 +52,16 @@ try {
     // hétfő 00:01 -> péntek 23:59
     $conn->query("UPDATE BonusCodes SET is_active = {$weekdayActive} WHERE valid_weekdays_only = 1 OR code = 'BONUSZHETKOZNAP5K'");
 
+        // Üdvözlő 1. lépés mindig aktív legyen az új fiókok számára.
+        $conn->query(" 
+                UPDATE BonusCodes
+                SET is_active = 1
+                WHERE bonus_type_id = 1
+                    AND is_step_bonus = 1
+                    AND step_number = 1
+                    AND code IS NULL
+        ");
+
     $weekendActive = $isWeekday ? 0 : 1;
     $conn->query("UPDATE BonusCodes SET is_active = {$weekendActive} WHERE code = 'BONUSZHETVEGE5K'");
 

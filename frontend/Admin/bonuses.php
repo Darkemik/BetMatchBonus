@@ -84,6 +84,13 @@ $bonuses = $conn->query("
         .main-content { flex: 1; padding: 24px; min-width: 0; }
         .table-dark th { color: #e94560; text-align: center; }
         .table-dark td { vertical-align: middle; }
+        .table-dark .text-muted,
+        .table-dark .fst-italic,
+        .table-dark .small,
+        .table-dark .text-dark {
+            color: #ffffff !important;
+            opacity: 1 !important;
+        }
         .action-cell { text-align: right; width: 150px; } /* Művelet oszlop jobbra igazítása */
     </style>
 </head>
@@ -92,12 +99,12 @@ $bonuses = $conn->query("
 <!-- Navbar -->
 <nav class="navbar navbar-admin px-4 d-flex justify-content-between" style="height:56px;">
     <div class="d-flex align-items-center gap-3">
-        <img src="../../img/logo.png" alt="logo" style="width:40px;">
+                                    <span class="text-muted fst-italic fw-semibold">NINCS KÓD</span>
         <span class="text-white fw-bold fs-5">Admin Dashboard</span>
     </div>
     <div class="d-flex align-items-center gap-3">
         <span class="text-muted">
-            <?= htmlspecialchars($_SESSION['admin_username']) ?>
+                                <div class="text-muted small" style="color: #ffffff !important; max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
             <span class="badge bg-danger"><?= htmlspecialchars($role) ?></span>
         </span>
         <a href="/BetMatchBonus/backend/Auth/admin_logout.php" class="btn btn-outline-danger btn-sm">Kijelentkezés</a>
@@ -180,7 +187,7 @@ $bonuses = $conn->query("
                             <td><span class="badge bg-secondary"><?= htmlspecialchars($b['type_name'] ?? 'N/A') ?></span></td>
                             <td>
                                 <span class="text-success fw-bold"><?= number_format($b['bonus_amount'], 0, ',', ' ') ?> Ft</span><br>
-                                <span class="text-muted small">Min. bef: <?= number_format($b['min_deposit'], 0, ',', ' ') ?> Ft</span>
+                                <span class="text-muted small" style="color: #ffffff !important;">Min. bef: <?= number_format($b['min_deposit'], 0, ',', ' ') ?> Ft</span>
                             </td>
                             <td>
                                 <?php if($b['bet_reward_type'] == 'FREE_BET'): ?>

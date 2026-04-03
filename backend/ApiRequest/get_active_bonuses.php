@@ -9,7 +9,7 @@ $isAfterDailyRefresh = (date('H:i') >= '00:01');
 $isWeekdayWindow = ($isWeekday && $isAfterDailyRefresh);
 
 // Csak az aktív bónuszokat kérjük le
-$query = "SELECT id, code, name, description, bonus_amount, min_deposit, max_bonus_amount, match_percent, is_step_bonus, bet_reward_type, valid_weekdays_only 
+$query = "SELECT id, code, name, description, bonus_amount, min_deposit, max_bonus_amount, match_percent, is_step_bonus, step_number, bonus_type_id, bet_reward_type, valid_weekdays_only 
           FROM BonusCodes 
           WHERE is_active = 1 OR valid_weekdays_only = 1
           ORDER BY id DESC";
@@ -20,12 +20,37 @@ $bonuses = [];
 $userId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
 $todayFrom = date('Y-m-d 00:01:00');
 $tomorrowFrom = date('Y-m-d 00:01:00', strtotime('+1 day'));
+$isBrandNewUser = false;
+
+if ($userId > 0) {
+    $freshStmt = $conn->prepare(" 
+        SELECT
+            (SELECT COUNT(*) FROM Transactions t WHERE t.user_id = ? AND t.type = 'deposit' AND t.status = 'completed') AS deposits_count,
+            (SELECT COUNT(*) FROM Tickets tk WHERE tk.user_id = ?) AS tickets_count
+    ");
+    $freshStmt->bind_param("ii", $userId, $userId);
+    $freshStmt->execute();
+    $freshData = $freshStmt->get_result()->fetch_assoc();
+    $freshStmt->close();
+
+    $depositsCount = (int)($freshData['deposits_count'] ?? 0);
+    $ticketsCount = (int)($freshData['tickets_count'] ?? 0);
+    $isBrandNewUser = ($depositsCount === 0 && $ticketsCount === 0);
+}
 
 if ($result) {
     while ($row = $result->fetch_assoc()) {
         $isVisible = ((int)$row['valid_weekdays_only'] === 1) ? $isWeekdayWindow : true;
         if (!$isVisible) {
             continue;
+        }
+
+        // Üdvözlő 1. lépés kizárólag vadonatúj fiókoknál jelenjen meg.
+        $isWelcomeStep1 = ((int)$row['bonus_type_id'] === 1 && (int)$row['is_step_bonus'] === 1 && (int)$row['step_number'] === 1);
+        if ($isWelcomeStep1 && $userId > 0) {
+            if (!$isBrandNewUser) {
+                continue;
+            }
         }
 
         // Jogosultság: hétköznapi napi bónusz ne jelenjen meg annak, aki ma már aktiválta.

@@ -127,6 +127,61 @@ if (!$walletStmt->execute()) {
 
 $walletStmt->close();
 
+// Automatikus bónusz hozzárendelés regisztráció után:
+// - auto_assign = 1 bónuszok
+// - Üdvözlő 1. lépés (kód nélküli, step 1, WELCOME típus)
+$assignStmt = $conn->prepare(" 
+    INSERT INTO UserBonuses (user_id, bonus_id, status, granted_amount, wagering_required, expires_at)
+    SELECT
+        ?,
+        bc.id,
+        CASE
+            WHEN UPPER(COALESCE(bc.bonus_trigger, '')) = 'DEPOSIT' THEN 'PENDING'
+            ELSE 'ACTIVE'
+        END AS status,
+        CASE
+            WHEN UPPER(COALESCE(bc.bonus_trigger, '')) = 'DEPOSIT' THEN 0.00
+            WHEN COALESCE(bc.max_bonus_amount, 0) > 0 THEN bc.max_bonus_amount
+            ELSE COALESCE(bc.bonus_amount, 0)
+        END AS granted_amount,
+        CASE
+            WHEN UPPER(COALESCE(bc.bonus_trigger, '')) = 'DEPOSIT' THEN 0.00
+            WHEN COALESCE(bc.wagering_multiplier, 0) > 0 THEN
+                (
+                    CASE
+                        WHEN COALESCE(bc.max_bonus_amount, 0) > 0 THEN bc.max_bonus_amount
+                        ELSE COALESCE(bc.bonus_amount, 0)
+                    END
+                ) * bc.wagering_multiplier
+            ELSE 0.00
+        END AS wagering_required,
+        CASE
+            WHEN UPPER(COALESCE(bc.bonus_trigger, '')) = 'DEPOSIT' THEN NULL
+            WHEN COALESCE(bc.activation_expire_hours, 0) > 0 THEN DATE_ADD(NOW(), INTERVAL bc.activation_expire_hours HOUR)
+            ELSE NULL
+        END AS expires_at
+    FROM BonusCodes bc
+    WHERE bc.is_active = 1
+      AND (bc.valid_from IS NULL OR bc.valid_from <= NOW())
+      AND (bc.valid_to IS NULL OR bc.valid_to >= NOW())
+      AND (
+          bc.auto_assign = 1
+          OR (bc.bonus_type_id = 1 AND bc.is_step_bonus = 1 AND bc.step_number = 1 AND bc.code IS NULL)
+      )
+      AND NOT EXISTS (
+          SELECT 1
+          FROM UserBonuses ub
+          WHERE ub.user_id = ?
+            AND ub.bonus_id = bc.id
+      )
+");
+
+if ($assignStmt) {
+    $assignStmt->bind_param("ii", $userId, $userId);
+    $assignStmt->execute();
+    $assignStmt->close();
+}
+
 echo json_encode(['success' => true, 'message' => 'Sikeres regisztráció!']);
 
 $stmt->close();

@@ -80,20 +80,51 @@ document.addEventListener('DOMContentLoaded', async () => {
                     {
                         const igenylesBtn = box.querySelector(".claim-btn");
                         const msgDiv = box.querySelector(".claim-message");
+                        const buttonsWrap = box.querySelector(".doboz-gombok");
 
-                        igenylesBtn.addEventListener("click", () => {
+                        igenylesBtn.addEventListener("click", async () => {
                             const bCode = igenylesBtn.getAttribute("data-code");
-                            
-                            if(!bCode) {
-                                msgDiv.style.display = "block";
-                                msgDiv.style.color = "#ffc107";
-                                msgDiv.innerHTML = "Ehhez a bónuszhoz nincs kód, automatikusan jár vagy ügyfélszolgálaton igényelhető!";
-                    
-                                return;
+                            const bonusId = bonus.id;
+
+                            igenylesBtn.disabled = true;
+                            msgDiv.style.display = "block";
+                            msgDiv.style.color = "#ffffff";
+                            msgDiv.innerHTML = "Igénylés folyamatban...";
+
+                            const formData = new FormData();
+                            if (bCode) {
+                                formData.append("bonus_code", bCode);
+                            } else {
+                                formData.append("bonus_id", String(bonusId));
                             }
 
-                            // Átirányítás a Bónuszaim oldalra, ahol be tudja váltani a kódot
-                            window.location.href = '/BetMatchBonus/frontend/UserProfile/my_bonuses.php';
+                            try {
+                                const claimRes = await fetch("../../backend/ApiRequest/claim_bonus.php", {
+                                    method: "POST",
+                                    body: formData
+                                });
+                                const claimData = await claimRes.json();
+
+                                msgDiv.style.display = "block";
+                                if (claimData.success) {
+                                    msgDiv.style.color = "#4caf50";
+                                    msgDiv.innerHTML = "Sikeres bónusz igénylés!";
+                                    if (igenylesBtn) {
+                                        igenylesBtn.remove();
+                                    }
+                                    if (buttonsWrap && !buttonsWrap.querySelector(".claim-btn")) {
+                                        buttonsWrap.style.justifyContent = "center";
+                                    }
+                                } else {
+                                    msgDiv.style.color = "#ff6b6b";
+                                    msgDiv.innerHTML = claimData.message || "A bónusz igénylése nem sikerült.";
+                                    igenylesBtn.disabled = false;
+                                }
+                            } catch (e) {
+                                msgDiv.style.color = "#ff6b6b";
+                                msgDiv.innerHTML = "Hálózati hiba történt, próbáld újra.";
+                                igenylesBtn.disabled = false;
+                            }
                         });
                     }
 
