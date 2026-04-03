@@ -552,10 +552,10 @@ VALUES
 (
   'BONUSZHETKOZNAP5K',
   'BÓNUSZ HÉTKÖZNAP (5.000 Ft, 100%, 3x)',
-  'Hétfőtől péntekig minden nap aktiválható. Minimum 5.000 Ft befizetés, 100% bónusz max 5.000 Ft-ig. A bónusz összegét 3x kell megforgatni.',
+  'Hétfőtől péntekig minden nap aktiválható. Minimum 3.000 Ft befizetés, 100% bónusz max 5.000 Ft-ig. A bónusz összegét 3x kell megforgatni.',
   2,                          -- WEEKDAYS
   0.00,
-  5000.00,
+  3000.00,
   5000.00,
   100.00,
   'BONUS_MONEY',

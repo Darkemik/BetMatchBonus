@@ -28,6 +28,22 @@ require_once __DIR__ . '/connect.php';
 // ── 1. BÓNUSZ FRISSÍTÉS ─────────────────────────
 $stepStart = microtime(true);
 try {
+    // Hétköznapi bónusz fix üzleti paraméterek (nem lépcsős):
+    // min befizetés 3000 Ft, 100% bónusz max 5000 Ft, 3x forgatás.
+    $conn->query(" 
+        UPDATE BonusCodes
+        SET min_deposit = 3000.00,
+            max_bonus_amount = 5000.00,
+            match_percent = 100.00,
+            bonus_amount = 0.00,
+            is_step_bonus = 0,
+            bonus_trigger = 'DEPOSIT',
+            bet_reward_type = 'BONUS_MONEY',
+            wagering_multiplier = 3.00,
+            valid_weekdays_only = 1
+        WHERE code = 'BONUSZHETKOZNAP5K'
+    ");
+
     $isWeekday = ((int)date('N') <= 5);
     $isAfterDailyRefresh = (date('H:i') >= '00:01');
     $weekdayActive = ($isWeekday && $isAfterDailyRefresh) ? 1 : 0;

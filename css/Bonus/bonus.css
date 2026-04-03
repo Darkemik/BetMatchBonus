@@ -179,16 +179,37 @@
     font-size: 0.86rem;
     color: #b0b8c8;
     line-height: 1.5;
-    flex: 1;
-    overflow-y: auto;
-    min-height: 0;
+    flex: 0 0 auto;
+    overflow: visible;
+}
+
+.bonus-meta-line {
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1.35;
+    margin: 0;
+    flex: 0 0 auto;
+}
+
+.bonus-meta-active {
+    color: #36e28f;
+    background: rgba(54, 226, 143, 0.12);
+    border-left: 3px solid rgba(54, 226, 143, 0.9);
+}
+
+.bonus-meta-info {
+    color: #9ee3ff;
+    background: rgba(95, 180, 255, 0.12);
+    border-left: 3px solid rgba(95, 180, 255, 0.9);
 }
 
 .doboz-gombok {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    margin-top: 6px;
+    margin-top: 8px;
     flex-shrink: 0;
 }
 
