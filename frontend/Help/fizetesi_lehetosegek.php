@@ -23,7 +23,38 @@
 
         <!-- Fő tartalom (középső rész)-->
         <main class="main-content">
+            <h1>Fizetési lehetőségek</h1>
 
+            <div class="help-menu-container">
+                A BetMatchBonus felületén a befizetés és a kifizetés biztonságos, ellenőrzött folyamatban történik.
+                A tranzakciók aktuális állapotát a profilodban, a Tranzakciótörténet menüpontban követheted.
+            </div>
+
+            <h4>Befizetés</h4>
+            <div class="additional-info">
+                <strong>Elérhető mód:</strong> bankkártyás fizetés (demo kártya-feldolgozás).<br>
+                <strong>Minimum összeg:</strong> 3 000 FT<br>
+                <strong>Maximum összeg:</strong> 600 000 FT<br>
+                A sikeres befizetés után az egyenleg azonnal frissül.
+            </div>
+
+            <h4>Kifizetés</h4>
+            <div class="additional-info">
+                <strong>Elérhető mód:</strong> banki átutalás.<br>
+                <strong>Minimum kifizetés:</strong> 6 000 FT<br>
+                Kifizetés kizárólag a <strong>nyereményegyenlegből</strong> kezdeményezhető,
+                a bónusz egyenleg közvetlenül nem utalható ki.
+            </div>
+
+            <h4>Fontos tudnivalók</h4>
+            <div class="help-menu-container">
+                <ul style="margin: 0; padding-left: 18px;">
+                    <li>A számlatulajdonos nevének egyeznie kell a regisztrációkor megadott teljes névvel.</li>
+                    <li>A hibás vagy hiányos banki adatok késleltethetik vagy elutasíthatják a kifizetést.</li>
+                    <li>A befizetett és nyereményegyenleg összesített értékét a Befizetés és Kifizetés oldalon is látod.</li>
+                    <li>Aktív bónusz esetén a kapcsolódó feltételek (forgatás, minimum kötés, minimum odds) kötelezőek.</li>
+                </ul>
+            </div>
         </main>
 
         <?php include '../../frontend/Components/promokartya.php'; ?>

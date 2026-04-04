@@ -23,7 +23,42 @@
 
         <!-- Fő tartalom (középső rész)-->
         <main class="main-content">
+            <h1>Információbiztonság</h1>
 
+            <div class="help-menu-container">
+                A BetMatchBonus rendszere több szintű technikai és működési védelemmel óvja a felhasználói adatokat.
+                Célunk, hogy a fiókhasználat, a tranzakciók és a személyes adatok kezelése biztonságos, átlátható és ellenőrizhető legyen.
+            </div>
+
+            <h4>Fiókvédelem</h4>
+            <div class="additional-info">
+                <ul style="margin: 0; padding-left: 18px;">
+                    <li>Erős, egyedi jelszót használj, amit más oldalon nem alkalmazol.</li>
+                    <li>Nyilvános vagy közös eszközön mindig jelentkezz ki a használat után.</li>
+                    <li>Rendszeresen ellenőrizd a profil- és tranzakciós előzményeidet.</li>
+                    <li>Gyanús aktivitás esetén azonnal változtass jelszót.</li>
+                </ul>
+            </div>
+
+            <h4>Adatkezelési biztonság</h4>
+            <div class="additional-info">
+                <ul style="margin: 0; padding-left: 18px;">
+                    <li>A rendszer a jogosultsághoz kötött hozzáférés elvét alkalmazza.</li>
+                    <li>Az érzékeny műveletek (pl. bejelentkezés, pénzmozgás) naplózva vannak.</li>
+                    <li>A személyes adatok kezelését vonatkozó adatvédelmi szabályzat szerint végezzük.</li>
+                    <li>Szokatlan viselkedés esetén a fiók védelmi ellenőrzés alá kerülhet.</li>
+                </ul>
+            </div>
+
+            <h4>Felhasználói biztonsági tippek</h4>
+            <div class="help-menu-container">
+                <ul style="margin: 0; padding-left: 18px;">
+                    <li>Soha ne add meg belépési adataidat üzenetben vagy telefonon.</li>
+                    <li>Csak megbízható hálózaton lépj be a fiókodba.</li>
+                    <li>Ellenőrizd a böngésző címsorát, és csak hivatalos oldalon jelentkezz be.</li>
+                    <li>Ha adathalászatra gyanakszol, ne kattints a linkre, és vedd fel a kapcsolatot az ügyfélszolgálattal.</li>
+                </ul>
+            </div>
         </main>
 
         <?php include '../../frontend/Components/promokartya.php'; ?>

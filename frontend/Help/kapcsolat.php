@@ -23,7 +23,41 @@
 
         <!-- Fő tartalom (középső rész)-->
         <main class="main-content">
+            <h1>Kapcsolat</h1>
 
+            <div class="help-menu-container">
+                Ügyfélszolgálatunk célja, hogy gyorsan és érthetően segítsen minden felhasználónak.
+                Ha kérdésed van a fiókoddal, befizetéssel, kifizetéssel, bónuszokkal vagy fogadásokkal kapcsolatban,
+                vedd fel velünk a kapcsolatot.
+            </div>
+
+            <h4>Miben tudunk segíteni?</h4>
+            <div class="additional-info">
+                <ul style="margin: 0; padding-left: 18px;">
+                    <li>regisztrációs és bejelentkezési problémák,</li>
+                    <li>tranzakciók és egyenleggel kapcsolatos kérdések,</li>
+                    <li>bónuszok és promóciók feltételeinek értelmezése,</li>
+                    <li>fogadási események, szelvények és eredmények ellenőrzése.</li>
+                </ul>
+            </div>
+
+            <h4>Kapcsolatfelvétel előtt javasolt</h4>
+            <div class="additional-info">
+                A gyorsabb ügyintézés érdekében készítsd elő az alábbi adatokat:
+                <ul style="margin: 10px 0 0; padding-left: 18px;">
+                    <li>felhasználóneved vagy regisztrált e-mail címed,</li>
+                    <li>érintett tranzakció/szelvény azonosítója,</li>
+                    <li>a probléma rövid és pontos leírása,</li>
+                    <li>ha van, képernyőkép vagy időpont megjelölése.</li>
+                </ul>
+            </div>
+
+            <h4>Válaszadási idő</h4>
+            <div class="help-menu-container">
+                Az egyszerűbb megkeresésekre általában rövid időn belül választ adunk.
+                Összetettebb technikai vagy pénzügyi ellenőrzést igénylő ügyek esetén a feldolgozási idő hosszabb lehet.
+                Minden esetben törekszünk a lehető leggyorsabb, részletes tájékoztatásra.
+            </div>
         </main>
 
         <?php include '../../frontend/Components/promokartya.php'; ?>

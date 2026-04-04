@@ -23,7 +23,43 @@
 
         <!-- Fő tartalom (középső rész)-->
         <main class="main-content">
+            <h1>Panaszkezelés</h1>
 
+            <div class="help-menu-container">
+                A BetMatchBonus célja a gyors, átlátható és korrekt ügyintézés.
+                Ha észrevételed, kifogásod vagy panaszod van, azt minden esetben kivizsgáljuk,
+                és törekszünk a mielőbbi, egyértelmű megoldásra.
+            </div>
+
+            <h4>Hogyan nyújthatsz be panaszt?</h4>
+            <div class="additional-info">
+                Panaszodat írásban add meg, és lehetőség szerint tartalmazza az alábbiakat:
+                <ul style="margin: 10px 0 0; padding-left: 18px;">
+                    <li>felhasználóneved vagy regisztrált e-mail címed,</li>
+                    <li>az érintett esemény/tranzakció azonosítója,</li>
+                    <li>a probléma rövid, tényszerű leírása,</li>
+                    <li>a kért megoldás megjelölése.</li>
+                </ul>
+            </div>
+
+            <h4>Panaszkezelési folyamat</h4>
+            <div class="additional-info">
+                <ul style="margin: 0; padding-left: 18px;">
+                    <li>A beérkező panasz rögzítésre kerül a rendszerben.</li>
+                    <li>Az ügyet a releváns adatok (napló, tranzakció, fogadási előzmény) alapján kivizsgáljuk.</li>
+                    <li>Az eredményről és a döntés indokáról írásban tájékoztatást adunk.</li>
+                    <li>Szükség esetén további egyeztetést kezdeményezünk a gyors lezárás érdekében.</li>
+                </ul>
+            </div>
+
+            <h4>Válaszadási idő és együttműködés</h4>
+            <div class="help-menu-container">
+                Általános esetben a panaszok feldolgozása rövid határidőn belül megtörténik.
+                Összetettebb ügyeknél hosszabb kivizsgálási idő is szükséges lehet,
+                erről külön tájékoztatást adunk.
+                Kérjük, hogy minden releváns információt pontosan adj meg,
+                mert ez jelentősen felgyorsítja az ügyintézést.
+            </div>
         </main>
 
         <?php include '../../frontend/Components/promokartya.php'; ?>

@@ -23,7 +23,44 @@
 
         <!-- Fő tartalom (középső rész)-->
         <main class="main-content">
+            <h1>Játékosvédelem</h1>
 
+            <div class="help-menu-container">
+                A BetMatchBonus elkötelezett a felelős játékszervezés mellett.
+                A fogadás szórakozás, nem megélhetési forma.
+                Kérjük, mindig tudatosan, előre meghatározott kerettel és kontrollált döntésekkel játssz.
+            </div>
+
+            <h4>Felelős játék alapelvei</h4>
+            <div class="additional-info">
+                <ul style="margin: 0; padding-left: 18px;">
+                    <li>Csak olyan összeget használj, amelynek elvesztése nem okoz problémát.</li>
+                    <li>Állíts be saját napi/heti pénzügyi keretet, és tartsd magad hozzá.</li>
+                    <li>Ne próbáld visszanyerni az elvesztett összegeket gyors, impulzív fogadásokkal.</li>
+                    <li>Alkohol vagy erős érzelmi állapot alatt ne hozz fogadási döntéseket.</li>
+                </ul>
+            </div>
+
+            <h4>Figyelmeztető jelek</h4>
+            <div class="additional-info">
+                Érdemes szünetet tartani, ha az alábbiak közül többet is tapasztalsz:
+                <ul style="margin: 10px 0 0; padding-left: 18px;">
+                    <li>a játék miatt romlik a koncentrációd, alvásod vagy hangulatod,</li>
+                    <li>egyre magasabb tétekkel játszol ugyanazért az élményért,</li>
+                    <li>elrejted környezeted elől a fogadási aktivitásodat,</li>
+                    <li>pénzügyi nehézség mellett is folytatod a játékot.</li>
+                </ul>
+            </div>
+
+            <h4>Mit tehetsz azonnal?</h4>
+            <div class="help-menu-container">
+                <ul style="margin: 0; padding-left: 18px;">
+                    <li>Tarts legalább 24-48 órás szünetet, és értékeld újra a játékhoz való viszonyodat.</li>
+                    <li>Csökkentsd az aktivitásodat, és használj alacsonyabb téteket.</li>
+                    <li>Beszélj valakivel, akiben megbízol (családtag, barát, szakember).</li>
+                    <li>Ha szükséges, kérj professzionális segítséget játékfüggőséggel foglalkozó szervezetektől.</li>
+                </ul>
+            </div>
         </main>
 
         <?php include '../../frontend/Components/promokartya.php'; ?>

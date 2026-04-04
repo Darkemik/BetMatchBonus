@@ -23,7 +23,73 @@
 
         <!-- Fő tartalom (középső rész)-->
         <main class="main-content">
+            <h1>Részvételi szabályzat</h1>
 
+            <div class="help-menu-container">
+                Jelen szabályzat a BetMatchBonus felület használatának alapvető feltételeit rögzíti.
+                A szolgáltatás használatával a felhasználó elfogadja a szabályzat rendelkezéseit,
+                és vállalja, hogy a platformot a vonatkozó jogszabályokkal összhangban, jóhiszeműen használja.
+            </div>
+
+            <h4>1. Részvételi jogosultság</h4>
+            <div class="additional-info">
+                A szolgáltatás igénybevételéhez érvényes regisztráció szükséges.
+                A felhasználó köteles valós és pontos adatokat megadni, valamint azok változását naprakészen tartani.
+                A felhasználói fiók személyhez kötött, átadása vagy megosztása nem engedélyezett.
+            </div>
+
+            <h4>2. Fiókhasználat és felelősség</h4>
+            <div class="additional-info">
+                <ul style="margin: 0; padding-left: 18px;">
+                    <li>A belépési adatok bizalmas kezelése a felhasználó felelőssége.</li>
+                    <li>A fiókból indított műveletek a felhasználóhoz köthetők.</li>
+                    <li>Gyanús tevékenység esetén a szolgáltató biztonsági ellenőrzést alkalmazhat.</li>
+                    <li>A szabályzat megsértése a fiók korlátozását vagy felfüggesztését eredményezheti.</li>
+                </ul>
+            </div>
+
+            <h4>3. Fogadások leadása</h4>
+            <div class="help-menu-container">
+                A fogadás akkor tekinthető érvényesen leadottnak, ha a rendszer visszaigazolja annak rögzítését.
+                A felhasználó felelőssége, hogy a fogadás leadása előtt ellenőrizze:
+                tét összegét, kiválasztott eseményeket, oddsokat és a fogadás típusát.
+                A már elfogadott fogadások utólagos módosítása általános esetben nem lehetséges.
+            </div>
+
+            <h4>4. Bónuszok és promóciók</h4>
+            <div class="additional-info">
+                A bónuszok felhasználása minden esetben feltételekhez kötött.
+                Ide tartozhat különösen a minimum befizetés, minimum kötés, minimum odds, lejárat és forgatási követelmény.
+                A bónuszra vonatkozó feltételek teljesítése nélkül az adott előny nem érvényesíthető.
+            </div>
+
+            <h4>5. Kifizetések</h4>
+            <div class="additional-info">
+                A kifizetés banki átutalással történik, a rendszerben beállított minimum összeg figyelembevételével.
+                Kifizetés kizárólag a nyereményegyenleg terhére kezdeményezhető.
+                A szolgáltató jogosult ellenőrizni a kifizetési adatok pontosságát és egyezőségét.
+            </div>
+
+            <h4>6. Tiltott magatartások</h4>
+            <div class="additional-info">
+                Tiltott minden olyan tevékenység, amely a rendszer működésének megzavarására,
+                a promóciós feltételek kijátszására, vagy jogosulatlan előny megszerzésére irányul.
+                Visszaélés gyanúja esetén a szolgáltató ideiglenes vagy végleges intézkedést hozhat.
+            </div>
+
+            <h4>7. Felelősségkorlátozás</h4>
+            <div class="help-menu-container">
+                A szolgáltató minden tőle elvárhatót megtesz a folyamatos működés biztosításáért,
+                ugyanakkor nem vállal felelősséget olyan külső körülményekből eredő kiesésekért,
+                amelyek rajta kívül álló okból következnek be.
+            </div>
+
+            <h4>8. A szabályzat módosítása</h4>
+            <div class="additional-info">
+                A szolgáltató fenntartja a jogot a részvételi szabályzat módosítására.
+                A módosított feltételek közzétételét követően a szolgáltatás további használata
+                a frissített szabályok elfogadását jelenti.
+            </div>
         </main>
 
         <?php include '../../frontend/Components/promokartya.php'; ?>
