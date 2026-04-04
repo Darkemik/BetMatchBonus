@@ -16,13 +16,37 @@ function normalize_name($name) {
 }
 
 // Felhasználó aktuális egyenlege
-$query = "SELECT balance, full_name FROM Users WHERE id = ?";
+$hasWinningsBalance = false;
+$hasBonusBalance = false;
+$winningsColStmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Users' AND COLUMN_NAME = 'winnings_balance'");
+$winningsColStmt->execute();
+$winningsColRes = $winningsColStmt->get_result()->fetch_assoc();
+$winningsColStmt->close();
+if ($winningsColRes && (int)$winningsColRes['cnt'] > 0) {
+    $hasWinningsBalance = true;
+}
+
+$bonusColStmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Users' AND COLUMN_NAME = 'bonus_balance'");
+$bonusColStmt->execute();
+$bonusColRes = $bonusColStmt->get_result()->fetch_assoc();
+$bonusColStmt->close();
+if ($bonusColRes && (int)$bonusColRes['cnt'] > 0) {
+    $hasBonusBalance = true;
+}
+
+$query = $hasWinningsBalance
+    ? "SELECT balance, winnings_balance" . ($hasBonusBalance ? ", bonus_balance" : "") . ", full_name FROM Users WHERE id = ?"
+    : "SELECT balance, full_name FROM Users WHERE id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 $balance = $user['balance'] ?? 0;
+$winnings_balance = $hasWinningsBalance ? (float)($user['winnings_balance'] ?? 0) : (float)$balance;
+$bonus_balance = $hasBonusBalance ? (float)($user['bonus_balance'] ?? 0) : 0.0;
+$deposited_balance = max(0, (float)$balance - (float)$winnings_balance);
+$total_deposit_and_winnings = (float)$deposited_balance + (float)$winnings_balance;
 $registered_full_name = $user['full_name'] ?? '';
 $stmt->close();
 
@@ -36,8 +60,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
 
     if ($amount <= 0) {
         $error_message = "A kifizetési összeg nagyobb kell legyen, mint 0!";
-    } elseif ($amount > $balance) {
-        $error_message = "A kifizetési összeg nem haladhatja meg az egyenlegedet!";
+    } elseif ($amount > $winnings_balance) {
+        $error_message = "A kifizetés csak a nyereményegyenlegből történhet!";
     } elseif ($payment_method !== 'bank_transfer') {
         $error_message = "Csak banki átutalás lehetséges!";
     } elseif (empty($account_holder) || empty($account_number)) {
@@ -58,10 +82,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
         $insert_stmt->bind_param("issdss", $user_id, $type, $amount, $payment_method, $status, $transaction_id);
         
         if ($insert_stmt->execute()) {
-            // Frissítjük a felhasználó egyenlegét
-            $update_query = "UPDATE Users SET balance = balance - ? WHERE id = ?";
+            // Kifizetés csak a nyereményegyenlegből lehetséges.
+            $update_query = $hasWinningsBalance
+                ? "UPDATE Users SET balance = balance - ?, winnings_balance = winnings_balance - ? WHERE id = ?"
+                : "UPDATE Users SET balance = balance - ? WHERE id = ?";
             $update_stmt = $conn->prepare($update_query);
-            $update_stmt->bind_param("di", $amount, $user_id);
+            if ($hasWinningsBalance) {
+                $update_stmt->bind_param("ddi", $amount, $amount, $user_id);
+            } else {
+                $update_stmt->bind_param("di", $amount, $user_id);
+            }
             $update_stmt->execute();
             $update_stmt->close();
             
@@ -108,8 +138,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                 <div class="profile-content">
                     <h1><i class="fas fa-minus-circle"></i> Kifizetés</h1>
                     
-                    <div class="alert alert-info">
-                        <strong>Elérhető egyenlege:</strong> <span class="badge bg-success"><?php echo number_format($balance, 0, ',', ' '); ?> FT</span>
+                    <div class="alert alert-info py-3">
+                        <div class="row g-2">
+                            <div class="col-12 col-md-6">
+                                <div class="p-2 rounded" style="background: rgba(13, 110, 253, 0.12); border: 1px solid rgba(13, 110, 253, 0.25);">
+                                    <div style="font-weight:700; font-size: 0.9rem;">BEFIZETETT EGYENLEG</div>
+                                    <div class="mt-1"><span class="badge bg-secondary"><?php echo number_format($deposited_balance, 0, ',', ' '); ?> FT</span></div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="p-2 rounded" style="background: rgba(25, 135, 84, 0.12); border: 1px solid rgba(25, 135, 84, 0.25);">
+                                    <div style="font-weight:700; font-size: 0.9rem;">NYEREMÉNYEGYENLEG</div>
+                                    <div class="mt-1"><span class="badge bg-success"><?php echo number_format($winnings_balance, 0, ',', ' '); ?> FT</span></div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="p-2 rounded" style="background: rgba(13, 110, 253, 0.12); border: 1px solid rgba(13, 110, 253, 0.25);">
+                                    <div style="font-weight:700; font-size: 0.9rem;">BEFIZETETT ÉS NYEREMÉNYEGYENLEG ÖSSZESEN</div>
+                                    <div class="mt-1"><span class="badge bg-primary"><?php echo number_format($total_deposit_and_winnings, 0, ',', ' '); ?> FT</span></div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="p-2 rounded" style="background: rgba(255, 193, 7, 0.14); border: 1px solid rgba(255, 193, 7, 0.35);">
+                                    <div style="font-weight:700; font-size: 0.9rem;">BÓNUSZ EGYENLEG (NEM KIUTALHATÓ)</div>
+                                    <div class="mt-1"><span class="badge bg-warning text-dark"><?php echo number_format($bonus_balance, 0, ',', ' '); ?> FT</span></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <?php if (isset($_SESSION['success_message'])): ?>
@@ -129,8 +184,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                     <form method="POST" class="profile-form">
                         <div class="form-group mb-3">
                             <label for="amount">Kifizetési Összeg (FT)</label>
-                            <input type="number" class="form-control" id="amount" name="amount" min="6000" step="1" max="<?php echo $balance; ?>" required value="6000">
-                            <small class="form-text text-white">Minimális kifizetés: <strong>6000 FT</strong> | Maximum: <?php echo number_format($balance, 0, ',', ' '); ?> FT</small>
+                            <input type="number" class="form-control" id="amount" name="amount" min="6000" step="1" max="<?php echo $winnings_balance; ?>" required value="6000">
+                            <small class="form-text text-white">Minimális kifizetés: <strong>6000 FT</strong> | Maximum (nyereményegyenleg): <?php echo number_format($winnings_balance, 0, ',', ' '); ?> FT</small>
                         </div>
                         
                         <!-- Gyors összeg gombók -->

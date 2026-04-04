@@ -501,6 +501,70 @@ try {
     $stmtCompleteBonus->execute();
     $stmtCompleteBonus->close();
 
+    // Általános szabály minden BONUS_MONEY bónuszra:
+    // ha nincs több aktív, forgatást igénylő bónusz, akkor a megmaradt bónusz egyenleg
+    // átkerül a nyereményegyenlegbe (kiutalhatóvá válik).
+    $hasWinningsBalanceForTransfer = false;
+    $hasBonusBalanceForTransfer = false;
+
+    $winningsTransferColStmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Users' AND COLUMN_NAME = 'winnings_balance'");
+    $winningsTransferColStmt->execute();
+    $winningsTransferColRes = $winningsTransferColStmt->get_result()->fetch_assoc();
+    $winningsTransferColStmt->close();
+    if ($winningsTransferColRes && (int)$winningsTransferColRes['cnt'] > 0) {
+        $hasWinningsBalanceForTransfer = true;
+    }
+
+    $bonusTransferColStmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Users' AND COLUMN_NAME = 'bonus_balance'");
+    $bonusTransferColStmt->execute();
+    $bonusTransferColRes = $bonusTransferColStmt->get_result()->fetch_assoc();
+    $bonusTransferColStmt->close();
+    if ($bonusTransferColRes && (int)$bonusTransferColRes['cnt'] > 0) {
+        $hasBonusBalanceForTransfer = true;
+    }
+
+    if ($hasWinningsBalanceForTransfer && $hasBonusBalanceForTransfer) {
+        $activeRolloverStmt = $conn->prepare(" 
+            SELECT 1
+            FROM UserBonuses ub
+            INNER JOIN BonusCodes bc ON bc.id = ub.bonus_id
+            WHERE ub.user_id = ?
+              AND ub.status = 'ACTIVE'
+              AND ub.used = 0
+              AND UPPER(COALESCE(bc.bet_reward_type, '')) = 'BONUS_MONEY'
+              AND COALESCE(ub.wagering_required, 0) > COALESCE(ub.wagering_progress, 0)
+              AND (ub.expires_at IS NULL OR ub.expires_at > NOW())
+            LIMIT 1
+        ");
+        $activeRolloverStmt->bind_param("i", $userId);
+        $activeRolloverStmt->execute();
+        $activeRolloverRes = $activeRolloverStmt->get_result();
+        $hasActiveRolloverBonus = $activeRolloverRes->num_rows > 0;
+        $activeRolloverStmt->close();
+
+        if (!$hasActiveRolloverBonus) {
+            $userBonusBalStmt = $conn->prepare("SELECT COALESCE(bonus_balance, 0) AS bonus_balance FROM Users WHERE id = ? LIMIT 1");
+            $userBonusBalStmt->bind_param("i", $userId);
+            $userBonusBalStmt->execute();
+            $userBonusBalRes = $userBonusBalStmt->get_result()->fetch_assoc();
+            $userBonusBalStmt->close();
+
+            $currentBonusBalance = (float)($userBonusBalRes['bonus_balance'] ?? 0);
+            if ($currentBonusBalance > 0) {
+                $moveToWinningsStmt = $conn->prepare(" 
+                    UPDATE Users
+                    SET bonus_balance = bonus_balance - ?,
+                        winnings_balance = winnings_balance + ?,
+                        balance = balance + ?
+                    WHERE id = ?
+                ");
+                $moveToWinningsStmt->bind_param("dddi", $currentBonusBalance, $currentBonusBalance, $currentBonusBalance, $userId);
+                $moveToWinningsStmt->execute();
+                $moveToWinningsStmt->close();
+            }
+        }
+    }
+
     // Aktuális egyenleg lekérdezése azonnali frontend frissítéshez
     $newBalance = null;
     $stmtBalance = $conn->prepare("SELECT balance FROM Users WHERE id = ? LIMIT 1");

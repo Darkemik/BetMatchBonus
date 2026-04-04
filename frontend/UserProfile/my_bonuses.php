@@ -36,7 +36,7 @@ $bonus_balance   = $hasBonusBalance ? ($user_balances['bonus_balance'] ?? 0) : 0
 $query = "SELECT ub.id, ub.bonus_id, bc.name as bonus_name, bc.description as bonus_description,
                  bc.valid_weekdays_only, bc.min_deposit, bc.match_percent, bc.max_bonus_amount,
                  bc.wagering_multiplier, bc.min_combo, bc.min_odds, bc.min_odds_per_event,
-                 bc.activation_expire_hours,
+                 bc.activation_expire_hours, bc.bonus_type_id, bc.is_step_bonus, bc.step_number,
                  bc.bonus_trigger, bc.bet_reward_type, ub.granted_amount, ub.status, ub.expires_at, ub.wagering_progress,
                  ub.wagering_required, ub.used, ub.created_at 
           FROM UserBonuses ub
@@ -183,7 +183,7 @@ foreach ($bonuses as $bonus) {
                                                             $percentage = min(100, ($progress / $bonus['wagering_required']) * 100);
                                                             echo number_format($progress, 0, ',', ' ') . ' / ' . number_format($bonus['wagering_required'], 0, ',', ' ') . ' FT (' . round($percentage, 1) . '%)';
                                                         } else {
-                                                            echo '<span class="text-muted">Nincs szükséges forgatás</span>';
+                                                            echo '<span class="text-white">Nincs szükséges forgatás</span>';
                                                         }
                                                     ?>
                                                 </p>
@@ -195,6 +195,11 @@ foreach ($bonuses as $bonus) {
                                                         } elseif (!empty($bonus['activation_expire_hours']) && (int)$bonus['activation_expire_hours'] > 0 && !empty($bonus['created_at'])) {
                                                             $fallbackExpire = new DateTime($bonus['created_at']);
                                                             $fallbackExpire->modify('+' . (int)$bonus['activation_expire_hours'] . ' hours');
+                                                            echo $fallbackExpire->format('Y-m-d H:i');
+                                                        } elseif ((int)($bonus['bonus_type_id'] ?? 0) === 1 && (int)($bonus['is_step_bonus'] ?? 0) === 1 && (int)($bonus['step_number'] ?? 0) === 2 && !empty($bonus['created_at'])) {
+                                                            // Visszafelé kompatibilis fallback: régi adatoknál is 48 órás lejárat.
+                                                            $fallbackExpire = new DateTime($bonus['created_at']);
+                                                            $fallbackExpire->modify('+48 hours');
                                                             echo $fallbackExpire->format('Y-m-d H:i');
                                                         } elseif (!empty($bonus['valid_weekdays_only']) && !empty($bonus['created_at'])) {
                                                             $createdAt = new DateTime($bonus['created_at']);

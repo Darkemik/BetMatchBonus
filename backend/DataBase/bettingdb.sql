@@ -711,7 +711,7 @@ VALUES
   2,
   0,
   NULL,
-  NULL,
+  48,
   NULL,
   NULL,
   0,

@@ -240,11 +240,18 @@ if (!$isDepositTriggered) {
 
 // Lejárati dátum
 $expires_at = null;
+$expireHours = isset($bonus['activation_expire_hours']) ? (int)$bonus['activation_expire_hours'] : 0;
+$isWelcomeStep2 = ((int)($bonus['bonus_type_id'] ?? 0) === 1)
+    && ((int)($bonus['is_step_bonus'] ?? 0) === 1)
+    && ((int)($bonus['step_number'] ?? 0) === 2);
+if ($expireHours <= 0 && $isWelcomeStep2) {
+    $expireHours = 48;
+}
 if (!empty($bonus['valid_weekdays_only'])) {
     $daysUntilFriday = max(0, 5 - (int)date('N'));
     $expires_at = date('Y-m-d 23:59:00', strtotime('+' . $daysUntilFriday . ' day'));
-} elseif (!$isDepositTriggered && isset($bonus['activation_expire_hours']) && $bonus['activation_expire_hours'] > 0) {
-    $expires_at = date('Y-m-d H:i:s', strtotime("+{$bonus['activation_expire_hours']} hours"));
+} elseif ($expireHours > 0) {
+    $expires_at = date('Y-m-d H:i:s', strtotime("+{$expireHours} hours"));
 }
 
 // Forgatási követelmény

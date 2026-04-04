@@ -83,7 +83,8 @@ try {
                         match_percent = 0.00,
                         min_combo = 2,
                         min_odds = 2.00,
-                        wagering_multiplier = 0.00
+                        wagering_multiplier = 0.00,
+                        activation_expire_hours = 48
                     WHERE bonus_type_id = 1
                       AND is_step_bonus = 1
                       AND step_number = 2

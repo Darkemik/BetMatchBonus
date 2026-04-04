@@ -155,6 +155,7 @@ $pending_stmt = $conn->prepare("
     )
       AND bc.bonus_trigger = 'DEPOSIT'
       AND (bc.valid_to IS NULL OR bc.valid_to >= NOW())
+            AND (ub.expires_at IS NULL OR ub.expires_at > NOW())
 ");
 $pending_stmt->bind_param("i", $user_id);
 $pending_stmt->execute();
@@ -207,11 +208,18 @@ foreach ($pending_bonuses as $pb) {
 
     // Lejárati dátum kiszámítása
     $expires_at = null;
+    $expireHours = (int)($pb['activation_expire_hours'] ?? 0);
+    $isWelcomeStep2 = ((int)($pb['bonus_type_id'] ?? 0) === 1)
+        && ((int)($pb['is_step_bonus'] ?? 0) === 1)
+        && ((int)($pb['step_number'] ?? 0) === 2);
+    if ($expireHours <= 0 && $isWelcomeStep2) {
+        $expireHours = 48;
+    }
     if (!empty($pb['valid_weekdays_only'])) {
         $daysUntilFriday = max(0, 5 - (int)date('N'));
         $expires_at = date('Y-m-d 23:59:00', strtotime('+' . $daysUntilFriday . ' day'));
-    } elseif (!empty($pb['activation_expire_hours']) && (int)$pb['activation_expire_hours'] > 0) {
-        $expires_at = date('Y-m-d H:i:s', strtotime('+' . (int)$pb['activation_expire_hours'] . ' hours'));
+    } elseif ($expireHours > 0) {
+        $expires_at = date('Y-m-d H:i:s', strtotime('+' . $expireHours . ' hours'));
     }
 
     // UserBonuses aktiválása: jóváírás után ACTIVE állapot, forgatás követhető marad

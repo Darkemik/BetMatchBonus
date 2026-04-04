@@ -11,6 +11,7 @@ $user_id = $_SESSION['user_id'];
 
 // Felhasználó aktuális egyenlege
 $hasBonusBalance = false;
+$hasWinningsBalance = false;
 $colStmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Users' AND COLUMN_NAME = 'bonus_balance'");
 $colStmt->execute();
 $colRes = $colStmt->get_result()->fetch_assoc();
@@ -19,9 +20,18 @@ if ($colRes && (int)$colRes['cnt'] > 0) {
     $hasBonusBalance = true;
 }
 
-$query = $hasBonusBalance
-    ? "SELECT balance, bonus_balance FROM Users WHERE id = ?"
-    : "SELECT balance FROM Users WHERE id = ?";
+$winningsColStmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Users' AND COLUMN_NAME = 'winnings_balance'");
+$winningsColStmt->execute();
+$winningsColRes = $winningsColStmt->get_result()->fetch_assoc();
+$winningsColStmt->close();
+if ($winningsColRes && (int)$winningsColRes['cnt'] > 0) {
+    $hasWinningsBalance = true;
+}
+
+$query = "SELECT balance"
+    . ($hasBonusBalance ? ", bonus_balance" : "")
+    . ($hasWinningsBalance ? ", winnings_balance" : "")
+    . " FROM Users WHERE id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -29,6 +39,9 @@ $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 $balance = $user['balance'] ?? 0;
 $bonus_balance = $hasBonusBalance ? ($user['bonus_balance'] ?? 0) : 0;
+$winnings_balance = $hasWinningsBalance ? ($user['winnings_balance'] ?? 0) : 0;
+$deposited_balance = max(0, (float)$balance - (float)$winnings_balance);
+$total_deposit_and_winnings = (float)$deposited_balance + (float)$winnings_balance;
 $stmt->close();
 
 // Aktív befizetési bónuszok
@@ -85,14 +98,35 @@ $bonus_stmt->close();
                 <div class="profile-content">
                     <h1><i class="fas fa-plus-circle"></i> Befizetés</h1>
 
-                    <div class="alert alert-info">
-                        <strong>Jelenlegi egyenlege:</strong> <span
-                            class="badge bg-success"><?php echo number_format($balance, 0, ',', ' '); ?> FT</span>
-                        <?php if ($bonus_balance > 0): ?>
-                        &nbsp;|&nbsp;
-                        <strong>Bónusz egyenleg:</strong> <span
-                            class="badge bg-warning text-dark"><?php echo number_format($bonus_balance, 0, ',', ' '); ?> FT</span>
-                        <?php endif; ?>
+                    <div class="alert alert-info py-3">
+                        <div class="row g-2">
+                            <div class="col-12 col-md-6">
+                                <div class="p-2 rounded" style="background: rgba(13, 110, 253, 0.12); border: 1px solid rgba(13, 110, 253, 0.25);">
+                                    <div style="font-weight:700; font-size: 0.9rem;">BEFIZETETT EGYENLEG</div>
+                                    <div class="mt-1"><span class="badge bg-secondary"><?php echo number_format($deposited_balance, 0, ',', ' '); ?> FT</span></div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="p-2 rounded" style="background: rgba(25, 135, 84, 0.12); border: 1px solid rgba(25, 135, 84, 0.25);">
+                                    <div style="font-weight:700; font-size: 0.9rem;">NYEREMÉNYEGYENLEG</div>
+                                    <div class="mt-1"><span class="badge bg-success"><?php echo number_format($winnings_balance, 0, ',', ' '); ?> FT</span></div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="p-2 rounded" style="background: rgba(13, 110, 253, 0.12); border: 1px solid rgba(13, 110, 253, 0.25);">
+                                    <div style="font-weight:700; font-size: 0.9rem;">BEFIZETETT ÉS NYEREMÉNYEGYENLEG ÖSSZESEN</div>
+                                    <div class="mt-1"><span class="badge bg-primary"><?php echo number_format($total_deposit_and_winnings, 0, ',', ' '); ?> FT</span></div>
+                                </div>
+                            </div>
+                            <?php if ($hasBonusBalance): ?>
+                            <div class="col-12 col-md-6">
+                                <div class="p-2 rounded" style="background: rgba(255, 193, 7, 0.14); border: 1px solid rgba(255, 193, 7, 0.35);">
+                                    <div style="font-weight:700; font-size: 0.9rem;">BÓNUSZ EGYENLEG</div>
+                                    <div class="mt-1"><span class="badge bg-warning text-dark"><?php echo number_format($bonus_balance, 0, ',', ' '); ?> FT</span></div>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                        </div>
                     </div>
 
                     <?php if (isset($_SESSION['success_message'])): ?>
@@ -127,7 +161,7 @@ $bonus_stmt->close();
                             <p class="mb-0">
                                 <?php
                                 if ($deposit_bonus['min_deposit']) {
-                                    echo "Minimális befizetés: FT " . number_format($deposit_bonus['min_deposit'], 0, ',', ' ');
+                                    echo "Minimális befizetés: " . number_format($deposit_bonus['min_deposit'], 0, ',', ' ') . " FT";
                                 }
                                 ?>
                             </p>
