@@ -50,10 +50,18 @@
                 >
             </div>
             <div class="summary-row" id="freebet-option-row" style="display:none;">
-                <label style="display:flex; align-items:center; gap:8px; color:#9be7ff; font-weight:600; cursor:pointer;">
-                    <input type="checkbox" id="use-freebet-toggle">
-                    <span>Ingyenes fogadás:</span>
-                    <span class="summary-value" id="freebet-amount-display">0 Ft</span>
+                <label class="freebet-toggle-label" for="use-freebet-toggle">
+                    <span class="freebet-toggle-main">
+                        <span class="freebet-toggle-switch-wrap">
+                            <input type="checkbox" id="use-freebet-toggle">
+                            <span class="freebet-toggle-switch" aria-hidden="true"></span>
+                        </span>
+                        <span class="freebet-toggle-text-wrap">
+                            <span class="freebet-title"><i class="fas fa-ticket-alt"></i> Ingyenes fogadás</span>
+                            <span class="freebet-subtitle">Aktiváld, ha ezzel szeretnéd leadni a szelvényt</span>
+                        </span>
+                    </span>
+                    <span class="summary-value freebet-amount-pill" id="freebet-amount-display">0 Ft</span>
                 </label>
             </div>
             <div class="summary-row highlight">

@@ -143,6 +143,30 @@ if ($result) {
             }
         }
 
+        // Üdvözlő 2. lépcső csak egyszer jelenjen meg felhasználónként.
+        // Ha a user egyszer már aktiválta, a bónusz oldalon többé ne látszódjon.
+        $isWelcomeStep2 = ((int)$row['bonus_type_id'] === 1
+            && (int)$row['is_step_bonus'] === 1
+            && (int)$row['step_number'] === 2);
+        if ($isWelcomeStep2 && $userId > 0) {
+            $claimedWelcomeStep2Stmt = $conn->prepare(" 
+                SELECT id
+                FROM UserBonuses
+                WHERE user_id = ?
+                  AND bonus_id = ?
+                LIMIT 1
+            ");
+            $claimedWelcomeStep2Stmt->bind_param("ii", $userId, $row['id']);
+            $claimedWelcomeStep2Stmt->execute();
+            $claimedWelcomeStep2Res = $claimedWelcomeStep2Stmt->get_result();
+            $hasClaimedWelcomeStep2 = $claimedWelcomeStep2Res->num_rows > 0;
+            $claimedWelcomeStep2Stmt->close();
+
+            if ($hasClaimedWelcomeStep2) {
+                continue;
+            }
+        }
+
         // Jogosultság: hétköznapi napi bónusz ne jelenjen meg annak, aki ma már aktiválta.
         if ($userId > 0 && (int)$row['valid_weekdays_only'] === 1) {
                         $claimedTodayStmt = $conn->prepare(" 

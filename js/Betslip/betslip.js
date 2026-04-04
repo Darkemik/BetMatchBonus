@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let userBalance = 0;
     let availableFreeBetAmount = 0;
     let availableFreeBetId = 0;
+    let availableFreeBetMinCombo = 0;
+    let availableFreeBetMinOdds = 0;
+    let availableFreeBetMinOddsPerEvent = 0;
     let manualStakeBeforeFreeBet = 100;
 
     function formatFt(value) {
@@ -24,6 +27,43 @@ document.addEventListener('DOMContentLoaded', function() {
         }) + ' Ft';
     }
 
+    function getTicketMetrics() {
+        let totalOdds = 1;
+        let minOddsPerEvent = null;
+        const selectionCount = ticketItems.length;
+
+        ticketItems.forEach(item => {
+            const itemOdds = parseFloat(item.odds) || 0;
+            if (itemOdds > 0) {
+                totalOdds *= itemOdds;
+                if (minOddsPerEvent === null || itemOdds < minOddsPerEvent) {
+                    minOddsPerEvent = itemOdds;
+                }
+            }
+        });
+
+        if (minOddsPerEvent === null) {
+            minOddsPerEvent = 0;
+        }
+
+        return {
+            selectionCount,
+            totalOdds,
+            minOddsPerEvent
+        };
+    }
+
+    function isFreeBetTicketEligible() {
+        if (ticketItems.length === 0) return false;
+
+        const metrics = getTicketMetrics();
+        if (availableFreeBetMinCombo > 0 && metrics.selectionCount < availableFreeBetMinCombo) return false;
+        if (availableFreeBetMinOdds > 0 && metrics.totalOdds < availableFreeBetMinOdds) return false;
+        if (availableFreeBetMinOddsPerEvent > 0 && metrics.minOddsPerEvent < availableFreeBetMinOddsPerEvent) return false;
+
+        return true;
+    }
+
     function renderFreeBetOption() {
         const row = document.getElementById('freebet-option-row');
         const amountEl = document.getElementById('freebet-amount-display');
@@ -31,7 +71,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const stakeInput = document.getElementById('stake-input');
         if (!row || !amountEl || !toggle || !stakeInput) return;
 
-        if (isLoggedIn && availableFreeBetAmount > 0 && availableFreeBetId > 0 && ticketItems.length > 0) {
+        const eligibleForCurrentTicket = isFreeBetTicketEligible();
+        if (isLoggedIn && availableFreeBetAmount > 0 && availableFreeBetId > 0 && eligibleForCurrentTicket) {
             row.style.display = 'flex';
             amountEl.textContent = formatFt(availableFreeBetAmount);
         } else {
@@ -76,6 +117,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 userBalance = parseFloat(data.user?.balance) || 0;
                 availableFreeBetAmount = parseFloat(data.user?.available_free_bet_amount) || 0;
                 availableFreeBetId = parseInt(data.user?.available_free_bet_id, 10) || 0;
+                availableFreeBetMinCombo = parseInt(data.user?.available_free_bet_min_combo, 10) || 0;
+                availableFreeBetMinOdds = parseFloat(data.user?.available_free_bet_min_odds) || 0;
+                availableFreeBetMinOddsPerEvent = parseFloat(data.user?.available_free_bet_min_odds_per_event) || 0;
                 console.log('[BETSLIP] Login status:', isLoggedIn, 'User ID:', currentUserId, 'Balance:', userBalance);
                 renderFreeBetOption();
                 applyFreeBetSelectionState();
@@ -87,6 +131,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 userBalance = 0;
                 availableFreeBetAmount = 0;
                 availableFreeBetId = 0;
+                availableFreeBetMinCombo = 0;
+                availableFreeBetMinOdds = 0;
+                availableFreeBetMinOddsPerEvent = 0;
                 renderFreeBetOption();
                 updatePlaceBetButton();
             });
@@ -353,7 +400,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function updatePotentialWin(totalOdds) {
         const stakeInput = document.getElementById('stake-input');
         const stake = parseFloat(stakeInput.value) || 0;
-        const win = Math.round(stake * totalOdds);
+        const useFreeBet = !!document.getElementById('use-freebet-toggle')?.checked;
+        const grossWin = stake * totalOdds;
+        const netFreeBetWin = stake * Math.max(0, totalOdds - 1);
+        const win = Math.round(useFreeBet ? netFreeBetWin : grossWin);
         document.getElementById('potential-payout').textContent = 
             win.toLocaleString('hu-HU') + ' Ft';
     }
@@ -375,7 +425,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const stake = parseFloat(document.getElementById('stake-input')?.value) || 0;
         const useFreeBet = !!document.getElementById('use-freebet-toggle')?.checked;
-        const freeBetCoversStake = useFreeBet && availableFreeBetAmount >= stake && availableFreeBetId > 0;
+        const freeBetEligible = isFreeBetTicketEligible();
+        const freeBetCoversStake = useFreeBet && freeBetEligible && availableFreeBetAmount >= stake && availableFreeBetId > 0;
         
         // Letiltás feltételei:
         if (!isLoggedIn || ticketItems.length === 0 || (!freeBetCoversStake && (userBalance === 0 || userBalance < stake))) {
@@ -385,7 +436,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (ticketItems.length === 0) {
                 submitBtn.title = t('betslip.minOneBet', 'Legalább egy fogadás szükséges');
             } else if (useFreeBet && !freeBetCoversStake) {
-                submitBtn.title = 'Az ingyenes fogadás összege nem fedezi a tétet.';
+                submitBtn.title = 'Az ingyenes fogadás feltételei vagy összege nem megfelelő ehhez a szelvényhez.';
             } else if (userBalance === 0) {
                 submitBtn.title = t('betslip.noBalance', 'Nincs elegendő egyenleg! Kérjük, töltsd fel az accountot.');
             } else if (userBalance < stake) {
@@ -414,8 +465,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             if (useFreeBet) {
-                if (!(availableFreeBetId > 0 && availableFreeBetAmount >= stake)) {
-                    BmbPopup.warning('Az ingyenes fogadás összege nem elegendő ehhez a téthez.', 'Ingyenes fogadás hiba');
+                if (!(availableFreeBetId > 0 && isFreeBetTicketEligible() && availableFreeBetAmount >= stake)) {
+                    BmbPopup.warning('Az ingyenes fogadás feltételei vagy összege nem megfelelő ehhez a szelvényhez.', 'Ingyenes fogadás hiba');
                     return;
                 }
             } else if (userBalance === 0 || userBalance < stake) {
@@ -441,7 +492,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const payload = {
             stake: stake,
             totalOdds: totalOdds,
-            potentialWin: Math.round(stake * totalOdds),
+            potentialWin: Math.round((!!document.getElementById('use-freebet-toggle')?.checked) ? (stake * Math.max(0, totalOdds - 1)) : (stake * totalOdds)),
             items: ticketItems,
             useFreeBet: !!document.getElementById('use-freebet-toggle')?.checked,
             freeBetUserBonusId: parseInt(document.getElementById('use-freebet-toggle')?.checked ? availableFreeBetId : 0, 10) || 0
@@ -486,6 +537,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 const bsSuccessModal = new bootstrap.Modal(successModal);
+                const possibleWin = Math.round(usedFreeBet ? (stake * Math.max(0, totalOdds - 1)) : (stake * totalOdds));
+                successModal.querySelector('.modal-body').innerHTML = `
+                    <p><strong>${t('betslip.stakeLabel', 'Tét:')}</strong> ${stake.toLocaleString('hu-HU')} Ft</p>
+                    ${usedFreeBet ? `<p><strong>Ingyenes fogadás:</strong> ${stake.toLocaleString('hu-HU')} Ft</p>` : ''}
+                    <p><strong>${t('betslip.potentialWinLabel', 'Lehetséges nyeremény:')}</strong> ${possibleWin.toLocaleString('hu-HU')} Ft</p>
+                `;
                 bsSuccessModal.show();
 
                 ticketItems = [];

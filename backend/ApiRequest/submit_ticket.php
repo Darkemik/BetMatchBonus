@@ -113,7 +113,11 @@ if ($useFreeBet) {
     }
 
     $freeBetStmt = $conn->prepare(" 
-        SELECT ub.id, COALESCE(ub.free_bet_amount, 0) AS free_bet_amount
+                SELECT ub.id,
+                             COALESCE(ub.free_bet_amount, 0) AS free_bet_amount,
+                             COALESCE(bc.min_combo, 0) AS min_combo,
+                             COALESCE(bc.min_odds, 0) AS min_odds,
+                             COALESCE(bc.min_odds_per_event, 0) AS min_odds_per_event
         FROM UserBonuses ub
         INNER JOIN BonusCodes bc ON bc.id = ub.bonus_id
         WHERE ub.id = ?
@@ -143,8 +147,27 @@ if ($useFreeBet) {
         exit;
     }
 
+    $freeBetMinCombo = (int)($freeBetRow['min_combo'] ?? 0);
+    $freeBetMinOdds = (float)($freeBetRow['min_odds'] ?? 0);
+    $freeBetMinOddsPerEvent = (float)($freeBetRow['min_odds_per_event'] ?? 0);
+    if (($freeBetMinCombo > 0 && $selectionCount < $freeBetMinCombo)
+        || ($freeBetMinOdds > 0 && $effectiveTotalOdds < $freeBetMinOdds)
+        || ($freeBetMinOddsPerEvent > 0 && $ticketMinOdds < $freeBetMinOddsPerEvent)) {
+        http_response_code(400);
+        echo json_encode(['status' => 'error', 'message' => 'Az ingyenes fogadás feltételei nem teljesülnek a kiválasztott szelvényhez.']);
+        exit;
+    }
+
     $isFreeBetTicket = true;
     $freeBetToConsume = $stake;
+}
+
+// A kifizetéshez mindig szerver oldalon számoljuk a potenciális nyereményt.
+// Ingyenes fogadásnál a tét nem jár vissza, ezért nettó nyereményt tárolunk.
+if ($isFreeBetTicket) {
+    $potentialWin = round($stake * max(0, ($effectiveTotalOdds - 1)), 2);
+} else {
+    $potentialWin = round($stake * $effectiveTotalOdds, 2);
 }
 
 if (!$wallet || (!$isFreeBetTicket && $availableForBet < $stake)) {

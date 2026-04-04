@@ -54,22 +54,32 @@ $stmt->close();
 $active_bonuses = 0;
 $expired_bonuses = 0;
 $total_free_bet_amount = 0;
+$current_bonuses = [];
+$archived_bonuses = [];
 
 foreach ($bonuses as $bonus) {
+    $isExpiredByTime = !empty($bonus['expires_at']) && strtotime($bonus['expires_at']) <= time();
     $isActiveAndValid = ($bonus['status'] === 'ACTIVE')
         && (empty($bonus['expires_at']) || strtotime($bonus['expires_at']) > time());
+    $isArchived = ((int)($bonus['used'] ?? 0) === 1)
+        || in_array((string)($bonus['status'] ?? ''), ['COMPLETED', 'FAILED', 'EXPIRED'], true)
+        || (($bonus['status'] === 'ACTIVE') && $isExpiredByTime);
+
+    if ($isArchived) {
+        $archived_bonuses[] = $bonus;
+    } else {
+        $current_bonuses[] = $bonus;
+    }
 
     if ($isActiveAndValid) {
         $active_bonuses++;
         if (strtoupper((string)($bonus['bet_reward_type'] ?? '')) === 'FREE_BET') {
             $total_free_bet_amount += (float)$bonus['granted_amount'];
         }
-    } elseif ($bonus['status'] === 'PENDING') {
-        // A pending nem lejárt és nem is aktív még
-    } else {
-        $expired_bonuses++;
     }
 }
+
+$expired_bonuses = count($archived_bonuses);
 ?>
 <!DOCTYPE html>
 <html lang="hu">
@@ -157,13 +167,13 @@ foreach ($bonuses as $bonus) {
                         </div>
                     </div>
                     
-                    <?php if (empty($bonuses)): ?>
+                    <?php if (empty($current_bonuses)): ?>
                         <div class="alert alert-info" style="background: #0f3460; color: #fff; border: none;">
-                            <i class="fas fa-info-circle"></i> Jelenleg nincsenek bónuszaid. Látogasd meg a <a href="../../frontend/Bonus/bonus.php" style="color: #e94560; font-weight: bold;">Bónuszok</a> oldalt a lehetőségekért!
+                            <i class="fas fa-info-circle"></i> Jelenleg nincs aktív vagy várakozó bónuszod. Látogasd meg a <a href="../../frontend/Bonus/bonus.php" style="color: #e94560; font-weight: bold;">Bónuszok</a> oldalt a lehetőségekért!
                         </div>
                     <?php else: ?>
                         <div class="bonus-list">
-                            <?php foreach ($bonuses as $bonus): ?>
+                            <?php foreach ($current_bonuses as $bonus): ?>
                                 <div class="card mb-3" style="background: #16213e; border: 1px solid #333; color: #eee;">
                                     <div class="card-body">
                                         <div class="row align-items-center">
@@ -256,6 +266,71 @@ foreach ($bonuses as $bonus) {
                                     </div>
                                 </div>
                             <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($archived_bonuses)): ?>
+                        <div class="card mt-4" style="background: #121212; border: 1px solid #3f3f3f; color: #ddd;">
+                            <div class="card-body">
+                                <h5 class="mb-3" style="color: #f2b705;"><i class="fas fa-archive"></i> Felhasznált / Lejárt Bónuszok</h5>
+                                <?php foreach ($archived_bonuses as $bonus): ?>
+                                    <div class="card mb-3" style="background: #1b2436; border: 1px solid #3d4658; color: #ddd;">
+                                        <div class="card-body">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-8">
+                                                    <h6 class="card-title" style="color: #f39c12; margin-bottom: 10px;">
+                                                        <i class="fas fa-gift"></i>
+                                                        <?php echo htmlspecialchars($bonus['bonus_name'] ?? 'Ismeretlen Bónusz'); ?>
+                                                    </h6>
+                                                    <p class="card-text mb-1">
+                                                        <strong>Érték:</strong> <span class="text-warning"><?php echo number_format($bonus['granted_amount'], 0, ',', ' '); ?> FT</span>
+                                                    </p>
+                                                    <p class="card-text mb-1">
+                                                        <strong>Lejárat:</strong>
+                                                        <?php
+                                                            if (!empty($bonus['expires_at'])) {
+                                                                echo date('Y-m-d H:i', strtotime($bonus['expires_at']));
+                                                            } elseif (!empty($bonus['activation_expire_hours']) && (int)$bonus['activation_expire_hours'] > 0 && !empty($bonus['created_at'])) {
+                                                                $fallbackExpire = new DateTime($bonus['created_at']);
+                                                                $fallbackExpire->modify('+' . (int)$bonus['activation_expire_hours'] . ' hours');
+                                                                echo $fallbackExpire->format('Y-m-d H:i');
+                                                            } elseif ((int)($bonus['bonus_type_id'] ?? 0) === 1 && (int)($bonus['is_step_bonus'] ?? 0) === 1 && (int)($bonus['step_number'] ?? 0) === 2 && !empty($bonus['created_at'])) {
+                                                                $fallbackExpire = new DateTime($bonus['created_at']);
+                                                                $fallbackExpire->modify('+48 hours');
+                                                                echo $fallbackExpire->format('Y-m-d H:i');
+                                                            } elseif (!empty($bonus['valid_weekdays_only']) && !empty($bonus['created_at'])) {
+                                                                $createdAt = new DateTime($bonus['created_at']);
+                                                                $weekday = (int)$createdAt->format('N');
+                                                                $daysUntilFriday = max(0, 5 - $weekday);
+                                                                $createdAt->modify('+' . $daysUntilFriday . ' day');
+                                                                $createdAt->setTime(23, 59, 0);
+                                                                echo $createdAt->format('Y-m-d H:i');
+                                                            } else {
+                                                                echo '<span class="text-white">Nincs megadva</span>';
+                                                            }
+                                                        ?>
+                                                    </p>
+                                                </div>
+                                                <div class="col-md-4 text-end">
+                                                    <?php
+                                                        $is_valid = $bonus['expires_at'] ? strtotime($bonus['expires_at']) > time() : true;
+
+                                                        if ($bonus['status'] === 'COMPLETED') {
+                                                            echo '<span class="badge bg-primary"><i class="fas fa-trophy"></i> Teljesítve</span>';
+                                                        } elseif ($bonus['used']) {
+                                                            echo '<span class="badge bg-info text-dark"><i class="fas fa-check"></i> Felhasznált</span>';
+                                                        } elseif (!$is_valid) {
+                                                            echo '<span class="badge bg-danger"><i class="fas fa-times-circle"></i> Lejárt</span>';
+                                                        } else {
+                                                            echo '<span class="badge bg-secondary">Archivált</span>';
+                                                        }
+                                                    ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
                         </div>
                     <?php endif; ?>
                     

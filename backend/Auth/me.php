@@ -6,7 +6,11 @@ require_once __DIR__ . '/../connect.php';
 
 function getAvailableFreeBet(mysqli $conn, int $userId): array {
   $stmt = $conn->prepare(" 
-    SELECT ub.id, COALESCE(ub.free_bet_amount, 0) AS free_bet_amount
+    SELECT ub.id,
+           COALESCE(ub.free_bet_amount, 0) AS free_bet_amount,
+           COALESCE(bc.min_combo, 0) AS min_combo,
+           COALESCE(bc.min_odds, 0) AS min_odds,
+           COALESCE(bc.min_odds_per_event, 0) AS min_odds_per_event
     FROM UserBonuses ub
     INNER JOIN BonusCodes bc ON bc.id = ub.bonus_id
     WHERE ub.user_id = ?
@@ -26,7 +30,10 @@ function getAvailableFreeBet(mysqli $conn, int $userId): array {
 
   return [
     'id' => (int)($row['id'] ?? 0),
-    'amount' => (float)($row['free_bet_amount'] ?? 0.0)
+    'amount' => (float)($row['free_bet_amount'] ?? 0.0),
+    'min_combo' => (int)($row['min_combo'] ?? 0),
+    'min_odds' => (float)($row['min_odds'] ?? 0.0),
+    'min_odds_per_event' => (float)($row['min_odds_per_event'] ?? 0.0)
   ];
 }
 
@@ -53,6 +60,9 @@ if (isset($_SESSION['user_id'])) {
     $user['login_started_at'] = (int)($_SESSION['login_started_at'] ?? time());
     $user['available_free_bet_id'] = $freeBet['id'];
     $user['available_free_bet_amount'] = $freeBet['amount'];
+    $user['available_free_bet_min_combo'] = $freeBet['min_combo'];
+    $user['available_free_bet_min_odds'] = $freeBet['min_odds'];
+    $user['available_free_bet_min_odds_per_event'] = $freeBet['min_odds_per_event'];
     echo json_encode(['loggedIn' => true, 'user' => $user]);
     exit;
   }
@@ -92,7 +102,10 @@ if (isset($_COOKIE['remember_token'])) {
       'session_bet_total' => (float)($_SESSION['session_bet_total'] ?? 0.0),
       'login_started_at' => (int)($_SESSION['login_started_at'] ?? time()),
       'available_free_bet_id' => $freeBet['id'],
-      'available_free_bet_amount' => $freeBet['amount']
+      'available_free_bet_amount' => $freeBet['amount'],
+      'available_free_bet_min_combo' => $freeBet['min_combo'],
+      'available_free_bet_min_odds' => $freeBet['min_odds'],
+      'available_free_bet_min_odds_per_event' => $freeBet['min_odds_per_event']
     ]]);
     exit;
   } else {
