@@ -16,6 +16,7 @@
 
 <body>
     <?php include '../../frontend/Components/cookie_consent.php'; ?>
+    <?php include '../../frontend/Components/disclaimer.php'; ?>
     <?php include '../../frontend/Components/helpheader.php'; ?>
 
     <div class="help-container">

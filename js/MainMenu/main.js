@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   let sportsData = []; // sidebar adatok cache
   let currentSportId = 66; // 66 = Foci (alapértelmezett)
+  let isFinishedView = false; // Lejátszott meccsek nézet
 
   // ========== LAPOZÁS ==========
   const PAGE_SIZE = 20;
@@ -20,16 +21,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // ========== LIGA PRIORITÁS ==========
   const PRIORITY_LEAGUES = [
+      'világbajnokság', 'world cup', 'vb',
+      'nemzetek ligája', 'nations league',
+      'európa-bajnokság', 'euro 20', 'uefa euro',
       'bajnokok ligája', 'champions league',
-      'world cup', 'világkupa',
       'europa league', 'európa liga',
-      'conference league',
+      'conference league', 'konferencia liga',
+      'nb i', 'nb1', 'nemzeti bajnokság', 'otp bank liga',
       'premier league',
-      'la liga',
+      'la liga', 'laliga',
       'bundesliga',
       'serie a',
       'ligue 1',
-      'nb i', 'nb1', 'nemzeti bajnokság',
+      'nb ii', 'nb2',
       'eredivisie',
       'primeira liga',
   ];
@@ -166,13 +170,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
       let html = '';
       filtered.forEach(sport => {
-          const countClass = sport.match_count > 0 ? 'has-matches' : '';
+          const displayCount = isFinishedView ? (sport.finished_count || 0) : sport.match_count;
+          const countClass = displayCount > 0 ? (isFinishedView ? 'has-finished' : 'has-matches') : '';
           const activeClass = (currentSportId === sport.sport_api_id) ? ' active' : '';
           html += `
               <div class="sidebar-sport-item${activeClass}" data-sport-id="${sport.sport_api_id}">
                   <i class="fas ${escapeHtml(sport.icon)} sidebar-sport-icon"></i>
                   <span class="sidebar-sport-name">${escapeHtml(sport.sport_name)}</span>
-                  <span class="sidebar-sport-count ${countClass}">${sport.match_count}</span>
+                  <span class="sidebar-sport-count ${countClass}">${displayCount}</span>
               </div>
           `;
       });
@@ -188,8 +193,12 @@ document.addEventListener('DOMContentLoaded', function () {
               sportsList.querySelectorAll('.sidebar-sport-item').forEach(el => el.classList.remove('active'));
               this.classList.add('active');
 
-              // Center meccsek frissítése erre a sportra (liga panel nem nyílik)
-              loadMatches(sportId);
+              // Center meccsek frissítése erre a sportra
+              if (isFinishedView) {
+                  loadFinishedMatches(sportId);
+              } else {
+                  loadMatches(sportId);
+              }
           });
       });
   }
@@ -272,32 +281,34 @@ document.addEventListener('DOMContentLoaded', function () {
       });
   }
 
-  // ========== LAPOZÁS ==========
+  // ========== LAPOZÁS (bajnokság-csoportonként) ==========
+  const LEAGUE_PAGE_SIZE = 15; // Ennyi bajnokság-csoport látható alapból
+
   function applyPagination() {
       currentPage = 1;
-      const rows = matchesContainer.querySelectorAll('.match-row');
+      const groups = matchesContainer.querySelectorAll('.league-group');
 
       // Meglévő "Több betöltése" gomb eltávolítása
       const existingBtn = matchesContainer.querySelector('.load-more-btn-wrapper');
       if (existingBtn) existingBtn.remove();
 
-      if (rows.length <= PAGE_SIZE) {
-          rows.forEach(row => { row.style.display = ''; });
+      if (groups.length <= LEAGUE_PAGE_SIZE) {
+          groups.forEach(g => { g.style.display = ''; });
           return;
       }
 
-      rows.forEach((row, i) => {
-          row.style.display = i < PAGE_SIZE ? '' : 'none';
+      groups.forEach((g, i) => {
+          g.style.display = i < LEAGUE_PAGE_SIZE ? '' : 'none';
       });
 
-      createLoadMoreBtn(rows.length);
+      createLoadMoreBtn(groups.length);
   }
 
   function createLoadMoreBtn(totalCount) {
       const existing = matchesContainer.querySelector('.load-more-btn-wrapper');
       if (existing) existing.remove();
 
-      const visible = currentPage * PAGE_SIZE;
+      const visible = currentPage * LEAGUE_PAGE_SIZE;
       if (visible >= totalCount) return;
 
       const remaining = totalCount - visible;
@@ -306,19 +317,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
       const btn = document.createElement('button');
       btn.className = 'load-more-btn';
-    btn.innerHTML = `<i class="fas fa-chevron-down"></i> ${t('mainMenu.loadMore', 'Több betöltése')} (${remaining} ${t('mainMenu.matchesWord', 'meccsek')})`;
+      btn.innerHTML = `<i class="fas fa-chevron-down"></i> ${t('mainMenu.loadMore', 'Több betöltése')} (${remaining} ${t('mainMenu.leaguesWord', 'bajnokság')})`;
 
       btn.addEventListener('click', () => {
           currentPage++;
-          const allRows = matchesContainer.querySelectorAll('.match-row');
-          allRows.forEach((row, i) => {
-              if (i < currentPage * PAGE_SIZE) row.style.display = '';
+          const allGroups = matchesContainer.querySelectorAll('.league-group');
+          allGroups.forEach((g, i) => {
+              if (i < currentPage * LEAGUE_PAGE_SIZE) g.style.display = '';
           });
-          const newRemaining = Math.max(0, totalCount - currentPage * PAGE_SIZE);
+          const newRemaining = Math.max(0, totalCount - currentPage * LEAGUE_PAGE_SIZE);
           if (newRemaining === 0) {
               wrapper.remove();
           } else {
-              btn.innerHTML = `<i class="fas fa-chevron-down"></i> ${t('mainMenu.loadMore', 'Több betöltése')} (${newRemaining} ${t('mainMenu.matchesWord', 'meccsek')})`;
+              btn.innerHTML = `<i class="fas fa-chevron-down"></i> ${t('mainMenu.loadMore', 'Több betöltése')} (${newRemaining} ${t('mainMenu.leaguesWord', 'bajnokság')})`;
           }
       });
 
@@ -375,26 +386,39 @@ document.addEventListener('DOMContentLoaded', function () {
 
           searchTimeout = setTimeout(() => {
               const rows = matchesContainer.querySelectorAll('.match-row');
+              const leagueGroups = matchesContainer.querySelectorAll('.league-group');
               if (rows.length === 0) return;
 
               if (val === '') {
-                  // Keresés ürítve: lapozás visszaállítása
+                  // Keresés ürítve: minden league-group és első meccs látható
                   const noResult = matchesContainer.querySelector('.search-no-result');
                   if (noResult) noResult.remove();
+                  leagueGroups.forEach(lg => {
+                      lg.style.display = '';
+                      lg.classList.remove('expanded');
+                  });
+                  rows.forEach(row => { row.style.display = ''; });
                   applyPagination();
                   return;
               }
 
-              // Keresési mód: minden egyező sor megjelenik (lapozástól függetlenül)
+              // Keresési mód: meccseket szűrjük, league-group-okat is kezeljük
               let visibleCount = 0;
-              rows.forEach(row => {
-                  const text = row.textContent.toLowerCase();
-                  if (text.includes(val)) {
-                      row.style.display = '';
-                      visibleCount++;
-                  } else {
-                      row.style.display = 'none';
-                  }
+              leagueGroups.forEach(lg => {
+                  const lgRows = lg.querySelectorAll('.match-row');
+                  let hasVisible = false;
+                  lgRows.forEach(row => {
+                      const text = row.textContent.toLowerCase();
+                      if (text.includes(val)) {
+                          row.style.display = '';
+                          hasVisible = true;
+                          visibleCount++;
+                      } else {
+                          row.style.display = 'none';
+                      }
+                  });
+                  lg.style.display = hasVisible ? '' : 'none';
+                  if (hasVisible) lg.classList.add('expanded');
               });
 
               // "Több betöltése" gomb elrejtése keresés alatt
@@ -473,6 +497,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     matchesContainer.innerHTML = '<div class="loading-details"><i class="fas fa-spinner fa-spin"></i> ' + t('mainMenu.loadingMatchDetails', 'Meccs adatok betöltése...') + '</div>';
 
+      if (isFinishedView) {
+          fetch('../../backend/ApiRequest/get_finished_match_details.php?eventId=' + eventId)
+              .then(res => res.json())
+              .then(data => { renderFinishedMatchDetails(data); })
+              .catch(err => {
+                  console.error('[MAIN] Lejátszott meccs részletek hiba:', err);
+                  matchesContainer.innerHTML = '<div class="no-matches"><i class="fas fa-exclamation-triangle" style="font-size:40px;color:#e74c3c;margin-bottom:12px;display:block;"></i>' + t('mainMenu.errorMatchDetails', 'Hiba a meccs adatok betöltésekor.') + '</div>';
+              });
+          return;
+      }
+
       fetch('../../backend/ApiRequest/get_match_details.php?eventId=' + eventId)
           .then(res => res.json())
           .then(data => {
@@ -498,6 +533,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       const markets = matchData.markets || [];
+      const isBoostedMatch = match.isBoosted || false;
 
       let html = `
           <button class="back-btn" id="back-to-matches">
@@ -505,6 +541,7 @@ document.addEventListener('DOMContentLoaded', function () {
           </button>
 
           <div class="match-header-card">
+              ${isBoostedMatch ? '<div class="boosted-match-banner"><i class="fas fa-rocket"></i> ' + t('mainMenu.boostedMatchBanner', 'Oddsűrhajó — Kiemelt szorzó ezen a meccsen!') + '</div>' : ''}
               <div class="match-meta">
                   <span class="meta-item"><i class="fas fa-globe-europe"></i> ${escapeHtml(match.country || t('mainMenu.unknown', 'Ismeretlen'))}</span>
                   <span class="meta-item"><i class="fas fa-trophy"></i> ${escapeHtml(match.championship || t('mainMenu.unknown', 'Ismeretlen'))}</span>
@@ -542,14 +579,17 @@ document.addEventListener('DOMContentLoaded', function () {
               if (market.selections && Array.isArray(market.selections)) {
                   market.selections.forEach(selection => {
                       const oddsValue = parseFloat(selection.odds) || 0;
+                      const isBoosted = selection.boosted || false;
+                      const originalOdds = parseFloat(selection.originalOdds) || 0;
                       const state = window.BetslipLogic
                           ? window.BetslipLogic.getButtonState(match.homeTeam, match.awayTeam, selection.name, marketFullName)
                           : null;
                       const stateClass = state ? ' ' + state : '';
+                      const boostedClass = isBoosted ? ' boosted-selection' : '';
                       const isDisabled = state === 'disabled' ? ' disabled' : '';
 
                       html += `
-                          <button class="selection-btn${stateClass}"${isDisabled}
+                          <button class="selection-btn${stateClass}${boostedClass}"${isDisabled}
                               data-match-id="${match.id}"
                               data-home="${escapeHtml(match.homeTeam || '')}"
                               data-away="${escapeHtml(match.awayTeam || '')}"
@@ -557,7 +597,13 @@ document.addEventListener('DOMContentLoaded', function () {
                               data-market="${escapeHtml(marketFullName)}"
                               data-odd="${oddsValue}">
                               <span class="selection-name">${escapeHtml(selection.name)}</span>
-                              <span class="selection-odd">${oddsValue.toFixed(2)}</span>
+                              ${isBoosted
+                                  ? `<span class="selection-odd boosted-odd-display">
+                                        <span class="original-odd-crossed">${originalOdds.toFixed(2)}</span>
+                                        <i class="fas fa-rocket boosted-icon-small"></i>
+                                        ${oddsValue.toFixed(2)}
+                                     </span>`
+                                  : `<span class="selection-odd">${oddsValue.toFixed(2)}</span>`}
                           </button>`;
                   });
               }
@@ -577,7 +623,11 @@ document.addEventListener('DOMContentLoaded', function () {
       const backBtn = document.getElementById('back-to-matches');
       if (backBtn) {
           backBtn.addEventListener('click', function () {
-              loadMatches(currentSportId);
+              if (isFinishedView) {
+                  loadFinishedMatches(currentSportId);
+              } else {
+                  loadMatches(currentSportId);
+              }
           });
       }
 
@@ -588,17 +638,490 @@ document.addEventListener('DOMContentLoaded', function () {
 
   }
 
-  // ========== AUTO REFRESH (60 másodpercenként) ==========
+  // ========== LEJÁTSZOTT MECCS RÉSZLETEK ==========
+  function renderFinishedMatchDetails(data) {
+      if (!data || data.error) {
+          matchesContainer.innerHTML = '<div class="error-msg"><i class="fas fa-exclamation-triangle"></i> ' + t('mainMenu.errorPrefix', 'Hiba:') + ' ' + escapeHtml(data ? data.error : t('mainMenu.unknown', 'Ismeretlen')) + '</div>';
+          return;
+      }
+
+      const match = data.match;
+      if (!match) {
+          matchesContainer.innerHTML = '<div class="error-msg"><i class="fas fa-exclamation-triangle"></i> ' + t('mainMenu.noMatchData', 'Nincsenek meccs adatok.') + '</div>';
+          return;
+      }
+
+      const markets = data.markets || [];
+      const userBets = data.userBets || [];
+
+      let html = `
+          <button class="back-btn" id="back-to-matches">
+              <i class="fas fa-arrow-left"></i> ${t('mainMenu.backToMatches', 'Vissza a meccsekhez')}
+          </button>
+
+          <div class="match-header-card finished-header">
+              <div class="match-meta">
+                  <span class="meta-item"><i class="fas fa-globe-europe"></i> ${escapeHtml(match.country || t('mainMenu.unknown', 'Ismeretlen'))}</span>
+                  <span class="meta-item"><i class="fas fa-trophy"></i> ${escapeHtml(match.championship || t('mainMenu.unknown', 'Ismeretlen'))}</span>
+                  <span class="meta-item"><i class="fas fa-calendar-alt"></i> ${escapeHtml(match.startTime || '-')}</span>
+              </div>
+              <div class="match-scoreboard">
+                  <div class="team-side home-side">
+                      <span class="team-name-big">${escapeHtml(match.homeTeam || '')}</span>
+                  </div>
+                  <div class="score-center">
+                      <div class="score-big finished-score-big">${escapeHtml(match.score || '- - -')}</div>
+                      <div class="finished-badge"><i class="fas fa-flag-checkered"></i> ${t('mainMenu.finished', 'Vége')}</div>
+                  </div>
+                  <div class="team-side away-side">
+                      <span class="team-name-big">${escapeHtml(match.awayTeam || '')}</span>
+                  </div>
+              </div>
+          </div>
+      `;
+
+      // ── MECCS ÖSSZESÍTŐ KÁRTYÁK ──
+      html += `<div class="finished-info-cards">`;
+
+      html += `<div class="info-card">
+          <div class="info-card-icon"><i class="fas fa-futbol"></i></div>
+          <div class="info-card-label">${t('mainMenu.finalResult', 'Végeredmény')}</div>
+          <div class="info-card-value">${escapeHtml(match.score || '- - -')}</div>
+      </div>`;
+
+      html += `<div class="info-card">
+          <div class="info-card-icon"><i class="fas fa-calendar-alt"></i></div>
+          <div class="info-card-label">${t('mainMenu.matchDate', 'Dátum')}</div>
+          <div class="info-card-value">${escapeHtml(match.startTime || '-')}</div>
+      </div>`;
+
+      html += `<div class="info-card">
+          <div class="info-card-icon"><i class="fas fa-trophy"></i></div>
+          <div class="info-card-label">${t('mainMenu.competition', 'Bajnokság')}</div>
+          <div class="info-card-value">${escapeHtml(match.championship || '-')}</div>
+      </div>`;
+
+      // Győztes megállapítás
+      let winner = t('mainMenu.draw', 'Döntetlen');
+      if (match.homeScore !== null && match.awayScore !== null) {
+          if (match.homeScore > match.awayScore) winner = escapeHtml(match.homeTeam);
+          else if (match.awayScore > match.homeScore) winner = escapeHtml(match.awayTeam);
+      }
+      html += `<div class="info-card">
+          <div class="info-card-icon"><i class="fas fa-medal"></i></div>
+          <div class="info-card-label">${t('mainMenu.winner', 'Győztes')}</div>
+          <div class="info-card-value">${winner}</div>
+      </div>`;
+
+      html += `</div>`;
+
+      // ── GÓL VIZUALIZÁCIÓ ──
+      if (match.homeScore !== null && match.awayScore !== null) {
+          const totalGoals = match.homeScore + match.awayScore;
+          const homePct = totalGoals > 0 ? Math.round((match.homeScore / totalGoals) * 100) : 50;
+          const awayPct = totalGoals > 0 ? 100 - homePct : 50;
+          html += `
+          <div class="goal-vis-section">
+              <h3 class="section-title-sm"><i class="fas fa-chart-pie"></i> ${t('mainMenu.goalBreakdown', 'Gólmegoszlás')}</h3>
+              <div class="goal-bar-wrapper">
+                  <span class="goal-bar-label home">${escapeHtml(match.homeTeam)} (${match.homeScore})</span>
+                  <div class="goal-bar">
+                      <div class="goal-bar-home" style="width:${totalGoals > 0 ? homePct : 50}%">${totalGoals > 0 ? match.homeScore : ''}</div>
+                      <div class="goal-bar-away" style="width:${totalGoals > 0 ? awayPct : 50}%">${totalGoals > 0 ? match.awayScore : ''}</div>
+                  </div>
+                  <span class="goal-bar-label away">${escapeHtml(match.awayTeam)} (${match.awayScore})</span>
+              </div>
+              <div class="goal-total">${t('mainMenu.totalGoals', 'Összes gól:')} <strong>${totalGoals}</strong></div>
+          </div>`;
+      }
+
+      // ── FOGADÁSI STATISZTIKA ──
+      const stats = data.bettingStats || {};
+      if (stats.totalBets > 0) {
+          const winRate = stats.wonCount + stats.lostCount > 0
+              ? Math.round((stats.wonCount / (stats.wonCount + stats.lostCount)) * 100)
+              : 0;
+          html += `
+          <h3 class="section-title-sm"><i class="fas fa-poll"></i> ${t('mainMenu.bettingStats', 'Fogadási statisztika')}</h3>
+          <div class="betting-stats-grid">
+              <div class="stat-card">
+                  <div class="stat-icon"><i class="fas fa-users"></i></div>
+                  <div class="stat-value">${stats.uniqueUsers}</div>
+                  <div class="stat-label">${t('mainMenu.bettors', 'Fogadó')}</div>
+              </div>
+              <div class="stat-card">
+                  <div class="stat-icon"><i class="fas fa-ticket-alt"></i></div>
+                  <div class="stat-value">${stats.totalBets}</div>
+                  <div class="stat-label">${t('mainMenu.totalBetsCount', 'Fogadás')}</div>
+              </div>
+              <div class="stat-card">
+                  <div class="stat-icon"><i class="fas fa-percentage"></i></div>
+                  <div class="stat-value">${winRate}%</div>
+                  <div class="stat-label">${t('mainMenu.winRate', 'Nyerési arány')}</div>
+              </div>
+              <div class="stat-card">
+                  <div class="stat-icon"><i class="fas fa-fire"></i></div>
+                  <div class="stat-value">${escapeHtml(stats.topPick || '-')}</div>
+                  <div class="stat-label">${t('mainMenu.popularPick', 'Népszerű tipp')} (${stats.topPickCount}x)</div>
+              </div>
+          </div>`;
+      }
+
+      // ── ZÁRÓ PIACOK ──
+      if (markets.length > 0) {
+          html += `<h3 class="markets-title"><i class="fas fa-chart-bar"></i> ${t('mainMenu.closingOdds', 'Záró szorzók')}</h3>`;
+          html += '<div class="markets-container">';
+
+          markets.forEach(market => {
+              const specialVal = market.specialValue ? ' (' + market.specialValue + ')' : '';
+              const marketFullName = (market.name || '') + specialVal;
+              html += `<div class="market-card finished-market">
+                  <div class="market-header"><span class="market-name">${escapeHtml(marketFullName)}</span>
+                  <span class="market-status-badge">${market.status || 'CLOSED'}</span></div>
+                  <div class="market-selections">`;
+
+              if (market.outcomes && Array.isArray(market.outcomes)) {
+                  market.outcomes.forEach(outcome => {
+                      const statusClass = outcome.status === 'WON' ? 'outcome-won' : (outcome.status === 'LOST' ? 'outcome-lost' : '');
+                      const statusIcon = outcome.status === 'WON' ? '<i class="fas fa-check-circle"></i> ' : (outcome.status === 'LOST' ? '<i class="fas fa-times-circle"></i> ' : '');
+                      html += `
+                          <div class="selection-btn finished-outcome ${statusClass}">
+                              <span class="selection-name">${statusIcon}${escapeHtml(outcome.label)}</span>
+                              <span class="selection-odd">${outcome.odds.toFixed(2)}</span>
+                          </div>`;
+                  });
+              }
+
+              html += '</div></div>';
+          });
+
+          html += '</div>';
+      }
+
+      // ── USER FOGADÁSAI ──
+      if (userBets.length > 0) {
+          html += `<h3 class="markets-title"><i class="fas fa-ticket-alt"></i> ${t('mainMenu.yourBets', 'A te fogadásaid')}</h3>`;
+          html += '<div class="user-bets-container">';
+
+          userBets.forEach(bet => {
+              const statusClass = bet.ticketStatus === 'WON' ? 'bet-won' : (bet.ticketStatus === 'LOST' ? 'bet-lost' : 'bet-open');
+              const statusIcon = bet.ticketStatus === 'WON' ? '✅' : (bet.ticketStatus === 'LOST' ? '❌' : '⏳');
+              html += `
+                  <div class="user-bet-card ${statusClass}">
+                      <div class="user-bet-header">
+                          <span class="user-bet-market">${escapeHtml(bet.market || '')}</span>
+                          <span class="user-bet-status">${statusIcon} ${escapeHtml(bet.ticketStatus)}</span>
+                      </div>
+                      <div class="user-bet-body">
+                          <div class="user-bet-row">
+                              <span>${t('mainMenu.yourPick', 'Tipped:')}</span>
+                              <span class="user-bet-pick">${escapeHtml(bet.pick || '')}</span>
+                          </div>
+                          <div class="user-bet-row">
+                              <span>${t('mainMenu.oddsAtPick', 'Odds:')}</span>
+                              <span>${bet.oddsAtPick.toFixed(2)}</span>
+                          </div>
+                          <div class="user-bet-row">
+                              <span>${t('mainMenu.stake', 'Tét:')}</span>
+                              <span>${bet.stake.toLocaleString('hu-HU')} Ft</span>
+                          </div>
+                          <div class="user-bet-row highlight">
+                              <span>${t('mainMenu.potentialWin', 'Nyeremény:')}</span>
+                              <span>${bet.potentialWin.toLocaleString('hu-HU')} Ft</span>
+                          </div>
+                      </div>
+                  </div>`;
+          });
+
+          html += '</div>';
+      }
+
+      // ── EGYMÁS ELLENI ELŐZMÉNYEK (H2H) ──
+      const h2h = data.h2h || [];
+      if (h2h.length > 0) {
+          html += `<h3 class="section-title-sm"><i class="fas fa-exchange-alt"></i> ${t('mainMenu.h2hHistory', 'Egymás elleni előzmények')}</h3>`;
+          html += '<div class="h2h-container">';
+          h2h.forEach(m => {
+              const scoreStr = (m.homeScore !== null && m.awayScore !== null)
+                  ? m.homeScore + ' - ' + m.awayScore : '-';
+              html += `
+                  <div class="h2h-row">
+                      <span class="h2h-date">${escapeHtml(m.date)}</span>
+                      <span class="h2h-teams">${escapeHtml(m.homeTeam)} <span class="h2h-vs">vs</span> ${escapeHtml(m.awayTeam)}</span>
+                      <span class="h2h-score">${scoreStr}</span>
+                      <span class="h2h-league">${escapeHtml(m.league)}</span>
+                  </div>`;
+          });
+          html += '</div>';
+      }
+
+      // ── BAJNOKSÁG TÖBBI MECCSE ──
+      const sameComp = data.sameCompetition || [];
+      if (sameComp.length > 0) {
+          html += `<h3 class="section-title-sm"><i class="fas fa-list"></i> ${t('mainMenu.sameCompMatches', 'Ugyanebben a bajnokságban')}</h3>`;
+          html += '<div class="same-comp-container">';
+          sameComp.forEach(m => {
+              const finClass = m.finished ? 'comp-finished' : 'comp-upcoming';
+              html += `
+                  <div class="same-comp-row ${finClass}" data-match-id="${m.apiId}">
+                      <span class="comp-time">${escapeHtml(m.time)}</span>
+                      <span class="comp-name">${escapeHtml(m.name)}</span>
+                      <span class="comp-score">${escapeHtml(m.score)}</span>
+                      ${m.finished ? '<span class="comp-status"><i class="fas fa-check-circle"></i></span>' : '<span class="comp-status"><i class="fas fa-clock"></i></span>'}
+                  </div>`;
+          });
+          html += '</div>';
+      }
+
+      matchesContainer.innerHTML = html;
+      if (typeof window.applyI18n === 'function') window.applyI18n(matchesContainer);
+
+      // Vissza gomb
+      const backBtn = document.getElementById('back-to-matches');
+      if (backBtn) {
+          backBtn.addEventListener('click', function () {
+              loadFinishedMatches(currentSportId);
+          });
+      }
+
+      // Bajnokság meccseire kattintás
+      matchesContainer.querySelectorAll('.same-comp-row.comp-finished').forEach(row => {
+          row.style.cursor = 'pointer';
+          row.addEventListener('click', function () {
+              const mId = parseInt(this.getAttribute('data-match-id'));
+              if (mId) loadMatchDetails(mId);
+          });
+      });
+  }
+
+  // ========== LEJÁTSZOTT MECCSEK ==========
+  function loadFinishedMatches(sportId) {
+      if (!matchesContainer) return;
+      isFinishedView = true;
+
+      // Gomb aktív állapot frissítése
+      const finishedBtn = document.getElementById('show-finished-matches');
+      if (finishedBtn) finishedBtn.classList.add('active');
+
+      // Sidebar újrarenderelése (számok frissítése)
+      if (sportsData.length) renderSportsList(sportsData);
+
+      matchesContainer.innerHTML = '<div class="loading-details"><i class="fas fa-spinner fa-spin"></i> ' + t('mainMenu.loadingMatches', 'Meccsek betöltése...') + '</div>';
+
+      let url = '../../backend/ApiRequest/get_finished_matches.php';
+      if (sportId && sportId > 0) {
+          url += '?sport_id=' + sportId;
+      }
+
+      // Cím frissítése
+      if (centerTitle) {
+          const sport = sportsData.find(s => s.sport_api_id === sportId);
+          const sportName = sport ? sport.sport_name : '';
+          const prefix = sportName ? escapeHtml(sportName) + ' — ' : '';
+          centerTitle.innerHTML = '<i class="fas fa-flag-checkered"></i> ' + prefix + t('mainMenu.finishedMatchesTitle', 'Lejátszott meccsek (utolsó 3 nap)');
+      }
+
+      fetch(url)
+          .then(res => res.text())
+          .then(html => {
+              // Vissza gomb hozzáadása a lista tetejére
+              const backHtml = '<button class="back-btn" id="back-to-today"><i class="fas fa-arrow-left"></i> ' + t('mainMenu.backToToday', 'Vissza a mai meccsekhez') + '</button>';
+              matchesContainer.innerHTML = backHtml + html;
+
+              filterNARows();
+              attachMatchClickHandlers();
+              applyPagination();
+              if (typeof window.applyI18n === 'function') window.applyI18n(matchesContainer);
+
+              // Vissza gomb kezelése
+              const backBtn = document.getElementById('back-to-today');
+              if (backBtn) {
+                  backBtn.addEventListener('click', function () {
+                      isFinishedView = false;
+                      const finBtn = document.getElementById('show-finished-matches');
+                      if (finBtn) finBtn.classList.remove('active');
+                      if (sportsData.length) renderSportsList(sportsData);
+                      loadMatches(currentSportId);
+                  });
+              }
+          })
+          .catch(err => {
+              console.error('[MAIN] Lejátszott meccsek betöltési hiba:', err);
+              matchesContainer.innerHTML = '<div class="no-matches"><i class="fas fa-exclamation-triangle" style="font-size:40px;color:#e74c3c;margin-bottom:12px;display:block;"></i>' + t('mainMenu.errorLoading', 'Hiba a meccsek betöltésekor.') + '</div>';
+          });
+  }
+
+  // Lejátszott meccsek gomb kezelése
+  const finishedMatchesBtn = document.getElementById('show-finished-matches');
+  if (finishedMatchesBtn) {
+      finishedMatchesBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          if (isFinishedView) {
+              // Ha már a finished nézetben vagyunk, visszaváltunk
+              isFinishedView = false;
+              this.classList.remove('active');
+              if (sportsData.length) renderSportsList(sportsData);
+              loadMatches(currentSportId);
+          } else {
+              loadFinishedMatches(currentSportId);
+          }
+      });
+  }
+
+  // ========== ODDSŰRHAJÓ ==========
+  const boostedMatchBtn = document.getElementById('show-boosted-match');
+  if (boostedMatchBtn) {
+      boostedMatchBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          isFinishedView = false;
+          if (centerTitle) {
+              centerTitle.innerHTML = '<i class="fas fa-rocket"></i> ' + t('mainMenu.oddsShipTitle', 'Oddsűrhajó — Mai kiemelt szorzó');
+          }
+          matchesContainer.innerHTML = '<div class="loading-details"><i class="fas fa-spinner fa-spin"></i> ' + t('mainMenu.loadingBoostedMatch', 'Oddsűrhajó betöltése...') + '</div>';
+
+          fetch('../../backend/ApiRequest/get_boosted_match.php')
+              .then(res => res.json())
+              .then(data => {
+                  if (data.error) {
+                      matchesContainer.innerHTML = '<div class="no-matches"><i class="fas fa-rocket" style="font-size:40px;color:#f5c518;margin-bottom:12px;display:block;"></i>' + escapeHtml(data.error) + '</div>';
+                      return;
+                  }
+                  // Egyből a meccs részleteihez ugrunk
+                  loadMatchDetails(data.eventId);
+              })
+              .catch(err => {
+                  console.error('[BOOST] Hiba:', err);
+                  matchesContainer.innerHTML = '<div class="no-matches"><i class="fas fa-exclamation-triangle" style="font-size:40px;color:#e74c3c;margin-bottom:12px;display:block;"></i>' + t('mainMenu.errorLoading', 'Hiba az Oddsűrhajó betöltésekor.') + '</div>';
+              });
+      });
+  }
+
+  // ========== HÁTTÉR SZINKRON (API → DB) ==========
+  function syncFromApi() {
+      fetch('../../backend/refresh_all.php', { method: 'GET' })
+          .then(r => r.json())
+          .then(data => {
+              if (data && data.success === false) {
+                  console.warn('[SYNC] Frissítési hiba:', data);
+              }
+          })
+          .catch(err => console.warn('[SYNC] Hálózati hiba:', err));
+  }
+
+  // Első betöltéskor azonnal szinkronizálunk
+  syncFromApi();
+  // Majd 60 másodpercenként
+  setInterval(syncFromApi, 60000);
+
+  // ========== AUTO REFRESH (30 másodpercenként, DB → UI) ==========
   setInterval(() => {
-      // Csak akkor frissítsünk, ha a meccsek listája látható (nem a részletek)
-      if (matchesContainer && !matchesContainer.querySelector('.back-btn')) {
+      // Csak akkor frissítsünk, ha a meccsek listája látható (nem a részletek és nem finished nézet)
+      if (matchesContainer && !matchesContainer.querySelector('.back-btn') && !isFinishedView) {
           loadMatches(currentSportId);
       }
       // Sidebar is frissüljön
       loadSidebarSports();
-  }, 60000);
+  }, 30000);
+
+  // ========== NAPI TIPPEK ==========
+  function syncTipButtonStates() {
+      document.querySelectorAll('.tip-add-btn').forEach(btn => {
+          const card = btn.closest('.daily-tip-card');
+          if (!card) return;
+          const pickEls = card.querySelectorAll('.tip-combo-pick');
+          let allActive = true;
+          pickEls.forEach(el => {
+              const home = el.getAttribute('data-home');
+              const away = el.getAttribute('data-away');
+              const pick = el.getAttribute('data-pick');
+              const market = el.getAttribute('data-market');
+              if (!home || !away || !pick || !market) { allActive = false; return; }
+              const state = window.BetslipLogic
+                  ? window.BetslipLogic.getButtonState(home, away, pick, market)
+                  : null;
+              if (state !== 'active') allActive = false;
+          });
+          btn.classList.toggle('tip-added', allActive);
+      });
+  }
+  window.syncTipButtons = syncTipButtonStates;
+
+  function loadDailyTips() {
+      const tipsList = document.getElementById('daily-tips-list');
+      if (!tipsList) return;
+
+      fetch('../../backend/ApiRequest/get_daily_tips.php')
+          .then(res => res.json())
+          .then(tips => {
+              if (!Array.isArray(tips) || tips.length === 0) {
+                  tipsList.innerHTML = '<div class="daily-tips-empty">' + t('mainMenu.noTips', 'Nincs elérhető tipp.') + '</div>';
+                  return;
+              }
+              let html = '';
+              tips.forEach((tip, idx) => {
+                  const picks = tip.picks || [];
+                  const comboOdds = parseFloat(tip.comboOdds || 0).toFixed(2);
+                  let picksHtml = '';
+                  picks.forEach(p => {
+                      picksHtml += `
+                          <div class="tip-combo-pick"
+                               data-event-id="${tip.eventId}"
+                               data-home="${escapeHtml(tip.homeTeam)}"
+                               data-away="${escapeHtml(tip.awayTeam)}"
+                               data-pick="${escapeHtml(p.pick)}"
+                               data-market="${escapeHtml(p.market)}"
+                               data-odd="${parseFloat(p.odds).toFixed(2)}">
+                              <span class="tip-combo-market">${escapeHtml(p.market)}</span>
+                              <span class="tip-combo-value">${escapeHtml(p.pick)} <span class="tip-combo-odd">${parseFloat(p.odds).toFixed(2)}</span></span>
+                          </div>`;
+                  });
+                  html += `
+                      <div class="daily-tip-card">
+                          <div class="tip-match-info">
+                              <span class="tip-league">${escapeHtml(tip.league)}</span>
+                              <span class="tip-time">${escapeHtml(tip.startTime)}</span>
+                          </div>
+                          <div class="tip-teams">${escapeHtml(tip.homeTeam)} - ${escapeHtml(tip.awayTeam)}</div>
+                          <div class="tip-combo-picks">${picksHtml}</div>
+                          <button class="tip-add-btn" data-tip-index="${idx}">
+                              <span class="tip-combo-odds">${comboOdds}</span>
+                              <i class="fas fa-plus"></i>
+                          </button>
+                      </div>`;
+              });
+              tipsList.innerHTML = html;
+              if (typeof window.applyI18n === 'function') window.applyI18n(tipsList);
+
+              tipsList.querySelectorAll('.tip-add-btn').forEach(btn => {
+                  btn.addEventListener('click', function () {
+                      const card = this.closest('.daily-tip-card');
+                      if (!card) return;
+                      const pickEls = card.querySelectorAll('.tip-combo-pick');
+                      pickEls.forEach(el => {
+                          const home = el.getAttribute('data-home');
+                          const away = el.getAttribute('data-away');
+                          const pick = el.getAttribute('data-pick');
+                          const odd = parseFloat(el.getAttribute('data-odd'));
+                          const market = el.getAttribute('data-market');
+                          const matchId = parseInt(el.getAttribute('data-event-id'));
+                          if (typeof window.toggleOdds === 'function') {
+                              window.toggleOdds(home, away, pick, odd, market, matchId);
+                          }
+                      });
+                      syncTipButtonStates();
+                  });
+              });
+
+              syncTipButtonStates();
+          })
+          .catch(err => {
+              console.error('[TIPS] Hiba:', err);
+              tipsList.innerHTML = '<div class="daily-tips-empty">' + t('mainMenu.errorTips', 'Tippek betöltése sikertelen.') + '</div>';
+          });
+  }
 
   // ========== INICIALIZÁLÁS ==========
   loadSidebarSports();
   loadMatches(66); // Alapértelmezett: Foci
+  loadDailyTips();
 });

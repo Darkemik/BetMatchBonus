@@ -9,21 +9,7 @@
  */
 
 require_once dirname(__DIR__) . "/connect.php";
-
-function getSportIcon($sportId) {
-    $sportIcons = [
-        66 => 'fa-futbol', 67 => 'fa-basketball-ball', 78 => 'fa-bullseye',
-        83 => 'fa-swimmer', 73 => 'fa-hand-rock', 70 => 'fa-hockey-puck',
-        77 => 'fa-table-tennis', 145 => 'fa-gamepad', 76 => 'fa-running',
-        90 => 'fa-hockey-puck', 68 => 'fa-baseball-ball', 69 => 'fa-football-ball',
-        71 => 'fa-volleyball-ball', 72 => 'fa-golf-ball', 74 => 'fa-fist-raised',
-        75 => 'fa-biking', 79 => 'fa-skiing', 80 => 'fa-snowflake',
-        84 => 'fa-table-tennis', 85 => 'fa-chess', 109 => 'fa-volleyball-ball',
-        110 => 'fa-futbol', 138 => 'fa-running', 151 => 'fa-trophy'
-    ];
-
-    return $sportIcons[$sportId] ?? 'fa-trophy';
-}
+require_once dirname(__DIR__) . "/config.php";
 
 // ===== syncLiveMatchScores fuggveny =====
 // Frissiti az API altal visszaadott meccsek allasat a DB-ben.
@@ -235,12 +221,13 @@ if (empty($matches)) {
             $home = htmlspecialchars(trim($teams[0] ?? $name));
             $away = htmlspecialchars(trim($teams[1] ?? ''));
 
-            // Kezdés időpont
-            $startFormatted = '';
+            // Kezdés időpont (DB-ben UTC → Budapest konverzió)
+            $startFormatted = '-';
             if (!empty($row['start_time'])) {
-                $startFormatted = date('H:i', strtotime($row['start_time']));
+                $dtStart = new DateTime($row['start_time'], new DateTimeZone('UTC'));
+                $dtStart->setTimezone(new DateTimeZone('Europe/Budapest'));
+                $startFormatted = $dtStart->format('H:i');
             }
-            if (empty($startFormatted)) $startFormatted = '-';
         ?>
             <tr class="match-row clickable" data-match-id="<?php echo $matchId; ?>">
                 <td><span class="league-name"><?php echo htmlspecialchars($leagueName); ?></span></td>

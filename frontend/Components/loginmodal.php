@@ -1,3 +1,6 @@
+<?php require_once __DIR__ . '/../../backend/config.php'; ?>
+<script>window.RECAPTCHA_SITE_KEY = '<?= RECAPTCHA_SITE_KEY ?>';</script>
+<script src="https://www.google.com/recaptcha/api.js?render=<?= RECAPTCHA_SITE_KEY ?>"></script>
 <div class="modal fade" id="loginModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">

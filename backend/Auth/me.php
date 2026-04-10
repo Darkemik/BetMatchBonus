@@ -46,6 +46,17 @@ if (isset($_SESSION['user_id'])) {
   if (!isset($_SESSION['login_started_at'])) {
     $_SESSION['login_started_at'] = time();
   }
+
+  // 1 órás session limit ellenőrzés
+  $sessionMaxSeconds = 3600; // 1 óra
+  $elapsed = time() - (int)$_SESSION['login_started_at'];
+  if ($elapsed >= $sessionMaxSeconds) {
+    session_unset();
+    session_destroy();
+    setcookie('remember_token', '', time() - 3600, '/', '', false, true);
+    echo json_encode(['loggedIn' => false, 'expired' => true]);
+    exit;
+  }
   
   $stmt = $conn->prepare("SELECT id, username, email, full_name, balance FROM Users WHERE id = ? LIMIT 1");
   $stmt->bind_param("i", $userId);
@@ -58,6 +69,7 @@ if (isset($_SESSION['user_id'])) {
     $freeBet = getAvailableFreeBet($conn, $userId);
     $user['session_bet_total'] = (float)($_SESSION['session_bet_total'] ?? 0.0);
     $user['login_started_at'] = (int)($_SESSION['login_started_at'] ?? time());
+    $user['session_remaining'] = $sessionMaxSeconds - $elapsed;
     $user['available_free_bet_id'] = $freeBet['id'];
     $user['available_free_bet_amount'] = $freeBet['amount'];
     $user['available_free_bet_min_combo'] = $freeBet['min_combo'];
@@ -74,7 +86,7 @@ if (isset($_COOKIE['remember_token'])) {
   $tokenHash = hash('sha256', $rememberToken);
   
   $stmt = $conn->prepare("SELECT id, username, email, full_name, balance, remember_expiry FROM Users 
-                          WHERE remember_token = ? AND remember_expiry > NOW() LIMIT 1");
+                          WHERE remember_token = ? AND remember_expiry > NOW() AND is_active = 1 LIMIT 1");
   $stmt->bind_param("s", $tokenHash);
   $stmt->execute();
   $res = $stmt->get_result();
@@ -93,6 +105,7 @@ if (isset($_COOKIE['remember_token'])) {
     }
     
     $freeBet = getAvailableFreeBet($conn, (int)$user['id']);
+    $sessionRemaining = 3600 - (time() - (int)$_SESSION['login_started_at']);
     echo json_encode(['loggedIn' => true, 'user' => [
       'id' => $user['id'],
       'username' => $user['username'],
@@ -101,6 +114,7 @@ if (isset($_COOKIE['remember_token'])) {
       'balance' => $user['balance'],
       'session_bet_total' => (float)($_SESSION['session_bet_total'] ?? 0.0),
       'login_started_at' => (int)($_SESSION['login_started_at'] ?? time()),
+      'session_remaining' => $sessionRemaining,
       'available_free_bet_id' => $freeBet['id'],
       'available_free_bet_amount' => $freeBet['amount'],
       'available_free_bet_min_combo' => $freeBet['min_combo'],

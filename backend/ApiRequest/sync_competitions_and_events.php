@@ -233,15 +233,24 @@ try {
         }
     }
 
-    // ── 3) MECCSEK (élő + napi) ──────────────────────────────
-    $today = (new DateTime('today'))->format('Y-m-d');
+    // ── 3) MECCSEK (élő + következő 3 nap) ──────────────────────────
+    $syncDays = [];
+    for ($d = 0; $d <= 3; $d++) {
+        $syncDays[] = (new DateTime("+{$d} days"))->format('Y-m-d');
+    }
     $allLiveApiIds = []; // Összegyűjtjük az összes API-ból kapott live event ID-t
 
     foreach ($sportLocalMap as $sportApiId => $sportLocalId) {
         // Élő meccsek
         $liveMatches = apiGet(EP_MATCHES_LIVE, ['sportId' => $sportApiId]);
-        // Mai meccsek
-        $dateMatches = apiGet(EP_MATCHES_DATE, ['sportId' => $sportApiId, 'date' => $today]);
+        // Következő 3 nap meccsei
+        $dateMatches = [];
+        foreach ($syncDays as $day) {
+            $dayMatches = apiGet(EP_MATCHES_DATE, ['sportId' => $sportApiId, 'date' => $day]);
+            if (is_array($dayMatches)) {
+                $dateMatches = array_merge($dateMatches, $dayMatches);
+            }
+        }
 
         // If matches drop from live, mark them finished for this sport
         if (is_array($liveMatches)) {

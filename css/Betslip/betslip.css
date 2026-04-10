@@ -1147,3 +1147,492 @@
 .selection-btn.disabled .selection-odd {
     color: #555;
 }
+
+/* ===== LEJÁTSZOTT MECCSEK GOMB ===== */
+.finished-matches-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 16px;
+    margin-top: 12px;
+    background: linear-gradient(135deg, #1a2233 0%, #1e3a2f 100%);
+    color: #ccc;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.finished-matches-btn i {
+    color: #4CAF50;
+    font-size: 16px;
+}
+
+.finished-matches-btn:hover {
+    background: linear-gradient(135deg, #1e3a2f 0%, #2a5a3f 100%);
+    color: #fff;
+    border-color: rgba(76, 175, 80, 0.6);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+}
+
+.finished-matches-btn.active {
+    background: linear-gradient(135deg, #2a5a3f 0%, #1e3a2f 100%);
+    color: #4CAF50;
+    border-color: #4CAF50;
+    box-shadow: 0 0 12px rgba(76, 175, 80, 0.25);
+}
+
+/* ===== LEJÁTSZOTT MECCS SOROK ===== */
+.match-row.finished {
+    opacity: 0.85;
+}
+
+.match-row.finished:hover {
+    opacity: 1;
+}
+
+.finished-score {
+    color: #4CAF50 !important;
+    font-weight: 700;
+}
+
+.status-finished {
+    color: #4CAF50;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.status-finished i {
+    margin-right: 4px;
+}
+
+/* ===== LEJÁTSZOTT MECCS RÉSZLETEK ===== */
+.finished-header {
+    border-left: 3px solid #4CAF50;
+}
+
+.finished-score-big {
+    color: #4CAF50 !important;
+    font-size: 32px;
+    font-weight: 800;
+}
+
+.finished-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(76, 175, 80, 0.15);
+    color: #4CAF50;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 6px;
+}
+
+.finished-info-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+    padding: 0 20px;
+}
+
+.info-card {
+    background: linear-gradient(135deg, #1a2233 0%, #1e2d3d 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.info-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(76, 175, 80, 0.3);
+}
+
+.info-card-icon {
+    font-size: 22px;
+    color: #4CAF50;
+    margin-bottom: 8px;
+}
+
+.info-card-label {
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.info-card-value {
+    font-size: 15px;
+    color: #fff;
+    font-weight: 700;
+}
+
+/* Záró szorzók */
+.finished-market {
+    opacity: 0.9;
+}
+
+.market-status-badge {
+    font-size: 10px;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.08);
+    color: #888;
+    padding: 2px 8px;
+    border-radius: 8px;
+    margin-left: 8px;
+    text-transform: uppercase;
+}
+
+.finished-outcome {
+    cursor: default !important;
+    pointer-events: none;
+}
+
+.finished-outcome.outcome-won {
+    background: rgba(76, 175, 80, 0.15) !important;
+    border-color: rgba(76, 175, 80, 0.4) !important;
+}
+
+.finished-outcome.outcome-won .selection-name {
+    color: #4CAF50;
+}
+
+.finished-outcome.outcome-lost {
+    background: rgba(233, 69, 96, 0.1) !important;
+    border-color: rgba(233, 69, 96, 0.2) !important;
+    opacity: 0.5;
+}
+
+.finished-outcome.outcome-lost .selection-name {
+    color: #e94560;
+}
+
+/* User fogadások */
+.user-bets-container {
+    padding: 0 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.user-bet-card {
+    background: linear-gradient(135deg, #1a2233 0%, #1e2d3d 100%);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+
+.user-bet-card.bet-won {
+    border-color: rgba(76, 175, 80, 0.4);
+}
+
+.user-bet-card.bet-lost {
+    border-color: rgba(233, 69, 96, 0.3);
+}
+
+.user-bet-card.bet-open {
+    border-color: rgba(255, 193, 7, 0.3);
+}
+
+.user-bet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: rgba(0, 0, 0, 0.2);
+    font-size: 13px;
+}
+
+.user-bet-market {
+    color: #ccc;
+    font-weight: 600;
+}
+
+.user-bet-status {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.bet-won .user-bet-status { color: #4CAF50; }
+.bet-lost .user-bet-status { color: #e94560; }
+.bet-open .user-bet-status { color: #ffc107; }
+
+.user-bet-body {
+    padding: 10px 14px;
+}
+
+.user-bet-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 13px;
+    color: #aaa;
+}
+
+.user-bet-row span:last-child {
+    color: #fff;
+    font-weight: 600;
+}
+
+.user-bet-row.highlight span:last-child {
+    color: #4CAF50;
+    font-size: 14px;
+}
+
+.user-bet-pick {
+    color: #e94560 !important;
+}
+
+/* ===== GÓL VIZUALIZÁCIÓ ===== */
+.goal-vis-section {
+    padding: 0 20px 8px;
+}
+
+.section-title-sm {
+    font-size: 15px;
+    font-weight: 700;
+    color: #ddd;
+    padding: 12px 20px 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-title-sm i {
+    color: #4CAF50;
+}
+
+.goal-bar-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.goal-bar-label {
+    font-size: 11px;
+    color: #aaa;
+    white-space: nowrap;
+    min-width: 80px;
+}
+
+.goal-bar-label.home { text-align: right; }
+.goal-bar-label.away { text-align: left; }
+
+.goal-bar {
+    flex: 1;
+    display: flex;
+    height: 28px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.05);
+}
+
+.goal-bar-home {
+    background: linear-gradient(90deg, #4CAF50 0%, #66BB6A 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    min-width: 20px;
+    transition: width 0.6s ease;
+}
+
+.goal-bar-away {
+    background: linear-gradient(90deg, #e94560 0%, #f06292 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    min-width: 20px;
+    transition: width 0.6s ease;
+}
+
+.goal-total {
+    text-align: center;
+    font-size: 12px;
+    color: #888;
+    padding-top: 4px;
+}
+
+/* ===== FOGADÁSI STATISZTIKA ===== */
+.betting-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    padding: 0 20px 12px;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #1a2233 0%, #1e2d3d 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 14px 10px;
+    text-align: center;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(233, 69, 96, 0.3);
+}
+
+.stat-icon {
+    font-size: 18px;
+    color: #e94560;
+    margin-bottom: 6px;
+}
+
+.stat-value {
+    font-size: 20px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 2px;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ===== H2H ELŐZMÉNYEK ===== */
+.h2h-container {
+    padding: 0 20px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.h2h-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255,255,255,0.03);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    transition: background 0.2s ease;
+}
+
+.h2h-row:hover {
+    background: rgba(255,255,255,0.06);
+}
+
+.h2h-date {
+    color: #888;
+    font-size: 12px;
+    min-width: 70px;
+}
+
+.h2h-teams {
+    flex: 1;
+    color: #ddd;
+    font-weight: 500;
+}
+
+.h2h-vs {
+    color: #666;
+    font-size: 11px;
+    margin: 0 4px;
+}
+
+.h2h-score {
+    color: #4CAF50;
+    font-weight: 700;
+    min-width: 45px;
+    text-align: center;
+}
+
+.h2h-league {
+    color: #666;
+    font-size: 11px;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ===== BAJNOKSÁG TÖBBI MECCSE ===== */
+.same-comp-container {
+    padding: 0 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.same-comp-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255,255,255,0.03);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.same-comp-row:hover {
+    background: rgba(255,255,255,0.06);
+}
+
+.same-comp-row.comp-finished:hover {
+    transform: translateX(4px);
+}
+
+.comp-time {
+    color: #888;
+    font-size: 12px;
+    min-width: 40px;
+}
+
+.comp-name {
+    flex: 1;
+    color: #ccc;
+    font-weight: 500;
+}
+
+.comp-score {
+    color: #fff;
+    font-weight: 700;
+    min-width: 45px;
+    text-align: center;
+}
+
+.comp-finished .comp-score {
+    color: #4CAF50;
+}
+
+.comp-status {
+    font-size: 12px;
+    min-width: 20px;
+    text-align: center;
+}
+
+.comp-finished .comp-status { color: #4CAF50; }
+.comp-upcoming .comp-status { color: #888; }
+
+/* Responsive: H2H, stats */
+@media (max-width: 600px) {
+    .h2h-league { display: none; }
+    .h2h-date { min-width: 55px; font-size: 11px; }
+    .betting-stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .finished-info-cards { grid-template-columns: repeat(2, 1fr); }
+    .goal-bar-label { display: none; }
+}

@@ -248,6 +248,7 @@ CREATE TABLE IF NOT EXISTS Users (
   remember_expiry     DATETIME      DEFAULT NULL,
   reset_token         VARCHAR(64)   DEFAULT NULL,
   reset_token_expiry  DATETIME      DEFAULT NULL,
+  approval_token      VARCHAR(64)   DEFAULT NULL,
   created_at          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;

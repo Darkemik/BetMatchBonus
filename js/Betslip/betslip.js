@@ -799,6 +799,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
+            // Tipp gombok szinkronizálása is
+            if (typeof window.syncTipButtons === 'function') {
+                window.syncTipButtons();
+            }
+
             console.log('[BETSLIP] refreshAllOddsButtons() - kész!');
         };
         

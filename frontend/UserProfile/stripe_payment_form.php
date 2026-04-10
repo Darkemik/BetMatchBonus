@@ -71,6 +71,7 @@ if ($amount < 3000 || $amount > 600000) {
 
 <body>
     <?php include '../../frontend/Components/cookie_consent.php'; ?>
+    <?php include '../../frontend/Components/disclaimer.php'; ?>
     <?php require_once "../Components/header.php"; ?>
 
     <div class="container" style="max-width: 600px; margin-top: 40px; margin-bottom: 40px;">

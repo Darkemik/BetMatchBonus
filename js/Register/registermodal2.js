@@ -10,6 +10,94 @@ document.addEventListener('DOMContentLoaded', function () {
     var birthplaceInput = document.getElementById('modal2-birthplace');
     var dateShell = dateInput ? dateInput.closest('.birthdate-shell') : null;
 
+    // ── Város autocomplete ──
+    var cityList = document.getElementById('city-autocomplete-list');
+    var cityDebounce = null;
+    var citySelectedIndex = -1;
+
+    if (birthplaceInput && cityList) {
+        birthplaceInput.addEventListener('input', function () {
+            var q = this.value.trim();
+            clearTimeout(cityDebounce);
+            citySelectedIndex = -1;
+
+            if (q.length < 1) {
+                cityList.innerHTML = '';
+                cityList.style.display = 'none';
+                return;
+            }
+
+            cityDebounce = setTimeout(function () {
+                fetch('../../backend/ApiRequest/get_cities.php?q=' + encodeURIComponent(q))
+                    .then(function (res) { return res.json(); })
+                    .then(function (cities) {
+                        cityList.innerHTML = '';
+                        if (cities.length === 0) {
+                            cityList.style.display = 'none';
+                            return;
+                        }
+                        cities.forEach(function (city, idx) {
+                            var li = document.createElement('li');
+                            li.className = 'city-autocomplete-item';
+                            li.textContent = city.name;
+                            li.setAttribute('data-city-id', city.id);
+                            li.addEventListener('mousedown', function (e) {
+                                e.preventDefault();
+                                birthplaceInput.value = city.name;
+                                var hiddenId = document.getElementById('modal2-birthplace_city_id');
+                                if (hiddenId) hiddenId.value = city.id;
+                                cityList.innerHTML = '';
+                                cityList.style.display = 'none';
+                            });
+                            cityList.appendChild(li);
+                        });
+                        cityList.style.display = 'block';
+                    })
+                    .catch(function () {
+                        cityList.style.display = 'none';
+                    });
+            }, 200);
+        });
+
+        // Billentyűzet navigáció
+        birthplaceInput.addEventListener('keydown', function (e) {
+            var items = cityList.querySelectorAll('.city-autocomplete-item');
+            if (!items.length) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                citySelectedIndex = Math.min(citySelectedIndex + 1, items.length - 1);
+                updateCityHighlight(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                citySelectedIndex = Math.max(citySelectedIndex - 1, 0);
+                updateCityHighlight(items);
+            } else if (e.key === 'Enter' && citySelectedIndex >= 0) {
+                e.preventDefault();
+                items[citySelectedIndex].dispatchEvent(new Event('mousedown'));
+            } else if (e.key === 'Escape') {
+                cityList.innerHTML = '';
+                cityList.style.display = 'none';
+            }
+        });
+
+        birthplaceInput.addEventListener('blur', function () {
+            setTimeout(function () {
+                cityList.innerHTML = '';
+                cityList.style.display = 'none';
+            }, 150);
+        });
+    }
+
+    function updateCityHighlight(items) {
+        items.forEach(function (el, i) {
+            el.classList.toggle('city-autocomplete-active', i === citySelectedIndex);
+        });
+        if (items[citySelectedIndex]) {
+            items[citySelectedIndex].scrollIntoView({ block: 'nearest' });
+        }
+    }
+
     function pad2(value) {
         return value < 10 ? '0' + value : String(value);
     }
@@ -205,6 +293,21 @@ document.addEventListener('DOMContentLoaded', function () {
         result.textContent = 'Regisztráció folyamatban...';
         result.style.color = '#666';
 
+        // reCAPTCHA v3 token lekérése, majd regisztráció
+        if (typeof grecaptcha !== 'undefined') {
+            grecaptcha.ready(function () {
+                grecaptcha.execute(window.RECAPTCHA_SITE_KEY, { action: 'register' }).then(function (token) {
+                    formData.append('recaptcha_token', token);
+                    doRegister(formData, form, result, ageResult);
+                });
+            });
+        } else {
+            doRegister(formData, form, result, ageResult);
+        }
+    });
+
+    function doRegister(formData, form, result, ageResult) {
+
         fetch('../../backend/Auth/register.php', {
             method: 'POST',
             body: formData
@@ -219,20 +322,37 @@ document.addEventListener('DOMContentLoaded', function () {
             try {
                 var data = JSON.parse(text);
                 if (data.success) {
-                    result.style.color = 'green';
-                    result.textContent = data.message;
-                    // Modalok bezárása és forma resetelése
-                    setTimeout(function () {
-                        var reg2 = bootstrap.Modal.getInstance(document.getElementById('registerModal2'));
-                        if (reg2) reg2.hide();
+                    if (data.pending_approval) {
+                        // Jóváhagyásra vár – nem léptetjük be
+                        result.style.color = '#f5c518';
+                        result.innerHTML = '<i class="fas fa-clock"></i> ' + data.message;
+                        // Form resetelés + preview elrejtés
                         form.reset();
                         document.getElementById('modal2-id_preview_first').style.display = 'none';
                         document.getElementById('modal2-id_preview_second').style.display = 'none';
                         document.getElementById('modal2-address_preview').style.display = 'none';
                         ageResult.textContent = '';
-                        // 1. lépés adatainak törlése
                         window.registerStep1Data = null;
-                    }, 1500);
+                        // Modal bezárása 5 mp múlva
+                        setTimeout(function () {
+                            var reg2 = bootstrap.Modal.getInstance(document.getElementById('registerModal2'));
+                            if (reg2) reg2.hide();
+                        }, 6000);
+                    } else {
+                        result.style.color = 'green';
+                        result.textContent = data.message;
+                        // Modalok bezárása és forma resetelése
+                        setTimeout(function () {
+                            var reg2 = bootstrap.Modal.getInstance(document.getElementById('registerModal2'));
+                            if (reg2) reg2.hide();
+                            form.reset();
+                            document.getElementById('modal2-id_preview_first').style.display = 'none';
+                            document.getElementById('modal2-id_preview_second').style.display = 'none';
+                            document.getElementById('modal2-address_preview').style.display = 'none';
+                            ageResult.textContent = '';
+                            window.registerStep1Data = null;
+                        }, 1500);
+                    }
                 } else {
                     result.style.color = 'red';
                     result.textContent = data.message;
@@ -248,5 +368,5 @@ document.addEventListener('DOMContentLoaded', function () {
             result.textContent = 'Hiba történt a regisztráció során.';
             console.error(err);
         });
-    });
+    }
 });

@@ -8,21 +8,24 @@ require_once "../../backend/connect.php";
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Online fogadás | BetMatchBonus</title>
-  <link rel="stylesheet" href="../../css/MainMenu/MainMenu.css">
-  <link rel="stylesheet" href="../../css/Main/layout.css">
+  <!-- Vendor CSS first -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=search" />
+  <!-- App CSS after vendors -->
+  <link rel="stylesheet" href="../../css/RootColor/root.css">
+  <link rel="stylesheet" href="../../css/MainMenu/MainMenu.css?v=<?= time() ?>">
+  <link rel="stylesheet" href="../../css/Main/layout.css?v=<?= time() ?>">
   <link rel="stylesheet" href="../../css/Betslip/betslip.css">
   <link rel="stylesheet" href="../../css/Main/popup.css">
   <link rel="stylesheet" href="../../css/Modal/modal.css">
-  <link rel="stylesheet" href="../../css/RootColor/root.css">
   <link rel="icon" href="../../img/logo.png" type="image/x-icon">
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=search" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 </head>
 
 <body>
 <?php include '../../frontend/Components/cookie_consent.php'; ?>
+<?php include '../../frontend/Components/disclaimer.php'; ?>
 
 <header class="header">
     <div class="header-top-row">
@@ -83,7 +86,19 @@ require_once "../../backend/connect.php";
   <div class="content-parent">
     <div class="right-container">
       <?php include '../../frontend/Components/betslip.php'; ?>
+
+      <!-- Napi tippek -->
+      <div class="daily-tips-wrapper" id="daily-tips-wrapper">
+        <div class="daily-tips-header">
+          <i class="fas fa-lightbulb"></i>
+          <span data-i18n="mainMenu.dailyTips">Napi tippek</span>
+        </div>
+        <div class="daily-tips-list" id="daily-tips-list">
+          <div class="daily-tips-loading"><i class="fas fa-spinner fa-spin"></i></div>
+        </div>
+      </div>
     </div>
+
 
     <div class="main_content">
 
@@ -98,9 +113,13 @@ require_once "../../backend/connect.php";
                 <i class="fas fa-star"></i> <span data-i18n="mainMenu.special">Speciális</span>
               </div>
               <div class="specialis-menu-items">
-                <a href="../../frontend/Bonus/bonus.php" class="specialis-menu-item">
+                <a href="#" class="specialis-menu-item" id="show-boosted-match">
                   <i class="fas fa-rocket"></i>
                   <span data-i18n="mainMenu.oddsShip">Oddsűrhajó</span>
+                </a>
+                <a href="#" class="specialis-menu-item" id="show-finished-matches">
+                  <i class="fas fa-flag-checkered"></i>
+                  <span data-i18n="mainMenu.finishedMatches">Lejátszott meccsek</span>
                 </a>
               </div>
             </div>
@@ -116,9 +135,9 @@ require_once "../../backend/connect.php";
         </div>
       </aside>
 
-      <main class="center-content">
+      <main class="center-content"> 
         <div class="center-header">
-          <h2 class="section-title" id="centerTitle"><i class="fas fa-calendar-day"></i> <span data-i18n="mainMenu.todayMatches">Mai meccsek</span></h2>
+          <h2 class="section-title" id="centerTitle"><i class="fas fa-calendar-day"></i> <span data-i18n="mainMenu.upcomingMatches">Közelgő meccsek</span></h2>
           <div class="center-search">
             <input type="search" id="matchSearch" class="match-search-input" placeholder="Meccs keresése..." data-i18n-placeholder="mainMenu.searchPlaceholder">
           </div>

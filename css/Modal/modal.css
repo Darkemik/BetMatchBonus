@@ -227,3 +227,42 @@
     background: none !important;
     color: #ffa200 !important;
 }
+
+/* ── Város autocomplete ── */
+.city-autocomplete-wrapper {
+    position: relative;
+}
+
+.city-autocomplete-list {
+    display: none;
+    position: absolute;
+    top: calc(100% - 4px);
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    max-height: 200px;
+    overflow-y: auto;
+    margin: 0;
+    padding: 4px 0;
+    list-style: none;
+    background: #1e2128;
+    border: 1px solid rgba(255, 162, 0, 0.25);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.city-autocomplete-item {
+    padding: 9px 14px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    cursor: pointer !important;
+    transition: background 0.15s ease;
+    user-select: none;
+}
+
+.city-autocomplete-item:hover,
+.city-autocomplete-item.city-autocomplete-active {
+    background: rgba(255, 162, 0, 0.12);
+    color: #ffa200;
+}

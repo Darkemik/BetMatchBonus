@@ -9,9 +9,10 @@ $isAfterDailyRefresh = (date('H:i') >= '00:01');
 $isWeekdayWindow = ($isWeekday && $isAfterDailyRefresh);
 
 // Csak az aktív bónuszokat kérjük le
-$query = "SELECT id, code, name, description, bonus_amount, min_deposit, max_bonus_amount, match_percent, is_step_bonus, step_number, parent_bonus_id, bonus_type_id, bet_reward_type, valid_weekdays_only 
+$query = "SELECT id, code, name, description, bonus_amount, min_deposit, max_bonus_amount, match_percent, is_step_bonus, step_number, parent_bonus_id, bonus_type_id, bet_reward_type, valid_weekdays_only, birthday_bonus 
           FROM BonusCodes 
-          WHERE is_active = 1 OR valid_weekdays_only = 1
+          WHERE (is_active = 1 OR valid_weekdays_only = 1)
+            AND birthday_bonus = 0
           ORDER BY id DESC";
 
 $result = $conn->query($query);
@@ -84,10 +85,9 @@ if ($result) {
 
         // Többlépcsős bónusznál a következő lépcső csak akkor jelenjen meg,
         // ha az előző lépcső a felhasználónál COMPLETED.
+        // Nem bejelentkezett felhasználók minden bónuszt látnak.
         if ((int)($row['is_step_bonus'] ?? 0) === 1 && (int)($row['step_number'] ?? 0) > 1) {
-            if ($userId <= 0) {
-                continue;
-            }
+            if ($userId > 0) {
 
             $currentStep = (int)$row['step_number'];
             $parentBonusId = isset($row['parent_bonus_id']) ? (int)$row['parent_bonus_id'] : 0;
@@ -140,6 +140,7 @@ if ($result) {
 
             if (!$isPrevCompleted) {
                 continue;
+            }
             }
         }
 

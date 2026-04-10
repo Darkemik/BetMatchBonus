@@ -67,6 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
 </head>
 <body>
     <?php include '../../frontend/Components/cookie_consent.php'; ?>
+    <?php include '../../frontend/Components/disclaimer.php'; ?>
     <?php require_once "../Components/header.php"; ?>
     <div class="container profile-container">
         <div class="row">
@@ -79,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
                     <a href="transaction_history.php" class="profile-nav-item"><i class="fas fa-history"></i> Tranzakciótörténet</a>
                     <a href="my_bonuses.php" class="profile-nav-item"><i class="fas fa-gift"></i> Bónuszaim</a>
                     <a href="activity_log.php" class="profile-nav-item"><i class="fas fa-list"></i> Napló</a>
-                    <a href="../../backend/Auth/logout.php" class="profile-nav-item logout"><i class="fas fa-sign-out-alt"></i> Kijelentkezés</a>
+                    <a href="#" class="profile-nav-item logout profile-logout-btn" onclick="event.preventDefault();fetch('/BetMatchBonus/backend/Auth/logout.php',{method:'POST'}).then(function(){window.location.href='/BetMatchBonus/frontend/MainMenu/MainMenu.php';});"><i class="fas fa-sign-out-alt"></i> Kijelentkezés</a>
                 </nav>
             </div>
             <div class="col-md-9">

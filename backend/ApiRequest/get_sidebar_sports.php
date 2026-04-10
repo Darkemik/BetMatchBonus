@@ -130,4 +130,36 @@ while ($row = $res->fetch_assoc()) {
 
 $stmt->close();
 
+// Lejátszott meccsek száma sportágonként (utolsó 3 nap)
+$finFrom = (new DateTime('-3 days 00:00:00'))->format('Y-m-d H:i:s');
+$finNow  = (new DateTime('now'))->format('Y-m-d H:i:s');
+$finSql = "
+SELECT s.api_id AS sport_api_id, COUNT(*) AS finished_count
+FROM Events e
+JOIN Sports s ON e.sport_id = s.id
+JOIN Competitions comp ON e.competition_id = comp.id
+LEFT JOIN Countries c ON comp.country_id = c.id
+WHERE e.status_id = 3
+  AND e.start_time BETWEEN ? AND ?
+  AND e.name IS NOT NULL AND TRIM(e.name) != '' AND e.name != '-'
+  AND (c.name IS NULL OR (LOWER(TRIM(c.name)) != 'n/a' AND TRIM(c.name) != ''))
+  AND LOWER(TRIM(comp.name)) != 'n/a' AND TRIM(comp.name) != ''
+GROUP BY s.api_id
+";
+$finStmt = $conn->prepare($finSql);
+if ($finStmt) {
+    $finStmt->bind_param("ss", $finFrom, $finNow);
+    $finStmt->execute();
+    $finRes = $finStmt->get_result();
+    $finCounts = [];
+    while ($fr = $finRes->fetch_assoc()) {
+        $finCounts[(int)$fr['sport_api_id']] = (int)$fr['finished_count'];
+    }
+    $finStmt->close();
+    foreach ($sports as &$sp) {
+        $sp['finished_count'] = $finCounts[$sp['sport_api_id']] ?? 0;
+    }
+    unset($sp);
+}
+
 echo json_encode($sports, JSON_UNESCAPED_UNICODE);

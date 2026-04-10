@@ -12,6 +12,52 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Irányítószám → város/község automatikus kitöltés
+    const postalInput = document.getElementById('postal_code');
+    const cityInput = document.getElementById('city');
+    const countryInput = document.getElementById('country');
+    const feedback = document.getElementById('postalFeedback');
+
+    if (postalInput && cityInput) {
+        let debounceTimer;
+        postalInput.addEventListener('input', function() {
+            const val = this.value.trim();
+            clearTimeout(debounceTimer);
+
+            if (val.length < 4) {
+                if (feedback) feedback.textContent = '';
+                return;
+            }
+
+            debounceTimer = setTimeout(function() {
+                fetch('../../backend/ApiRequest/get_postal_city.php?postal_code=' + encodeURIComponent(val))
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (data.success) {
+                            cityInput.value = data.city;
+                            if (countryInput) countryInput.value = 'Magyarország';
+                            if (feedback) {
+                                feedback.textContent = '✓ ' + data.city;
+                                feedback.style.color = '#4caf50';
+                            }
+                        } else {
+                            cityInput.value = '';
+                            if (feedback) {
+                                feedback.textContent = '✗ Ismeretlen irányítószám';
+                                feedback.style.color = '#ff6b6b';
+                            }
+                        }
+                    })
+                    .catch(function() {
+                        if (feedback) {
+                            feedback.textContent = 'Hiba a keresés során';
+                            feedback.style.color = '#ff6b6b';
+                        }
+                    });
+            }, 300);
+        });
+    }
+
     // Form validáció
     const passwordForms = document.querySelector('form[method="POST"]');
     if (passwordForms && window.location.pathname.includes('change_password')) {

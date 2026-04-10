@@ -5,9 +5,18 @@ session_start();
 header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../connect.php';
+require_once __DIR__ . '/../recaptcha_verify.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
   echo json_encode(['success' => false, 'message' => 'Érvénytelen kérés.']);
+  exit;
+}
+
+// reCAPTCHA v3 ellenőrzés
+$recaptchaToken = $_POST['recaptcha_token'] ?? '';
+$recaptchaResult = verifyRecaptcha($recaptchaToken, 'login');
+if (!$recaptchaResult['success']) {
+  echo json_encode(['success' => false, 'message' => $recaptchaResult['error']]);
   exit;
 }
 
@@ -36,7 +45,7 @@ if (!$user || !password_verify($password, $user['password_hash'])) {
 }
 
 if ((int)$user['is_active'] !== 1) {
-  echo json_encode(['success' => false, 'message' => 'A fiók inaktív.']);
+  echo json_encode(['success' => false, 'message' => 'A regisztrációd még jóváhagyásra vár. Kérjük, várd meg, amíg az adminisztrátorok ellenőrzik az adataidat!']);
   exit;
 }
 

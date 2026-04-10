@@ -56,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
 </head>
 <body>
     <?php include '../../frontend/Components/cookie_consent.php'; ?>
+    <?php include '../../frontend/Components/disclaimer.php'; ?>
     <?php require_once "../Components/header.php"; ?>
     <div class="container profile-container">
         <div class="row">
@@ -68,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                     <a href="transaction_history.php" class="profile-nav-item"><i class="fas fa-history"></i> Tranzakciótörténet</a>
                     <a href="my_bonuses.php" class="profile-nav-item"><i class="fas fa-gift"></i> Bónuszaim</a>
                     <a href="activity_log.php" class="profile-nav-item"><i class="fas fa-list"></i> Napló</a>
-                    <a href="../../backend/Auth/logout.php" class="profile-nav-item logout"><i class="fas fa-sign-out-alt"></i> Kijelentkezés</a>
+                    <a href="#" class="profile-nav-item logout profile-logout-btn" onclick="event.preventDefault();fetch('/BetMatchBonus/backend/Auth/logout.php',{method:'POST'}).then(function(){window.location.href='/BetMatchBonus/frontend/MainMenu/MainMenu.php';});"><i class="fas fa-sign-out-alt"></i> Kijelentkezés</a>
                 </nav>
             </div>
             <div class="col-md-9">
@@ -121,17 +122,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                         
                         <div class="form-group mb-3">
                             <label for="country">Ország</label>
-                            <input type="text" class="form-control" id="country" name="country" value="<?php echo htmlspecialchars($user['country'] ?? ''); ?>">
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label for="city">Város</label>
-                            <input type="text" class="form-control" id="city" name="city" value="<?php echo htmlspecialchars($user['city'] ?? ''); ?>">
+                            <input type="text" class="form-control" id="country" name="country" value="<?php echo htmlspecialchars($user['country'] ?? ''); ?>" readonly>
+                            <small class="form-text" style="color: #aaa;">Az irányítószám alapján automatikusan kitöltődik</small>
                         </div>
                         
                         <div class="form-group mb-3">
                             <label for="postal_code">Irányítószám</label>
-                            <input type="text" class="form-control" id="postal_code" name="postal_code" value="<?php echo htmlspecialchars($user['postal_code'] ?? ''); ?>">
+                            <input type="text" class="form-control" id="postal_code" name="postal_code" value="<?php echo htmlspecialchars($user['postal_code'] ?? ''); ?>" maxlength="4" placeholder="pl. 1051">
+                            <small class="form-text" id="postalFeedback" style="color: #aaa;"></small>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="city">Város / Község</label>
+                            <input type="text" class="form-control" id="city" name="city" value="<?php echo htmlspecialchars($user['city'] ?? ''); ?>" readonly>
+                            <small class="form-text" style="color: #aaa;">Az irányítószám alapján automatikusan kitöltődik</small>
                         </div>
                         
                         <div class="form-group mb-3">

@@ -248,6 +248,11 @@
   color: #fff;
 }
 
+.sidebar-sport-count.has-finished {
+  background: rgba(255, 152, 0, 0.2);
+  color: #ff9800;
+}
+
 /* ===== SIDEBAR DETAIL PANEL ===== */
 .sidebar-sport-detail-title {
   font-weight: 700;
@@ -394,6 +399,10 @@
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--body-bg, #292b30);
 }
 
 .section-title {
@@ -805,7 +814,8 @@
   width: 20%;
   margin-right: auto;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   height: max-content;
   padding: 0 10px;
 }
@@ -831,4 +841,653 @@
 .no-markets { grid-column: 1 / -1; }
 @media (max-width: 768px) {
     .markets-container { grid-template-columns: 1fr; }
+}
+
+/* ===== BAJNOKSÁG CSOPORTOK (összecsukható) ===== */
+.league-group {
+  margin-bottom: 6px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #1a2233;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.league-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #1e3a2f 0%, #1a2e25 100%);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s ease;
+  border-bottom: 1px solid rgba(76,175,80,0.15);
+}
+
+.league-header:hover {
+  background: linear-gradient(135deg, #24443a 0%, #213830 100%);
+}
+
+.league-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.league-country-icon {
+  color: #90a4ae;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.league-country {
+  font-size: 12px;
+  color: #90a4ae;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.league-separator {
+  color: rgba(255,255,255,0.2);
+  font-size: 11px;
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
+.league-trophy-icon {
+  color: #4CAF50;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.league-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #8ccfaa;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.league-match-count {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 6px;
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: #4CAF50;
+  border-radius: 10px;
+  line-height: 1;
+}
+
+.league-header-right {
+  display: flex;
+  align-items: center;
+  margin-left: 10px;
+  flex-shrink: 0;
+}
+
+.league-toggle-icon {
+  color: #4CAF50;
+  font-size: 11px;
+  transition: transform 0.3s ease;
+}
+
+.league-group.expanded .league-toggle-icon {
+  transform: rotate(180deg);
+}
+
+/* Meccsek a csoporton belül */
+.league-matches {
+  overflow: hidden;
+}
+
+.league-matches .matches-table {
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: #1a2233;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.league-matches .matches-table td {
+  padding: 10px 14px;
+  font-size: 13px;
+}
+
+/* Oszlopszélességek: Meccs | Állás | Kezdés | Státusz */
+.league-matches .matches-table td:nth-child(1) { width: 40%; text-align: left; padding-left: 20px; }
+.league-matches .matches-table td:nth-child(2) { width: 15%; text-align: center; }
+.league-matches .matches-table td:nth-child(3) { width: 22%; text-align: center; }
+.league-matches .matches-table td:nth-child(4) { width: 23%; text-align: center; }
+
+/* Meccs cella csapatok elrendezése */
+.league-matches .match-cell {
+  white-space: normal;
+}
+
+.league-matches .match-cell .home-team,
+.league-matches .match-cell .away-team {
+  display: inline-block;
+  min-width: 80px;
+}
+
+.league-matches .match-cell .vs {
+  display: inline-block;
+  margin: 0 10px;
+  background: rgba(76,175,80,0.15);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  color: #4CAF50;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+/* Eredmény badge stílus */
+.league-matches .match-score {
+  display: inline-block;
+  background: rgba(255,255,255,0.06);
+  padding: 4px 14px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #ecf0f1;
+  letter-spacing: 2px;
+  min-width: 60px;
+}
+
+.league-matches .finished-score {
+  background: rgba(76,175,80,0.12);
+  color: #8ccfaa;
+}
+
+/* Kezdés badge */
+.league-matches .start-time {
+  display: inline-block;
+  background: rgba(255,255,255,0.05);
+  padding: 4px 10px;
+  border-radius: 5px;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 600;
+  font-size: 12px;
+  color: #90a4ae;
+}
+
+/* Státusz badge */
+.league-matches .status-upcoming {
+  font-size: 12px;
+  color: #607d8b;
+}
+
+.league-matches .status-finished {
+  display: inline-block;
+  background: rgba(76,175,80,0.1);
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #4CAF50;
+  font-weight: 600;
+}
+
+.league-matches .live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #e74c3c;
+  border-radius: 50%;
+  margin-right: 6px;
+  animation: pulse-dot 1.5s infinite;
+  vertical-align: middle;
+}
+
+.league-matches .live-time-value {
+  color: #e74c3c;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+/* Csak az első meccs látszik alapból */
+.league-extra-match {
+  display: none;
+}
+
+.league-group.expanded .league-extra-match {
+  display: table-row;
+}
+
+.league-first-match {
+  display: table-row;
+}
+
+/* Sorok közötti elválasztó finomítás */
+.league-matches .matches-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Responsive: kis képernyőn */
+@media (max-width: 600px) {
+  .league-header {
+    padding: 8px 10px;
+  }
+  .league-header-left {
+    gap: 4px;
+  }
+  .league-title {
+    font-size: 12px;
+  }
+  .league-country {
+    display: none;
+  }
+  .league-separator {
+    display: none;
+  }
+  .league-country-icon {
+    display: none;
+  }
+  .league-matches .matches-table td:nth-child(2),
+  .league-matches .matches-table td:nth-child(4) {
+    display: none;
+  }
+  .league-matches .matches-table td:nth-child(1) { width: 60%; }
+  .league-matches .matches-table td:nth-child(3) { width: 40%; }
+}
+
+/* ========== ODDSŰRHAJÓ ========== */
+
+/* Boosted match card (Oddsűrhajó landing) */
+.boosted-match-card {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  border: 2px solid #f5c518;
+  border-radius: 16px;
+  overflow: hidden;
+  margin: 20px auto;
+  max-width: 520px;
+  box-shadow: 0 0 30px rgba(245, 197, 24, 0.15), 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.boosted-card-header {
+  background: linear-gradient(90deg, #f5c518 0%, #f39c12 100%);
+  color: #1a1a2e;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.boosted-rocket-icon {
+  font-size: 22px;
+  animation: rocketPulse 2s ease-in-out infinite;
+}
+
+@keyframes rocketPulse {
+  0%, 100% { transform: translateY(0) rotate(-15deg); }
+  50% { transform: translateY(-4px) rotate(-15deg); }
+}
+
+.boosted-card-title {
+  flex: 1;
+}
+
+.boosted-badge {
+  background: #1a1a2e;
+  color: #f5c518;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.boosted-card-body {
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.boosted-league {
+  color: #aab;
+  font-size: 13px;
+}
+
+.boosted-league i {
+  color: #f5c518;
+  margin-right: 6px;
+}
+
+.boosted-teams {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  justify-content: center;
+}
+
+.boosted-team {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  flex: 1;
+}
+
+.boosted-vs {
+  background: rgba(245, 197, 24, 0.15);
+  color: #f5c518;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.boosted-odds-highlight {
+  background: rgba(245, 197, 24, 0.08);
+  border: 1px solid rgba(245, 197, 24, 0.25);
+  border-radius: 12px;
+  padding: 16px 20px;
+  width: 100%;
+  text-align: center;
+}
+
+.boosted-market-name {
+  color: #aab;
+  font-size: 12px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.boosted-selection-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.boosted-selection-name {
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.boosted-original-odd {
+  color: #888;
+  text-decoration: line-through;
+  font-size: 16px;
+}
+
+.boosted-arrow {
+  color: #f5c518;
+  font-size: 14px;
+}
+
+.boosted-new-odd {
+  color: #f5c518;
+  font-weight: 800;
+  font-size: 22px;
+  text-shadow: 0 0 10px rgba(245, 197, 24, 0.4);
+}
+
+.boosted-view-btn {
+  background: linear-gradient(90deg, #f5c518, #f39c12);
+  color: #1a1a2e;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.boosted-view-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(245, 197, 24, 0.4);
+}
+
+/* Boosted match banner (match detail header) */
+.boosted-match-banner {
+  background: linear-gradient(90deg, #f5c518 0%, #f39c12 100%);
+  color: #1a1a2e;
+  padding: 8px 16px;
+  font-weight: 700;
+  font-size: 14px;
+  text-align: center;
+  border-radius: 12px 12px 0 0;
+  margin: -16px -16px 12px -16px;
+}
+
+.boosted-match-banner i {
+  margin-right: 8px;
+  animation: rocketPulse 2s ease-in-out infinite;
+}
+
+/* Boosted selection button in match details */
+.selection-btn.boosted-selection {
+  border: 2px solid #f5c518 !important;
+  background: rgba(245, 197, 24, 0.08) !important;
+  position: relative;
+}
+
+.selection-btn.boosted-selection:hover {
+  background: rgba(245, 197, 24, 0.15) !important;
+  box-shadow: 0 0 12px rgba(245, 197, 24, 0.3);
+}
+
+.boosted-odd-display {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.original-odd-crossed {
+  text-decoration: line-through;
+  color: #888;
+  font-size: 12px;
+}
+
+.boosted-icon-small {
+  color: #f5c518;
+  font-size: 11px;
+}
+
+.selection-btn.boosted-selection .selection-odd {
+  color: #f5c518;
+  font-weight: 800;
+}
+
+/* Responsive boost card */
+@media (max-width: 480px) {
+  .boosted-match-card {
+    margin: 10px;
+    border-radius: 12px;
+  }
+  .boosted-team {
+    font-size: 14px;
+  }
+  .boosted-new-odd {
+    font-size: 18px;
+  }
+  .boosted-card-header {
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+}
+
+/* ========== NAPI TIPPEK ========== */
+
+.daily-tips-wrapper {
+  width: 100%;
+  margin-top: 20px;
+  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 6px;
+  border-left: 3px solid #f5c518;
+  overflow: hidden;
+}
+
+.daily-tips-header {
+  background: linear-gradient(90deg, rgba(245, 197, 24, 0.12), transparent);
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #f5c518;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.daily-tips-header i {
+  font-size: 15px;
+}
+
+.daily-tips-list {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.daily-tips-loading,
+.daily-tips-empty {
+  text-align: center;
+  color: #667;
+  padding: 10px 6px;
+  font-size: 11px;
+}
+
+.daily-tip-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.tip-match-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3px;
+}
+
+.tip-league {
+  font-size: 10px;
+  color: #889;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 58%;
+}
+
+.tip-time {
+  font-size: 10px;
+  color: #889;
+  flex-shrink: 0;
+}
+
+.tip-teams {
+  color: #dde;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tip-combo-picks {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.tip-combo-pick {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 5px;
+  padding: 6px 10px;
+}
+
+.tip-combo-market {
+  font-size: 11px;
+  color: #778;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 45%;
+}
+
+.tip-combo-value {
+  font-size: 12px;
+  color: #ccd;
+  font-weight: 600;
+  text-align: right;
+}
+
+.tip-combo-odd {
+  color: #f5c518;
+  font-weight: 800;
+  margin-left: 5px;
+  font-size: 12px;
+}
+
+.tip-add-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 0;
+  background: linear-gradient(135deg, #f5c518, #f39c12);
+  color: #1a1a2e;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.tip-add-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.tip-add-btn.tip-added {
+  background: #27ae60;
+  color: #fff;
+}
+
+.tip-add-btn.tip-added i::before {
+  content: "\f00c";
+}
+
+.tip-combo-odds {
+  font-size: 15px;
+}
+
+@media (max-width: 1100px) {
+  .daily-tips-wrapper {
+    margin-top: 12px;
+  }
 }

@@ -14,6 +14,8 @@ require_once dirname(__DIR__) . "/config.php";
 
 header('Content-Type: application/json; charset=utf-8');
 
+$priorityOrder = str_replace('comp.', 'ch.', LEAGUE_PRIORITY_SQL);
+
 $eventId = isset($_GET['eventId']) ? intval($_GET['eventId']) : 0;
 
 if ($eventId <= 0) {
@@ -60,12 +62,11 @@ if ($dbRow && $dbRow['home_score'] !== null && $dbRow['away_score'] !== null) {
     $score = (int)$dbRow['home_score'] . ' - ' . (int)$dbRow['away_score'];
 }
 
-// Start time → UTC formátum
+// Start time → UTC formátum (DB-ben UTC van tárolva)
 $startUtcValue = null;
 if (!empty($dbRow['start_time'])) {
     try {
-        $dt = new DateTime($dbRow['start_time'], new DateTimeZone('Europe/Budapest'));
-        $dt->setTimezone(new DateTimeZone('UTC'));
+        $dt = new DateTime($dbRow['start_time'], new DateTimeZone('UTC'));
         $startUtcValue = $dt->format('Y-m-d\TH:i:s\Z');
     } catch (Exception $e) {
         $startUtcValue = $dbRow['start_time'];
@@ -82,7 +83,7 @@ $response_data = [
         'isLive'       => $dbRow ? (bool)$dbRow['is_live'] : false,
         'liveTime'     => $dbRow['live_time'] ?? null,
         'liveStatus'   => null,
-        'country'      => $dbRow['country_name'] ?? 'Ismeretlen',
+        'country'      => $dbRow['country_name'] ?: 'Nemzetközi',
         'championship' => $dbRow['league_name'] ?? 'Ismeretlen',
         'startUtc'     => $startUtcValue,
     ],
@@ -90,6 +91,15 @@ $response_data = [
 ];
 
 // ── 2) ODDS/PIACOK API-BÓL (real-time) ──────────
+
+// Oddsűrhajó: napi boost ellenőrzés
+$today = date('Y-m-d');
+$dayHash = crc32($today . 'oddsboost');
+$daySelHash = crc32($today . 'sel');
+$isBoostedMatch = false;
+$boostedMarketName = null;
+$boostedSelectionName = null;
+
 try {
     $apiData = apiGet(EP_MATCH_DETAILS . '/' . $eventId);
 
@@ -117,6 +127,65 @@ try {
 
     // Piacok feldolgozása
     if (isset($apiData['markets']) && is_array($apiData['markets'])) {
+
+        // Oddsűrhajó: ugyanazt a logikát futtatjuk mint get_boosted_match.php
+        // (determinisztikus napi kiválasztás - azonos hash, azonos eredmény)
+        $boostTargetMarket = null;
+        $boostFirstMarket = null;
+        foreach ($apiData['markets'] as $market) {
+            $mName = mb_strtolower($market['name'] ?? '');
+            $sels = $market['selections'] ?? [];
+            if (count($sels) < 2) continue;
+            if ($boostFirstMarket === null) $boostFirstMarket = $market;
+            if (strpos($mName, 'győztes') !== false ||
+                strpos($mName, 'winner') !== false ||
+                strpos($mName, '1x2') !== false ||
+                strpos($mName, 'végeredmény') !== false ||
+                strpos($mName, 'match result') !== false) {
+                $boostTargetMarket = $market;
+                break;
+            }
+        }
+        if (!$boostTargetMarket) $boostTargetMarket = $boostFirstMarket;
+
+        if ($boostTargetMarket && !empty($boostTargetMarket['selections'])) {
+            $selCount = count($boostTargetMarket['selections']);
+            $selIndex = abs($daySelHash) % $selCount;
+            $boostedMarketName = $boostTargetMarket['name'] ?? '';
+            $boostedSelectionName = $boostTargetMarket['selections'][$selIndex]['name'] ?? '';
+        }
+
+        // Ellenőrizzük, hogy ez-e a napi boosted meccs
+        // (a get_boosted_match.php ugyanezt a hash-t használja, szóval az eventId-nek egyeznie kell)
+        $boostCheckStmt = $conn->prepare("
+            SELECT m.api_id FROM Events m
+            JOIN Competitions ch ON m.competition_id = ch.id
+            WHERE m.start_time BETWEEN ? AND ?
+              AND m.status_id != 3
+              AND m.name IS NOT NULL AND TRIM(m.name) != ''
+              AND m.api_id IS NOT NULL AND m.api_id > 0
+              AND ({$priorityOrder}) < 99
+            ORDER BY {$priorityOrder}, m.start_time ASC
+            LIMIT 50
+        ");
+        $boostFrom = (new DateTime('now', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
+        $boostTo = (new DateTime('+3 days 23:59:59', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
+        $boostCheckStmt->bind_param("ss", $boostFrom, $boostTo);
+        $boostCheckStmt->execute();
+        $boostRes = $boostCheckStmt->get_result();
+        $boostCandidates = [];
+        while ($br = $boostRes->fetch_assoc()) {
+            $boostCandidates[] = (int)$br['api_id'];
+        }
+        $boostCheckStmt->close();
+
+        if (!empty($boostCandidates)) {
+            $boostIndex = abs($dayHash) % count($boostCandidates);
+            if ($boostCandidates[$boostIndex] === $eventId) {
+                $isBoostedMatch = true;
+            }
+        }
+
         $seen = [];
         foreach ($apiData['markets'] as $market) {
             $marketName = $market['name'] ?? '';
@@ -138,10 +207,29 @@ try {
                     $selName = $selection['name'] ?? '';
                     if (isset($seenSel[$selName])) continue;
                     $seenSel[$selName] = true;
-                    $marketData['selections'][] = [
+
+                    $odd = (float)($selection['odd'] ?? 1.0);
+                    $isBoosted = false;
+
+                    // Boost alkalmazása ha egyezik a meccs, piac és selection
+                    if ($isBoostedMatch &&
+                        $marketName === $boostedMarketName &&
+                        $selName === $boostedSelectionName) {
+                        $isBoosted = true;
+                        $originalOdd = $odd;
+                        $odd = round($odd * 1.5, 2);
+                    }
+
+                    $selData = [
                         'name' => $selName,
-                        'odds' => (float)($selection['odd'] ?? 1.0)
+                        'odds' => $odd
                     ];
+                    if ($isBoosted) {
+                        $selData['boosted'] = true;
+                        $selData['originalOdds'] = $originalOdd;
+                    }
+
+                    $marketData['selections'][] = $selData;
                 }
             }
 
@@ -153,6 +241,11 @@ try {
 } catch (Throwable $e) {
     // API nem elérhető → meccs adatok DB-ből akkor is visszaadjuk, csak odds nélkül
     error_log("get_match_details odds API hiba eventId={$eventId}: " . $e->getMessage());
+}
+
+// Jelezzük ha boosted meccs
+if ($isBoostedMatch) {
+    $response_data['match']['isBoosted'] = true;
 }
 
 echo json_encode($response_data, JSON_UNESCAPED_UNICODE);

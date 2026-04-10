@@ -29,7 +29,10 @@
                             <input type="text" name="mother_full_name" class="form-control mb-3" placeholder="Anyja leánykori neve" data-i18n-placeholder="registerModal2.motherNamePlaceholder" required>
 
                             <label class="form-label" data-i18n="registerModal2.birthPlace">Születési hely</label>
-                            <input type="text" name="birthplace" id="modal2-birthplace" class="form-control mb-3" placeholder="pl. Budapest" data-i18n-placeholder="registerModal2.birthPlacePlaceholder" required>
+                            <div class="city-autocomplete-wrapper">
+                                <input type="text" name="birthplace" id="modal2-birthplace" class="form-control mb-3" placeholder="Kezdj el gépelni..." data-i18n-placeholder="registerModal2.birthPlacePlaceholder" autocomplete="off" required>
+                                <ul class="city-autocomplete-list" id="city-autocomplete-list"></ul>
+                            </div>
 
                             <label class="form-label" data-i18n="registerModal2.birthDate">Születési dátum</label>
                             <div class="birthdate-shell mb-1">

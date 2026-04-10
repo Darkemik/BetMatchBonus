@@ -5,9 +5,18 @@ session_start();
 header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../connect.php';
+require_once __DIR__ . '/../recaptcha_verify.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Érvénytelen kérés.']);
+    exit;
+}
+
+// reCAPTCHA v3 ellenőrzés
+$recaptchaToken = $_POST['recaptcha_token'] ?? '';
+$recaptchaResult = verifyRecaptcha($recaptchaToken, 'register');
+if (!$recaptchaResult['success']) {
+    echo json_encode(['success' => false, 'message' => $recaptchaResult['error']]);
     exit;
 }
 
@@ -81,10 +90,13 @@ $password_hash = password_hash($password, PASSWORD_DEFAULT);
 // birth_date konvertálása DATE formátumra
 $birthdate_formatted = date('Y-m-d', strtotime($birthdate));
 
-// INSERT a Users táblába (kezdő egyenleg: 0 Ft)
+// Jóváhagyási token generálás
+$approvalToken = bin2hex(random_bytes(32));
+
+// INSERT a Users táblába – is_active=0 (jóváhagyásig nem léphet be)
 $stmt = $conn->prepare(
-    "INSERT INTO Users (username, email, password_hash, full_name, pre_name, family_name, sure_name, mother_full_name, birthplace, birth_date, mobile_number, balance) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0.00)"
+    "INSERT INTO Users (username, email, password_hash, full_name, pre_name, family_name, sure_name, mother_full_name, birthplace, birth_date, mobile_number, balance, is_active, approval_token) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0.00, 0, ?)"
 );
 
 if (!$stmt) {
@@ -92,7 +104,7 @@ if (!$stmt) {
     exit;
 }
 
-$stmt->bind_param("sssssssssss", $username, $email, $password_hash, $full_name, $pre_name, $family_name, $sure_name, $mother_full_name, $birthplace, $birthdate_formatted, $phone);
+$stmt->bind_param("ssssssssssss", $username, $email, $password_hash, $full_name, $pre_name, $family_name, $sure_name, $mother_full_name, $birthplace, $birthdate_formatted, $phone, $approvalToken);
 
 if (!$stmt->execute()) {
     echo json_encode(['success' => false, 'message' => 'Regisztrációs hiba: ' . $stmt->error]);
@@ -101,10 +113,48 @@ if (!$stmt->execute()) {
 }
 
 $userId = $stmt->insert_id;
-$_SESSION['user_id']  = $userId;
-$_SESSION['username'] = $username;
-$_SESSION['session_bet_total'] = 0.0;
-$_SESSION['login_started_at'] = time();
+
+// --- Képek mentése ---
+$uploadDir = __DIR__ . '/../uploads/registrations/' . $userId . '/';
+if (!is_dir($uploadDir)) {
+    mkdir($uploadDir, 0755, true);
+}
+
+$savedFiles = [];
+$imageFields = ['id_image_first', 'id_image_second', 'address_image'];
+$allowedMime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+foreach ($imageFields as $field) {
+    if (isset($_FILES[$field]) && $_FILES[$field]['error'] === UPLOAD_ERR_OK) {
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($_FILES[$field]['tmp_name']);
+        if (!in_array($mime, $allowedMime, true)) {
+            continue;
+        }
+
+        $ext = match ($mime) {
+            'image/jpeg' => '.jpg',
+            'image/png'  => '.png',
+            'image/gif'  => '.gif',
+            'image/webp' => '.webp',
+            default       => '.jpg',
+        };
+        $safeFilename = $field . '_' . $userId . $ext;
+        $destPath = $uploadDir . $safeFilename;
+
+        if (move_uploaded_file($_FILES[$field]['tmp_name'], $destPath)) {
+            $savedFiles[$field] = $destPath;
+            $relativePath = 'uploads/registrations/' . $userId . '/' . $safeFilename;
+            $updImg = $conn->prepare("UPDATE Users SET $field = ? WHERE id = ?");
+            $updImg->bind_param("si", $relativePath, $userId);
+            $updImg->execute();
+            $updImg->close();
+        }
+    }
+}
+
+// NEM léptetjük be a felhasználót – meg kell várnia a jóváhagyást
+// $_SESSION['user_id'] = ... NEM KELL
 
 // Wallet létrehozása 0 Ft alapegyenleggel
 $initialBalance = 0.00;
@@ -112,26 +162,13 @@ $walletStmt = $conn->prepare(
     "INSERT INTO Wallets (user_id, balance) VALUES (?, ?)"
 );
 
-if (!$walletStmt) {
-    echo json_encode(['success' => false, 'message' => 'Wallet hiba: ' . $conn->error]);
-    $stmt->close();
-    exit;
-}
-
-$walletStmt->bind_param("id", $userId, $initialBalance);
-
-if (!$walletStmt->execute()) {
-    echo json_encode(['success' => false, 'message' => 'Wallet létrehozási hiba: ' . $walletStmt->error]);
+if ($walletStmt) {
+    $walletStmt->bind_param("id", $userId, $initialBalance);
+    $walletStmt->execute();
     $walletStmt->close();
-    $stmt->close();
-    exit;
 }
-
-$walletStmt->close();
 
 // Automatikus bónusz hozzárendelés regisztráció után:
-// - auto_assign = 1 bónuszok
-// - Üdvözlő 1. lépés (kód nélküli, step 1, WELCOME típus)
 $assignStmt = $conn->prepare(" 
     INSERT INTO UserBonuses (user_id, bonus_id, status, granted_amount, wagering_required, expires_at)
     SELECT
@@ -184,7 +221,66 @@ if ($assignStmt) {
     $assignStmt->close();
 }
 
-echo json_encode(['success' => true, 'message' => 'Sikeres regisztráció!']);
+// --- Email küldés az adminnak ---
+require_once __DIR__ . '/../mail_config.php';
+require_once __DIR__ . '/../PHPMailer/Exception.php';
+require_once __DIR__ . '/../PHPMailer/PHPMailer.php';
+require_once __DIR__ . '/../PHPMailer/SMTP.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception as MailException;
+
+$approveUrl = SITE_BASE_URL . '/backend/Auth/approve_registration.php?token=' . $approvalToken;
+
+$emailBody  = "<h2>Új regisztráció érkezett – BetMatchBonus</h2>";
+$emailBody .= "<table style='border-collapse:collapse;' cellpadding='6'>";
+$emailBody .= "<tr><td><b>Felhasználónév:</b></td><td>" . htmlspecialchars($username) . "</td></tr>";
+$emailBody .= "<tr><td><b>Email:</b></td><td>" . htmlspecialchars($email) . "</td></tr>";
+$emailBody .= "<tr><td><b>Teljes név:</b></td><td>" . htmlspecialchars($full_name) . "</td></tr>";
+$emailBody .= "<tr><td><b>Születési hely:</b></td><td>" . htmlspecialchars($birthplace) . "</td></tr>";
+$emailBody .= "<tr><td><b>Születési dátum:</b></td><td>" . htmlspecialchars($birthdate_formatted) . "</td></tr>";
+$emailBody .= "<tr><td><b>Telefonszám:</b></td><td>" . htmlspecialchars($phone) . "</td></tr>";
+$emailBody .= "<tr><td><b>Anyja neve:</b></td><td>" . htmlspecialchars($mother_full_name) . "</td></tr>";
+$emailBody .= "</table>";
+$emailBody .= "<br><p><a href='" . htmlspecialchars($approveUrl) . "' style='display:inline-block;padding:12px 24px;background:#28a745;color:#fff;text-decoration:none;border-radius:6px;font-size:16px;font-weight:bold;'>✅ Regisztráció jóváhagyása</a></p>";
+$emailBody .= "<br><p style='color:#888;font-size:12px;'>Ha nem hagyod jóvá, a felhasználó nem tud belépni.</p>";
+
+try {
+    $mail = new PHPMailer(true);
+    $mail->isSMTP();
+    $mail->Host       = MAIL_SMTP_HOST;
+    $mail->SMTPAuth   = true;
+    $mail->Username   = MAIL_SMTP_USERNAME;
+    $mail->Password   = MAIL_SMTP_PASSWORD;
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->Port       = MAIL_SMTP_PORT;
+    $mail->CharSet    = 'UTF-8';
+
+    $mail->setFrom(MAIL_FROM_EMAIL, MAIL_FROM_NAME);
+    $mail->addAddress('bmbugyfelszolgalat@gmail.com', 'BetMatchBonus Admin');
+
+    $mail->isHTML(true);
+    $mail->Subject = 'Új regisztráció jóváhagyásra vár – ' . $username;
+    $mail->Body    = $emailBody;
+
+    // Képek csatolása
+    foreach ($savedFiles as $fieldName => $filePath) {
+        if (file_exists($filePath)) {
+            $mail->addAttachment($filePath);
+        }
+    }
+
+    $mail->send();
+} catch (MailException $e) {
+    // Email hiba nem akadályozza a regisztrációt – az admin a DB-ből is jóváhagyhatja
+    error_log('Regisztrációs email küldési hiba: ' . $e->getMessage());
+}
+
+echo json_encode([
+    'success' => true,
+    'pending_approval' => true,
+    'message' => 'Sikeres regisztráció! A fiókod jóváhagyásra vár. Az adminisztrátorok ellenőrzik az adataidat, és emailben értesítünk, amint a fiókod aktiválva lett. Addig kérjük, légy türelemmel!'
+]);
 
 $stmt->close();
 $conn->close();

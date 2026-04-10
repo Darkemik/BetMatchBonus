@@ -582,6 +582,14 @@
     // ===== INICIALIZÁLÁS =====
     console.log('[LIVE.JS] Az oldal inicializálása...');
 
+    // Háttér szinkron (API → DB)
+    function syncFromApi() {
+        fetch('../../backend/refresh_all.php', { method: 'GET' })
+            .catch(err => console.warn('[SYNC] Hálózati hiba:', err));
+    }
+    syncFromApi();
+    setInterval(syncFromApi, 60000);
+
     // First: fetch live sport counts, build nav, then load matches
     fetchLiveSportCounts().then(liveSports => {
         buildSportsNav(liveSports);

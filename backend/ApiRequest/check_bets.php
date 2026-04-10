@@ -78,7 +78,8 @@ function evaluateOpenTickets($conn, $userId) {
                     if ($dbEvent) {
                         $apiData['statusId'] = (int)($dbEvent['status_id'] ?? 0);
                         $apiData['startTime'] = $dbEvent['start_time'];
-                        $apiData['isStarted'] = (strtotime($dbEvent['start_time']) <= time());
+                        $dtChk = new DateTime($dbEvent['start_time'], new DateTimeZone('UTC'));
+                        $apiData['isStarted'] = ($dtChk->getTimestamp() <= time());
                     }
                     $matchData = $apiData;
                 }
@@ -88,7 +89,8 @@ function evaluateOpenTickets($conn, $userId) {
             if (!$matchData || !isMatchFinished($matchData)) {
                 $dbEvent = getEventFromDB($conn, $matchId, $eventId);
                 if ($dbEvent) {
-                    $startTime = strtotime($dbEvent['start_time']);
+                    $dtFb = new DateTime($dbEvent['start_time'], new DateTimeZone('UTC'));
+                    $startTime = $dtFb->getTimestamp();
                     $now = time();
                     $isLive = (int)($dbEvent['is_live'] ?? 0);
                     $hoursElapsed = ($now - $startTime) / 3600;
@@ -185,7 +187,7 @@ function fetchMatchDataFromDB($conn, $matchApiId, $eventId = null) {
         'liveStatus' => $liveStatus,
         'liveTime' => $event['live_time'] ?? '',
         'score' => ($homeScore !== null && $awayScore !== null) ? [(int)$homeScore, (int)$awayScore] : [],
-        'isStarted' => (strtotime($event['start_time']) <= time()),
+        'isStarted' => ((new DateTime($event['start_time'], new DateTimeZone('UTC')))->getTimestamp() <= time()),
         'startTime' => $event['start_time'],
         'statusId' => $statusId,
         '_source' => 'database'

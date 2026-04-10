@@ -4,11 +4,14 @@ async function refreshAuthUI() {
   const userMenu = document.getElementById('userMenu');
   const sessionBetEl = document.getElementById('sessionBetDisplay');
   const sessionLoginDurationEl = document.getElementById('sessionLoginDurationDisplay');
+  const sessionBadgeEl = document.querySelector('.session-login-badge');
 
   if (window.__sessionLoginDurationTimer) {
     clearInterval(window.__sessionLoginDurationTimer);
     window.__sessionLoginDurationTimer = null;
   }
+
+  const SESSION_MAX = 3600; // 1 óra
 
   const formatDuration = (totalSeconds) => {
     const sec = Math.max(0, Math.floor(totalSeconds || 0));
@@ -30,7 +33,13 @@ async function refreshAuthUI() {
       if (regBtn) regBtn.style.display = '';
       userMenu.style.display = 'none';
       if (sessionBetEl) sessionBetEl.textContent = '0 FT';
-      if (sessionLoginDurationEl) sessionLoginDurationEl.textContent = '00:00:00';
+      if (sessionLoginDurationEl) sessionLoginDurationEl.textContent = '01:00:00';
+
+      // Ha lejárt a session, üzenetet mutatunk
+      if (data.expired) {
+        alert('A munkameneted lejárt (1 óra). Kérjük, jelentkezz be újra!');
+        window.location.href = '/BetMatchBonus/frontend/MainMenu/MainMenu.php';
+      }
       return;
     }
 
@@ -51,17 +60,51 @@ async function refreshAuthUI() {
       maximumFractionDigits: 0,
       minimumFractionDigits: 0
     }) + ' FT';
-    const loginStartedAt = parseInt(u.login_started_at, 10) || Math.floor(Date.now() / 1000);
+
+    // Visszaszámlálás: szerver megmondja mennyi van hátra
+    let remaining = parseInt(u.session_remaining, 10);
+    if (isNaN(remaining) || remaining < 0) remaining = 0;
+    // Tároljuk a kliens oldalon a pontos indulási időt
+    const countdownStartedAt = Date.now();
+    const initialRemaining = remaining;
     
-    if (usernameEl) usernameEl.textContent = balanceFormatted;
+    if (usernameEl) usernameEl.textContent = u.username || '-';
+
+    // Avatar: felhasználónév első betűje
+    const avatarEl = document.getElementById('profileAvatar');
+    const dropdownAvatarEl = document.getElementById('profileDropdownAvatar');
+    const initial = (u.username || '?')[0].toUpperCase();
+    if (avatarEl) avatarEl.textContent = initial;
+    if (dropdownAvatarEl) dropdownAvatarEl.textContent = initial;
+
     if (sessionBetEl) sessionBetEl.textContent = sessionBetFormatted;
     if (sessionLoginDurationEl) {
-      const updateDuration = () => {
-        const nowSec = Math.floor(Date.now() / 1000);
-        sessionLoginDurationEl.textContent = formatDuration(nowSec - loginStartedAt);
+      const updateCountdown = () => {
+        const elapsedClient = Math.floor((Date.now() - countdownStartedAt) / 1000);
+        const left = Math.max(0, initialRemaining - elapsedClient);
+        sessionLoginDurationEl.textContent = formatDuration(left);
+
+        // Szín váltás: sárga ha < 10 perc, piros ha < 2 perc
+        if (sessionBadgeEl) {
+          sessionBadgeEl.classList.remove('session-warning', 'session-danger');
+          if (left <= 120) {
+            sessionBadgeEl.classList.add('session-danger');
+          } else if (left <= 600) {
+            sessionBadgeEl.classList.add('session-warning');
+          }
+        }
+
+        // Ha lejárt: automatikus kijelentkezés
+        if (left <= 0) {
+          clearInterval(window.__sessionLoginDurationTimer);
+          fetch('/BetMatchBonus/backend/Auth/logout.php', { method: 'POST' }).finally(() => {
+            alert('A munkameneted lejárt (1 óra). Kérjük, jelentkezz be újra!');
+            window.location.href = '/BetMatchBonus/frontend/MainMenu/MainMenu.php';
+          });
+        }
       };
-      updateDuration();
-      window.__sessionLoginDurationTimer = setInterval(updateDuration, 1000);
+      updateCountdown();
+      window.__sessionLoginDurationTimer = setInterval(updateCountdown, 1000);
     }
     if (fullNameEl) fullNameEl.textContent = u.full_name || u.username || '-';
     if (emailEl) emailEl.textContent = u.email || '-';

@@ -539,6 +539,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // ===== HÁTTÉR SZINKRON (API → DB) =====
+    function syncFromApi() {
+        fetch('../../backend/refresh_all.php', { method: 'GET' })
+            .catch(function(err) { console.warn('[SYNC] Hálózati hiba:', err); });
+    }
+    syncFromApi();
+    setInterval(syncFromApi, 60000);
+
     // ===== INDÍTÁS =====
     fetch("../../backend/ApiRequest/get_matches_live.php")
         .then(function(res) { return res.json(); })

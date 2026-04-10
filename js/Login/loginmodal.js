@@ -44,6 +44,22 @@ document.addEventListener('DOMContentLoaded', function () {
     fd.append('password', password);
     fd.append('rememberMe', rememberMe);
 
+    // reCAPTCHA v3 token lekérése, majd bejelentkezés
+    if (typeof grecaptcha !== 'undefined') {
+      grecaptcha.ready(function () {
+        grecaptcha.execute(window.RECAPTCHA_SITE_KEY, { action: 'login' }).then(function (token) {
+          fd.append('recaptcha_token', token);
+          doLogin(fd);
+        });
+      });
+    } else {
+      doLogin(fd);
+    }
+  });
+
+  function doLogin(fd) {
+    var result = document.getElementById('loginModalResult');
+
     fetch('../../backend/Auth/login.php', {
       method: 'POST',
       body: fd
@@ -71,5 +87,5 @@ document.addEventListener('DOMContentLoaded', function () {
         result.style.color = 'red';
         result.textContent = 'Hiba történt a bejelentkezéskor.';
       });
-  });
+  }
 });

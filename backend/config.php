@@ -141,21 +141,35 @@ const COUNTRY_MAP = [
 // ── Bajnokság prioritás (mainmenu rendezéshez) ───
 const LEAGUE_PRIORITY_SQL = "
     CASE
-        WHEN comp.name LIKE '%Champions League%'    THEN 1
-        WHEN comp.name LIKE '%World Cup%'           THEN 2
-        WHEN comp.name LIKE '%Világbajnokság%'      THEN 2
-        WHEN comp.name LIKE '%Europa League%'       THEN 3
-        WHEN comp.name LIKE '%Conference League%'   THEN 4
-        WHEN comp.name LIKE '%Premier League%'      THEN 5
-        WHEN comp.name LIKE '%La Liga%'             THEN 6
-        WHEN comp.name LIKE '%Bundesliga%'          THEN 7
-        WHEN comp.name LIKE '%Serie A%'             THEN 8
-        WHEN comp.name LIKE '%Ligue 1%'             THEN 9
+        WHEN comp.name LIKE '%Világbajnokság%'
+          OR comp.name LIKE '%World Cup%'
+          OR comp.name LIKE '%VB%'                  THEN 1
+        WHEN comp.name LIKE '%Nemzetek Ligája%'
+          OR comp.name LIKE '%Nations League%'      THEN 2
+        WHEN comp.name LIKE '%Európa-bajnokság%'
+          OR comp.name LIKE '%Euro 20%'
+          OR comp.name LIKE '%UEFA EURO%'            THEN 3
+        WHEN comp.name LIKE '%Champions League%'
+          OR comp.name LIKE '%Bajnokok Ligája%'     THEN 4
+        WHEN comp.name LIKE '%Europa League%'
+          OR comp.name LIKE '%Európa Liga%'         THEN 5
+        WHEN comp.name LIKE '%Conference League%'
+          OR comp.name LIKE '%Konferencia Liga%'    THEN 6
         WHEN comp.name LIKE '%NB I%'
           OR comp.name LIKE '%NB1%'
-          OR comp.name LIKE '%Nemzeti Bajnokság%'   THEN 10
-        WHEN comp.name LIKE '%Eredivisie%'          THEN 11
-        WHEN comp.name LIKE '%Primeira Liga%'       THEN 12
+          OR comp.name LIKE '%Nemzeti Bajnokság%'
+          OR comp.name LIKE '%OTP Bank Liga%'       THEN 7
+        WHEN comp.name LIKE '%Premier League%'      THEN 8
+        WHEN comp.name LIKE '%La Liga%'
+          OR comp.name LIKE '%LaLiga%'              THEN 9
+        WHEN comp.name LIKE '%Bundesliga%'          THEN 10
+        WHEN comp.name LIKE '%Serie A%'             THEN 11
+        WHEN comp.name LIKE '%Ligue 1%'             THEN 12
+        WHEN comp.name LIKE '%NB II%'
+          OR comp.name LIKE '%NB2%'
+          OR comp.name LIKE '%Második osztály%'     THEN 13
+        WHEN comp.name LIKE '%Eredivisie%'          THEN 14
+        WHEN comp.name LIKE '%Primeira Liga%'       THEN 15
         ELSE 99
     END
 ";
@@ -219,3 +233,10 @@ function countryNameFromCode(string $code): string {
 function getSportIcon(int $sportApiId): string {
     return SPORT_ICONS[$sportApiId] ?? 'fa-trophy';
 }
+
+// ── reCAPTCHA v3 ─────────────────────────────────
+// Regisztrálj: https://www.google.com/recaptcha/admin
+// Válaszd a "reCAPTCHA v3" típust, add meg a domained (pl. localhost fejlesztéshez).
+const RECAPTCHA_SITE_KEY   = '6LfORq0sAAAAAH0CyNKWMZjml_GOXh6svvG-pEUR';
+const RECAPTCHA_SECRET_KEY = '6LfORq0sAAAAAJXQGlXBwOHQ9QILiZ-7hDLnI5zO';
+const RECAPTCHA_THRESHOLD  = 0.5; // 0.0–1.0, alatta bot-nak minősül
