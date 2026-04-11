@@ -15,10 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Get POST data
 $user_id = $_SESSION['user_id'];
 $amount = isset($_POST['amount']) ? (int) $_POST['amount'] : 0;
-$cardholder_name = isset($_POST['cardholder_name']) ? htmlspecialchars(trim($_POST['cardholder_name'])) : '';
-$card_number = isset($_POST['card_number']) ? preg_replace('/\D/', '', $_POST['card_number']) : '';
-$card_expiry = isset($_POST['card_expiry']) ? htmlspecialchars(trim($_POST['card_expiry'])) : '';
-$card_cvc = isset($_POST['card_cvc']) ? preg_replace('/\D/', '', $_POST['card_cvc']) : '';
+$posted_method = isset($_POST['payment_method']) ? trim($_POST['payment_method']) : 'visa';
 
 // Validate amount
 if ($amount < 3000 || $amount > 600000) {
@@ -27,54 +24,89 @@ if ($amount < 3000 || $amount > 600000) {
     exit;
 }
 
-// Validate cardholder name
-if (empty($cardholder_name) || strlen($cardholder_name) < 3) {
-    $_SESSION['error_message'] = '❌ Kérjük adja meg a kártyatulajdonos nevét';
-    header('Location: /BetMatchBonus/frontend/UserProfile/deposits.php?amount=' . $amount);
-    exit;
-}
+$redirect_back = '/BetMatchBonus/frontend/UserProfile/stripe_payment_form.php?amount=' . $amount . '&method=' . urlencode($posted_method);
 
-// Validate cardholder name - only letters and spaces (including Hungarian characters)
-if (!preg_match('/^[a-záéíóöőüűA-ZÁÉÍÓÖŐÜŰ\s]+$/', $cardholder_name)) {
-    $_SESSION['error_message'] = '❌ A kártyatulajdonos neve csak betűket és szóközöket tartalmazhat!';
-    header('Location: /BetMatchBonus/frontend/UserProfile/stripe_payment_form.php?amount=' . $amount);
-    exit;
-}
+if ($posted_method === 'paypal') {
+    // === PayPal validáció ===
+    $paypal_email = isset($_POST['paypal_email']) ? trim($_POST['paypal_email']) : '';
+    $paypal_password = isset($_POST['paypal_password']) ? $_POST['paypal_password'] : '';
 
-// Validate card number (must be exactly 16 digits)
-if (strlen($card_number) !== 16 || !ctype_digit($card_number)) {
-    $_SESSION['error_message'] = '❌ A kártyaszám 16 számjegyből kell, hogy álljon';
-    header('Location: /BetMatchBonus/frontend/UserProfile/stripe_payment_form.php?amount=' . $amount);
-    exit;
-}
+    if (empty($paypal_email) || !filter_var($paypal_email, FILTER_VALIDATE_EMAIL)) {
+        $_SESSION['error_message'] = '❌ Kérjük adjon meg egy érvényes PayPal email címet';
+        header('Location: ' . $redirect_back);
+        exit;
+    }
 
-// Validate expiry date
-if (empty($card_expiry) || !preg_match('/^\d{2}\/\d{2}$/', $card_expiry)) {
-    $_SESSION['error_message'] = '❌ Hibás lejárati dátum (MM/YY formátum szükséges)';
-    header('Location: /BetMatchBonus/frontend/UserProfile/stripe_payment_form.php?amount=' . $amount);
-    exit;
-}
+    if (empty($paypal_password) || strlen($paypal_password) < 6) {
+        $_SESSION['error_message'] = '❌ Kérjük adja meg a PayPal jelszavát (minimum 6 karakter)';
+        header('Location: ' . $redirect_back);
+        exit;
+    }
 
-// Validate expiry date is in the future
-list($exp_month, $exp_year) = explode('/', $card_expiry);
-$current_date = new DateTime();
-$current_month = $current_date->format('m');
-$current_year = $current_date->format('y');
+    $payment_method_label = 'paypal_demo';
 
-$expiry_date_str = $exp_year . $exp_month;
-$current_date_str = $current_year . $current_month;
+} else {
+    // === Kártya validáció (Visa / Mastercard) ===
+    if (!in_array($posted_method, ['visa', 'mastercard'])) {
+        $posted_method = 'visa';
+    }
 
-if ((int)$expiry_date_str <= (int)$current_date_str) {
-    $_SESSION['error_message'] = '❌ A kártya lejárati dátuma már lejárt! Válassz egy későbbi dátumot.';
-    header('Location: /BetMatchBonus/frontend/UserProfile/stripe_payment_form.php?amount=' . $amount);
-    exit;
-}
+    $cardholder_name = isset($_POST['cardholder_name']) ? htmlspecialchars(trim($_POST['cardholder_name'])) : '';
+    $card_number = isset($_POST['card_number']) ? preg_replace('/\D/', '', $_POST['card_number']) : '';
+    $card_expiry = isset($_POST['card_expiry']) ? htmlspecialchars(trim($_POST['card_expiry'])) : '';
+    $card_cvc = isset($_POST['card_cvc']) ? preg_replace('/\D/', '', $_POST['card_cvc']) : '';
 
-// Validate CVC (3-4 digits)
-if (strlen($card_cvc) < 3 || strlen($card_cvc) > 4 || !ctype_digit($card_cvc)) {
-    $_SESSION['error_message'] = '❌ A CVC 3-4 számjegyből kell, hogy álljon';
-    header('Location: /BetMatchBonus/frontend/UserProfile/stripe_payment_form.php?amount=' . $amount);
-    exit;
+    // Validate cardholder name
+    if (empty($cardholder_name) || strlen($cardholder_name) < 3) {
+        $_SESSION['error_message'] = '❌ Kérjük adja meg a kártyatulajdonos nevét';
+        header('Location: ' . $redirect_back);
+        exit;
+    }
+
+    // Validate cardholder name - only letters and spaces (including Hungarian characters)
+    if (!preg_match('/^[a-záéíóöőüűA-ZÁÉÍÓÖŐÜŰ\s]+$/', $cardholder_name)) {
+        $_SESSION['error_message'] = '❌ A kártyatulajdonos neve csak betűket és szóközöket tartalmazhat!';
+        header('Location: ' . $redirect_back);
+        exit;
+    }
+
+    // Validate card number (must be exactly 16 digits)
+    if (strlen($card_number) !== 16 || !ctype_digit($card_number)) {
+        $_SESSION['error_message'] = '❌ A kártyaszám 16 számjegyből kell, hogy álljon';
+        header('Location: ' . $redirect_back);
+        exit;
+    }
+
+    // Validate expiry date
+    if (empty($card_expiry) || !preg_match('/^\d{2}\/\d{2}$/', $card_expiry)) {
+        $_SESSION['error_message'] = '❌ Hibás lejárati dátum (MM/YY formátum szükséges)';
+        header('Location: ' . $redirect_back);
+        exit;
+    }
+
+    // Validate expiry date is in the future
+    list($exp_month, $exp_year) = explode('/', $card_expiry);
+    $current_date = new DateTime();
+    $current_month = $current_date->format('m');
+    $current_year = $current_date->format('y');
+
+    $expiry_date_str = $exp_year . $exp_month;
+    $current_date_str = $current_year . $current_month;
+
+    if ((int)$expiry_date_str <= (int)$current_date_str) {
+        $_SESSION['error_message'] = '❌ A kártya lejárati dátuma már lejárt! Válassz egy későbbi dátumot.';
+        header('Location: ' . $redirect_back);
+        exit;
+    }
+
+    // Validate CVC (3-4 digits)
+    if (strlen($card_cvc) < 3 || strlen($card_cvc) > 4 || !ctype_digit($card_cvc)) {
+        $_SESSION['error_message'] = '❌ A CVC 3-4 számjegyből kell, hogy álljon';
+        header('Location: ' . $redirect_back);
+        exit;
+    }
+
+    $payment_method_label = 'card_demo';
 }
 
 // Simulate payment processing delay for demo mode
@@ -86,7 +118,7 @@ $transaction_id = 'TRN_' . uniqid();
 // Prepare values
 $amount_str = number_format($amount, 2, '.', '');
 $type = 'deposit';
-$payment_method = 'card_demo';
+$payment_method = $payment_method_label;
 $status = 'completed';
 
 // Prepare INSERT statement

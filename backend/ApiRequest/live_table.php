@@ -152,7 +152,9 @@ date_default_timezone_set('Europe/Budapest');
 $sport_id = isset($_GET['sport_id']) ? intval($_GET['sport_id']) : 66;
 $sportIcon = getSportIcon($sport_id);
 
-// Élő meccsek lekérése DB-ből
+$priorityOrder = LEAGUE_PRIORITY_SQL;
+
+// Élő meccsek lekérése DB-ből (bajnokság prioritás + ország)
 $stmt = $conn->prepare("
     SELECT 
         e.api_id,
@@ -163,14 +165,16 @@ $stmt = $conn->prepare("
         e.home_score,
         e.away_score,
         comp.name AS league_name,
-        comp.api_id AS league_api_id
+        comp.api_id AS league_api_id,
+        c.name AS country_name
     FROM Events e
     JOIN Sports s ON e.sport_id = s.id
     JOIN Competitions comp ON e.competition_id = comp.id
+    LEFT JOIN Countries c ON comp.country_id = c.id
     WHERE s.api_id = ?
       AND e.is_live = 1
       AND (e.live_time IS NULL OR LOWER(TRIM(e.live_time)) NOT IN ('nem kezdődött el', 'not started', '', 'unknown'))
-    ORDER BY comp.name ASC, e.start_time ASC
+    ORDER BY $priorityOrder, comp.name ASC, e.start_time ASC
 ");
 
 if (!$stmt) {
@@ -182,80 +186,127 @@ $stmt->bind_param("i", $sport_id);
 $stmt->execute();
 $res = $stmt->get_result();
 
-$matches = [];
+$leagues = [];
 while ($row = $res->fetch_assoc()) {
-    $matches[] = $row;
+    $leagueKey = $row['league_name'] ?: 'Egyéb';
+    if (!isset($leagues[$leagueKey])) {
+        $leagues[$leagueKey] = [
+            'country' => $row['country_name'] ?: 'Nemzetközi',
+            'matches' => [],
+        ];
+    }
+
+    $matchId    = (int)$row['api_id'];
+    $name       = $row['name'] ?? '';
+    $isLive     = (int)$row['is_live'];
+    $liveTime   = $row['live_time'] ?? '-';
+
+    $homeScore = $row['home_score'];
+    $awayScore = $row['away_score'];
+    $scoreDisplay = ($homeScore !== null && $awayScore !== null)
+        ? htmlspecialchars($homeScore . ' - ' . $awayScore) : '-';
+
+    // Csapatnevek bontása
+    $separators = [' vs. ', ' vs ', ' - ', ' – '];
+    $teams = [$name];
+    foreach ($separators as $sep) {
+        if (strpos($name, $sep) !== false) {
+            $teams = explode($sep, $name, 2);
+            break;
+        }
+    }
+    $home = htmlspecialchars(trim($teams[0] ?? $name));
+    $away = htmlspecialchars(trim($teams[1] ?? ''));
+
+    // Kezdés időpont (DB-ben UTC → Budapest konverzió)
+    $startFormatted = '-';
+    if (!empty($row['start_time'])) {
+        $dtStart = new DateTime($row['start_time'], new DateTimeZone('UTC'));
+        $dtStart->setTimezone(new DateTimeZone('Europe/Budapest'));
+        $startFormatted = $dtStart->format('H:i');
+    }
+
+    $leagues[$leagueKey]['matches'][] = [
+        'matchId' => $matchId,
+        'home' => $home,
+        'away' => $away,
+        'score' => $scoreDisplay,
+        'startFormatted' => $startFormatted,
+        'isLive' => $isLive,
+        'liveTime' => $liveTime,
+    ];
 }
 $stmt->close();
 
-if (empty($matches)) {
+if (empty($leagues)) {
     echo '<div class="no-matches"><i class="fas fa-futbol" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i>Jelenleg nincs elo meccs ehhez a sporthoz.</div>';
     exit;
 }
+
+// Bajnokság csoportosítás minden sportnál
+$totalLeagues = count($leagues);
+$leagueIndex = 0;
 ?>
-<table class="matches-table">
-    <thead>
-        <tr>
-            <th><i class="fas fa-globe-europe"></i> Bajnokság</th>
-            <th><i class="fas <?php echo htmlspecialchars($sportIcon); ?>"></i> Meccs</th>
-            <th><i class="fas fa-star"></i> Állás</th>
-            <th><i class="fas fa-clock"></i> Kezdés</th>
-            <th><i class="fas fa-stopwatch"></i> Státusz</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php foreach ($matches as $row):
-            $matchId    = (int)$row['api_id'];
-            $leagueName = $row['league_name'] ?? 'Ismeretlen';
-            $name       = $row['name'] ?? '';
-            $isLive     = (int)$row['is_live'];
-            $liveTime   = $row['live_time'] ?? '-';
 
-            $homeScore = $row['home_score'];
-            $awayScore = $row['away_score'];
-            $scoreDisplay = ($homeScore !== null && $awayScore !== null)
-                ? htmlspecialchars($homeScore . ' - ' . $awayScore) : '-';
-
-            // Csapatnevek bontása
-            $teams = explode(' vs. ', $name);
-            if (count($teams) < 2) $teams = explode(' - ', $name);
-            $home = htmlspecialchars(trim($teams[0] ?? $name));
-            $away = htmlspecialchars(trim($teams[1] ?? ''));
-
-            // Kezdés időpont (DB-ben UTC → Budapest konverzió)
-            $startFormatted = '-';
-            if (!empty($row['start_time'])) {
-                $dtStart = new DateTime($row['start_time'], new DateTimeZone('UTC'));
-                $dtStart->setTimezone(new DateTimeZone('Europe/Budapest'));
-                $startFormatted = $dtStart->format('H:i');
-            }
-        ?>
-            <tr class="match-row clickable" data-match-id="<?php echo $matchId; ?>">
-                <td><span class="league-name"><?php echo htmlspecialchars($leagueName); ?></span></td>
-                <td class="match-cell">
-                    <?php if ($away !== ''): ?>
-                        <span class="team home-team"><?php echo $home; ?></span>
-                        <span class="vs">vs</span>
-                        <span class="team away-team"><?php echo $away; ?></span>
-                    <?php else: ?>
-                        <span class="team"><?php echo $home; ?></span>
-                    <?php endif; ?>
-                </td>
-                <td><span class="match-score"><?php echo $scoreDisplay; ?></span></td>
-                <td><span class="start-time"><?php echo $startFormatted; ?></span></td>
-                <td>
-                    <?php if ($isLive): ?>
-                        <div class="live-time-cell">
-                            <span class="live-dot"></span>
-                            <span class="live-time-value"><?php echo htmlspecialchars($liveTime); ?></span>
-                        </div>
-                    <?php else: ?>
-                        <button class="btn-add-bet" data-match-id="<?php echo $matchId; ?>" title="Fogadások megtekintése">
-                            <i class="fas fa-plus"></i> Fogadás
-                        </button>
-                    <?php endif; ?>
-                </td>
-            </tr>
-        <?php endforeach; ?>
-    </tbody>
-</table>
+<?php foreach ($leagues as $leagueName => $leagueData):
+    $matches = $leagueData['matches'];
+    $matchCount = count($matches);
+    $countryDisplay = htmlspecialchars($leagueData['country']);
+    $leagueDisplay = htmlspecialchars($leagueName);
+    $leagueId = 'league-' . md5($leagueName);
+    $leagueIndex++;
+?>
+<div class="league-group <?php echo $leagueIndex > 5 ? 'league-hidden-extra' : ''; ?>" data-league-id="<?php echo $leagueId; ?>" <?php echo $leagueIndex > 5 ? 'style="display:none;"' : ''; ?>>
+    <div class="league-header" onclick="this.parentElement.classList.toggle('expanded')">
+        <div class="league-header-left">
+            <i class="fas fa-globe-europe league-country-icon"></i>
+            <span class="league-country"><?php echo $countryDisplay; ?></span>
+            <span class="league-separator">—</span>
+            <i class="fas fa-trophy league-trophy-icon"></i>
+            <span class="league-title"><?php echo $leagueDisplay; ?></span>
+            <span class="league-match-count"><?php echo $matchCount; ?></span>
+        </div>
+        <div class="league-header-right">
+            <i class="fas fa-chevron-down league-toggle-icon"></i>
+        </div>
+    </div>
+    <div class="league-matches">
+        <table class="matches-table">
+            <tbody>
+            <?php foreach ($matches as $idx => $m): ?>
+                <tr class="match-row clickable <?php echo $idx === 0 ? 'league-first-match' : 'league-extra-match'; ?>" data-match-id="<?php echo $m['matchId']; ?>">
+                    <td class="match-cell">
+                        <?php if ($m['away'] !== ''): ?>
+                            <span class="team home-team"><?php echo $m['home']; ?></span>
+                            <span class="vs">vs</span>
+                            <span class="team away-team"><?php echo $m['away']; ?></span>
+                        <?php else: ?>
+                            <span class="team"><?php echo $m['home']; ?></span>
+                        <?php endif; ?>
+                    </td>
+                    <td><span class="match-score"><?php echo $m['score']; ?></span></td>
+                    <td><span class="start-time"><?php echo $m['startFormatted']; ?></span></td>
+                    <td>
+                        <?php if ($m['isLive']): ?>
+                            <div class="live-time-cell">
+                                <span class="live-dot"></span>
+                                <span class="live-time-value"><?php echo htmlspecialchars($m['liveTime']); ?></span>
+                            </div>
+                        <?php else: ?>
+                            <button class="btn-add-bet" data-match-id="<?php echo $m['matchId']; ?>" title="Fogadások megtekintése">
+                                <i class="fas fa-plus"></i> Fogadás
+                            </button>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+<?php endforeach; ?>
+<?php if ($totalLeagues > 5): ?>
+<button class="load-more-leagues-btn">
+    <i class="fas fa-chevron-down"></i> Többi bajnokság betöltése (<span class="load-more-count"><?php echo $totalLeagues - 5; ?></span>)
+</button>
+<?php endif; ?>

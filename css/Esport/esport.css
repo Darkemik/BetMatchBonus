@@ -744,3 +744,285 @@
 @media (max-width: 768px) {
     .markets-container { grid-template-columns: 1fr; }
 }
+
+/* ===== BAJNOKSÁG CSOPORTOK (összecsukható) ===== */
+.league-group {
+  margin-bottom: 6px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #1a1a2e;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.league-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #2a1a3e 0%, #1f1530 100%);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s ease;
+  border-bottom: 1px solid rgba(186,104,200,0.15);
+}
+
+.league-header:hover {
+  background: linear-gradient(135deg, #352248 0%, #2a1a3e 100%);
+}
+
+.league-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.league-country-icon {
+  color: #90a4ae;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.league-country {
+  font-size: 12px;
+  color: #90a4ae;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.league-separator {
+  color: rgba(255,255,255,0.2);
+  font-size: 11px;
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
+.league-trophy-icon {
+  color: #BA68C8;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.league-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #d4a0e0;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.league-match-count {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 6px;
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: #BA68C8;
+  border-radius: 10px;
+  line-height: 1;
+}
+
+.league-header-right {
+  display: flex;
+  align-items: center;
+  margin-left: 10px;
+  flex-shrink: 0;
+}
+
+.league-toggle-icon {
+  color: #BA68C8;
+  font-size: 11px;
+  transition: transform 0.3s ease;
+}
+
+.league-group.expanded .league-toggle-icon {
+  transform: rotate(180deg);
+}
+
+/* Meccsek a csoporton belül */
+.league-matches {
+  overflow: hidden;
+}
+
+.league-matches .matches-table {
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: #1a1a2e;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.league-matches .matches-table td {
+  padding: 10px 14px;
+  font-size: 13px;
+}
+
+/* Oszlopszélességek: Meccs | Állás | Kezdés | Státusz */
+.league-matches .matches-table td:nth-child(1) { width: 40%; text-align: left; padding-left: 20px; }
+.league-matches .matches-table td:nth-child(2) { width: 15%; text-align: center; }
+.league-matches .matches-table td:nth-child(3) { width: 22%; text-align: center; }
+.league-matches .matches-table td:nth-child(4) { width: 23%; text-align: center; }
+
+/* Meccs cella csapatok elrendezése */
+.league-matches .match-cell {
+  white-space: normal;
+}
+
+.league-matches .match-cell .home-team,
+.league-matches .match-cell .away-team {
+  display: inline-block;
+  min-width: 80px;
+}
+
+.league-matches .match-cell .vs {
+  display: inline-block;
+  margin: 0 10px;
+  background: rgba(186,104,200,0.15);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  color: #BA68C8;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+/* Eredmény badge stílus */
+.league-matches .match-score {
+  display: inline-block;
+  background: rgba(255,255,255,0.06);
+  padding: 4px 14px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #ecf0f1;
+  letter-spacing: 2px;
+  min-width: 60px;
+}
+
+.league-matches .finished-score {
+  background: rgba(186,104,200,0.12);
+  color: #d4a0e0;
+}
+
+/* Kezdés badge */
+.league-matches .start-time {
+  display: inline-block;
+  background: rgba(255,255,255,0.05);
+  padding: 4px 10px;
+  border-radius: 5px;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 600;
+  font-size: 12px;
+  color: #90a4ae;
+}
+
+/* Státusz badge */
+.league-matches .status-upcoming {
+  font-size: 12px;
+  color: #607d8b;
+}
+
+.league-matches .status-finished {
+  display: inline-block;
+  background: rgba(186,104,200,0.1);
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #BA68C8;
+  font-weight: 600;
+}
+
+.league-matches .live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #e74c3c;
+  border-radius: 50%;
+  margin-right: 6px;
+  animation: pulseDot 1.5s infinite;
+  vertical-align: middle;
+}
+
+.league-matches .live-time-value {
+  color: #e74c3c;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+/* Csak az első meccs látszik alapból */
+.league-extra-match {
+  display: none;
+}
+
+.league-group.expanded .league-extra-match {
+  display: table-row;
+}
+
+.league-first-match {
+  display: table-row;
+}
+
+/* Sorok közötti elválasztó finomítás */
+.league-matches .matches-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Több bajnokság betöltése gomb */
+.load-more-leagues-btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  background: linear-gradient(135deg, #2a1a3e 0%, #1f1530 100%);
+  border: 1px solid rgba(186,104,200,0.25);
+  border-radius: 8px;
+  color: #d4a0e0;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.load-more-leagues-btn:hover {
+  background: linear-gradient(135deg, #352248 0%, #2a1a3e 100%);
+  border-color: #BA68C8;
+  color: #BA68C8;
+}
+
+/* League-group responsive */
+@media (max-width: 600px) {
+  .league-header {
+    padding: 8px 10px;
+  }
+  .league-header-left {
+    gap: 4px;
+  }
+  .league-title {
+    font-size: 12px;
+  }
+  .league-country {
+    display: none;
+  }
+  .league-separator {
+    display: none;
+  }
+  .league-country-icon {
+    display: none;
+  }
+  .league-matches .matches-table td:nth-child(2),
+  .league-matches .matches-table td:nth-child(4) {
+    display: none;
+  }
+  .league-matches .matches-table td:nth-child(1) { width: 60%; }
+  .league-matches .matches-table td:nth-child(3) { width: 40%; }
+}

@@ -68,6 +68,7 @@ $stmt->close();
                                         <th>Fizetési Mód</th>
                                         <th>Státusz</th>
                                         <th>Dátum</th>
+                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -104,13 +105,22 @@ $stmt->close();
                                                         'pending' => '<span class="badge bg-warning">Függőben</span>',
                                                         'completed' => '<span class="badge bg-success">Befejezve</span>',
                                                         'failed' => '<span class="badge bg-danger">Sikertelen</span>',
-                                                        'cancelled' => '<span class="badge bg-secondary">Visszavont</span>'
+                                                        'cancelled' => '<span class="badge bg-secondary">Visszavont</span>',
+                                                        'rejected' => '<span class="badge bg-danger">Elutasítva</span>'
                                                     ];
                                                     echo $status_badges[$transaction['status']] ?? '<span class="badge bg-secondary">' . htmlspecialchars($transaction['status']) . '</span>';
                                                 ?>
                                             </td>
                                             <td>
                                                 <?php echo date('Y-m-d H:i', strtotime($transaction['created_at'])); ?>
+                                            </td>
+                                            <td>
+                                                <?php if ($transaction['type'] === 'withdrawal' && $transaction['status'] === 'completed'): ?>
+                                                    <a href="../../backend/ApiRequest/withdrawal_receipt.php?id=<?php echo $transaction['id']; ?>" 
+                                                       class="btn btn-sm btn-outline-primary" title="Kifizetési igazolás letöltése">
+                                                        <i class="fas fa-file-pdf"></i>
+                                                    </a>
+                                                <?php endif; ?>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>

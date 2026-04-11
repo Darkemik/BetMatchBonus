@@ -8,15 +8,17 @@ require_once "../../backend/connect.php";
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Élő meccsek | BetMatchBonus</title>
+    <!-- Vendor CSS first -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <!-- App CSS after vendors -->
+    <link rel="stylesheet" href="../../css/RootColor/root.css">
     <link rel="stylesheet" href="../../css/Main/layout.css">
     <link rel="stylesheet" href="../../css/Live/live.css">
     <link rel="stylesheet" href="../../css/Betslip/betslip.css">
     <link rel="stylesheet" href="../../css/Main/popup.css">
-    <link rel="stylesheet" href="../../css/RootColor/root.css">
     <link rel="stylesheet" href="../../css/Modal/modal.css">
     <link rel="icon" href="../../img/logo.png" type="image/x-icon">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 
 </head>
 
@@ -93,6 +95,17 @@ require_once "../../backend/connect.php";
                     </nav>
                 </div>
                 <br>
+
+                <!-- Kereső -->
+                <div class="live-search-wrapper">
+                    <div class="live-search-box">
+                        <i class="fas fa-search live-search-icon"></i>
+                        <input type="text" id="liveSearchInput" class="live-search-input" placeholder="Keresés csapat vagy bajnokság neve alapján..." autocomplete="off">
+                        <button type="button" id="liveSearchClear" class="live-search-clear" style="display:none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
 
                 
                 <div class="tabs-container">

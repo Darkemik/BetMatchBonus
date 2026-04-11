@@ -9,6 +9,147 @@
     let refreshRequestId = 0;
     let currentDetailEventId = null;
 
+    // ===== BAJNOKSÁG ÁLLAPOTOK (sportváltás között megmarad) =====
+    const visibleLeagueCountPerSport = {}; // { sportId: number } — hány bajnokság látható
+    const expandedLeaguesPerSport = {}; // { sportId: Set of leagueId }
+
+    function applyLeagueStates() {
+        if (!currentSportId) return;
+        const container = document.getElementById('matches-container');
+        if (!container) return;
+
+        const hiddenGroups = container.querySelectorAll('.league-hidden-extra');
+        const totalHidden = hiddenGroups.length;
+        const visibleCount = visibleLeagueCountPerSport[currentSportId] || 5;
+
+        // Mutassuk a látható limitig, a többit rejtsük
+        const allGroups = container.querySelectorAll('.league-group');
+        let shown = 0;
+        allGroups.forEach((group, idx) => {
+            if (idx < visibleCount) {
+                if (group.classList.contains('league-hidden-extra')) {
+                    group.style.display = '';
+                }
+                shown++;
+            }
+        });
+
+        // Gomb szöveg frissítése vagy elrejtése
+        const loadBtn = container.querySelector('.load-more-leagues-btn');
+        if (loadBtn) {
+            const stillHidden = allGroups.length - visibleCount;
+            if (stillHidden <= 0) {
+                loadBtn.style.display = 'none';
+            } else {
+                loadBtn.style.display = '';
+                loadBtn.querySelector('.load-more-count').textContent = stillHidden;
+            }
+
+            if (!loadBtn._liveHandlerAttached) {
+                loadBtn._liveHandlerAttached = true;
+                loadBtn.addEventListener('click', function() {
+                    const current = visibleLeagueCountPerSport[currentSportId] || 5;
+                    visibleLeagueCountPerSport[currentSportId] = current + 5;
+                    applyLeagueStates();
+                });
+            }
+        }
+
+        // Expanded állapotok visszaállítása
+        const expandedSet = expandedLeaguesPerSport[currentSportId];
+        if (expandedSet && expandedSet.size > 0) {
+            allGroups.forEach(group => {
+                const lid = group.getAttribute('data-league-id');
+                if (expandedSet.has(lid)) {
+                    group.classList.add('expanded');
+                }
+            });
+        }
+
+        // League header kattintás figyelése (expanded állapot mentés)
+        container.querySelectorAll('.league-header').forEach(header => {
+            if (header._liveExpandHandlerAttached) return;
+            header._liveExpandHandlerAttached = true;
+            header.addEventListener('click', function() {
+                const group = this.parentElement;
+                const lid = group.getAttribute('data-league-id');
+                if (!expandedLeaguesPerSport[currentSportId]) {
+                    expandedLeaguesPerSport[currentSportId] = new Set();
+                }
+                // toggle után a classList már frissült az onclick-ben
+                setTimeout(() => {
+                    if (group.classList.contains('expanded')) {
+                        expandedLeaguesPerSport[currentSportId].add(lid);
+                    } else {
+                        expandedLeaguesPerSport[currentSportId].delete(lid);
+                    }
+                }, 0);
+            });
+        });
+    }
+
+    // ===== KERESŐ LOGIKA =====
+    let liveSearchTerm = '';
+
+    function initSearchHandlers() {
+        const searchInput = document.getElementById('liveSearchInput');
+        const searchClear = document.getElementById('liveSearchClear');
+        if (!searchInput) return;
+
+        searchInput.addEventListener('input', function() {
+            liveSearchTerm = this.value.trim().toLowerCase();
+            if (searchClear) searchClear.style.display = liveSearchTerm ? 'flex' : 'none';
+            applySearchFilter();
+        });
+
+        if (searchClear) {
+            searchClear.addEventListener('click', function() {
+                searchInput.value = '';
+                liveSearchTerm = '';
+                this.style.display = 'none';
+                applySearchFilter();
+            });
+        }
+    }
+
+    function applySearchFilter() {
+        const container = document.getElementById('matches-container');
+        if (!container) return;
+
+        const leagueGroups = container.querySelectorAll('.league-group');
+        if (leagueGroups.length === 0) return;
+
+        const allLoaded = (visibleLeagueCountPerSport[currentSportId] || 5) >= container.querySelectorAll('.league-group').length;
+
+        leagueGroups.forEach(group => {
+            // Ha a csoport rejtett és még nem töltöttük be az összest, ne piszkáljuk
+            if (!allLoaded && group.classList.contains('league-hidden-extra')) return;
+
+            const leagueTitle = (group.querySelector('.league-title')?.textContent || '').toLowerCase();
+            const leagueCountry = (group.querySelector('.league-country')?.textContent || '').toLowerCase();
+
+            // Ha a bajnokság/ország neve tartalmazza a keresőszöveget, az egész csoportot mutatjuk
+            const leagueMatch = liveSearchTerm === '' ||
+                leagueTitle.includes(liveSearchTerm) ||
+                leagueCountry.includes(liveSearchTerm);
+
+            const rows = group.querySelectorAll('.match-row');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const teams = (row.querySelector('.match-cell')?.textContent || '').toLowerCase();
+                const rowMatch = leagueMatch || teams.includes(liveSearchTerm);
+                row.style.display = rowMatch ? '' : 'none';
+                if (rowMatch) visibleCount++;
+            });
+
+            group.style.display = visibleCount > 0 ? '' : 'none';
+        });
+    }
+
+    // Keresők inicializálása
+    initSearchHandlers();
+
     // Fallback sport config - used if backend doesn't provide details
     const SPORT_CONFIG_FALLBACK = {
         66:  { name: 'Labdarúgás',  icon: 'fa-futbol' },
@@ -185,14 +326,18 @@
                 currentSportId = sportId;
                 userSelectedSportId = sportId;
                 viewingMatchDetails = false;
+                // Sportváltás: keresés reset
+                liveSearchTerm = '';
+                const si = document.getElementById('liveSearchInput');
+                const sc = document.getElementById('liveSearchClear');
+                if (si) si.value = '';
+                if (sc) sc.style.display = 'none';
+                // Sportváltás: bajnokság állapot NEM törlődik (megmarad ha visszaváltunk)
                 // Sportváltás: DOM ürítése + dismissed reset
                 dismissedIds.clear();
                 const feedContainer = document.getElementById('goal-toast-container');
                 if (feedContainer) feedContainer.innerHTML = '';
-                // Ha van cache-elt feed adat ehhez a sporthoz, azonnal renderelés
-                if (feedItemsCache[sportId] && feedItemsCache[sportId].length > 0) {
-                    renderScoreFeed(feedItemsCache[sportId]);
-                }
+                // NEM renderelünk cache-ből — várunk a friss szerver adatra (ne villogjon)
                 // Loading state amíg az új sport töltődik
                 matchesContainer.innerHTML = '<div class="loading-details"><i class="fas fa-spinner fa-spin"></i> Betöltés...</div>';
                 refreshMatches();
@@ -290,6 +435,8 @@
             matchesContainer.innerHTML = html;
             
             attachMatchClickHandlers();
+            applyLeagueStates();
+            applySearchFilter();
             
             if (typeof window.refreshAllOddsButtons === 'function') {
                 window.refreshAllOddsButtons(50);
@@ -639,18 +786,23 @@
                 matchesContainer.innerHTML = '<div class="no-matches"><i class="fas fa-futbol" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i>' + t('live.noLiveAnySport', 'Jelenleg nincs élő meccs egyetlen sportágban sem.') + '</div>';
             }
             // Feed betöltése MIUTÁN a currentSportId be van állítva
-            // Ha van localStorage cache, azonnal mutatjuk
-            if (currentSportId && feedItemsCache[currentSportId]) {
-                renderScoreFeed(feedItemsCache[currentSportId]);
-            }
+            // Nem renderelünk cache-ből — várunk a friss szerver adatra
             loadTickerAndUpcoming();
         });
     
     // ===== EREDMÉNY FEED + KÖZELGŐ MECCSEK =====
     let serverTimeOffset = 0;
     const dismissedIds = new Set();
+    let feedHovered = false; // Feed frissítés szüneteltetése hover alatt
     // Sportonként külön kezdőidő — mikor lett először kiválasztva az adott sport
     const sportFeedStartTimes = new Map();
+
+    // Hover figyelés: ne frissüljön a feed amíg a user fölötte van
+    const feedPanel = document.getElementById('score-feed-panel');
+    if (feedPanel) {
+        feedPanel.addEventListener('mouseenter', () => { feedHovered = true; });
+        feedPanel.addEventListener('mouseleave', () => { feedHovered = false; });
+    }
 
     // ── localStorage persistence ──
     const FEED_STORAGE_KEY = 'bmb_feed_cache';
@@ -700,10 +852,26 @@
 
     function getFeedStartTime(sportId) {
         if (!sportFeedStartTimes.has(sportId)) {
-            // Első kiválasztáskor: utolsó 1 perc változásait mutatjuk (nem üres, de nem is 5 perc)
+            // Első kiválasztáskor: utolsó 1 perc változásait mutatjuk
+            // Mindig az aktuális serverTimeOffset-et használjuk (ne legyen rossz ha 0 volt induláskor)
             sportFeedStartTimes.set(sportId, Math.floor(Date.now() / 1000) + serverTimeOffset - 60);
         }
         return sportFeedStartTimes.get(sportId);
+    }
+
+    // serverTimeOffset frissítése simítással (ne ugrálja az eltelt idő számlálót)
+    let offsetSynced = false;
+    function updateServerTimeOffset(serverTime) {
+        const newOffset = serverTime - Math.floor(Date.now() / 1000);
+        if (!offsetSynced) {
+            // Első szinkron: elfogadjuk az értéket
+            serverTimeOffset = newOffset;
+            offsetSynced = true;
+        } else if (Math.abs(newOffset - serverTimeOffset) > 5) {
+            // Csak nagy eltérés (>5s) esetén frissítünk (pl. szerver óra változás)
+            serverTimeOffset = newOffset;
+        }
+        // Kis eltérést (hálózati jitter) figyelmen kívül hagyjuk
     }
 
     function loadTickerAndUpcoming() {
@@ -713,7 +881,7 @@
             .then(r => r.json())
             .then(data => {
                 if (data.serverTime) {
-                    serverTimeOffset = data.serverTime - Math.floor(Date.now() / 1000);
+                    updateServerTimeOffset(data.serverTime);
                 }
                 const tickerItems = data.ticker || [];
                 // Mentés sportonkénti cache-be
@@ -728,6 +896,8 @@
     function renderScoreFeed(items) {
         const container = document.getElementById('goal-toast-container');
         if (!container) return;
+        // Ha a user a feed felett van egérrel, ne rendereljünk (ne tűnjön el elem kattintás közben)
+        if (feedHovered) return;
 
         // Szűrés: csak az adott sport kiválasztása UTÁNI + nem elrejtett elemek
         const startTime = getFeedStartTime(currentSportId);
@@ -754,14 +924,22 @@
         const dataMap = new Map();
         visible.forEach(item => dataMap.set(item.id, item));
 
-        // 1) Lejárt elemek törlése (amiket a backend már nem küld)
+        // 1) Lejárt elemek eltüntetése fade-out animációval (ne tűnjenek el hirtelen)
         container.querySelectorAll('.goal-toast[data-id]').forEach(el => {
             if (!dataMap.has(el.getAttribute('data-id'))) {
-                el.remove();
+                if (el.classList.contains('goal-toast-removing')) return; // már törlés alatt
+                el.classList.add('goal-toast-removing');
+                el.style.animation = 'goalItemFadeOut 0.4s ease forwards';
+                setTimeout(() => {
+                    el.remove();
+                    if (!container.querySelector('.goal-toast')) {
+                        container.innerHTML = '<div class="score-feed-empty"><i class="fas fa-futbol"></i>Még nincs eredmény változás</div>';
+                    }
+                }, 400);
             }
         });
 
-        // 2) Létező elemek frissítése (eredmény, élő idő változhat)
+        // 2) Létező elemek frissítése (eredmény, élő idő, eltelt idő, gólcsapat változhat)
         const existingIds = new Set();
         container.querySelectorAll('.goal-toast[data-id]').forEach(el => {
             const id = el.getAttribute('data-id');
@@ -773,6 +951,19 @@
             if (scoreEl && scoreEl.textContent !== item.score) scoreEl.textContent = item.score;
             const timeEl = el.querySelector('.goal-toast-time');
             if (timeEl && timeEl.textContent !== (item.liveTime || '')) timeEl.textContent = item.liveTime || '';
+            // Eltelt idő timestamp frissítése (új gól → ts változik)
+            const elapsedEl = el.querySelector('.goal-toast-elapsed');
+            if (elapsedEl && item.ts) {
+                const oldTs = elapsedEl.getAttribute('data-ts');
+                if (oldTs !== String(item.ts)) {
+                    elapsedEl.setAttribute('data-ts', item.ts);
+                }
+            }
+            // Gólcsapat frissítése (ha más csapat szerzett újabb gólt)
+            const titleEl = el.querySelector('.goal-toast-title strong');
+            if (titleEl && item.goalTeam && titleEl.textContent !== item.goalTeam) {
+                titleEl.textContent = item.goalTeam;
+            }
         });
 
         // 3) Új elemek hozzáadása (amiket a DOM még nem tartalmaz)
@@ -784,8 +975,9 @@
             const away = (teams[1] || '').trim();
 
             const el = document.createElement('div');
-            el.className = 'goal-toast goal-toast-new';
+            el.className = 'goal-toast goal-toast-new goal-toast-clickable';
             el.setAttribute('data-id', item.id);
+            el.setAttribute('data-match-id', item.matchId || 0);
 
             // Sport-specifikus ikon és szöveg
             const icon = item.sportIcon ? `<i class="fas ${escapeHtml(item.sportIcon)}"></i>` : '⚽';
@@ -807,12 +999,19 @@
                 <button class="goal-toast-close">&times;</button>
             `;
 
-            el.querySelector('.goal-toast-close').addEventListener('click', () => {
+            el.querySelector('.goal-toast-close').addEventListener('click', (e) => {
+                e.stopPropagation();
                 dismissedIds.add(item.id);
                 el.remove();
                 if (!container.querySelector('.goal-toast')) {
                     container.innerHTML = '<div class="score-feed-empty"><i class="fas fa-futbol"></i>Még nincs eredmény változás</div>';
                 }
+            });
+
+            // Kattintás a feed elemre → meccs részletek
+            el.addEventListener('click', function() {
+                const matchId = parseInt(this.getAttribute('data-match-id'));
+                if (matchId) loadMatchDetails(matchId);
             });
 
             container.prepend(el);
@@ -887,6 +1086,8 @@
     autoRefreshInterval = setInterval(() => {
         if (viewingMatchDetails) {
             refreshMatchDetails();
+            // Feed frissítés meccs részletek módban is (ne fagyjon be)
+            loadTickerAndUpcoming();
         } else {
             fetchLiveSportCounts().then(liveSports => {
                 buildSportsNav(liveSports);

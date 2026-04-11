@@ -587,13 +587,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     userBalance = Math.max(0, (parseFloat(userBalance) || 0) - stake);
                 }
 
-                const usernameEl = document.getElementById('userMenuUsername');
-                if (usernameEl) {
-                    const formatted = userBalance.toLocaleString('hu-HU', {
-                        style: 'currency',
-                        currency: 'HUF'
-                    }).replace('Ft', 'FT').trim();
-                    usernameEl.textContent = formatted;
+                const walletEl = document.getElementById('sessionBetDisplay');
+                if (walletEl) {
+                    walletEl.textContent = userBalance.toLocaleString('hu-HU', {
+                        maximumFractionDigits: 0,
+                        minimumFractionDigits: 0
+                    }) + ' FT';
                 }
 
                 updatePlaceBetButton();
@@ -607,13 +606,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             const freshBalance = parseFloat(me.user.balance) || 0;
                             userBalance = freshBalance;
 
-                            const liveUsernameEl = document.getElementById('userMenuUsername');
-                            if (liveUsernameEl) {
-                                const freshFormatted = freshBalance.toLocaleString('hu-HU', {
-                                    style: 'currency',
-                                    currency: 'HUF'
-                                }).replace('Ft', 'FT').trim();
-                                liveUsernameEl.textContent = freshFormatted;
+                            const liveWalletEl = document.getElementById('sessionBetDisplay');
+                            if (liveWalletEl) {
+                                liveWalletEl.textContent = freshBalance.toLocaleString('hu-HU', {
+                                    maximumFractionDigits: 0,
+                                    minimumFractionDigits: 0
+                                }) + ' FT';
                             }
                             updatePlaceBetButton();
                         }
@@ -874,8 +872,22 @@ document.addEventListener('DOMContentLoaded', function() {
                         'Sikeres Cash Out! ' + parseFloat(data.cashout_amount).toLocaleString('hu-HU') + ' Ft jóváírva.',
                         'Cash Out'
                     );
+
+                    // Egyenleg azonnali frissítése
+                    if (typeof data.new_balance === 'number' && !Number.isNaN(data.new_balance)) {
+                        userBalance = data.new_balance;
+                        const walletEl = document.getElementById('sessionBetDisplay');
+                        if (walletEl) {
+                            walletEl.textContent = userBalance.toLocaleString('hu-HU', {
+                                maximumFractionDigits: 0,
+                                minimumFractionDigits: 0
+                            }) + ' FT';
+                        }
+                    }
+                    document.dispatchEvent(new CustomEvent('balance:changed'));
+
                     loadBettingHistory();
-                    checkLoginStatus(); // Egyenleg frissítés
+                    checkLoginStatus();
                 } else {
                     BmbPopup.error(data.message || 'Cash out sikertelen', 'Hiba');
                     if (btn) {

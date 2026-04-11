@@ -16,7 +16,7 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 // Felhasználó adatainak lekérése
-$query = "SELECT id, username, email, full_name, mobile_number as phone, country, city, postal_code, address, birth_date, created_at, data_verified FROM Users WHERE id = ?";
+$query = "SELECT id, username, email, full_name, mobile_number as phone, country, city, postal_code, address, birth_date, created_at, data_verified, bank_statement_file FROM Users WHERE id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -37,12 +37,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
         exit();
     }
 
+    // Bankszámlakivonat feltöltés kezelése
+    $bank_statement_path = $user['bank_statement_file'] ?? null; // meglévő fájl megtartása
+    if (isset($_FILES['bank_statement']) && $_FILES['bank_statement']['error'] === UPLOAD_ERR_OK) {
+        $allowed_types = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+        $max_size = 5 * 1024 * 1024; // 5 MB
+        $file_type = $_FILES['bank_statement']['type'];
+        $file_size = $_FILES['bank_statement']['size'];
+        $file_ext = strtolower(pathinfo($_FILES['bank_statement']['name'], PATHINFO_EXTENSION));
+
+        if (!in_array($file_type, $allowed_types) || !in_array($file_ext, ['pdf', 'jpg', 'jpeg', 'png', 'webp'])) {
+            $_SESSION['error_message'] = "A bankszámlakivonat csak PDF, JPG, PNG vagy WEBP formátumban tölthető fel!";
+            header("Location: personal_data.php");
+            exit();
+        }
+        if ($file_size > $max_size) {
+            $_SESSION['error_message'] = "A fájl mérete maximum 5 MB lehet!";
+            header("Location: personal_data.php");
+            exit();
+        }
+
+        $upload_dir = "../../backend/uploads/bank_statements/";
+        if (!is_dir($upload_dir)) {
+            mkdir($upload_dir, 0755, true);
+        }
+
+        // Régi fájl törlése ha van
+        if ($bank_statement_path && file_exists($upload_dir . $bank_statement_path)) {
+            unlink($upload_dir . $bank_statement_path);
+        }
+
+        $new_filename = 'bank_' . $user_id . '_' . time() . '.' . $file_ext;
+        if (move_uploaded_file($_FILES['bank_statement']['tmp_name'], $upload_dir . $new_filename)) {
+            $bank_statement_path = $new_filename;
+        } else {
+            $_SESSION['error_message'] = "Hiba a fájl feltöltése során!";
+            header("Location: personal_data.php");
+            exit();
+        }
+    }
+
     // Token generálás
     $token = bin2hex(random_bytes(32));
 
-    $update_query = "UPDATE Users SET country = ?, city = ?, postal_code = ?, address = ?, data_verification_token = ? WHERE id = ?";
+    $update_query = "UPDATE Users SET country = ?, city = ?, postal_code = ?, address = ?, data_verification_token = ?, bank_statement_file = ? WHERE id = ?";
     $update_stmt = $conn->prepare($update_query);
-    $update_stmt->bind_param("sssssi", $country, $city, $postal_code, $address, $token, $user_id);
+    $update_stmt->bind_param("ssssssi", $country, $city, $postal_code, $address, $token, $bank_statement_path, $user_id);
     
     if ($update_stmt->execute()) {
         // Email küldés adminnak a bmbugyfelszolgalat@gmail.com címre
@@ -69,6 +109,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
 
             $mail->isHTML(true);
             $mail->Subject = 'Személyes adatok ellenőrzése - ' . htmlspecialchars($user['username']);
+
+            // Bankszámlakivonat csatolása ha van
+            $hasAttachment = false;
+            if ($bank_statement_path) {
+                $attachment_path = "../../backend/uploads/bank_statements/" . $bank_statement_path;
+                if (file_exists($attachment_path)) {
+                    $mail->addAttachment($attachment_path, 'bankszamlakivonat_' . $user['username'] . '.' . pathinfo($bank_statement_path, PATHINFO_EXTENSION));
+                    $hasAttachment = true;
+                }
+            }
+
+            $bankStatementRow = $hasAttachment
+                ? '<tr><td><strong>Bankszámlakivonat</strong></td><td>📎 Csatolva az emailhez</td></tr>'
+                : '<tr><td><strong>Bankszámlakivonat</strong></td><td style="color:#dc3545;">Nincs feltöltve</td></tr>';
+
             $mail->Body = '
                 <h2>Személyes adatok ellenőrzési kérelem</h2>
                 <p>A következő felhasználó kéri az adatainak ellenőrzését:</p>
@@ -80,6 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                     <tr><td><strong>Város</strong></td><td>' . htmlspecialchars($city) . '</td></tr>
                     <tr><td><strong>Irányítószám</strong></td><td>' . htmlspecialchars($postal_code) . '</td></tr>
                     <tr><td><strong>Cím</strong></td><td>' . htmlspecialchars($address) . '</td></tr>
+                    ' . $bankStatementRow . '
                 </table>
                 <br>
                 <p>Ha az adatok helyesek, kattints az alábbi gombra a jóváhagyáshoz:</p>
@@ -161,7 +217,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                         </div>
                     <?php endif; ?>
                     
-                    <form method="POST" class="profile-form">
+                    <form method="POST" enctype="multipart/form-data" class="profile-form">
                         <div class="form-group mb-3">
                             <label for="username">Felhasználónév</label>
                             <input type="text" class="form-control" id="username" value="<?php echo htmlspecialchars($user['username']); ?>" disabled>
@@ -209,6 +265,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                             <input type="text" class="form-control" id="address" name="address" value="<?php echo htmlspecialchars($user['address'] ?? ''); ?>">
                         </div>
                         
+                        <div class="form-group mb-3">
+                            <label for="bank_statement"><i class="fas fa-file-invoice"></i> Bankszámlakivonat</label>
+                            <?php if (!empty($user['bank_statement_file'])): ?>
+                                <div class="mb-2">
+                                    <span class="badge bg-success"><i class="fas fa-check"></i> Feltöltve</span>
+                                    <small style="color:#aaa; margin-left:8px;"><?php echo htmlspecialchars($user['bank_statement_file']); ?></small>
+                                </div>
+                            <?php endif; ?>
+                            <input type="file" class="form-control" id="bank_statement" name="bank_statement" accept=".pdf,.jpg,.jpeg,.png,.webp">
+                            <small class="form-text" style="color: #aaa;">PDF, JPG, PNG vagy WEBP — max. 5 MB. <?php echo !empty($user['bank_statement_file']) ? 'Új feltöltéssel a régi felülíródik.' : 'A kifizetéshez szükséges.'; ?></small>
+                        </div>
+
                         <div class="form-group mb-3">
                             <label for="birth_date">Születési Dátum</label>
                             <input type="date" class="form-control" id="birth_date" value="<?php echo htmlspecialchars($user['birth_date'] ?? ''); ?>" disabled>

@@ -376,6 +376,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (matchId) loadMatchDetails(matchId);
             });
         });
+
+        // League-header kattintás → expand/collapse
+        container.querySelectorAll('.league-header').forEach(function(header) {
+            header.addEventListener('click', function() {
+                var group = header.closest('.league-group');
+                if (group) group.classList.toggle('expanded');
+            });
+        });
     }
 
     function loadMatchDetails(eventId) {

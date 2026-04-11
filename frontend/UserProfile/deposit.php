@@ -42,6 +42,7 @@ $bonus_balance = $hasBonusBalance ? ($user['bonus_balance'] ?? 0) : 0;
 $winnings_balance = $hasWinningsBalance ? ($user['winnings_balance'] ?? 0) : 0;
 $deposited_balance = max(0, (float)$balance - (float)$winnings_balance);
 $total_deposit_and_winnings = (float)$deposited_balance + (float)$winnings_balance;
+$total_all = $total_deposit_and_winnings + (float)$bonus_balance;
 $stmt->close();
 
 // Aktív befizetési bónuszok
@@ -71,35 +72,6 @@ $bonus_stmt->close();
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
-        .deposit-balance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
-        .deposit-balance-card {
-            background: #f8f9fa;
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 16px;
-            text-align: center;
-        }
-        .deposit-balance-card .balance-label {
-            font-size: 0.72rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #666;
-            margin-bottom: 4px;
-        }
-        .deposit-balance-card .balance-value {
-            font-size: 1.3rem;
-            font-weight: 800;
-            color: #333;
-        }
-        .deposit-balance-card.total {
-            grid-column: 1 / -1;
-            background: #007bff;
-            border-color: #007bff;
-        }
-        .deposit-balance-card.total .balance-label { color: rgba(255,255,255,0.8); }
-        .deposit-balance-card.total .balance-value { color: #fff; }
-
         .payment-methods-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
         .payment-method-card {
             background: #fff;
@@ -241,7 +213,6 @@ $bonus_stmt->close();
         }
 
         @media (max-width: 576px) {
-            .deposit-balance-grid { grid-template-columns: 1fr; }
             .payment-methods-grid { grid-template-columns: 1fr; }
             .deposit-quick-btns { flex-wrap: wrap; }
             .deposit-quick-btn { min-width: 60px; flex: 0 0 calc(33% - 8px); }
@@ -276,24 +247,32 @@ $bonus_stmt->close();
                     <h1><i class="fas fa-plus-circle"></i> Befizetés</h1>
 
                     <!-- Egyenleg kártyák -->
-                    <div class="deposit-balance-grid">
-                        <div class="deposit-balance-card">
-                            <div class="balance-label">Befizetett Egyenleg</div>
-                            <div class="balance-value"><?php echo number_format($deposited_balance, 0, ',', ' '); ?> FT</div>
-                        </div>
-                        <div class="deposit-balance-card">
-                            <div class="balance-label">Nyereményegyenleg</div>
-                            <div class="balance-value"><?php echo number_format($winnings_balance, 0, ',', ' '); ?> FT</div>
-                        </div>
-                        <?php if ($hasBonusBalance): ?>
-                        <div class="deposit-balance-card">
-                            <div class="balance-label">Bónusz Egyenleg</div>
-                            <div class="balance-value"><?php echo number_format($bonus_balance, 0, ',', ' '); ?> FT</div>
-                        </div>
-                        <?php endif; ?>
-                        <div class="deposit-balance-card total">
-                            <div class="balance-label">Összes Egyenleg</div>
-                            <div class="balance-value"><?php echo number_format($total_deposit_and_winnings, 0, ',', ' '); ?> FT</div>
+                    <div class="alert alert-info py-3">
+                        <div class="row g-2">
+                            <div class="col-12 col-md-6">
+                                <div class="p-2 rounded" style="background: rgba(13, 110, 253, 0.12); border: 1px solid rgba(13, 110, 253, 0.25);">
+                                    <div style="font-weight:700; font-size: 0.9rem;">BEFIZETETT EGYENLEG</div>
+                                    <div class="mt-1"><span class="badge bg-secondary"><?php echo number_format($deposited_balance, 0, ',', ' '); ?> FT</span></div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="p-2 rounded" style="background: rgba(25, 135, 84, 0.12); border: 1px solid rgba(25, 135, 84, 0.25);">
+                                    <div style="font-weight:700; font-size: 0.9rem;">NYEREMÉNYEGYENLEG</div>
+                                    <div class="mt-1"><span class="badge bg-success"><?php echo number_format($winnings_balance, 0, ',', ' '); ?> FT</span></div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="p-2 rounded" style="background: rgba(13, 110, 253, 0.12); border: 1px solid rgba(13, 110, 253, 0.25);">
+                                    <div style="font-weight:700; font-size: 0.9rem;">BEFIZETETT ÉS NYEREMÉNYEGYENLEG ÖSSZESEN</div>
+                                    <div class="mt-1"><span class="badge bg-primary"><?php echo number_format($total_deposit_and_winnings, 0, ',', ' '); ?> FT</span></div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="p-2 rounded" style="background: rgba(255, 193, 7, 0.14); border: 1px solid rgba(255, 193, 7, 0.35);">
+                                    <div style="font-weight:700; font-size: 0.9rem;">BÓNUSZ EGYENLEG (NEM KIUTALHATÓ)</div>
+                                    <div class="mt-1"><span class="badge bg-warning text-dark"><?php echo number_format($bonus_balance, 0, ',', ' '); ?> FT</span></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

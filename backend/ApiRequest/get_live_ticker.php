@@ -168,6 +168,7 @@ try {
 
         $result['ticker'][] = [
             'id'        => 'goal_' . $aid,
+            'matchId'   => (int)$aid,
             'name'      => $goal['matchName'],
             'score'     => $currentScore,
             'prevScore' => $goal['prevScore'],
