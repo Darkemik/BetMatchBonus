@@ -1223,5 +1223,16 @@ VALUES
   0                           -- Csak admin
 );
 -- ============================================================
--- 30) USERS TABLE - Hiányzó oszlopok hozzáadása
+-- 30) Hiányzó oszlopok hozzáadása
 -- ============================================================
+ALTER TABLE Transactions
+  ADD COLUMN IF NOT EXISTS account_holder VARCHAR(100) DEFAULT NULL AFTER description,
+  ADD COLUMN IF NOT EXISTS account_number VARCHAR(100) DEFAULT NULL AFTER account_holder,
+  ADD COLUMN IF NOT EXISTS approval_token VARCHAR(64)  DEFAULT NULL AFTER account_number;
+
+ALTER TABLE Transactions
+  MODIFY COLUMN status ENUM('pending', 'completed', 'failed', 'cancelled', 'rejected') DEFAULT 'pending';
+
+ALTER TABLE Users
+  ADD COLUMN IF NOT EXISTS failed_login_attempts INT NOT NULL DEFAULT 0 AFTER password_changed_at,
+  ADD COLUMN IF NOT EXISTS login_locked_until DATETIME DEFAULT NULL AFTER failed_login_attempts;

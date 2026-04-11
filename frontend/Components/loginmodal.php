@@ -30,6 +30,9 @@
               👁
             </button>
           </div>
+          <div class="capslock-warning" id="capslock-login" style="display:none;">
+            <i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="common.capsLockOn">A Caps Lock be van kapcsolva!</span>
+          </div>
 
           <div class="form-check mb-2">
             <input type="checkbox" class="form-check-input" id="rememberMe" name="rememberMe" value="1">

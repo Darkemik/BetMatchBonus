@@ -96,6 +96,16 @@
 #forgotPasswordModal .form-check-label,
 #forgotUsernameModal .form-check-label {
     color: #ffffff !important;
+    cursor: pointer;
+    transition: color 0.2s, text-decoration 0.2s;
+}
+#loginModal .form-check-label:hover,
+#registerModal .form-check-label:hover,
+#registerModal2 .form-check-label:hover,
+#forgotPasswordModal .form-check-label:hover,
+#forgotUsernameModal .form-check-label:hover {
+    color: #c0c0c0 !important;
+    text-decoration: underline;
 }
 
 #loginModal .form-check-input,
@@ -105,6 +115,16 @@
 #forgotUsernameModal .form-check-input {
     background-color: #262c35;
     border-color: rgba(255, 162, 0, 0.3);
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+#loginModal .form-check-input:hover,
+#registerModal .form-check-input:hover,
+#registerModal2 .form-check-input:hover,
+#forgotPasswordModal .form-check-input:hover,
+#forgotUsernameModal .form-check-input:hover {
+    border-color: #ffa200;
+    box-shadow: 0 0 4px rgba(255, 162, 0, 0.3);
 }
 
 #loginModal .form-check-input:checked,
@@ -112,8 +132,15 @@
 #registerModal2 .form-check-input:checked,
 #forgotPasswordModal .form-check-input:checked,
 #forgotUsernameModal .form-check-input:checked {
-    background-color: #ffa200;
-    border-color: #ffa200;
+    background-color: #9b59b6;
+    border-color: #9b59b6;
+}
+#loginModal .form-check-input:checked + .form-check-label,
+#registerModal .form-check-input:checked + .form-check-label,
+#registerModal2 .form-check-input:checked + .form-check-label,
+#forgotPasswordModal .form-check-input:checked + .form-check-label,
+#forgotUsernameModal .form-check-input:checked + .form-check-label {
+    color: #bb86fc !important;
 }
 
 .modal-title img {
@@ -130,6 +157,25 @@
 
 .eye-slash-icon {
     display: none;
+}
+
+/* ── Caps Lock figyelmeztetés ── */
+.capslock-warning {
+    color: #ffc107;
+    font-size: 13px;
+    font-weight: 500;
+    margin: 4px 0 8px 2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    animation: capsPulse 0.3s ease-out;
+}
+.capslock-warning i {
+    font-size: 14px;
+}
+@keyframes capsPulse {
+    0%   { opacity: 0; transform: translateY(-4px); }
+    100% { opacity: 1; transform: translateY(0); }
 }
 
 #registerModalResult,

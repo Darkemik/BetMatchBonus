@@ -28,7 +28,7 @@
                     <input type="tel" name="phone" id="modal-phone" class="form-control mb-3" placeholder="Pl.:06308469165" data-i18n-placeholder="registerModal.phonePlaceholder" inputmode="numeric" pattern="[0-9]+" minlength="11" required>
 
                     <label class="form-label" data-i18n="registerModal.password">Jelszó</label>
-                    <div class="input-group mb-3">
+                    <div class="input-group mb-1">
                         <input type="password" id="modal-password" name="password" class="form-control" placeholder="Jelszó" data-i18n-placeholder="registerModal.passwordPlaceholder" required>
                         <button type="button" class="btn btn-outline-secondary toggle-password" data-target="modal-password" tabindex="-1">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="eye-icon" viewBox="0 0 16 16">
@@ -43,8 +43,12 @@
                         </button>
                     </div>
 
+                    <div class="capslock-warning" id="capslock-register" style="display:none;">
+                        <i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="common.capsLockOn">A Caps Lock be van kapcsolva!</span>
+                    </div>
+
                     <label class="form-label" data-i18n="registerModal.passwordAgain">Jelszó újra</label>
-                    <div class="input-group mb-3">
+                    <div class="input-group mb-1">
                         <input type="password" id="modal-password2" class="form-control" placeholder="Jelszó újra" data-i18n-placeholder="registerModal.passwordAgainPlaceholder" required>
                         <button type="button" class="btn btn-outline-secondary toggle-password" data-target="modal-password2" tabindex="-1">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="eye-icon" viewBox="0 0 16 16">
@@ -57,6 +61,9 @@
                                 <path d="M3.35 5.47c-.18.16-.353.322-.518.487A13.134 13.134 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7.029 7.029 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12-.708.708z"/>
                             </svg>
                         </button>
+                    </div>
+                    <div class="capslock-warning" id="capslock-register2" style="display:none;">
+                        <i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="common.capsLockOn">A Caps Lock be van kapcsolva!</span>
                     </div>
 
                     <p id="registerModalResult"></p>

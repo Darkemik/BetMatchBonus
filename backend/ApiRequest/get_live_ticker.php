@@ -38,7 +38,7 @@ try {
           AND e.name IS NOT NULL AND TRIM(e.name) != ''
           AND e.home_score IS NOT NULL AND e.away_score IS NOT NULL
         ORDER BY e.updated_at DESC
-        LIMIT 100
+        LIMIT 500
     ");
     $stmtLive->execute();
     $resLive = $stmtLive->get_result();

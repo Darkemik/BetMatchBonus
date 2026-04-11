@@ -1,4 +1,22 @@
 document.addEventListener('DOMContentLoaded', function () {
+  // ── Caps Lock detektálás ──
+  (function() {
+    var pwField = document.getElementById('login-password');
+    var warning = document.getElementById('capslock-login');
+    if (!pwField || !warning) return;
+    pwField.addEventListener('keydown', function(e) {
+      if (e.getModifierState && typeof e.getModifierState === 'function') {
+        warning.style.display = e.getModifierState('CapsLock') ? 'flex' : 'none';
+      }
+    });
+    pwField.addEventListener('keyup', function(e) {
+      if (e.getModifierState && typeof e.getModifierState === 'function') {
+        warning.style.display = e.getModifierState('CapsLock') ? 'flex' : 'none';
+      }
+    });
+    pwField.addEventListener('blur', function() { warning.style.display = 'none'; });
+  })();
+
   // váltás regisztrációra
   var switchBtn = document.getElementById('switchToRegister');
   if (switchBtn) {

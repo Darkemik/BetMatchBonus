@@ -29,7 +29,8 @@ if ($login === '' || $password === '') {
   exit;
 }
 
-$stmt = $conn->prepare("SELECT id, username, email, password_hash, full_name, birth_date, is_active
+$stmt = $conn->prepare("SELECT id, username, email, password_hash, full_name, birth_date, is_active,
+                               failed_login_attempts, login_locked_until
                         FROM Users
                         WHERE username = ? OR email = ?
                         LIMIT 1");
@@ -39,9 +40,58 @@ $res = $stmt->get_result();
 $user = $res->fetch_assoc();
 $stmt->close();
 
+// Fiók zárolás ellenőrzése
+if ($user && $user['login_locked_until'] !== null) {
+  $lockedUntil = strtotime($user['login_locked_until']);
+  if ($lockedUntil > time()) {
+    $remaining = ceil(($lockedUntil - time()) / 60);
+    echo json_encode(['success' => false, 'message' => "A fiókod ideiglenesen zárolva van. Próbáld újra {$remaining} perc múlva."]);
+    exit;
+  } else {
+    // Zárolás lejárt — reset
+    $stmtReset = $conn->prepare("UPDATE Users SET failed_login_attempts = 0, login_locked_until = NULL WHERE id = ?");
+    $stmtReset->bind_param("i", $user['id']);
+    $stmtReset->execute();
+    $stmtReset->close();
+    $user['failed_login_attempts'] = 0;
+  }
+}
+
+$maxAttempts = 3;
+
 if (!$user || !password_verify($password, $user['password_hash'])) {
+  // Sikertelen bejelentkezés — számláló növelése
+  if ($user) {
+    $newAttempts = (int)$user['failed_login_attempts'] + 1;
+    if ($newAttempts >= $maxAttempts) {
+      // Zárolás 1 órára
+      $lockUntil = date('Y-m-d H:i:s', time() + 3600);
+      $stmtLock = $conn->prepare("UPDATE Users SET failed_login_attempts = ?, login_locked_until = ? WHERE id = ?");
+      $stmtLock->bind_param("isi", $newAttempts, $lockUntil, $user['id']);
+      $stmtLock->execute();
+      $stmtLock->close();
+      echo json_encode(['success' => false, 'message' => 'Túl sok sikertelen próbálkozás! A fiókod 1 órára zárolva lett.']);
+      exit;
+    } else {
+      $stmtFail = $conn->prepare("UPDATE Users SET failed_login_attempts = ? WHERE id = ?");
+      $stmtFail->bind_param("ii", $newAttempts, $user['id']);
+      $stmtFail->execute();
+      $stmtFail->close();
+      $left = $maxAttempts - $newAttempts;
+      echo json_encode(['success' => false, 'message' => "Hibás felhasználónév/email vagy jelszó. Még {$left} próbálkozásod van."]);
+      exit;
+    }
+  }
   echo json_encode(['success' => false, 'message' => 'Hibás felhasználónév/email vagy jelszó.']);
   exit;
+}
+
+// Sikeres bejelentkezés — reset attempts
+if ((int)$user['failed_login_attempts'] > 0) {
+  $stmtReset = $conn->prepare("UPDATE Users SET failed_login_attempts = 0, login_locked_until = NULL WHERE id = ?");
+  $stmtReset->bind_param("i", $user['id']);
+  $stmtReset->execute();
+  $stmtReset->close();
 }
 
 if ((int)$user['is_active'] !== 1) {
@@ -75,16 +125,17 @@ $stmtCheckWallet->close();
 if ($rememberMe) {
   $rememberToken = bin2hex(random_bytes(32));
   $tokenHash = hash('sha256', $rememberToken);
-  $expiry = time() + (30 * 24 * 60 * 60); // 30 nap
+  $tokenExpiry = time() + (10 * 60 * 60); // 10 óra — DB token lejárat
+  $cookieExpiry = time() + (10 * 365 * 24 * 60 * 60); // ~10 év — cookie "örökre"
   
-  // Token mentése az adatbázisba
+  // Token mentése az adatbázisba (10 óra érvényesség)
   $stmt = $conn->prepare("UPDATE Users SET remember_token = ?, remember_expiry = FROM_UNIXTIME(?) WHERE id = ?");
-  $stmt->bind_param("sii", $tokenHash, $expiry, $user['id']);
+  $stmt->bind_param("sii", $tokenHash, $tokenExpiry, $user['id']);
   $stmt->execute();
   $stmt->close();
   
-  // Cookie beállítása
-  setcookie('remember_token', $rememberToken, $expiry, '/', '', false, true);
+  // Cookie beállítása (örökre megmarad)
+  setcookie('remember_token', $rememberToken, $cookieExpiry, '/', '', false, true);
 } else {
   // Ha nincs bejelölve, töröljük a régi remember_token-t az adatbázisból és a cookie-t
   $stmt = $conn->prepare("UPDATE Users SET remember_token = NULL, remember_expiry = NULL WHERE id = ?");

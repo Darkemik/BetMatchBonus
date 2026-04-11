@@ -25,6 +25,30 @@ if (!$isCli) {
 
 require_once __DIR__ . '/connect.php';
 
+// ── 0. SEED CHECK — Ha üresek a táblák, automatikusan feltölti ──
+try {
+    $needPostal = $conn->query("SHOW TABLES LIKE 'PostalCodes'")->num_rows === 0
+                  || $conn->query("SELECT 1 FROM PostalCodes LIMIT 1")->num_rows === 0;
+    if ($needPostal) {
+        require_once __DIR__ . '/DataBase/seed_postal_codes.php';
+        $results[] = ['step' => 'Seed: PostalCodes', 'status' => 'ok'];
+    }
+
+    $needCities = $conn->query("SELECT 1 FROM Cities LIMIT 1")->num_rows === 0;
+    if ($needCities) {
+        require_once __DIR__ . '/DataBase/seed_cities.php';
+        $results[] = ['step' => 'Seed: Cities', 'status' => 'ok'];
+    }
+
+    $needAdmins = $conn->query("SELECT 1 FROM AdminUsers LIMIT 1")->num_rows === 0;
+    if ($needAdmins) {
+        require_once __DIR__ . '/DataBase/seed_admins.php';
+        $results[] = ['step' => 'Seed: AdminUsers', 'status' => 'ok'];
+    }
+} catch (Exception $e) {
+    $results[] = ['step' => 'Seed check', 'status' => 'error', 'message' => $e->getMessage()];
+}
+
 // ── 1. BÓNUSZ FRISSÍTÉS ─────────────────────────
 $stepStart = microtime(true);
 try {
@@ -109,7 +133,7 @@ try {
     ");
 
     $weekendActive = $isWeekday ? 0 : 1;
-    $conn->query("UPDATE BonusCodes SET is_active = {$weekendActive} WHERE code = 'BONUSZHETVEGE5K'");
+    $conn->query("UPDATE BonusCodes SET is_active = {$weekendActive} WHERE code = 'HETVEGI5K'");
 
     $results[] = [
         'step'    => 'Bónusz frissítés',

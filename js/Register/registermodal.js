@@ -1,4 +1,24 @@
 document.addEventListener('DOMContentLoaded', function () {
+    // ── Caps Lock detektálás ──
+    (function() {
+      var fields = [
+        { input: 'modal-password',  warn: 'capslock-register' },
+        { input: 'modal-password2', warn: 'capslock-register2' }
+      ];
+      fields.forEach(function(f) {
+        var el = document.getElementById(f.input);
+        var w  = document.getElementById(f.warn);
+        if (!el || !w) return;
+        el.addEventListener('keydown', function(e) {
+          if (e.getModifierState) w.style.display = e.getModifierState('CapsLock') ? 'flex' : 'none';
+        });
+        el.addEventListener('keyup', function(e) {
+          if (e.getModifierState) w.style.display = e.getModifierState('CapsLock') ? 'flex' : 'none';
+        });
+        el.addEventListener('blur', function() { w.style.display = 'none'; });
+      });
+    })();
+
     var form = document.getElementById('registerModalForm');
     var result = document.getElementById('registerModalResult');
 
