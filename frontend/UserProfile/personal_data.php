@@ -5,6 +5,9 @@ ini_set('display_errors', 1);
 require_once "../../backend/Auth/check_session.php";
 require_once "../../backend/connect.php";
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception as MailException;
+
 if (!isset($_SESSION['user_id'])) {
     header("Location: /frontend/MainMenu/MainMenu.php");
     exit();
@@ -13,7 +16,7 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 // Felhasználó adatainak lekérése
-$query = "SELECT id, username, email, full_name, mobile_number as phone, country, city, postal_code, address, birth_date, created_at FROM Users WHERE id = ?";
+$query = "SELECT id, username, email, full_name, mobile_number as phone, country, city, postal_code, address, birth_date, created_at, data_verified FROM Users WHERE id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -21,19 +24,75 @@ $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 $stmt->close();
 
-// POST kérelmen adatok módosítása
+// POST kérelmen adatok ellenőrzésre küldése
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     $country = htmlspecialchars($_POST['country'] ?? '');
     $city = htmlspecialchars($_POST['city'] ?? '');
     $postal_code = htmlspecialchars($_POST['postal_code'] ?? '');
     $address = htmlspecialchars($_POST['address'] ?? '');
 
-    $update_query = "UPDATE Users SET country = ?, city = ?, postal_code = ?, address = ? WHERE id = ?";
+    if (empty($country) || empty($city) || empty($postal_code) || empty($address)) {
+        $_SESSION['error_message'] = "Kérjük, töltsd ki az összes lakcímadatot az ellenőrzés kéréséhez!";
+        header("Location: personal_data.php");
+        exit();
+    }
+
+    // Token generálás
+    $token = bin2hex(random_bytes(32));
+
+    $update_query = "UPDATE Users SET country = ?, city = ?, postal_code = ?, address = ?, data_verification_token = ? WHERE id = ?";
     $update_stmt = $conn->prepare($update_query);
-    $update_stmt->bind_param("ssssi", $country, $city, $postal_code, $address, $user_id);
+    $update_stmt->bind_param("sssssi", $country, $city, $postal_code, $address, $token, $user_id);
     
     if ($update_stmt->execute()) {
-        $_SESSION['success_message'] = "Személyes adatok sikeresen frissítve!";
+        // Email küldés adminnak a bmbugyfelszolgalat@gmail.com címre
+        require_once "../../backend/mail_config.php";
+        require_once "../../backend/PHPMailer/Exception.php";
+        require_once "../../backend/PHPMailer/PHPMailer.php";
+        require_once "../../backend/PHPMailer/SMTP.php";
+
+        $approveUrl = SITE_BASE_URL . '/backend/Auth/approve_data_verification.php?token=' . $token;
+
+        try {
+            $mail = new PHPMailer(true);
+            $mail->isSMTP();
+            $mail->Host       = MAIL_SMTP_HOST;
+            $mail->SMTPAuth   = true;
+            $mail->Username   = MAIL_SMTP_USERNAME;
+            $mail->Password   = MAIL_SMTP_PASSWORD;
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = MAIL_SMTP_PORT;
+            $mail->CharSet    = 'UTF-8';
+
+            $mail->setFrom(MAIL_FROM_EMAIL, MAIL_FROM_NAME);
+            $mail->addAddress('bmbugyfelszolgalat@gmail.com', 'BM Ügyfélszolgálat');
+
+            $mail->isHTML(true);
+            $mail->Subject = 'Személyes adatok ellenőrzése - ' . htmlspecialchars($user['username']);
+            $mail->Body = '
+                <h2>Személyes adatok ellenőrzési kérelem</h2>
+                <p>A következő felhasználó kéri az adatainak ellenőrzését:</p>
+                <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;">
+                    <tr><td><strong>Felhasználónév</strong></td><td>' . htmlspecialchars($user['username']) . '</td></tr>
+                    <tr><td><strong>Email</strong></td><td>' . htmlspecialchars($user['email']) . '</td></tr>
+                    <tr><td><strong>Teljes név</strong></td><td>' . htmlspecialchars($user['full_name'] ?? '-') . '</td></tr>
+                    <tr><td><strong>Ország</strong></td><td>' . htmlspecialchars($country) . '</td></tr>
+                    <tr><td><strong>Város</strong></td><td>' . htmlspecialchars($city) . '</td></tr>
+                    <tr><td><strong>Irányítószám</strong></td><td>' . htmlspecialchars($postal_code) . '</td></tr>
+                    <tr><td><strong>Cím</strong></td><td>' . htmlspecialchars($address) . '</td></tr>
+                </table>
+                <br>
+                <p>Ha az adatok helyesek, kattints az alábbi gombra a jóváhagyáshoz:</p>
+                <a href="' . $approveUrl . '" style="display:inline-block;padding:12px 24px;background:#28a745;color:#fff;text-decoration:none;border-radius:6px;font-weight:bold;">✅ Adatok Jóváhagyása</a>
+                <br><br>
+                <p style="color:#888;font-size:12px;">Ha nem hagyod jóvá, nem kell tenned semmit.</p>
+            ';
+
+            $mail->send();
+            $_SESSION['success_message'] = "Az adataid ellenőrzésre elküldtük! Amint az admin jóváhagyja, kifizetést is kezdeményezhetsz.";
+        } catch (MailException $e) {
+            $_SESSION['success_message'] = "Az adataid elmentettük, de az értesítő email küldése sikertelen. Kérjük, próbáld újra később.";
+        }
         header("Location: personal_data.php");
         exit();
     } else {
@@ -76,10 +135,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                 <div class="profile-content">
                     <h1><i class="fas fa-user"></i> Személyes Adatok</h1>
 
+                    <?php if (!(int)($user['data_verified'] ?? 0)): ?>
                     <div class="alert alert-warning" role="alert">
                         <i class="fas fa-exclamation-triangle"></i>
                         A kifizetés előtt kötelező kitölteni a lakcímadatokat (ország, város, irányítószám, cím). A fiókodat egy admin ellenőrzi, hogy a megadott adatok helyesek-e.
                     </div>
+                    <?php else: ?>
+                    <div class="alert alert-success" role="alert">
+                        <i class="fas fa-check-circle"></i>
+                        Az adataid ellenőrizve lettek. Kifizetést kezdeményezhetsz.
+                    </div>
+                    <?php endif; ?>
                     
                     <?php if (isset($_SESSION['success_message'])): ?>
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -154,7 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                             <input type="text" class="form-control" id="created_at" value="<?php echo htmlspecialchars($user['created_at']); ?>" disabled>
                         </div>
                         
-                        <button type="submit" name="update_profile" class="btn btn-primary"><i class="fas fa-save"></i> Adatok Módosítása</button>
+                        <button type="submit" name="update_profile" class="btn btn-primary"><i class="fas fa-check-circle"></i> Adatok Ellenőrzése</button>
                         <a href="personal_data.php" class="btn btn-secondary"><i class="fas fa-undo"></i> Mégse</a>
                     </form>
                 </div>

@@ -1,3 +1,469 @@
+/* ===== EREDMÉNY FEED PANEL (bal oldal) ===== */
+.score-feed-panel {
+    background: linear-gradient(180deg, #1a2233 0%, #151c28 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(76, 175, 80, 0.15);
+    overflow: hidden;
+    max-height: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.score-feed-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.score-feed-list::-webkit-scrollbar {
+    width: 4px;
+}
+.score-feed-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+.score-feed-list::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+}
+
+/* Eredmény feed üres állapot */
+.score-feed-empty {
+    text-align: center;
+    color: #556;
+    padding: 30px 16px;
+    font-size: 13px;
+}
+
+.score-feed-empty i {
+    display: block;
+    font-size: 22px;
+    margin-bottom: 8px;
+    opacity: 0.4;
+}
+
+/* Gól elem a panelben */
+.goal-toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    background: rgba(76, 175, 80, 0.06);
+    border-left: 3px solid #4CAF50;
+}
+
+/* Csak új elemek animálódnak */
+.goal-toast-new {
+    animation: goalItemSlideIn 0.4s ease-out;
+}
+
+.goal-toast-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+    animation: goalPulse 1.5s ease-in-out infinite;
+}
+
+.goal-toast-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.goal-toast-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #4CAF50;
+}
+
+.goal-toast-title strong {
+    color: #fff;
+}
+
+.goal-toast-match {
+    font-size: 11px;
+    color: #8899a6;
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.goal-toast-score {
+    font-weight: 800;
+    color: #f5c518;
+    margin: 0 3px;
+}
+
+.goal-toast-time {
+    color: #e74c3c;
+    font-weight: 600;
+    font-size: 11px;
+    margin-left: 4px;
+}
+
+.goal-toast-elapsed {
+    font-size: 10px;
+    color: #78909c;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 7px;
+    border-radius: 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.goal-toast-close {
+    background: none;
+    border: none;
+    color: #556;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0 2px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: color 0.2s;
+}
+
+.goal-toast-close:hover {
+    color: #e74c3c;
+}
+
+@keyframes goalItemSlideIn {
+    0% { opacity: 0; transform: translateY(-8px); background: rgba(76, 175, 80, 0.2); }
+    100% { opacity: 1; transform: translateY(0); background: rgba(76, 175, 80, 0.06); }
+}
+
+@keyframes goalItemFadeOut {
+    0% { opacity: 1; max-height: 80px; }
+    100% { opacity: 0; max-height: 0; padding: 0; margin: 0; border: 0; overflow: hidden; }
+}
+
+/* ===== ALSÓ SOR: ÉLŐ EREDMÉNYEK + KÖZELGŐ MECCSEK ===== */
+.live-bottom-row {
+    display: flex;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.live-bottom-row > * {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Közös panel fejléc */
+.panel-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    font-weight: 700;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.panel-header-live {
+    color: #4CAF50;
+    background: rgba(76, 175, 80, 0.08);
+}
+
+.panel-header-upcoming {
+    color: #78909c;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.panel-header-upcoming i {
+    color: #f5c518;
+    font-size: 13px;
+}
+
+/* Élő eredmények panel */
+.live-scores-panel {
+    background: linear-gradient(180deg, #1a2233 0%, #151c28 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(231, 76, 60, 0.15);
+    overflow: hidden;
+    max-height: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.live-scores-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.live-scores-list::-webkit-scrollbar {
+    width: 4px;
+}
+.live-scores-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+.live-scores-list::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+}
+
+.live-score-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    transition: background 0.2s;
+}
+
+.live-score-item:last-child {
+    border-bottom: none;
+}
+
+.live-score-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.live-score-icon {
+    color: #4CAF50;
+    font-size: 13px;
+    flex-shrink: 0;
+    width: 18px;
+    text-align: center;
+}
+
+.live-score-teams {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    color: #c0cdd4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.live-score-result {
+    font-weight: 800;
+    font-size: 14px;
+    color: #f5c518;
+    flex-shrink: 0;
+    min-width: 45px;
+    text-align: center;
+}
+
+.live-score-time {
+    font-size: 11px;
+    font-weight: 600;
+    color: #e74c3c;
+    flex-shrink: 0;
+    min-width: 50px;
+    text-align: right;
+}
+
+.live-scores-empty {
+    text-align: center;
+    color: #556;
+    padding: 30px 16px;
+    font-size: 13px;
+}
+
+.live-scores-empty i {
+    display: block;
+    font-size: 24px;
+    margin-bottom: 8px;
+    opacity: 0.4;
+}
+
+/* ── Gól-event elem ── */
+.live-score-item.goal-event {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    background: rgba(76, 175, 80, 0.06);
+    border-left: 3px solid #4CAF50;
+    animation: goalFlashIn 0.6s ease-out;
+}
+
+.goal-flash {
+    font-size: 18px;
+    flex-shrink: 0;
+    animation: goalPulse 1.5s ease-in-out infinite;
+}
+
+.live-score-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.goal-team-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #4CAF50;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.goal-match-info {
+    font-size: 11px;
+    color: #8899a6;
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.goal-score-highlight {
+    font-weight: 800;
+    color: #f5c518;
+}
+
+.live-score-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    flex-shrink: 0;
+    gap: 2px;
+}
+
+.goal-ago {
+    font-size: 10px;
+    font-weight: 700;
+    color: #4CAF50;
+    background: rgba(76, 175, 80, 0.15);
+    padding: 1px 6px;
+    border-radius: 4px;
+}
+
+@keyframes goalFlashIn {
+    0% { background: rgba(76, 175, 80, 0.25); transform: translateX(-4px); }
+    100% { background: rgba(76, 175, 80, 0.06); transform: translateX(0); }
+}
+
+@keyframes goalPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
+
+/* Közelgő meccsek panel */
+.upcoming-section {
+    background: linear-gradient(180deg, #1a2233 0%, #151c28 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+    max-height: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.upcoming-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.upcoming-list::-webkit-scrollbar {
+    width: 4px;
+}
+.upcoming-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+.upcoming-list::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+}
+
+.upcoming-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    transition: background 0.2s;
+    cursor: pointer;
+    gap: 12px;
+}
+
+.upcoming-item:last-child {
+    border-bottom: none;
+}
+
+.upcoming-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.upcoming-sport-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #78909c;
+    font-size: 13px;
+}
+
+.upcoming-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.upcoming-teams {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e0e4e8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.upcoming-league {
+    font-size: 11px;
+    color: #556;
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.upcoming-time {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: #4CAF50;
+    background: rgba(76, 175, 80, 0.1);
+    padding: 3px 10px;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.upcoming-empty {
+    text-align: center;
+    color: #556;
+    padding: 30px 16px;
+    font-size: 13px;
+}
+
+.upcoming-empty {
+    text-align: center;
+    color: #556;
+    padding: 30px 16px;
+    font-size: 13px;
+}
+
+@media (max-width: 768px) {
+    .live-bottom-row {
+        flex-direction: column;
+    }
+    .score-feed-panel,
+    .upcoming-section {
+        max-height: 300px;
+    }
+}
+
+/* ===== LAYOUT ===== */
 .elo-main {
     display: flex;
     justify-content: center;

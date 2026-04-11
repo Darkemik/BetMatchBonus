@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let totalOdds = 1;
         let minOddsPerEvent = null;
         const selectionCount = ticketItems.length;
+        const hasDailyTip = ticketItems.some(item => item.isDailyTip);
 
         ticketItems.forEach(item => {
             const itemOdds = parseFloat(item.odds) || 0;
@@ -42,6 +43,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
+        // 1.2x szorzó ha van napi tipp a szelvényen
+        if (hasDailyTip) {
+            totalOdds *= 1.2;
+        }
+
         if (minOddsPerEvent === null) {
             minOddsPerEvent = 0;
         }
@@ -49,7 +55,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return {
             selectionCount,
             totalOdds,
-            minOddsPerEvent
+            minOddsPerEvent,
+            hasDailyTip
         };
     }
 
@@ -101,9 +108,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        let totalOdds = 1;
-        ticketItems.forEach(item => totalOdds *= item.odds);
-        updatePotentialWin(totalOdds);
+        const metrics = getTicketMetrics();
+        updatePotentialWin(metrics.totalOdds);
         updatePlaceBetButton();
     }
 
@@ -233,8 +239,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ===== TOGGLE: HOZZÁADÁS / ELTÁVOLÍTÁS =====
-    window.toggleOdds = function(homeTeam, awayTeam, pick, odds, market, matchId) {
-        console.log('[BETSLIP] toggleOdds called:', {homeTeam, awayTeam, pick, odds, market, matchId});
+    window.toggleOdds = function(homeTeam, awayTeam, pick, odds, market, matchId, isDailyTip) {
+        console.log('[BETSLIP] toggleOdds called:', {homeTeam, awayTeam, pick, odds, market, matchId, isDailyTip});
         
         var existingIndex = ticketItems.findIndex(function(item) {
             return item.homeTeam === homeTeam && 
@@ -270,6 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 odds: odds,
                 market: market,
                 matchId: matchId || 0,
+                isDailyTip: !!isDailyTip,
                 addedAt: new Date().toISOString()
             });
         }
@@ -327,6 +334,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (clearBtn) clearBtn.style.display = 'none';
             if (summary) summary.style.display = 'none';
             if (betslipCountEl) betslipCountEl.textContent = '0';
+            // Boost indicator eltávolítása
+            const boostIndicator = document.getElementById('daily-tip-boost-indicator');
+            if (boostIndicator) boostIndicator.style.display = 'none';
             renderFreeBetOption();
             updateTypeTabs();
             return;
@@ -351,10 +361,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // MÓDOSÍTÁS: Ne lecseréljük az egész containerét, hanem csak az innerHTML-t frissítjük
         betsContainer.innerHTML = '';
         
-        let totalOdds = 1;
+        const metrics = getTicketMetrics();
 
         ticketItems.forEach((item, idx) => {
-            totalOdds *= item.odds;
             const el = document.createElement('div');
             el.className = 'betslip-item';
             el.innerHTML = `
@@ -364,7 +373,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div class="betslip-item-market">${escapeHtml(item.market)}</div>
                 <div class="betslip-item-pick">${escapeHtml(item.pick)}</div>
-                <div class="betslip-item-odds">${item.odds.toFixed(2)}</div>
+                <div class="betslip-item-odds">${item.odds.toFixed(2)}${item.isDailyTip ? ' <span class="daily-tip-badge">Napi tipp</span>' : ''}</div>
             `;
             betsContainer.appendChild(el);
         });
@@ -372,13 +381,26 @@ document.addEventListener('DOMContentLoaded', function() {
         // Frissítjük az összes elemet az oldalon
         if (betslipCountEl) betslipCountEl.textContent = ticketItems.length;
         const totalOddsEl = document.getElementById('total-odds');
-        if (totalOddsEl) totalOddsEl.textContent = totalOdds.toFixed(3);
-        updatePotentialWin(totalOdds);
+        if (totalOddsEl) totalOddsEl.textContent = metrics.totalOdds.toFixed(3);
+
+        // 1.2x napi tipp boost kijelző
+        const boostIndicator = document.getElementById('daily-tip-boost-indicator');
+        if (boostIndicator) {
+            boostIndicator.style.display = metrics.hasDailyTip ? 'block' : 'none';
+        } else if (metrics.hasDailyTip && totalOddsEl) {
+            const indicator = document.createElement('div');
+            indicator.id = 'daily-tip-boost-indicator';
+            indicator.className = 'daily-tip-boost-indicator';
+            indicator.innerHTML = '<i class="fas fa-bolt"></i> Napi tipp bónusz: 1.2x szorzó aktív!';
+            totalOddsEl.parentNode.insertBefore(indicator, totalOddsEl.nextSibling);
+        }
+
+        updatePotentialWin(metrics.totalOdds);
         renderFreeBetOption();
         updatePlaceBetButton();
         updateTypeTabs();
         
-        console.log('[BETSLIP] renderTicket() vége, totalOdds:', totalOdds);
+        console.log('[BETSLIP] renderTicket() vége, totalOdds:', metrics.totalOdds, 'hasDailyTip:', metrics.hasDailyTip);
     }
 
     // ===== REMOVE BUTTON - delegated event listener =====
@@ -411,9 +433,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const stakeInput = document.getElementById('stake-input');
     if (stakeInput) {
         stakeInput.addEventListener('input', () => {
-            let totalOdds = 1;
-            ticketItems.forEach(item => totalOdds *= item.odds);
-            updatePotentialWin(totalOdds);
+            const metrics = getTicketMetrics();
+            updatePotentialWin(metrics.totalOdds);
         });
     }
 
@@ -486,16 +507,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== SUBMIT TICKET TO DB =====
     function submitTicketToDB(stake) {
-        let totalOdds = 1;
-        ticketItems.forEach(item => totalOdds *= item.odds);
+        const metrics = getTicketMetrics();
+        const totalOdds = metrics.totalOdds;
+        const useFreeBet = !!document.getElementById('use-freebet-toggle')?.checked;
 
         const payload = {
             stake: stake,
             totalOdds: totalOdds,
-            potentialWin: Math.round((!!document.getElementById('use-freebet-toggle')?.checked) ? (stake * Math.max(0, totalOdds - 1)) : (stake * totalOdds)),
+            potentialWin: Math.round(useFreeBet ? (stake * Math.max(0, totalOdds - 1)) : (stake * totalOdds)),
             items: ticketItems,
-            useFreeBet: !!document.getElementById('use-freebet-toggle')?.checked,
-            freeBetUserBonusId: parseInt(document.getElementById('use-freebet-toggle')?.checked ? availableFreeBetId : 0, 10) || 0
+            useFreeBet: useFreeBet,
+            freeBetUserBonusId: parseInt(useFreeBet ? availableFreeBetId : 0, 10) || 0,
+            hasDailyTipBoost: metrics.hasDailyTip
         };
 
         fetch('../../backend/ApiRequest/submit_ticket.php', {
@@ -711,7 +734,9 @@ document.addEventListener('DOMContentLoaded', function() {
         container.innerHTML = '';
 
         bettingHistory.forEach(ticket => {
-            const statusText = ticket.status === 'OPEN' ? '⏳ ' + t('betslip.pending', 'Függőben') : 
+            const isCashout = ticket.status === 'CASHOUT';
+            const statusText = isCashout ? '💰 Cash Out' :
+                              ticket.status === 'OPEN' ? '⏳ ' + t('betslip.pending', 'Függőben') : 
                               ticket.status === 'WON' ? '✅ ' + t('betslip.won', 'Nyertes') : 
                               ticket.status === 'LOST' ? '❌ ' + t('betslip.lost', 'Vesztes') : '❓ ' + t('mainMenu.unknown', 'Ismeretlen');
             
@@ -722,7 +747,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 ticket.items.forEach(item => {
                     const itemStatus = item.status || 'OPEN';
                     const itemIcon = itemStatus === 'WON' ? '✅' : 
-                                     itemStatus === 'LOST' ? '❌' : '⏳';
+                                     itemStatus === 'LOST' ? '❌' : 
+                                     itemStatus === 'CASHOUT' ? '💰' : '⏳';
                     const itemStatusClass = itemStatus.toLowerCase();
                     
                     itemsHtml += `
@@ -738,18 +764,46 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
 
-            // Nyertes szelvénynél más szín a summary-n
+            // Cashout gomb OPEN szelvényekhez
+            let cashoutHtml = '';
+            if (ticket.status === 'OPEN') {
+                cashoutHtml = `
+                    <div class="cashout-section" id="cashout-section-${ticket.id}">
+                        <button class="cashout-btn" data-ticket-id="${ticket.id}" onclick="window.BetslipCashout.loadPreview(${ticket.id})">
+                            <i class="fas fa-hand-holding-usd"></i>
+                            <span class="cashout-btn-text">Cash Out</span>
+                            <span class="cashout-btn-amount" id="cashout-amount-${ticket.id}"></span>
+                        </button>
+                    </div>
+                `;
+            }
+
+            // Cashout badge a már cash out-olt szelvényeknél
+            let cashoutBadgeHtml = '';
+            if (isCashout && ticket.cashout_amount !== null) {
+                cashoutBadgeHtml = `
+                    <div class="cashout-badge">
+                        <i class="fas fa-check-circle"></i>
+                        Cash out: <strong>${parseFloat(ticket.cashout_amount).toLocaleString('hu-HU')} Ft</strong>
+                    </div>
+                `;
+            }
+
+            // Nyertes/vesztes/cashout szín
             const wonClass = ticket.status === 'WON' ? ' elozmeny-won' : '';
             const lostClass = ticket.status === 'LOST' ? ' elozmeny-lost' : '';
+            const cashoutClass = isCashout ? ' elozmeny-cashout' : '';
 
             const el = document.createElement('div');
-            el.className = 'elozmeny-item' + wonClass + lostClass;
+            el.className = 'elozmeny-item' + wonClass + lostClass + cashoutClass;
             el.innerHTML = `
                 <div class="elozmeny-header">
                     <span class="elozmeny-date">${new Date(ticket.created_at).toLocaleString('hu-HU')}</span>
                     <span class="elozmeny-status ${statusClass}">${statusText}</span>
                 </div>
                 <div class="elozmeny-items-list">${itemsHtml}</div>
+                ${cashoutBadgeHtml}
+                ${cashoutHtml}
                 <div class="elozmeny-summary">
                     <span><strong>${t('betslip.stakeLabel', 'Tét:')}</strong> ${parseFloat(ticket.stake).toLocaleString('hu-HU')} Ft</span>
                     <span><strong>${t('betslip.oddsLabel', 'Odds:')}</strong> ${parseFloat(ticket.total_odds).toFixed(3)}</span>
@@ -757,8 +811,88 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             `;
             container.appendChild(el);
+
+            // Automatikus cashout preview betöltése nyitott szelvényekhez
+            if (ticket.status === 'OPEN') {
+                window.BetslipCashout.loadPreview(ticket.id);
+            }
         });
     }
+
+    // ===== CASHOUT LOGIKA =====
+    window.BetslipCashout = {
+        // Cashout érték előnézet betöltése
+        loadPreview: function(ticketId) {
+            const amountEl = document.getElementById('cashout-amount-' + ticketId);
+            const sectionEl = document.getElementById('cashout-section-' + ticketId);
+            if (!amountEl || !sectionEl) return;
+
+            fetch('../../backend/ApiRequest/cashout_ticket.php?ticket_id=' + ticketId)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'ok' && data.available && data.cashout_amount > 0) {
+                        amountEl.textContent = parseFloat(data.cashout_amount).toLocaleString('hu-HU') + ' Ft';
+                        sectionEl.style.display = 'block';
+                        sectionEl.querySelector('.cashout-btn').onclick = function() {
+                            window.BetslipCashout.confirm(ticketId, data.cashout_amount);
+                        };
+                    } else {
+                        // Cashout nem elérhető → elrejtjük
+                        sectionEl.style.display = 'none';
+                    }
+                })
+                .catch(() => {
+                    sectionEl.style.display = 'none';
+                });
+        },
+
+        // Cashout megerősítés
+        confirm: function(ticketId, amount) {
+            const msg = 'Biztosan ki szeretnéd venni ' + parseFloat(amount).toLocaleString('hu-HU') + ' Ft-ot?\n\nEz lezárja a szelvényt és az összeg jóváírásra kerül az egyenlegeden.';
+            BmbPopup.confirm(msg, function() {
+                window.BetslipCashout.execute(ticketId);
+            }, null, 'Cash Out');
+        },
+
+        // Cashout végrehajtás
+        execute: function(ticketId) {
+            const btn = document.querySelector('.cashout-btn[data-ticket-id="' + ticketId + '"]');
+            if (btn) {
+                btn.disabled = true;
+                btn.querySelector('.cashout-btn-text').textContent = 'Feldolgozás...';
+            }
+
+            fetch('../../backend/ApiRequest/cashout_ticket.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ticketId: ticketId })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    BmbPopup.success(
+                        'Sikeres Cash Out! ' + parseFloat(data.cashout_amount).toLocaleString('hu-HU') + ' Ft jóváírva.',
+                        'Cash Out'
+                    );
+                    loadBettingHistory();
+                    checkLoginStatus(); // Egyenleg frissítés
+                } else {
+                    BmbPopup.error(data.message || 'Cash out sikertelen', 'Hiba');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.querySelector('.cashout-btn-text').textContent = 'Cash Out';
+                    }
+                }
+            })
+            .catch(() => {
+                BmbPopup.error('Szerverhiba! Próbáld újra később.', 'Hiba');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.querySelector('.cashout-btn-text').textContent = 'Cash Out';
+                }
+            });
+        }
+    };
 
     // ===== ODDS GOMBOK FRISSÍTÉSE =====
     window.refreshAllOddsButtons = function(delay = 0) {
@@ -767,11 +901,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const buttons = document.querySelectorAll('.selection-btn');
             console.log('[BETSLIP] Talált .selection-btn gombok:', buttons.length);
-            
-            if (buttons.length === 0) {
-                console.warn('[BETSLIP] Nincsenek .selection-btn gombok az oldalon!');
-                return;
-            }
             
             buttons.forEach(btn => {
                 const home = btn.getAttribute('data-home');

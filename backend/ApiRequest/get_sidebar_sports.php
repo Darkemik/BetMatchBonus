@@ -12,10 +12,15 @@ require_once dirname(__DIR__) . "/config.php";
 header('Content-Type: application/json; charset=utf-8');
 date_default_timezone_set('Europe/Budapest');
 
-$from = (new DateTime('yesterday 00:00:00'))->format('Y-m-d H:i:s');
-$to   = (new DateTime('tomorrow 23:59:59'))->format('Y-m-d H:i:s');
-
 $mode = isset($_GET['mode']) && $_GET['mode'] === 'live' ? 'live' : 'all';
+
+// Élő módban a start_time a múltban van (a meccs már elkezdődött), ezért korábbi from kell
+if ($mode === 'live') {
+    $from = (new DateTime('-1 day', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
+} else {
+    $from = (new DateTime('now', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
+}
+$to = (new DateTime('+3 days 23:59:59', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
 
 $sql = "
 SELECT 
@@ -37,10 +42,13 @@ WHERE e.start_time BETWEEN ? AND ?
   AND e.name IS NOT NULL
   AND TRIM(e.name) != ''
   AND e.start_time IS NOT NULL
+  AND e.api_id IS NOT NULL
+  AND e.api_id > 0
+  AND (e.status_id IS NULL OR e.status_id != 3)
   AND (c.name IS NULL OR (LOWER(TRIM(c.name)) != 'n/a' AND TRIM(c.name) != ''))
   AND LOWER(TRIM(comp.name)) != 'n/a'
   AND TRIM(comp.name) != ''
-" . ($mode === 'live' ? "  AND e.is_live = 1\n" : "") . "ORDER BY s.api_id, c.name, comp.name, e.start_time
+" . ($mode === 'live' ? "  AND e.is_live = 1\n  AND (e.live_time IS NULL OR LOWER(TRIM(e.live_time)) NOT IN ('nem kezdődött el', 'not started', '', 'unknown'))\n" : "") . "ORDER BY s.api_id, c.name, comp.name, e.start_time
 ";
 
 $stmt = $conn->prepare($sql);

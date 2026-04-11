@@ -66,7 +66,7 @@ elseif ($action === 'change_password') {
     }
 
     // Jelenlegi jelszó ellenőrzése
-    $query = "SELECT password FROM Users WHERE id = ?";
+    $query = "SELECT password_hash FROM Users WHERE id = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
@@ -74,7 +74,7 @@ elseif ($action === 'change_password') {
     $user = $result->fetch_assoc();
     $stmt->close();
 
-    if (!password_verify($current_password, $user['password'])) {
+    if (!password_verify($current_password, $user['password_hash'])) {
         http_response_code(401);
         echo json_encode(['error' => 'A jelenlegi jelszó helytelen']);
         exit();
@@ -82,7 +82,7 @@ elseif ($action === 'change_password') {
 
     // Új jelszó beállítása
     $new_password_hash = password_hash($new_password, PASSWORD_BCRYPT);
-    $update_query = "UPDATE Users SET password = ? WHERE id = ?";
+    $update_query = "UPDATE Users SET password_hash = ? WHERE id = ?";
     $update_stmt = $conn->prepare($update_query);
     $update_stmt->bind_param("si", $new_password_hash, $user_id);
     

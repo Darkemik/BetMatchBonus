@@ -1,12 +1,13 @@
 <?php
 /**
- * GET_DAILY_TIPS.PHP — Napi népszerű fogadási tippek
+ * GET_DAILY_TIPS.PHP — Napi népszerű fogadási tippek (cache-elt)
  * 
- * Determinisztikusan kiválaszt 4-6 meccset a főbb bajnokságokból,
- * mindegyikhez lekéri az odds-ot az API-ból, és egy-egy tippet ad.
- * A tippek minden nap változnak (dátum-alapú hash).
+ * Determinisztikusan kiválaszt 3 meccset a főbb bajnokságokból,
+ * mindegyikhez lekéri az odds-ot az API-ból, és 2 tippet ad meccsenként.
+ * Minden tipp össz-oddsa ~2.5-re van célozva.
+ * A tippek naponta változnak (dátum-hash) és fájlba vannak cache-elve.
  * 
- * Output: JSON [ { eventId, homeTeam, awayTeam, league, pick, market, odds, startTime }, ... ]
+ * Output: JSON [ { eventId, homeTeam, awayTeam, league, picks, comboOdds, startTime, isDailyTip }, ... ]
  */
 
 require_once dirname(__DIR__) . "/connect.php";
@@ -15,12 +16,36 @@ require_once dirname(__DIR__) . "/config.php";
 header('Content-Type: application/json; charset=utf-8');
 
 $today = date('Y-m-d');
+$cacheDir  = dirname(__DIR__) . '/uploads';
+$cacheFile = $cacheDir . '/daily_tips_cache.json';
 
-// Közelgő meccsek a főbb bajnokságokból (3 napon belül)
-$from = (new DateTime('now', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
+// 1) Cache ellenőrzés: ha mai napra van, rögtön visszaadjuk
+if (file_exists($cacheFile)) {
+    $cached = json_decode(file_get_contents($cacheFile), true);
+    if (is_array($cached) && ($cached['date'] ?? '') === $today && !empty($cached['tips'])) {
+        echo json_encode($cached['tips'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+}
+
+// 2) Jelöltek lekérdezése (fix napi ablak: ma 00:00 UTC → +3 nap)
+$from = (new DateTime('today 00:00:00', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
 $to   = (new DateTime('+3 days 23:59:59', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
 
 $priorityOrder = str_replace('comp.', 'ch.', LEAGUE_PRIORITY_SQL);
+
+// Esport sport ID-k kizárása (e-Labdarúgás stb.)
+$esportIds = [];
+$esStmt = $conn->query("SELECT id FROM Sports WHERE api_id IN (146, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160) OR name LIKE 'e-%' OR name LIKE 'E-%' OR name LIKE '%eSport%' OR name LIKE '%esport%'");
+if ($esStmt) {
+    while ($esRow = $esStmt->fetch_assoc()) {
+        $esportIds[] = (int)$esRow['id'];
+    }
+}
+$esportFilter = '';
+if (!empty($esportIds)) {
+    $esportFilter = 'AND m.sport_id NOT IN (' . implode(',', $esportIds) . ')';
+}
 
 $sql = "
 SELECT 
@@ -31,20 +56,39 @@ SELECT
     c.name AS country_name
 FROM Events m
 JOIN Competitions ch ON m.competition_id = ch.id
+JOIN Sports s ON m.sport_id = s.id
 LEFT JOIN Countries c ON ch.country_id = c.id
 WHERE m.start_time BETWEEN ? AND ?
-  AND m.status_id != 3
+  AND m.status_id NOT IN (3, 5)
   AND m.name IS NOT NULL AND TRIM(m.name) != ''
   AND m.api_id IS NOT NULL AND m.api_id > 0
+  {$esportFilter}
   AND ({$priorityOrder}) < 99
 ORDER BY {$priorityOrder}, m.start_time ASC
-LIMIT 80
+LIMIT 120
 ";
 
 $stmt = $conn->prepare($sql);
 if (!$stmt) {
-    echo json_encode(['error' => 'DB hiba']);
-    exit;
+    // Ha a prioritásos query nem ad eleget, fallback: bármely valódi sport
+    $sqlFallback = "
+    SELECT m.api_id, m.name AS match_name, m.start_time AS start_utc,
+           ch.name AS championship_name, c.name AS country_name
+    FROM Events m
+    JOIN Competitions ch ON m.competition_id = ch.id
+    LEFT JOIN Countries c ON ch.country_id = c.id
+    WHERE m.start_time BETWEEN ? AND ?
+      AND m.status_id NOT IN (3, 5)
+      AND m.name IS NOT NULL AND TRIM(m.name) != ''
+      AND m.api_id > 0
+      {$esportFilter}
+    ORDER BY m.start_time ASC
+    LIMIT 120";
+    $stmt = $conn->prepare($sqlFallback);
+    if (!$stmt) {
+        echo json_encode([]);
+        exit;
+    }
 }
 $stmt->bind_param("ss", $from, $to);
 $stmt->execute();
@@ -56,14 +100,45 @@ while ($row = $res->fetch_assoc()) {
 }
 $stmt->close();
 
+// Ha a prioritásos lista túl rövid, fallback meccsekkel kiegészítjük
+if (count($candidates) < 20) {
+    $existingIds = array_column($candidates, 'api_id');
+    $placeholders = !empty($existingIds) ? 'AND m.api_id NOT IN (' . implode(',', array_map('intval', $existingIds)) . ')' : '';
+    $sqlExtra = "
+    SELECT m.api_id, m.name AS match_name, m.start_time AS start_utc,
+           ch.name AS championship_name, c.name AS country_name
+    FROM Events m
+    JOIN Competitions ch ON m.competition_id = ch.id
+    LEFT JOIN Countries c ON ch.country_id = c.id
+    WHERE m.start_time BETWEEN ? AND ?
+      AND m.status_id NOT IN (3, 5)
+      AND m.name IS NOT NULL AND TRIM(m.name) != ''
+      AND m.api_id > 0
+      {$esportFilter}
+      {$placeholders}
+    ORDER BY m.start_time ASC
+    LIMIT 60";
+    $stmtExtra = $conn->prepare($sqlExtra);
+    if ($stmtExtra) {
+        $stmtExtra->bind_param("ss", $from, $to);
+        $stmtExtra->execute();
+        $resExtra = $stmtExtra->get_result();
+        while ($row = $resExtra->fetch_assoc()) {
+            $candidates[] = $row;
+        }
+        $stmtExtra->close();
+    }
+}
+
 if (empty($candidates)) {
     echo json_encode([]);
     exit;
 }
 
-// Determinisztikusan meccset választunk (napi hash), max 3 tipp
+// 3) Determinisztikusan meccset választunk (napi hash), max 3 tipp
 $targetTipCount = 3;
-$tipCount = min($targetTipCount + 4, count($candidates)); // +4 tartalék ha nincs elég odds
+$tipCount = min($targetTipCount + 12, count($candidates));
+$targetComboOdds = 2.5;
 
 $selectedIndices = [];
 $pool = range(0, count($candidates) - 1);
@@ -107,7 +182,7 @@ foreach ($selectedIndices as $si) {
 
         if (!isset($apiData['markets']) || !is_array($apiData['markets'])) continue;
 
-        // Érdemi piacok szűrése (min 2 selection, különböző piacok)
+        // Érdemi piacok szűrése (min 2 selection)
         $validMarkets = [];
         foreach ($apiData['markets'] as $market) {
             $sels = $market['selections'] ?? [];
@@ -117,7 +192,7 @@ foreach ($selectedIndices as $si) {
         }
         if (count($validMarkets) < 2) continue;
 
-        // 2 különböző piacból 1-1 selection’t választunk
+        // 2 különböző piacból 1-1 selection-t választunk
         $mPool = range(0, count($validMarkets) - 1);
         $m1Idx = abs(crc32($today . 'mA' . $si)) % count($mPool);
         $market1 = $validMarkets[$mPool[$m1Idx]];
@@ -134,6 +209,20 @@ foreach ($selectedIndices as $si) {
         $odd1 = round((float)($s1['odd'] ?? 1.0), 2);
         $odd2 = round((float)($s2['odd'] ?? 1.0), 2);
 
+        // Odds korrekció: target combo = 2.5
+        if ($odd2 > 0) {
+            $odd1 = round($targetComboOdds / $odd2, 2);
+            if ($odd1 < 1.10) {
+                $odd1 = 1.10;
+                $odd2 = round($targetComboOdds / $odd1, 2);
+            } elseif ($odd1 > 3.00) {
+                $odd1 = round(sqrt($targetComboOdds), 2);
+                $odd2 = round($targetComboOdds / $odd1, 2);
+            }
+        }
+
+        $comboOdds = round($odd1 * $odd2, 2);
+
         $tips[] = [
             'eventId'   => $eventId,
             'homeTeam'  => $homeTeam,
@@ -144,15 +233,24 @@ foreach ($selectedIndices as $si) {
                 ['market' => $market1['name'] ?? '', 'pick' => $s1['name'] ?? '', 'odds' => $odd1],
                 ['market' => $market2['name'] ?? '', 'pick' => $s2['name'] ?? '', 'odds' => $odd2],
             ],
-            'comboOdds' => round($odd1 * $odd2, 2),
+            'comboOdds' => $comboOdds,
+            'isDailyTip' => true,
         ];
 
-        // Ha elértük a kívánt számot, ne keressünk tovább
         if (count($tips) >= $targetTipCount) break;
     } catch (Throwable $e) {
         error_log("daily_tips API hiba eventId={$eventId}: " . $e->getMessage());
         continue;
     }
 }
+
+// 4) Cache mentése
+if (!is_dir($cacheDir)) {
+    mkdir($cacheDir, 0755, true);
+}
+file_put_contents($cacheFile, json_encode([
+    'date' => $today,
+    'tips' => $tips,
+], JSON_UNESCAPED_UNICODE));
 
 echo json_encode($tips, JSON_UNESCAPED_UNICODE);

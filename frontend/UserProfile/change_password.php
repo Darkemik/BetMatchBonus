@@ -25,8 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
     } elseif (strlen($new_password) < 8) {
         $error_message = "A jelszó legalább 8 karakter hosszú kell legyen!";
     } else {
-        // Jelenlegi jelszó ellenőrzése
-        $query = "SELECT password FROM Users WHERE id = ?";
+        // Jelenlegi jelszó és heti limit ellenőrzése
+        $query = "SELECT password_hash, password_changed_at FROM Users WHERE id = ?";
         $stmt = $conn->prepare($query);
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
@@ -34,10 +34,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
         $user = $result->fetch_assoc();
         $stmt->close();
 
-        if (password_verify($current_password, $user['password'])) {
+        // Heti egyszer engedélyezett
+        if (!empty($user['password_changed_at'])) {
+            $lastChange = new DateTime($user['password_changed_at']);
+            $now = new DateTime();
+            $diff = $now->diff($lastChange);
+            if ($diff->days < 7) {
+                $nextDate = (clone $lastChange)->modify('+7 days')->format('Y.m.d H:i');
+                $error_message = "A jelszót hetente csak egyszer módosíthatod! Legközelebb: " . $nextDate;
+            }
+        }
+
+        if (empty($error_message) && password_verify($current_password, $user['password_hash'])) {
             // Új jelszó beállítása
             $new_password_hash = password_hash($new_password, PASSWORD_BCRYPT);
-            $update_query = "UPDATE Users SET password = ? WHERE id = ?";
+            $update_query = "UPDATE Users SET password_hash = ?, password_changed_at = NOW() WHERE id = ?";
             $update_stmt = $conn->prepare($update_query);
             $update_stmt->bind_param("si", $new_password_hash, $user_id);
             
@@ -47,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
                 $error_message = "Hiba a jelszó módosítása során: " . $update_stmt->error;
             }
             $update_stmt->close();
-        } else {
+        } elseif (empty($error_message)) {
             $error_message = "A jelenlegi jelszó helytelen!";
         }
     }
@@ -104,18 +115,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
                     <form method="POST" class="profile-form">
                         <div class="form-group mb-3">
                             <label for="current_password">Jelenlegi Jelszó</label>
-                            <input type="password" class="form-control" id="current_password" name="current_password" required>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="current_password" name="current_password" required>
+                                <button type="button" class="btn btn-outline-secondary toggle-password" data-target="current_password" tabindex="-1">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
                         </div>
                         
                         <div class="form-group mb-3">
                             <label for="new_password">Új Jelszó</label>
-                            <input type="password" class="form-control" id="new_password" name="new_password" required>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="new_password" name="new_password" required>
+                                <button type="button" class="btn btn-outline-secondary toggle-password" data-target="new_password" tabindex="-1">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
                             <small class="form-text text-muted">Legalább 8 karakter hosszú kell legyen</small>
                         </div>
                         
                         <div class="form-group mb-3">
                             <label for="confirm_password">Jelszó Megerősítés</label>
-                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                                <button type="button" class="btn btn-outline-secondary toggle-password" data-target="confirm_password" tabindex="-1">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
                         </div>
                         
                         <button type="submit" name="change_password" class="btn btn-primary"><i class="fas fa-save"></i> Jelszó Módosítása</button>
@@ -130,6 +156,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../../js/UserProfile/user_profile.js"></script>
+    <script>
+    document.querySelectorAll('.toggle-password').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var target = document.getElementById(this.getAttribute('data-target'));
+            var icon = this.querySelector('i');
+            if (target.type === 'password') {
+                target.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                target.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+    </script>
     <?php include '../../frontend/Components/chatbot.php'; ?>
 </body>
 </html>

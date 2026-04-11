@@ -31,6 +31,7 @@ $potentialWin = (float)$input['potentialWin'];
 $items = $input['items'] ?? [];
 $useFreeBet = !empty($input['useFreeBet']);
 $freeBetUserBonusId = isset($input['freeBetUserBonusId']) ? (int)$input['freeBetUserBonusId'] : 0;
+$hasDailyTipBoost = !empty($input['hasDailyTipBoost']);
 $selectionCount = count($items);
 $ticketMinOdds = null;
 $calculatedTotalOdds = 1.0;
@@ -64,6 +65,42 @@ if ($ticketMinOdds === null) {
 }
 
 $calculatedTotalOdds = round($calculatedTotalOdds, 2);
+
+// Napi tipp 1.2x szorzó ellenőrzése szerver oldalon
+$dailyTipBoostVerified = false;
+if ($hasDailyTipBoost) {
+    $dailyTipsCacheFile = dirname(__DIR__) . '/uploads/daily_tips_cache.json';
+    if (file_exists($dailyTipsCacheFile)) {
+        $dailyTipsCache = json_decode(file_get_contents($dailyTipsCacheFile), true);
+        $todayUTC = gmdate('Y-m-d');
+        if (is_array($dailyTipsCache) && isset($dailyTipsCache['date']) && $dailyTipsCache['date'] === $todayUTC && !empty($dailyTipsCache['tips'])) {
+            // Összegyűjtjük a napi tipp eventId-keit
+            $dailyTipEventIds = [];
+            foreach ($dailyTipsCache['tips'] as $tip) {
+                if (!empty($tip['picks'])) {
+                    foreach ($tip['picks'] as $pick) {
+                        if (!empty($pick['eventId'])) {
+                            $dailyTipEventIds[] = (int)$pick['eventId'];
+                        }
+                    }
+                }
+            }
+            // Ellenőrizzük, hogy legalább egy tétel a szelvényen napi tipp-e
+            foreach ($items as $item) {
+                $itemMatchId = isset($item['matchId']) ? (int)$item['matchId'] : 0;
+                if ($itemMatchId > 0 && in_array($itemMatchId, $dailyTipEventIds, true)) {
+                    $dailyTipBoostVerified = true;
+                    break;
+                }
+            }
+        }
+    }
+}
+
+if ($dailyTipBoostVerified) {
+    $calculatedTotalOdds = round($calculatedTotalOdds * 1.2, 2);
+}
+
 $effectiveTotalOdds = max(round($totalOdds, 2), $calculatedTotalOdds);
 
 // Wallet ellenőrzése

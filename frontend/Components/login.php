@@ -5,8 +5,8 @@
         <span class="session-login-icon" aria-hidden="true">⏳</span>
         <span id="sessionLoginDurationDisplay">01:00:00</span>
     </div>
-    <div class="session-bet-badge" title="Belépés óta fogadott összeg">
-        <span class="session-bet-icon" aria-hidden="true">💸</span>
+    <div class="session-bet-badge" title="Pénztárca egyenleg">
+        <span class="session-bet-icon" aria-hidden="true">💰</span>
         <span id="sessionBetDisplay">0 FT</span>
     </div>
     <button class="profile-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">

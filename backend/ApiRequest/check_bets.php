@@ -280,6 +280,9 @@ function updateTicketStatus($conn, $ticketId, $userId) {
 
     if (!$ticketRow || $ticketRow['status'] === $newStatus) return;
 
+    // Ne írjuk felül a CASHOUT státuszt
+    if ($ticketRow['status'] === 'CASHOUT') return;
+
     $stmtUpd = $conn->prepare("UPDATE Tickets SET status = ?, updated_at = NOW() WHERE id = ?");
     $stmtUpd->bind_param("si", $newStatus, $ticketId);
     $stmtUpd->execute();

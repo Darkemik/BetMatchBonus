@@ -92,6 +92,7 @@ require_once "../../backend/connect.php";
         <div class="daily-tips-header">
           <i class="fas fa-lightbulb"></i>
           <span data-i18n="mainMenu.dailyTips">Napi tippek</span>
+          <span class="daily-tips-boost-badge"><i class="fas fa-bolt"></i> 1.2x szorzó</span>
         </div>
         <div class="daily-tips-list" id="daily-tips-list">
           <div class="daily-tips-loading"><i class="fas fa-spinner fa-spin"></i></div>

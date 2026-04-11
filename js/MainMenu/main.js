@@ -1105,7 +1105,7 @@ document.addEventListener('DOMContentLoaded', function () {
                           const market = el.getAttribute('data-market');
                           const matchId = parseInt(el.getAttribute('data-event-id'));
                           if (typeof window.toggleOdds === 'function') {
-                              window.toggleOdds(home, away, pick, odd, market, matchId);
+                              window.toggleOdds(home, away, pick, odd, market, matchId, true);
                           }
                       });
                       syncTipButtonStates();

@@ -32,8 +32,6 @@
                             <i class="fab fa-cc-visa" title="Visa"></i>
                             <i class="fab fa-cc-mastercard" title="Mastercard"></i>
                             <i class="fab fa-cc-paypal" title="PayPal"></i>
-                            <i class="fab fa-cc-apple-pay" title="Apple Pay"></i>
-                            <i class="fab fa-google-pay" title="Google Pay"></i>
                         </div>
                     </div>
                 </div>

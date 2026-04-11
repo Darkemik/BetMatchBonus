@@ -175,8 +175,8 @@ function showNotification(message, type = 'info') {
 
 // Adatok frissítésének megerősítése
 document.addEventListener('submit', function(event) {
-    if (event.target.querySelector('input[name="update_profile"]')) {
-        if (!confirm('Biztos vagy benne? A módosítások nem vonhatóak vissza.')) {
+    if (event.target.querySelector('[name="update_profile"]')) {
+        if (!confirm('Biztos vagy benne? Az adataidat ellenőrzésre elküldjük az adminnak.')) {
             event.preventDefault();
         }
     }

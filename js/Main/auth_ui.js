@@ -55,7 +55,7 @@ async function refreshAuthUI() {
     // Balance megjelenítése formázva
     const balance = parseFloat(u.balance) || 0;
     const balanceFormatted = balance.toLocaleString('hu-HU', { style: 'currency', currency: 'HUF' }).replace('Ft', 'FT').trim();
-    const sessionBetTotal = parseFloat(u.session_bet_total) || 0;
+    const sessionBetTotal = parseFloat(u.balance) || 0;
     const sessionBetFormatted = sessionBetTotal.toLocaleString('hu-HU', {
       maximumFractionDigits: 0,
       minimumFractionDigits: 0

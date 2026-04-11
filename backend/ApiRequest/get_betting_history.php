@@ -23,7 +23,7 @@ evaluateOpenTickets($conn, $userId);
 
 // Ticketek lekérése az utolsó 50-ből
 $stmtTickets = $conn->prepare("
-    SELECT id, stake, total_odds, potential_win, status, created_at, updated_at
+    SELECT id, stake, total_odds, potential_win, status, cashout_amount, cashout_at, created_at, updated_at
     FROM Tickets
     WHERE user_id = ?
     ORDER BY created_at DESC
@@ -67,24 +67,26 @@ while ($ticket = $ticketsResult->fetch_assoc()) {
     $stmtSelections->close();
     
     // Ticket statusz meghatározása
-    $status = 'OPEN';
-    $allFinished = true;
-    $anyLost = false;
-    
-    foreach ($selections as $sel) {
-        if ($sel['status'] === 'OPEN') {
-            $allFinished = false;
-        } elseif ($sel['status'] === 'LOST') {
-            $anyLost = true;
+    $status = $ticket['status'];
+    if ($status === 'CASHOUT') {
+        // Keep as-is
+    } elseif ($status === 'OPEN') {
+        $allFinished = true;
+        $anyLost = false;
+        
+        foreach ($selections as $sel) {
+            if ($sel['status'] === 'OPEN') {
+                $allFinished = false;
+            } elseif ($sel['status'] === 'LOST') {
+                $anyLost = true;
+            }
         }
-    }
-    
-    if ($anyLost) {
-        $status = 'LOST';
-    } elseif ($allFinished && count($selections) > 0) {
-        $status = 'WON';
-    } else {
-        $status = 'OPEN';
+        
+        if ($anyLost) {
+            $status = 'LOST';
+        } elseif ($allFinished && count($selections) > 0) {
+            $status = 'WON';
+        }
     }
     
     $tickets[] = [
@@ -93,6 +95,8 @@ while ($ticket = $ticketsResult->fetch_assoc()) {
         'total_odds' => (float)$ticket['total_odds'],
         'potential_win' => (float)$ticket['potential_win'],
         'status' => $status,
+        'cashout_amount' => $ticket['cashout_amount'] !== null ? (float)$ticket['cashout_amount'] : null,
+        'cashout_at' => $ticket['cashout_at'],
         'created_at' => $ticket['created_at'],
         'items' => $selections
     ];

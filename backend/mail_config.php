@@ -8,12 +8,14 @@
  *   Alkalmazás: „Egyéb (egyéni név)" → generálás → a 16 karakteres jelszó ide kell.
  */
 
-define('MAIL_SMTP_HOST',     'smtp.gmail.com');
-define('MAIL_SMTP_PORT',     587);
-define('MAIL_SMTP_USERNAME', 'bmbugyfelszolgalat@gmail.com');
-define('MAIL_SMTP_PASSWORD', 'ocjm nxmo rsyr bkqk');  // 16 karakteres Google alkalmazásjelszó
-define('MAIL_FROM_EMAIL',    'bmbugyfelszolgalat@gmail.com');
-define('MAIL_FROM_NAME',     'BetMatchBonus');
+require_once __DIR__ . '/env_loader.php';
+
+define('MAIL_SMTP_HOST',     getenv('MAIL_SMTP_HOST')     ?: 'smtp.gmail.com');
+define('MAIL_SMTP_PORT',     (int)(getenv('MAIL_SMTP_PORT') ?: 587));
+define('MAIL_SMTP_USERNAME', getenv('MAIL_SMTP_USERNAME') ?: '');
+define('MAIL_SMTP_PASSWORD', getenv('MAIL_SMTP_PASSWORD') ?: '');
+define('MAIL_FROM_EMAIL',    getenv('MAIL_FROM_EMAIL')    ?: '');
+define('MAIL_FROM_NAME',     getenv('MAIL_FROM_NAME')     ?: 'BetMatchBonus');
 
 // Az oldal alap URL-je (jóváhagyó link generáláshoz)
-define('SITE_BASE_URL',      'http://localhost/BetMatchBonus');
+define('SITE_BASE_URL',      getenv('SITE_BASE_URL')      ?: 'http://localhost/BetMatchBonus');

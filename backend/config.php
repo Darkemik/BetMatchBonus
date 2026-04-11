@@ -6,8 +6,10 @@
  * Használat: require_once __DIR__ . '/config.php';
  */
 
+require_once __DIR__ . '/env_loader.php';
+
 // ── API ──────────────────────────────────────────
-const API_BASE_URL = 'http://localhost:5000';
+define('API_BASE_URL', getenv('API_BASE_URL') ?: 'http://localhost:5000');
 
 // API végpontok
 const EP_SPORTS_LIST        = '/api/sports';
@@ -237,6 +239,6 @@ function getSportIcon(int $sportApiId): string {
 // ── reCAPTCHA v3 ─────────────────────────────────
 // Regisztrálj: https://www.google.com/recaptcha/admin
 // Válaszd a "reCAPTCHA v3" típust, add meg a domained (pl. localhost fejlesztéshez).
-const RECAPTCHA_SITE_KEY   = '6LfORq0sAAAAAH0CyNKWMZjml_GOXh6svvG-pEUR';
-const RECAPTCHA_SECRET_KEY = '6LfORq0sAAAAAJXQGlXBwOHQ9QILiZ-7hDLnI5zO';
-const RECAPTCHA_THRESHOLD  = 0.5; // 0.0–1.0, alatta bot-nak minősül
+define('RECAPTCHA_SITE_KEY',   getenv('RECAPTCHA_SITE_KEY')   ?: '');
+define('RECAPTCHA_SECRET_KEY', getenv('RECAPTCHA_SECRET_KEY') ?: '');
+define('RECAPTCHA_THRESHOLD',  (float)(getenv('RECAPTCHA_THRESHOLD') ?: 0.5));

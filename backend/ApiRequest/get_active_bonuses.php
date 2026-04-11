@@ -8,12 +8,42 @@ $isWeekday = ((int)date('N') <= 5);
 $isAfterDailyRefresh = (date('H:i') >= '00:01');
 $isWeekdayWindow = ($isWeekday && $isAfterDailyRefresh);
 
-// Csak az aktív bónuszokat kérjük le
-$query = "SELECT id, code, name, description, bonus_amount, min_deposit, max_bonus_amount, match_percent, is_step_bonus, step_number, parent_bonus_id, bonus_type_id, bet_reward_type, valid_weekdays_only, birthday_bonus 
-          FROM BonusCodes 
-          WHERE (is_active = 1 OR valid_weekdays_only = 1)
-            AND birthday_bonus = 0
-          ORDER BY id DESC";
+// Ha nincs bejelentkezve, csak bizonyos bónuszokat mutatunk (státusz nélkül)
+$isGuest = !isset($_SESSION['user_id']);
+if ($isGuest) {
+    // Vendég: darts, üdvözlő 1. lépcső, hétköznapi VAGY hétvégi (naptól függően), esport
+    if ($isWeekdayWindow) {
+        // Hétköznap: hétköznapi bónusz (valid_weekdays_only=1)
+        $query = "SELECT id, code, name, description, bonus_amount, min_deposit, max_bonus_amount, match_percent, is_step_bonus, step_number, parent_bonus_id, bonus_type_id, bet_reward_type, valid_weekdays_only, birthday_bonus, is_active 
+                  FROM BonusCodes 
+                  WHERE birthday_bonus = 0
+                    AND (
+                        code = 'DARTSBONUSZ5K'
+                        OR (bonus_type_id = 1 AND is_step_bonus = 1 AND step_number = 1)
+                        OR valid_weekdays_only = 1
+                        OR code = 'ESPORT5K'
+                    )
+                  ORDER BY id ASC";
+    } else {
+        // Hétvége: hétvégi bónusz
+        $query = "SELECT id, code, name, description, bonus_amount, min_deposit, max_bonus_amount, match_percent, is_step_bonus, step_number, parent_bonus_id, bonus_type_id, bet_reward_type, valid_weekdays_only, birthday_bonus, is_active 
+                  FROM BonusCodes 
+                  WHERE birthday_bonus = 0
+                    AND (
+                        code = 'DARTSBONUSZ5K'
+                        OR (bonus_type_id = 1 AND is_step_bonus = 1 AND step_number = 1)
+                        OR code = 'HETVEGI5K'
+                        OR code = 'ESPORT5K'
+                    )
+                  ORDER BY id ASC";
+    }
+} else {
+    $query = "SELECT id, code, name, description, bonus_amount, min_deposit, max_bonus_amount, match_percent, is_step_bonus, step_number, parent_bonus_id, bonus_type_id, bet_reward_type, valid_weekdays_only, birthday_bonus, is_active 
+              FROM BonusCodes 
+              WHERE (is_active = 1 OR valid_weekdays_only = 1)
+                AND birthday_bonus = 0
+              ORDER BY id DESC";
+}
 
 $result = $conn->query($query);
 $bonuses = [];
@@ -63,6 +93,8 @@ if ($userId > 0) {
 
 if ($result) {
     while ($row = $result->fetch_assoc()) {
+        // Vendég felhasználók minden bónuszt látnak, szűrés nélkül
+        if (!$isGuest) {
         $isVisible = ((int)$row['valid_weekdays_only'] === 1) ? $isWeekdayWindow : true;
         if (!$isVisible) {
             continue;
@@ -189,6 +221,7 @@ if ($result) {
                 continue;
             }
         }
+        } // end if (!$isGuest)
 
         $isStepBonus = ((int)($row['is_step_bonus'] ?? 0) === 1);
         $matchPercent = (float)($row['match_percent'] ?? 0);
@@ -216,7 +249,7 @@ if ($result) {
             'amount' => $amountText,
             'condition' => $conditionText,
             'isStepBonus' => $isStepBonus,
-            'status' => 'AKTÍV',
+            'status' => $isGuest ? null : 'AKTÍV',
             'longDescription' => $row['description'],
             // Ide jöhet valami generikus kép, vagy bevezethetünk egy 'image_url' oszlopot később. Most fix képet adok:
             'image' => '../../img/logo.png' 

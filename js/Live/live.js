@@ -3,6 +3,7 @@
     const matchesContainer = document.getElementById('matches-container');
     const sportsNav = document.getElementById('liveSportsNav');
     let currentSportId = null; // Dynamically set from first live sport
+    let userSelectedSportId = null; // Set when user explicitly clicks a sport
     let autoRefreshInterval = null;
     let viewingMatchDetails = false;
     let refreshRequestId = 0;
@@ -28,6 +29,12 @@
 
     // eSport sport IDs — these are shown on the eSport page, not here
     const ESPORT_SPORT_IDS = [145, 146, 147, 148];
+
+    // Sportok amikre ténylegesen lehet fogadni (API ad odds-ot)
+    const BETTABLE_SPORT_IDS = [66, 67, 68, 69, 70, 73, 76, 77, 78, 80, 83, 88, 101, 102, 106, 151];
+
+    // Főmenüben elérhető sportok listája — az élő oldalon csak ezeket mutatjuk
+    let mainMenuSportIds = new Set();
 
     console.log('[LIVE.JS] Inicializálás...');
 
@@ -111,10 +118,14 @@
         // liveSports = { sportId: count, ... } — only sports with count > 0
         sportsNav.innerHTML = '';
 
-        // Get all sport IDs that have live matches, EXCLUDING esport sports
+        // Get all sport IDs that have live matches, EXCLUDING esport sports + only bettable main menu sports
         const liveSportIds = Object.keys(liveSports)
             .map(id => parseInt(id))
-            .filter(id => liveSports[id] > 0 && !ESPORT_SPORT_IDS.includes(id));
+            .filter(id => liveSports[id] > 0
+                && !ESPORT_SPORT_IDS.includes(id)
+                && BETTABLE_SPORT_IDS.includes(id)
+                && (mainMenuSportIds.size === 0 || mainMenuSportIds.has(id))
+            );
 
         if (liveSportIds.length === 0) {
             sportsNav.innerHTML = '<div class="sports-nav-empty"><i class="fas fa-info-circle"></i> ' + t('live.noLiveAnySport', 'Jelenleg nincs élő meccs egyetlen sportágban sem.') + '</div>';
@@ -143,9 +154,12 @@
         
         orderedSports.push(...remainingSports);
 
-        // If current sport no longer has live matches, switch to the first available
-        if (!currentSportId || !liveSports[currentSportId] || liveSports[currentSportId] <= 0) {
+        // If user explicitly selected a sport, keep it even if temporarily 0 matches
+        if (userSelectedSportId && liveSportIds.includes(userSelectedSportId)) {
+            currentSportId = userSelectedSportId;
+        } else if (!currentSportId || !liveSportIds.includes(currentSportId)) {
             currentSportId = orderedSports[0];
+            userSelectedSportId = null;
         }
 
         orderedSports.forEach(sportId => {
@@ -169,8 +183,20 @@
                 sportsNav.querySelectorAll('.sport-item').forEach(btn => btn.classList.remove('active'));
                 this.classList.add('active');
                 currentSportId = sportId;
+                userSelectedSportId = sportId;
                 viewingMatchDetails = false;
+                // Sportváltás: DOM ürítése + dismissed reset
+                dismissedIds.clear();
+                const feedContainer = document.getElementById('goal-toast-container');
+                if (feedContainer) feedContainer.innerHTML = '';
+                // Ha van cache-elt feed adat ehhez a sporthoz, azonnal renderelés
+                if (feedItemsCache[sportId] && feedItemsCache[sportId].length > 0) {
+                    renderScoreFeed(feedItemsCache[sportId]);
+                }
+                // Loading state amíg az új sport töltődik
+                matchesContainer.innerHTML = '<div class="loading-details"><i class="fas fa-spinner fa-spin"></i> Betöltés...</div>';
                 refreshMatches();
+                loadTickerAndUpcoming();
             });
 
             sportsNav.appendChild(link);
@@ -590,22 +616,278 @@
     syncFromApi();
     setInterval(syncFromApi, 60000);
 
-    // First: fetch live sport counts, build nav, then load matches
-    fetchLiveSportCounts().then(liveSports => {
-        buildSportsNav(liveSports);
-        if (currentSportId) {
-            refreshMatches();
-        } else {
-            matchesContainer.innerHTML = '<div class="no-matches"><i class="fas fa-futbol" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i>' + t('live.noLiveAnySport', 'Jelenleg nincs élő meccs egyetlen sportágban sem.') + '</div>';
-        }
-    });
+    // First: fetch main menu sports list, then live sport counts
+    fetch('../../backend/ApiRequest/get_sidebar_sports.php')
+        .then(r => r.json())
+        .then(data => {
+            if (Array.isArray(data)) {
+                data.forEach(s => {
+                    if (s.sport_api_id && !ESPORT_SPORT_IDS.includes(s.sport_api_id)) {
+                        mainMenuSportIds.add(s.sport_api_id);
+                    }
+                });
+            }
+            console.log('[LIVE.JS] Főmenü sportok:', [...mainMenuSportIds]);
+        })
+        .catch(err => console.warn('[LIVE.JS] Főmenü sportok hiba:', err))
+        .then(() => fetchLiveSportCounts())
+        .then(liveSports => {
+            buildSportsNav(liveSports);
+            if (currentSportId) {
+                refreshMatches();
+            } else {
+                matchesContainer.innerHTML = '<div class="no-matches"><i class="fas fa-futbol" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i>' + t('live.noLiveAnySport', 'Jelenleg nincs élő meccs egyetlen sportágban sem.') + '</div>';
+            }
+            // Feed betöltése MIUTÁN a currentSportId be van állítva
+            // Ha van localStorage cache, azonnal mutatjuk
+            if (currentSportId && feedItemsCache[currentSportId]) {
+                renderScoreFeed(feedItemsCache[currentSportId]);
+            }
+            loadTickerAndUpcoming();
+        });
     
-    // Auto-frissítés 10 másodpercenként
+    // ===== EREDMÉNY FEED + KÖZELGŐ MECCSEK =====
+    let serverTimeOffset = 0;
+    const dismissedIds = new Set();
+    // Sportonként külön kezdőidő — mikor lett először kiválasztva az adott sport
+    const sportFeedStartTimes = new Map();
+
+    // ── localStorage persistence ──
+    const FEED_STORAGE_KEY = 'bmb_feed_cache';
+
+    function saveFeedToStorage() {
+        try {
+            const data = {
+                startTimes: Object.fromEntries(sportFeedStartTimes),
+                dismissed: [...dismissedIds],
+                items: feedItemsCache,
+                savedAt: Math.floor(Date.now() / 1000)
+            };
+            localStorage.setItem(FEED_STORAGE_KEY, JSON.stringify(data));
+        } catch (e) { /* quota exceeded — silently ignore */ }
+    }
+
+    function loadFeedFromStorage() {
+        try {
+            const raw = localStorage.getItem(FEED_STORAGE_KEY);
+            if (!raw) return;
+            const data = JSON.parse(raw);
+            // Max 10 perc régi adat — utána eldobjuk
+            const age = Math.floor(Date.now() / 1000) - (data.savedAt || 0);
+            if (age > 600) {
+                localStorage.removeItem(FEED_STORAGE_KEY);
+                return;
+            }
+            if (data.startTimes) {
+                for (const [k, v] of Object.entries(data.startTimes)) {
+                    sportFeedStartTimes.set(Number(k), v);
+                }
+            }
+            if (Array.isArray(data.dismissed)) {
+                data.dismissed.forEach(id => dismissedIds.add(id));
+            }
+            if (data.items) {
+                Object.assign(feedItemsCache, data.items);
+            }
+        } catch (e) { /* corrupted data — ignore */ }
+    }
+
+    // Sportonként tárolt feed elemek (backend → renderScoreFeed is menti ide)
+    const feedItemsCache = {}; // { sportId: [item, item, ...] }
+
+    // Induláskor betöltjük a localStorage-ból
+    loadFeedFromStorage();
+
+    function getFeedStartTime(sportId) {
+        if (!sportFeedStartTimes.has(sportId)) {
+            // Első kiválasztáskor: utolsó 1 perc változásait mutatjuk (nem üres, de nem is 5 perc)
+            sportFeedStartTimes.set(sportId, Math.floor(Date.now() / 1000) + serverTimeOffset - 60);
+        }
+        return sportFeedStartTimes.get(sportId);
+    }
+
+    function loadTickerAndUpcoming() {
+        // FONTOS: ne hívjuk amíg a currentSportId nincs beállítva
+        if (!currentSportId) return;
+        fetch('../../backend/ApiRequest/get_live_ticker.php?sport_id=' + currentSportId)
+            .then(r => r.json())
+            .then(data => {
+                if (data.serverTime) {
+                    serverTimeOffset = data.serverTime - Math.floor(Date.now() / 1000);
+                }
+                const tickerItems = data.ticker || [];
+                // Mentés sportonkénti cache-be
+                feedItemsCache[currentSportId] = tickerItems;
+                saveFeedToStorage();
+                renderScoreFeed(tickerItems);
+                renderUpcoming(data.upcoming || []);
+            })
+            .catch(err => console.error('[LIVE.JS] Ticker hiba:', err));
+    }
+
+    function renderScoreFeed(items) {
+        const container = document.getElementById('goal-toast-container');
+        if (!container) return;
+
+        // Szűrés: csak az adott sport kiválasztása UTÁNI + nem elrejtett elemek
+        const startTime = getFeedStartTime(currentSportId);
+        const visible = items.filter(item => {
+            if (!item.id) return false;
+            if (dismissedIds.has(item.id)) return false;
+            if (item.ts && item.ts < startTime) return false;
+            return true;
+        });
+
+        // Üres állapot
+        if (visible.length === 0) {
+            if (!container.querySelector('.score-feed-empty')) {
+                container.innerHTML = '<div class="score-feed-empty"><i class="fas fa-futbol"></i>Még nincs eredmény változás</div>';
+            }
+            return;
+        }
+
+        // Van adat → üres placeholder törlése
+        const emptyEl = container.querySelector('.score-feed-empty');
+        if (emptyEl) emptyEl.remove();
+
+        // Térkép: backend ID → adat
+        const dataMap = new Map();
+        visible.forEach(item => dataMap.set(item.id, item));
+
+        // 1) Lejárt elemek törlése (amiket a backend már nem küld)
+        container.querySelectorAll('.goal-toast[data-id]').forEach(el => {
+            if (!dataMap.has(el.getAttribute('data-id'))) {
+                el.remove();
+            }
+        });
+
+        // 2) Létező elemek frissítése (eredmény, élő idő változhat)
+        const existingIds = new Set();
+        container.querySelectorAll('.goal-toast[data-id]').forEach(el => {
+            const id = el.getAttribute('data-id');
+            existingIds.add(id);
+            const item = dataMap.get(id);
+            if (!item) return;
+            // Frissíthető mezők (nem kell DOM-ot újraépíteni)
+            const scoreEl = el.querySelector('.goal-toast-score');
+            if (scoreEl && scoreEl.textContent !== item.score) scoreEl.textContent = item.score;
+            const timeEl = el.querySelector('.goal-toast-time');
+            if (timeEl && timeEl.textContent !== (item.liveTime || '')) timeEl.textContent = item.liveTime || '';
+        });
+
+        // 3) Új elemek hozzáadása (amiket a DOM még nem tartalmaz)
+        visible.forEach(item => {
+            if (existingIds.has(item.id)) return;
+
+            const teams = (item.name || '').split(/ vs\. | - /);
+            const home = (teams[0] || '').trim();
+            const away = (teams[1] || '').trim();
+
+            const el = document.createElement('div');
+            el.className = 'goal-toast goal-toast-new';
+            el.setAttribute('data-id', item.id);
+
+            // Sport-specifikus ikon és szöveg
+            const icon = item.sportIcon ? `<i class="fas ${escapeHtml(item.sportIcon)}"></i>` : '⚽';
+            const label = currentSportId === 66 ? 'GÓL!'
+                        : currentSportId === 67 ? 'KOSÁR!'
+                        : currentSportId === 70 ? 'GÓL!'
+                        : currentSportId === 73 ? 'GÓL!'
+                        : currentSportId === 78 ? 'PONT!'
+                        : currentSportId === 77 ? 'PONT!'
+                        : 'PONT!';
+
+            el.innerHTML = `
+                <span class="goal-toast-icon">${icon}</span>
+                <div class="goal-toast-body">
+                    <div class="goal-toast-title">${label} <strong>${escapeHtml(item.goalTeam || '')}</strong></div>
+                    <div class="goal-toast-match">${escapeHtml(home)} <span class="goal-toast-score">${escapeHtml(item.score)}</span> ${escapeHtml(away)} <span class="goal-toast-time">${escapeHtml(item.liveTime || '')}</span></div>
+                </div>
+                <span class="goal-toast-elapsed" data-ts="${item.ts || 0}"></span>
+                <button class="goal-toast-close">&times;</button>
+            `;
+
+            el.querySelector('.goal-toast-close').addEventListener('click', () => {
+                dismissedIds.add(item.id);
+                el.remove();
+                if (!container.querySelector('.goal-toast')) {
+                    container.innerHTML = '<div class="score-feed-empty"><i class="fas fa-futbol"></i>Még nincs eredmény változás</div>';
+                }
+            });
+
+            container.prepend(el);
+            setTimeout(() => el.classList.remove('goal-toast-new'), 500);
+        });
+
+        // Max 10 elem megjelenítése
+        const all = container.querySelectorAll('.goal-toast');
+        for (let i = 10; i < all.length; i++) all[i].remove();
+    }
+
+    function renderUpcoming(items) {
+        const list = document.getElementById('upcoming-list');
+        const section = document.getElementById('upcoming-section');
+        if (!list || !section) return;
+
+        // Always show section (flex), never hide it
+        section.style.display = '';
+
+        if (items.length === 0) {
+            list.innerHTML = '<div class="upcoming-empty"><i class="fas fa-clock" style="font-size:18px;opacity:0.4;display:block;margin-bottom:6px;"></i><span>Nincs közelgő meccs</span></div>';
+            return;
+        }
+
+        let html = '';
+        items.forEach(item => {
+            const teams = (item.name || '').split(/ vs\. | - /);
+            const display = teams.length >= 2
+                ? escapeHtml(teams[0].trim()) + ' vs ' + escapeHtml(teams[1].trim())
+                : escapeHtml(item.name);
+            html += `<div class="upcoming-item" data-match-id="${item.apiId}">
+                <div class="upcoming-sport-icon"><i class="fas ${escapeHtml(item.sportIcon || 'fa-trophy')}"></i></div>
+                <div class="upcoming-info">
+                    <div class="upcoming-teams">${display}</div>
+                    <div class="upcoming-league">${escapeHtml(item.league || '')}</div>
+                </div>
+                <div class="upcoming-time">${escapeHtml(item.startTime)}</div>
+            </div>`;
+        });
+        list.innerHTML = html;
+
+        // Kattintás → meccs részletek
+        list.querySelectorAll('.upcoming-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const matchId = parseInt(this.getAttribute('data-match-id'));
+                if (matchId) loadMatchDetails(matchId);
+            });
+        });
+    }
+
+    // ===== ELTELT IDŐ SZÁMLÁLÓ =====
+    function updateElapsedTimers() {
+        const elems = document.querySelectorAll('.goal-toast-elapsed[data-ts]');
+        const nowSec = Math.floor(Date.now() / 1000) + serverTimeOffset;
+        elems.forEach(el => {
+            const ts = parseInt(el.getAttribute('data-ts'));
+            if (!ts) return;
+            const diff = nowSec - ts;
+            if (diff < 0) {
+                el.textContent = 'Most';
+            } else if (diff < 60) {
+                el.textContent = diff + ' mp';
+            } else {
+                const min = Math.floor(diff / 60);
+                el.textContent = min + ' perce';
+            }
+        });
+    }
+    setInterval(updateElapsedTimers, 1000);
+
+    // Auto-frissítés 5 másodpercenként (feed + meccsek + sportok)
     autoRefreshInterval = setInterval(() => {
         if (viewingMatchDetails) {
             refreshMatchDetails();
         } else {
-            // Refresh both the sport nav and matches
             fetchLiveSportCounts().then(liveSports => {
                 buildSportsNav(liveSports);
                 if (currentSportId) {
@@ -614,8 +896,9 @@
                     matchesContainer.innerHTML = '<div class="no-matches"><i class="fas fa-futbol" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i>' + t('live.noLiveAnySport', 'Jelenleg nincs élő meccs egyetlen sportágban sem.') + '</div>';
                 }
             });
+            loadTickerAndUpcoming();
         }
-    }, 10000);
+    }, 5000);
     
     console.log('[LIVE.JS] Inicializálás kész!');
 });

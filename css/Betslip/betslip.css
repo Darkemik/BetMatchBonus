@@ -374,6 +374,32 @@
     font-weight: 600;
 }
 
+.daily-tip-badge {
+    background: linear-gradient(135deg, #ff9800, #ff5722);
+    color: #fff;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    font-weight: 700;
+}
+
+.daily-tip-boost-indicator {
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.15), rgba(255, 87, 34, 0.15));
+    border: 1px solid rgba(255, 152, 0, 0.4);
+    color: #ff9800;
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin-top: 6px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.daily-tip-boost-indicator i {
+    margin-right: 4px;
+}
+
 /* ===== TICKET FOOTER ===== */
 .ticket-footer {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -853,6 +879,11 @@
     background: rgba(244, 67, 54, 0.03);
 }
 
+.elozmeny-item.elozmeny-cashout {
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    background: rgba(255, 193, 7, 0.04);
+}
+
 .elozmeny-item.elozmeny-won .elozmeny-summary {
     background: rgba(76, 175, 80, 0.1);
     border-top-color: rgba(76, 175, 80, 0.2);
@@ -863,9 +894,93 @@
     border-top-color: rgba(244, 67, 54, 0.15);
 }
 
+.elozmeny-item.elozmeny-cashout .elozmeny-summary {
+    background: rgba(255, 193, 7, 0.08);
+    border-top-color: rgba(255, 193, 7, 0.15);
+}
+
 .won-amount {
     color: #4caf50 !important;
     font-weight: 700 !important;
+}
+
+/* ===== CASHOUT SECTION ===== */
+.cashout-section {
+    padding: 8px 12px;
+    display: none;
+}
+
+.cashout-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: #1a1a2e;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+.cashout-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.45);
+    transform: translateY(-1px);
+}
+
+.cashout-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.cashout-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.cashout-btn i {
+    font-size: 14px;
+}
+
+.cashout-btn-amount {
+    font-weight: 800;
+    font-size: 14px;
+}
+
+/* Cashout badge (lezárt szelvény) */
+.cashout-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: rgba(255, 193, 7, 0.1);
+    border-top: 1px solid rgba(255, 193, 7, 0.15);
+    color: #fbbf24;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.cashout-badge i {
+    color: #4caf50;
+    font-size: 13px;
+}
+
+.cashout-badge strong {
+    color: #fbbf24;
+    font-size: 13px;
+}
+
+/* Cashout status szín az elozmeny-status-ban */
+.elozmeny-status.cashout {
+    color: #fbbf24;
+    background: rgba(255, 193, 7, 0.12);
+    border-color: rgba(255, 193, 7, 0.3);
 }
 
 .elozmeny-summary {

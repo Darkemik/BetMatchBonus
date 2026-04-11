@@ -37,6 +37,18 @@ if (!$user) {
   exit;
 }
 
+// Óránkénti limit ellenőrzése (max 3 kérés / óra)
+$limitStmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM UserLogs WHERE user_id = ? AND action = 'password_reset_request' AND created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)");
+$limitStmt->bind_param("i", $user['id']);
+$limitStmt->execute();
+$limitRes = $limitStmt->get_result()->fetch_assoc();
+$limitStmt->close();
+
+if ((int)($limitRes['cnt'] ?? 0) >= 3) {
+    echo json_encode(['success' => false, 'message' => 'Túl sok jelszó-visszaállítási kérés! Legfeljebb 3 kérés engedélyezett óránként. Kérjük, próbáld újra később.']);
+    exit;
+}
+
 // Jelszó reset token generálása
 $resetToken = bin2hex(random_bytes(32));
 
@@ -45,6 +57,12 @@ $stmt = $conn->prepare("UPDATE Users SET reset_token = ?, reset_token_expiry = D
 $stmt->bind_param("si", $resetToken, $user['id']);
 $stmt->execute();
 $stmt->close();
+
+// Kérés naplózása a rate limit-hez
+$logStmt = $conn->prepare("INSERT INTO UserLogs (user_id, action, details, created_at) VALUES (?, 'password_reset_request', 'Jelszó-visszaállítási email kérés', NOW())");
+$logStmt->bind_param("i", $user['id']);
+$logStmt->execute();
+$logStmt->close();
 
 // Email küldése a jelszó-visszaállító linkkel
 $resetUrl = SITE_BASE_URL . '/frontend/Auth/reset_password.php?token=' . $resetToken;

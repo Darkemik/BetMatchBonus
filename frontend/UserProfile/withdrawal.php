@@ -35,8 +35,8 @@ if ($bonusColRes && (int)$bonusColRes['cnt'] > 0) {
 }
 
 $query = $hasWinningsBalance
-    ? "SELECT balance, winnings_balance" . ($hasBonusBalance ? ", bonus_balance" : "") . ", full_name FROM Users WHERE id = ?"
-    : "SELECT balance, full_name FROM Users WHERE id = ?";
+    ? "SELECT balance, winnings_balance" . ($hasBonusBalance ? ", bonus_balance" : "") . ", full_name, data_verified FROM Users WHERE id = ?"
+    : "SELECT balance, full_name, data_verified FROM Users WHERE id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -48,6 +48,7 @@ $bonus_balance = $hasBonusBalance ? (float)($user['bonus_balance'] ?? 0) : 0.0;
 $deposited_balance = max(0, (float)$balance - (float)$winnings_balance);
 $total_deposit_and_winnings = (float)$deposited_balance + (float)$winnings_balance;
 $registered_full_name = $user['full_name'] ?? '';
+$data_verified = (int)($user['data_verified'] ?? 0);
 $stmt->close();
 
 // POST kérelmen kivét feldolgozása
@@ -58,7 +59,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
     $account_number = htmlspecialchars($_POST['account_number'] ?? '');
     $agreement = isset($_POST['agreement']) ? true : false;
 
-    if ($amount <= 0) {
+    if (!$data_verified) {
+        $error_message = "A kifizetéshez először az adminnak ellenőriznie kell a személyes adataidat! Kérjük, a Személyes Adatok oldalon kérd az ellenőrzést.";
+    } elseif ($amount <= 0) {
         $error_message = "A kifizetési összeg nagyobb kell legyen, mint 0!";
     } elseif ($amount > $winnings_balance) {
         $error_message = "A kifizetés csak a nyereményegyenlegből történhet!";
@@ -168,6 +171,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                         </div>
                     </div>
                     
+                    <?php if (!$data_verified): ?>
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        A kifizetéshez először az adminnak ellenőriznie kell a személyes adataidat. Kérjük, a <a href="personal_data.php" class="alert-link">Személyes Adatok</a> oldalon kérd az ellenőrzést.
+                    </div>
+                    <?php endif; ?>
+
                     <?php if (isset($_SESSION['success_message'])): ?>
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
                             <?php echo $_SESSION['success_message']; unset($_SESSION['success_message']); ?>

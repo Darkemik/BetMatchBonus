@@ -1,8 +1,10 @@
 <?php
-$host = "localhost";
-$user = "root";
-$pass = "";
-$db   = "betmatchbonusbeta";
+require_once __DIR__ . '/env_loader.php';
+
+$host = getenv('DB_HOST') ?: 'localhost';
+$user = getenv('DB_USER') ?: 'root';
+$pass = getenv('DB_PASS') ?: '';
+$db   = getenv('DB_NAME') ?: 'betmatchbonusbeta';
 
 $conn = new mysqli($host, $user, $pass, $db);
 if ($conn->connect_error) {

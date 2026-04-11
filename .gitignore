@@ -1,0 +1,18 @@
+# Érzékeny konfigurációs fájl (kulcsok, jelszavak)
+.env
+
+# Feltöltött fájlok
+backend/uploads/registrations/*
+!backend/uploads/registrations/.gitkeep
+backend/uploads/boosted_cache.json
+backend/uploads/daily_tips_cache.json
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+.DS_Store

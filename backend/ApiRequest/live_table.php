@@ -169,6 +169,7 @@ $stmt = $conn->prepare("
     JOIN Competitions comp ON e.competition_id = comp.id
     WHERE s.api_id = ?
       AND e.is_live = 1
+      AND (e.live_time IS NULL OR LOWER(TRIM(e.live_time)) NOT IN ('nem kezdődött el', 'not started', '', 'unknown'))
     ORDER BY comp.name ASC, e.start_time ASC
 ");
 

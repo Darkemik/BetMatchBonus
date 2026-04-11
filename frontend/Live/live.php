@@ -106,6 +106,27 @@ require_once "../../backend/connect.php";
                     ?>
                 </div>
 
+                <!-- Eredmény feed + Közelgő meccsek egymás mellett -->
+                <div class="live-bottom-row">
+                    <!-- Bal: Eredmény feed -->
+                    <div class="score-feed-panel" id="score-feed-panel">
+                        <div class="panel-header panel-header-live">
+                            <span class="live-ticker-dot"></span>
+                            <span>📊 Eredmény feed</span>
+                        </div>
+                        <div class="score-feed-list" id="goal-toast-container"></div>
+                    </div>
+
+                    <!-- Jobb: Közelgő meccsek -->
+                    <div class="upcoming-section" id="upcoming-section">
+                        <div class="panel-header panel-header-upcoming">
+                            <i class="fas fa-clock"></i>
+                            <span data-i18n="live.upcomingTitle">Hamarosan kezdődik</span>
+                        </div>
+                        <div class="upcoming-list" id="upcoming-list"></div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>

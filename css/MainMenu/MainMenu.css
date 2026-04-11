@@ -1356,6 +1356,29 @@
   font-size: 15px;
 }
 
+.daily-tips-boost-badge {
+  margin-left: auto;
+  background: linear-gradient(135deg, #ff9800, #ff5722);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+.daily-tips-boost-badge i {
+  font-size: 10px;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 4px rgba(255, 152, 0, 0.3); }
+  50% { box-shadow: 0 0 10px rgba(255, 152, 0, 0.6); }
+}
+
 .daily-tips-list {
   padding: 8px;
   display: flex;
