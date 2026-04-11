@@ -197,7 +197,8 @@ function apiGet(string $path, array $query = []): array {
     $ch = curl_init($url);
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT        => 40,
+        CURLOPT_CONNECTTIMEOUT => 5,
+        CURLOPT_TIMEOUT        => 15,
         CURLOPT_HTTPHEADER     => ['Accept: application/json'],
     ]);
 
