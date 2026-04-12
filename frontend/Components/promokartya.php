@@ -4,7 +4,7 @@
                 <img src="../../img/oddsspaceship.jpeg" alt="Oddsűrhajó">
                 <h3 data-i18n="promo.oddsShipTitle">ODDSŰRHAJÓ!</h3>
                 <p data-i18n="promo.oddsShipDesc">A legjobb szorzók, kizárólag nálunk!</p>
-                <button class="tobb-info-gomb" onclick="location.href='../../frontend/MainMenu/MainMenu.php'">
+                <button class="tobb-info-gomb" onclick="location.href='../../frontend/MainMenu/MainMenu.php?boosted=1'">
                     <span data-i18n="promo.details">RÉSZLETEK</span>
                 </button>
             </div>

@@ -380,7 +380,7 @@ CREATE TABLE IF NOT EXISTS BonusCodes (
   id                   INT           AUTO_INCREMENT PRIMARY KEY,
   code                 VARCHAR(50)   DEFAULT NULL UNIQUE,
   name                 VARCHAR(150)  NOT NULL,
-  description          VARCHAR(255)  DEFAULT NULL,
+  description          TEXT          DEFAULT NULL,
   bonus_type_id        INT           NOT NULL,
   bonus_amount         DECIMAL(10,2) NOT NULL,
   min_deposit          DECIMAL(10,2) DEFAULT NULL,
@@ -566,7 +566,7 @@ VALUES
 (
   'BONUSZHETKOZNAP5K',
   'BÓNUSZ HÉTKÖZNAP (5.000 Ft, 100%, 3x)',
-  'Hétfőtől péntekig minden nap aktiválható. Minimum 3.000 Ft befizetés, 100% bónusz max 5.000 Ft-ig. A bónusz összegét 3x kell megforgatni.',
+  'Hétfőtől péntekig minden nap elérhető feltöltési bónusz! Hogyan aktiválhatod? 1) Fizess be legalább 3.000 Ft-ot a számládra. 2) A befizetett összeg 100%-át kapod bónuszként, maximum 5.000 Ft-ig. Például: 3.000 Ft befizetés = 3.000 Ft bónusz, 5.000 Ft befizetés = 5.000 Ft bónusz, 10.000 Ft befizetés = 5.000 Ft bónusz (max). 3) A kapott bónusz összeget 3-szorosan kell megforgatnod, mielőtt kifizethetővé válik. Tehát ha 5.000 Ft bónuszt kaptál, 15.000 Ft értékben kell fogadásokat megtenned. 4) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: A bónusz kizárólag hétköznapokon (hétfőtől péntekig) aktiválható, hétvégén nem érhető el!',
   2,                          -- WEEKDAYS
   0.00,
   3000.00,
@@ -611,7 +611,7 @@ VALUES
 (
   'DARTSBONUSZ5K',
   'DARTS BÓNUSZ (10.000 Ft fogadás, 5.000 Ft bónusz)',
-  'Fogadjon 10.000 Ft értékben 2-es kötésben kizárólag darts mérkőzésekre. Sikeres fogadás után 5.000 Ft bónusz jár, amit 2x kell megforgatni.',
+  'Darts rajongóknak szóló exkluzív bónusz! Hogyan szerezheted meg? 1) Tégy meg egy legalább 10.000 Ft értékű fogadást kizárólag darts mérkőzésekre. 2) A fogadásnak legalább 2 eseményt (2-es kötést) kell tartalmaznia, minimum 2.00-es össz odds-szal. 3) A fogadásod lezárása és kiértékelése után 5.000 Ft bónusz pénzt kapsz a bónusz egyenlegedre. 4) A kapott 5.000 Ft bónuszt 2-szeresen kell megforgatnod (10.000 Ft értékű fogadás), mielőtt kifizethetővé válik. 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: Az aktiválás után 48 órád van a bónusz felhasználására!',
   4,                          -- EVENT_SPECIFIC
   5000.00,
   10000.00,
@@ -657,7 +657,7 @@ VALUES
 (
   NULL,                       
   'ÜDVÖZLŐ BÓNUSZ 1. LÉPÉS (100% max 20.000 Ft)',
-  'Első lépcső: 100% feltöltési bónusz maximum 20.000 Ft-ig. Követelmény: 2-es kötés, minimum 2-es össz odds. A bónusz összegét 3x kell megforgatni.',
+  'Üdvözlünk a BetMatchBonus-nál! Ez a 3 lépcsős üdvözlő bónusz első lépése. Hogyan működik? 1) Regisztráció után fizess be legalább 3.000 Ft-ot. 2) A befizetésed 100%-át megkapod bónuszként, maximum 20.000 Ft-ig. Például: 10.000 Ft befizetés = 10.000 Ft bónusz, 20.000 Ft befizetés = 20.000 Ft bónusz (max). 3) A bónuszt 2-es kötésben (minimum 2 esemény) kell felhasználnod, minimum 2.00-es össz odds-szal. 4) A bónusz összegét 3-szorosan kell megforgatnod a kifizetéshez. Tehát ha 20.000 Ft bónuszt kaptál, 60.000 Ft értékben kell fogadásokat megtenned. 5) A maximálisan nyerhető összeg a bónusz 5-szöröse. Az első lépcső teljesítése után automatikusan feloldódik a 2. lépcső!',
   1,                          -- WELCOME
   0.00,
   3000.00,
@@ -703,7 +703,7 @@ VALUES
 (
   NULL,                       
   'ÜDVÖZLŐ BÓNUSZ 2. LÉPÉS (5.000 Ft ingyenes fogadás)',
-  'Második lépcső: Minimum 10.000 Ft feltöltés esetén 5.000 Ft ingyenes fogadás jár. Az ingyenes fogadásra 2-es kötés és 2-es odds vonatkozik.',
+  'Az üdvözlő bónusz második lépcsője! Az első lépcső sikeres teljesítése után érhető el. Hogyan működik? 1) Fizess be legalább 10.000 Ft-ot a számládra. 2) Cserébe 5.000 Ft értékű ingyenes fogadást (Free Bet) kapsz. 3) Az ingyenes fogadást 2-es kötésben (legalább 2 esemény) kell felhasználnod, minimum 2.00-es össz odds-szal. 4) Ingyenes fogadásnál a tét nem kerül visszafizetésre, csak a nyereményt kapod meg. 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: Az aktiválás után 48 órád van a Free Bet felhasználására! A teljesítés után automatikusan feloldódik a 3. lépcső!',
   1,                          
   5000.00,
   10000.00,
@@ -748,7 +748,7 @@ VALUES
 (
   NULL,                       
   'ÜDVÖZLŐ BÓNUSZ 3. LÉPÉS (50% max 25.000 Ft)',
-  'Harmadik lépcső: 50% feltöltési bónusz maximum 25.000 Ft-ig (50.000 Ft feltöltés esetén 25.000 Ft bónusz). A bónusz összegét 3x kell megforgatni.',
+  'Az üdvözlő bónusz harmadik és egyben utolsó lépcsője — a legnagyobb jutalom! Hogyan működik? 1) Fizess be legalább 3.000 Ft-ot a számládra. 2) A befizetésed 50%-át kapod bónuszként, maximum 25.000 Ft-ig. Például: 10.000 Ft befizetés = 5.000 Ft bónusz, 30.000 Ft befizetés = 15.000 Ft bónusz, 50.000 Ft befizetés = 25.000 Ft bónusz (max). 3) A kapott bónusz összeget 3-szorosan kell megforgatnod, mielőtt kifizethetővé válik. 4) A maximálisan nyerhető összeg a bónusz 5-szöröse. Gratulálunk, ezzel az összes üdvözlő bónusz lépcsőt teljesítetted!',
   1,                          
   0.00,
   3000.00,
@@ -794,7 +794,7 @@ VALUES
 (
   NULL,                       
   'ADVENTI VASÁRNAP 1. (dec. 6.)',
-  'Első adventi vasárnap: 100% feltöltési bónusz maximum 10.000 Ft-ig. Követelmény: 3-as kötés, minimum 3-as össz odds, eseményenként minimum 1,3 odds.',
+  'Karácsonyváró első adventi vasárnapi bónusz (december 6.)! Ünnepi ajándékunk neked: 1) Fizess be legalább 3.000 Ft-ot ezen a napon. 2) A befizetésed 100%-át megkapod bónuszként, maximum 10.000 Ft-ig. 3) A bónuszt 3-as kötésben (legalább 3 esemény) kell felhasználnod. 4) Az össz odds-nak legalább 3.00-nak kell lennie, és minden egyes eseménynek minimum 1,30-as odds-szal kell rendelkeznie. 5) A bónusz összegét 3-szorosan kell megforgatnod. 6) A maximálisan nyerhető összeg a bónusz 5-szöröse (50.000 Ft). Fontos: Kizárólag december 6-án érhető el! Ne hagyd ki a többi adventi vasárnapot sem!',
   3,                          -- SEASONAL
   0.00,
   3000.00,
@@ -839,7 +839,7 @@ VALUES
 (
   NULL,                       
   'ADVENTI VASÁRNAP 2. (dec. 13.)',
-  'Második adventi vasárnap: 100% feltöltési bónusz maximum 10.000 Ft-ig. Követelmény: 3-as kötés, minimum 3-as össz odds, eseményenként minimum 1,3 odds.',
+  'Karácsonyváró második adventi vasárnapi bónusz (december 13.)! Folytasd az ünnepi sorozatot: 1) Fizess be legalább 3.000 Ft-ot ezen a napon. 2) A befizetésed 100%-át megkapod bónuszként, maximum 10.000 Ft-ig. 3) A bónuszt 3-as kötésben (legalább 3 esemény) kell felhasználnod. 4) Az össz odds-nak legalább 3.00-nak kell lennie, és minden egyes eseménynek minimum 1,30-as odds-szal kell rendelkeznie. 5) A bónusz összegét 3-szorosan kell megforgatnod. 6) A maximálisan nyerhető összeg a bónusz 5-szöröse (50.000 Ft). Fontos: Kizárólag december 13-án érhető el!',
   3,
   0.00,
   3000.00,
@@ -884,7 +884,7 @@ VALUES
 (
   NULL,                       
   'ADVENTI VASÁRNAP 3. (dec. 20.)',
-  'Harmadik adventi vasárnap: 100% feltöltési bónusz maximum 10.000 Ft-ig. Követelmény: 3-as kötés, minimum 3-as össz odds, eseményenként minimum 1,3 odds.',
+  'Karácsonyváró harmadik adventi vasárnapi bónusz (december 20.)! Már csak egy vasárnap van hátra karácsonyig: 1) Fizess be legalább 3.000 Ft-ot ezen a napon. 2) A befizetésed 100%-át megkapod bónuszként, maximum 10.000 Ft-ig. 3) A bónuszt 3-as kötésben (legalább 3 esemény) kell felhasználnod. 4) Az össz odds-nak legalább 3.00-nak kell lennie, és minden egyes eseménynek minimum 1,30-as odds-szal kell rendelkeznie. 5) A bónusz összegét 3-szorosan kell megforgatnod. 6) A maximálisan nyerhető összeg a bónusz 5-szöröse (50.000 Ft). Fontos: Kizárólag december 20-án érhető el!',
   3,
   0.00,
   3000.00,
@@ -929,7 +929,7 @@ VALUES
 (
   NULL,                       
   'ADVENTI VASÁRNAP 4. (dec. 27.)',
-  'Negyedik adventi vasárnap: 100% feltöltési bónusz maximum 10.000 Ft-ig. Követelmény: 3-as kötés, minimum 3-as össz odds, eseményenként minimum 1,3 odds.',
+  'Karácsonyváró negyedik és utolsó adventi vasárnapi bónusz (december 27.)! Zárd az ünnepeket bónusszal: 1) Fizess be legalább 3.000 Ft-ot ezen a napon. 2) A befizetésed 100%-át megkapod bónuszként, maximum 10.000 Ft-ig. 3) A bónuszt 3-as kötésben (legalább 3 esemény) kell felhasználnod. 4) Az össz odds-nak legalább 3.00-nak kell lennie, és minden egyes eseménynek minimum 1,30-as odds-szal kell rendelkeznie. 5) A bónusz összegét 3-szorosan kell megforgatnod. 6) A maximálisan nyerhető összeg a bónusz 5-szöröse (50.000 Ft). Fontos: Kizárólag december 27-én érhető el, ez az utolsó adventi bónusz!',
   3,
   0.00,
   3000.00,
@@ -974,7 +974,7 @@ VALUES
 (
   'NB1DERBY',
   'NB1 DERBY BÓNUSZ (Újpest-Ferencváros)',
-  'Élőben kell fogadni minimum 5.000 Ft értékben az Újpest-Ferencváros mérkőzésre, minimum 2-es odds. Sikeres fogadás után 5.000 Ft ingyenes fogadás jár.',
+  'Az NB1 legnagyobb derbiéhez kapcsolódó exkluzív élő fogadási bónusz! Hogyan szerezheted meg? 1) Várd meg, amíg elindul az Újpest FC – Ferencvárosi TC mérkőzés. 2) A meccs közben (élő fogadásként) tégy meg egy legalább 5.000 Ft értékű fogadást, minimum 2.00-es odds-szal. 3) A fogadásod lezárása és kiértékelése után 5.000 Ft értékű ingyenes fogadást (Free Bet) kapsz jutalmul. 4) Az ingyenes fogadásnál a tét nem kerül visszafizetésre, csak a tiszta nyereményt kapod. 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: Kizárólag élő fogadásra érvényes, előzetes (pre-match) fogadás nem számít!',
   4,
   5000.00,
   5000.00,
@@ -1019,7 +1019,7 @@ VALUES
 (
   'ESPORT5K',
   'ESPORT BÓNUSZ (5.000 Ft bónusz)',
-  'Fogadjon 5.000 Ft értékben bármilyen esport mérkőzésre, és kap 5.000 Ft bónuszt. A bónuszt 3-as kötésben kell megtennie, eseményenként minimum 1,3 odds, össz odds minimum 3.0.',
+  'Esport rajongóknak szóló bónusz — CS2, League of Legends, Dota 2 és más esport mérkőzésekre! Hogyan működik? 1) Tégy meg egy legalább 5.000 Ft értékű fogadást bármely esport mérkőzésre. 2) A fogadásnak legalább 3 eseményt (3-as kötést) kell tartalmaznia. 3) Minden egyes eseménynek minimum 1,30-as odds-szal kell rendelkeznie, és az össz odds-nak el kell érnie a 3.00-at. 4) A fogadásod lezárása és kiértékelése után 5.000 Ft bónusz pénzt kapsz. 5) A kapott bónuszt 3-szorosan kell megforgatnod (15.000 Ft értékű fogadás). 6) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Próbáld ki az esport fogadást és szerezd meg az extra bónuszt!',
   4,
   5000.00,
   5000.00,
@@ -1064,7 +1064,7 @@ VALUES
 (
   '0222',
   'CSUPA KETTES BÓNUSZ (február 22.)',
-  'Töltsön fel 2222 Ft-ot és 100%-ban megkapja az összeget. Követelmény: 2-es odds, 2 esemény, minimum 1,4 odds eseményenként.',
+  'Február 22. — a kettes szám ünnepe! Egyedi, évente egyszer elérhető bónusz. Hogyan aktiválhatod? 1) Február 22-én fizess be pontosan 2.222 Ft-ot. 2) A befizetésed 100%-át, azaz 2.222 Ft bónuszt kapsz. 3) A bónusz felhasználásakor 2-es kötést (legalább 2 esemény) kell megtenned. 4) Az össz odds-nak legalább 2.00-nak kell lennie, és minden eseménynél minimum 1,40-es odds szükséges. 5) A bónusz összegét 3-szorosan kell megforgatnod (6.666 Ft értékű fogadás). 6) A maximálisan nyerhető összeg a bónusz 5-szöröse (11.110 Ft). Fontos: Kizárólag február 22-én aktiválható, ne hagyd ki ezt a különleges napot!',
   5,
   0.00,
   2222.00,
@@ -1109,7 +1109,7 @@ VALUES
 (
   NULL,                       
   'SZÜLETÉSNAPI BÓNUSZ (5.000 Ft)',
-  'Születésnap alkalmából 5.000 Ft bónusz, amellyel arra fogadhat, amire akar. Nincs forgatási követelmény. Igényelhető bónusz.',
+  'Boldog születésnapot! Ajándékunk neked: 5.000 Ft bónusz a nagy napodon. Hogyan igényelheted? 1) A születésnapodon (a regisztrációnál megadott dátum alapján) igényeld a bónuszt a profilodban vagy az ügyfélszolgálaton keresztül. 2) Jóváhagyás után 5.000 Ft bónusz pénz kerül a bónusz egyenlegedre. 3) A bónusszal bármilyen sportra, bármilyen mérkőzésre fogadhatsz — nincs sportági megkötés. 4) Nincs forgatási követelmény, tehát a nyereményed azonnal kifizethetővé válik! 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Minden évben egyszer, a születésnapodon igényelheted!',
   7,                          -- ADMIN_BONUS
   5000.00,
   0.00,
@@ -1154,7 +1154,7 @@ VALUES
 (
   NULL,                       
   'BETMATCH SZÜLETÉSNAPI BÓNUSZ (első 500)',
-  'Első 500 ügyfél számára, aki igényli, 5.000 Ft bónusz születésnapján, amellyel arra fogadhat, amire akar. Nincs forgatási követelmény.',
+  'A BetMatchBonus születésnapi különleges promóciója — limitált számban elérhető! Hogyan működik? 1) A BetMatchBonus évfordulóján az első 500 igénylő ügyfél kap 5.000 Ft bónuszt. 2) Igényeld a bónuszt a profilodban vagy az ügyfélszolgálaton keresztül — aki előbb igényli, az kapja meg! 3) A bónusszal bármilyen sportra, bármilyen mérkőzésre fogadhatsz — nincs sportági megkötés. 4) Nincs forgatási követelmény, a nyereményed azonnal kifizethetővé válik! 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: Csak 500 db érhető el összesen, ne habozz!',
   7,                          -- ADMIN_BONUS
   5000.00,
   0.00,
@@ -1199,7 +1199,7 @@ VALUES
 (
   'HETVEGI5K',                
   'HÉTVÉGI BÓNUSZ (5.000 Ft ingyenes fogadás)',
-  'Szombaton és vasárnap: 5.000 Ft befizetés esetén 5.000 Ft ingyenes fogadás jár. Követelmény: 2-es kötés, minimum 2-es össz odds. Nincs forgatási követelmény.',
+  'Hétvégi extra — szombaton és vasárnap elérhető ingyenes fogadás! Hogyan aktiválhatod? 1) Szombaton vagy vasárnap fizess be legalább 5.000 Ft-ot. 2) Cserébe 5.000 Ft értékű ingyenes fogadást (Free Bet) kapsz a bónusz egyenlegedre. 3) Az ingyenes fogadást 2-es kötésben (legalább 2 esemény) kell felhasználnod. 4) Az össz odds-nak legalább 2.00-nak kell lennie, és minden eseménynél minimum 1,40-es odds szükséges. 5) Nincs forgatási követelmény — a nyereményed azonnal kifizethetővé válik (a tét összege nem kerül visszafizetésre, csak a nyereményt kapod). 6) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Tipp: Használd a hétvégi nagy meccsekre!',
   6,                          -- WEEKEND
   5000.00,                    
   5000.00,                    
@@ -1246,3 +1246,6 @@ ALTER TABLE Transactions
 ALTER TABLE Users
   ADD COLUMN IF NOT EXISTS failed_login_attempts INT NOT NULL DEFAULT 0 AFTER password_changed_at,
   ADD COLUMN IF NOT EXISTS login_locked_until DATETIME DEFAULT NULL AFTER failed_login_attempts;
+
+ALTER TABLE BonusCodes
+  MODIFY COLUMN description TEXT DEFAULT NULL;
