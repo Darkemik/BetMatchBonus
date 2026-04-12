@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     const t = (key, fallback) => (typeof window.i18n === 'function' ? window.i18n(key, fallback) : (fallback || key));
+    const td = (text) => (typeof window.i18nDynamic === 'function' ? window.i18nDynamic(text) : text);
     const liveContainer = document.getElementById("matches-container");
     const todayContainer = document.getElementById("today-matches-container");
     const esportSportsNav = document.getElementById("esportSportsNav");
@@ -97,7 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
         var html = '';
         validMarkets.forEach(function(market) {
             var specialVal = market.specialValue ? ' (' + market.specialValue + ')' : '';
-            var marketFullName = (market.name || '') + specialVal;
+            var marketFullName = td(market.name || '') + specialVal;
             html += '<div class="market-card">';
             html += '<div class="market-header"><span class="market-name">' + escapeHtml(marketFullName) + '</span></div>';
             html += '<div class="market-selections">';
@@ -163,7 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
             btn.className = 'esport-sport-item' + (currentEsportId === sportId ? ' active' : '');
             btn.innerHTML = `
                 <div class="esport-sport-icon"><i class="fas ${config.icon}"></i></div>
-                <span class="esport-sport-name">${escapeHtml(config.name)}</span>
+                <span class="esport-sport-name">${escapeHtml(td(config.name))}</span>
                 <span class="esport-sport-count${count > 0 ? ' has-live' : ''}">${count}</span>
             `;
             btn.addEventListener('click', function(e) {
@@ -238,7 +239,7 @@ document.addEventListener("DOMContentLoaded", () => {
             btn.className = 'esport-game-item' + (currentGameTag === tag ? ' active' : '');
             btn.innerHTML =
                 '<div class="esport-game-icon"><i class="fas ' + escapeHtml(info.icon || 'fa-gamepad') + '"></i></div>' +
-                '<span>' + escapeHtml(info.name) + '</span>' +
+                '<span>' + escapeHtml(td(info.name)) + '</span>' +
                 '<span class="esport-game-count' + (count > 0 ? ' has-live' : '') + '">' + count + '</span>';
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -607,8 +608,8 @@ document.addEventListener("DOMContentLoaded", () => {
             '<button class="back-btn" id="back-to-matches"><i class="fas fa-arrow-left"></i> ' + backLabel + '</button>' +
             '<div class="match-header-card">' +
                 '<div class="match-meta">' +
-                    '<span class="meta-item"><i class="fas fa-globe-europe"></i> ' + escapeHtml(match.country) + '</span>' +
-                    '<span class="meta-item"><i class="fas fa-trophy"></i> ' + escapeHtml(match.championship) + '</span>' +
+                    '<span class="meta-item"><i class="fas fa-globe-europe"></i> ' + escapeHtml(td(match.country)) + '</span>' +
+                    '<span class="meta-item"><i class="fas fa-trophy"></i> ' + escapeHtml(td(match.championship)) + '</span>' +
                     '<span class="meta-item"><i class="fas fa-clock"></i> ' + startTime + '</span>' +
                 '</div>' +
                 '<div class="match-scoreboard">' +
@@ -751,4 +752,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Game tags frissítése percenként (szinkronban a meccsekkel)
     setInterval(fetchGameTags, 60000);
+
+    window.addEventListener('languageChanged', function() {
+        refreshActive();
+        fetch("../../backend/ApiRequest/get_matches_live.php")
+            .then(function(res) { return res.json(); })
+            .then(function(apiResult) {
+                var liveCounts = {};
+                var todayCounts = {};
+                if (apiResult && apiResult.sports) {
+                    ESPORT_SPORT_IDS.forEach(function(id) {
+                        liveCounts[id] = apiResult.sports[String(id)] || apiResult.sports[id] || 0;
+                        todayCounts[id] = liveCounts[id];
+                    });
+                }
+                buildEsportSportsNav(liveCounts, todayCounts);
+            })
+            .catch(function() {});
+    });
 });

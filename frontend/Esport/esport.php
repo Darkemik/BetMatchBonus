@@ -72,11 +72,11 @@ require_once "../../backend/connect.php";
         </div>
 
         <nav class="nav collapse navbar-collapse" id="mainNavbar">
-            <a href="../../frontend/MainMenu/MainMenu.php">Főoldal</a>
-            <a href="../../frontend/Live/live.php">Élő</a>
-            <a href="../../frontend/Esport/esport.php" class="active">eSport</a>
-            <a href="../../frontend/Bonus/bonus.php">Bónuszok</a>
-            <a href="../../frontend/Help/help.php">Segítség</a>
+            <a href="../../frontend/MainMenu/MainMenu.php"><span data-i18n="nav.home">Főoldal</span></a>
+            <a href="../../frontend/Live/live.php"><span data-i18n="nav.live">Élő</span></a>
+            <a href="../../frontend/Esport/esport.php" class="active"><span data-i18n="nav.esport">eSport</span></a>
+            <a href="../../frontend/Bonus/bonus.php"><span data-i18n="nav.bonuses">Bónuszok</span></a>
+            <a href="../../frontend/Help/help.php"><span data-i18n="nav.help">Segítség</span></a>
         </nav>
     </header>
 

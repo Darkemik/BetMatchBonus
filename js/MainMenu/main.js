@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
     const t = (key, fallback) => (typeof window.i18n === 'function' ? window.i18n(key, fallback) : (fallback || key));
+    const td = (text) => (typeof window.i18nDynamic === 'function' ? window.i18nDynamic(text) : text);
 
   // ========== ELEMEK ==========
   const sportsList = document.getElementById('sportsList');
@@ -94,6 +95,13 @@ document.addEventListener('DOMContentLoaded', function () {
       return div.innerHTML;
   }
 
+  function applyDynamicTranslations(root) {
+      if (!root) return;
+      root.querySelectorAll('.country-name, .league-name, .market-name, .sidebar-country-header, .sidebar-comp-header, .user-bet-market, .tip-league, .tip-combo-market').forEach(el => {
+          el.textContent = td(el.textContent);
+      });
+  }
+
   // ========== SIDEBAR SPORTOK BETÖLTÉSE ==========
   function loadSidebarSports() {
       fetch('../../backend/ApiRequest/get_sidebar_sports.php')
@@ -176,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function () {
           html += `
               <div class="sidebar-sport-item${activeClass}" data-sport-id="${sport.sport_api_id}">
                   <i class="fas ${escapeHtml(sport.icon)} sidebar-sport-icon"></i>
-                  <span class="sidebar-sport-name">${escapeHtml(sport.sport_name)}</span>
+                  <span class="sidebar-sport-name">${escapeHtml(td(sport.sport_name))}</span>
                   <span class="sidebar-sport-count ${countClass}">${displayCount}</span>
               </div>
           `;
@@ -211,17 +219,17 @@ document.addEventListener('DOMContentLoaded', function () {
       sportDetailPanel.style.display = 'block';
 
       let html = `<div class="sidebar-sport-detail-title">
-          <i class="fas ${escapeHtml(sport.icon)}"></i> ${escapeHtml(sport.sport_name)}
+          <i class="fas ${escapeHtml(sport.icon)}"></i> ${escapeHtml(td(sport.sport_name))}
       </div>`;
 
       sport.countries.forEach(country => {
           html += `<div class="sidebar-country-group">
-              <div class="sidebar-country-header">${escapeHtml(country.country_name)}</div>
+              <div class="sidebar-country-header">${escapeHtml(td(country.country_name))}</div>
               <div class="sidebar-country-content">`;
 
           country.competitions.forEach(comp => {
               html += `<div class="sidebar-comp-group">
-                  <div class="sidebar-comp-header">${escapeHtml(comp.competition_name)}</div>
+                  <div class="sidebar-comp-header">${escapeHtml(td(comp.competition_name))}</div>
                   <div class="sidebar-comp-content">`;
 
               comp.matches.forEach(match => {
@@ -352,7 +360,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (centerTitle) {
           if (sportId && sportId > 0) {
               const sport = sportsData.find(s => s.sport_api_id === sportId);
-              const sportName = sport ? sport.sport_name : 'Sport';
+              const sportName = sport ? td(sport.sport_name) : 'Sport';
               centerTitle.innerHTML = `<i class="fas ${sport ? sport.icon : 'fa-trophy'}"></i> ${escapeHtml(sportName)} ${t('mainMenu.matchesWord', 'meccsek')}`;
           } else {
               centerTitle.innerHTML = '<i class="fas fa-calendar-day"></i> ' + t('mainMenu.todayMatches', 'Mai meccsek');
@@ -369,6 +377,7 @@ document.addEventListener('DOMContentLoaded', function () {
               attachOddsButtonHandlers();
               applyPagination();
               if (typeof window.applyI18n === 'function') window.applyI18n(matchesContainer);
+              applyDynamicTranslations(matchesContainer);
 
           })
           .catch(err => {
@@ -543,8 +552,8 @@ document.addEventListener('DOMContentLoaded', function () {
           <div class="match-header-card">
               ${isBoostedMatch ? '<div class="boosted-match-banner"><i class="fas fa-rocket"></i> ' + t('mainMenu.boostedMatchBanner', 'Oddsűrhajó — Kiemelt szorzó ezen a meccsen!') + '</div>' : ''}
               <div class="match-meta">
-                  <span class="meta-item"><i class="fas fa-globe-europe"></i> ${escapeHtml(match.country || t('mainMenu.unknown', 'Ismeretlen'))}</span>
-                  <span class="meta-item"><i class="fas fa-trophy"></i> ${escapeHtml(match.championship || t('mainMenu.unknown', 'Ismeretlen'))}</span>
+                  <span class="meta-item"><i class="fas fa-globe-europe"></i> ${escapeHtml(td(match.country || t('mainMenu.unknown', 'Ismeretlen')))}</span>
+                  <span class="meta-item"><i class="fas fa-trophy"></i> ${escapeHtml(td(match.championship || t('mainMenu.unknown', 'Ismeretlen')))}</span>
                   <span class="meta-item"><i class="fas fa-clock"></i> ${escapeHtml(match.startUtc ? new Date(match.startUtc).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }) : '-')}</span>
               </div>
               <div class="match-scoreboard">
@@ -571,7 +580,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
           markets.forEach(market => {
               const specialVal = market.specialValue ? ' (' + market.specialValue + ')' : '';
-              const marketFullName = (market.name || '') + specialVal;
+              const marketFullName = td(market.name || '') + specialVal;
               html += `<div class="market-card">
                   <div class="market-header"><span class="market-name">${escapeHtml(marketFullName)}</span></div>
                   <div class="market-selections">`;
@@ -661,8 +670,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
           <div class="match-header-card finished-header">
               <div class="match-meta">
-                  <span class="meta-item"><i class="fas fa-globe-europe"></i> ${escapeHtml(match.country || t('mainMenu.unknown', 'Ismeretlen'))}</span>
-                  <span class="meta-item"><i class="fas fa-trophy"></i> ${escapeHtml(match.championship || t('mainMenu.unknown', 'Ismeretlen'))}</span>
+                  <span class="meta-item"><i class="fas fa-globe-europe"></i> ${escapeHtml(td(match.country || t('mainMenu.unknown', 'Ismeretlen')))}</span>
+                  <span class="meta-item"><i class="fas fa-trophy"></i> ${escapeHtml(td(match.championship || t('mainMenu.unknown', 'Ismeretlen')))}</span>
                   <span class="meta-item"><i class="fas fa-calendar-alt"></i> ${escapeHtml(match.startTime || '-')}</span>
               </div>
               <div class="match-scoreboard">
@@ -698,7 +707,7 @@ document.addEventListener('DOMContentLoaded', function () {
       html += `<div class="info-card">
           <div class="info-card-icon"><i class="fas fa-trophy"></i></div>
           <div class="info-card-label">${t('mainMenu.competition', 'Bajnokság')}</div>
-          <div class="info-card-value">${escapeHtml(match.championship || '-')}</div>
+          <div class="info-card-value">${escapeHtml(td(match.championship || '-'))}</div>
       </div>`;
 
       // Győztes megállapítás
@@ -774,7 +783,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
           markets.forEach(market => {
               const specialVal = market.specialValue ? ' (' + market.specialValue + ')' : '';
-              const marketFullName = (market.name || '') + specialVal;
+              const marketFullName = td(market.name || '') + specialVal;
               html += `<div class="market-card finished-market">
                   <div class="market-header"><span class="market-name">${escapeHtml(marketFullName)}</span>
                   <span class="market-status-badge">${market.status || 'CLOSED'}</span></div>
@@ -809,7 +818,7 @@ document.addEventListener('DOMContentLoaded', function () {
               html += `
                   <div class="user-bet-card ${statusClass}">
                       <div class="user-bet-header">
-                          <span class="user-bet-market">${escapeHtml(bet.market || '')}</span>
+                          <span class="user-bet-market">${escapeHtml(td(bet.market || ''))}</span>
                           <span class="user-bet-status">${statusIcon} ${escapeHtml(bet.ticketStatus)}</span>
                       </div>
                       <div class="user-bet-body">
@@ -1090,6 +1099,7 @@ document.addEventListener('DOMContentLoaded', function () {
               });
               tipsList.innerHTML = html;
               if (typeof window.applyI18n === 'function') window.applyI18n(tipsList);
+              applyDynamicTranslations(tipsList);
 
               tipsList.querySelectorAll('.tip-add-btn').forEach(btn => {
                   btn.addEventListener('click', function () {
@@ -1120,6 +1130,21 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // ========== INICIALIZÁLÁS ==========
+  window.addEventListener('languageChanged', function () {
+      if (sportsData.length) {
+          renderSportsList(sportsData, matchSearch ? matchSearch.value : '');
+      }
+
+      if (centerTitle && currentSportId) {
+          const sport = sportsData.find(s => s.sport_api_id === currentSportId);
+          if (sport) {
+              centerTitle.innerHTML = `<i class="fas ${sport.icon}"></i> ${escapeHtml(td(sport.sport_name))} ${t('mainMenu.matchesWord', 'meccsek')}`;
+          }
+      }
+
+      applyDynamicTranslations(matchesContainer);
+  });
+
   loadSidebarSports();
   loadMatches(66); // Alapértelmezett: Foci
   loadDailyTips();

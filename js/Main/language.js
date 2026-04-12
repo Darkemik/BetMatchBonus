@@ -16,6 +16,52 @@
     let currentLang = localStorage.getItem('lang') || 'hu';
     let translations = {};
 
+    // API-ból érkező dinamikus szövegek (sportok/piacok) gyors fordítási szótára.
+    // HU oldalon az eredeti marad, EN oldalon kulcsszavas cserét végzünk.
+    const DYNAMIC_TEXT_MAP = {
+        en: {
+            'Labdarúgás': 'Football',
+            'Kosárlabda': 'Basketball',
+            'Baseball': 'Baseball',
+            'Amerikai foci': 'American Football',
+            'Jégkorong': 'Ice Hockey',
+            'Röplabda': 'Volleyball',
+            'Kézilabda': 'Handball',
+            'Pingpong': 'Table Tennis',
+            'Téli sport': 'Winter Sports',
+            'Nemzetközi': 'International',
+            'Döntetlen': 'Draw',
+            'Vagy': 'or',
+            'Egyik sem': 'Neither',
+            'főidő': 'Full Time',
+            'félidő': '1st Half',
+            'gólok száma': 'Total Goals',
+            'Kétesély': 'Double Chance',
+            'Döntetlennél a tét visszajár': 'Draw No Bet',
+            'felett': 'Over',
+            'alatt': 'Under',
+            'száma': 'Number'
+        }
+    };
+
+    function escapeRegExp(str) {
+        return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    function dynamicTranslate(text) {
+        if (text == null) return text;
+        const input = String(text);
+        if (currentLang !== 'en') return input;
+
+        const map = DYNAMIC_TEXT_MAP.en || {};
+        const keys = Object.keys(map).sort((a, b) => b.length - a.length);
+        let out = input;
+        keys.forEach(key => {
+            out = out.replace(new RegExp(escapeRegExp(key), 'gi'), map[key]);
+        });
+        return out;
+    }
+
     // JSON betöltés — megkeresi a megfelelő relatív útvonalat
     function getJsonBasePath() {
         const scripts = document.querySelectorAll('script[src*="language.js"]');
@@ -65,6 +111,11 @@
     // Aktuális nyelv lekérése
     window.i18nLang = function () {
         return currentLang;
+    };
+
+    // API-ból jövő dinamikus feliratok fordításához.
+    window.i18nDynamic = function (text) {
+        return dynamicTranslate(text);
     };
 
     // DOM szövegek cseréje

@@ -1,5 +1,6 @@
 ﻿document.addEventListener('DOMContentLoaded', function() {
     const t = (key, fallback) => (typeof window.i18n === 'function' ? window.i18n(key, fallback) : (fallback || key));
+    const td = (text) => (typeof window.i18nDynamic === 'function' ? window.i18nDynamic(text) : text);
     const matchesContainer = document.getElementById('matches-container');
     const sportsNav = document.getElementById('liveSportsNav');
     let currentSportId = null; // Dynamically set from first live sport
@@ -8,6 +9,13 @@
     let viewingMatchDetails = false;
     let refreshRequestId = 0;
     let currentDetailEventId = null;
+
+    function applyDynamicTranslations(root) {
+        if (!root) return;
+        root.querySelectorAll('.country-name, .league-name, .market-name, .sport-name').forEach(el => {
+            el.textContent = td(el.textContent);
+        });
+    }
 
     // ===== BAJNOKSÁG ÁLLAPOTOK (sportváltás között megmarad) =====
     const visibleLeagueCountPerSport = {}; // { sportId: number } — hány bajnokság látható
@@ -315,7 +323,7 @@
             link.setAttribute('data-sport-id', sportId);
             link.innerHTML = `
                 <div class="sport-icon"><i class="fas ${icon}"></i></div>
-                <span class="sport-name">${escapeHtml(name)}</span>
+                <span class="sport-name">${escapeHtml(td(name))}</span>
                 <span class="sport-count has-live">${count}</span>
             `;
 
@@ -351,10 +359,10 @@
     // Helper: get sport name from dynamic details or fallback
     function getSportName(sportId) {
         if (sportDetails[sportId] && sportDetails[sportId].name) {
-            return sportDetails[sportId].name;
+            return td(sportDetails[sportId].name);
         }
         if (SPORT_CONFIG_FALLBACK[sportId]) {
-            return SPORT_CONFIG_FALLBACK[sportId].name;
+            return td(SPORT_CONFIG_FALLBACK[sportId].name);
         }
         return 'Sport #' + sportId;
     }
@@ -433,6 +441,7 @@
 
             console.log('[LIVE.JS] HTML kapott, hossz:', html.length);
             matchesContainer.innerHTML = html;
+            applyDynamicTranslations(matchesContainer);
             
             attachMatchClickHandlers();
             applyLeagueStates();
@@ -492,7 +501,7 @@
                         <div class="modal-header border-bottom border-secondary">
                             <div>
                                 <h5 class="modal-title">${escapeHtml(match.name || t('live.matchDefaultName', 'Meccs'))}</h5>
-                                <small class="text-muted">${escapeHtml((match.country || '') + ' - ' + (match.championship || ''))}</small>
+                                <small class="text-muted">${escapeHtml(td((match.country || '') + ' - ' + (match.championship || '')))}</small>
                             </div>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
@@ -510,7 +519,7 @@
             
             markets.forEach(market => {
                 const specialVal = market.specialValue ? ' (' + market.specialValue + ')' : '';
-                const marketFullName = (market.name || '') + specialVal;
+                const marketFullName = td(market.name || '') + specialVal;
                 modalHTML += `<div class="market-section mb-3">
                     <h6 class="text-secondary">${escapeHtml(marketFullName)}</h6>
                     <div class="selections">`;
@@ -605,7 +614,7 @@
                     const markets = data.markets || [];
                     markets.forEach(market => {
                         const specialVal = market.specialValue ? ' (' + market.specialValue + ')' : '';
-                        const marketFullName = (market.name || '') + specialVal;
+                        const marketFullName = td(market.name || '') + specialVal;
                         
                         if (market.selections && Array.isArray(market.selections)) {
                             market.selections.forEach(selection => {
@@ -676,8 +685,8 @@
 
             <div class="match-header-card">
                 <div class="match-meta">
-                    <span class="meta-item"><i class="fas fa-globe-europe"></i> ${escapeHtml(match.country || t('mainMenu.unknown', 'Ismeretlen'))}</span>
-                    <span class="meta-item"><i class="fas fa-trophy"></i> ${escapeHtml(match.championship || t('mainMenu.unknown', 'Ismeretlen'))}</span>
+                    <span class="meta-item"><i class="fas fa-globe-europe"></i> ${escapeHtml(td(match.country || t('mainMenu.unknown', 'Ismeretlen')))}</span>
+                    <span class="meta-item"><i class="fas fa-trophy"></i> ${escapeHtml(td(match.championship || t('mainMenu.unknown', 'Ismeretlen')))}</span>
                     <span class="meta-item"><i class="fas fa-clock"></i> ${match.startUtc ? escapeHtml(new Date(match.startUtc).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' })) : '-'}</span>
                 </div>
                 <div class="match-scoreboard">
@@ -702,7 +711,7 @@
             
             markets.forEach(market => {
                 const specialVal = market.specialValue ? ' (' + market.specialValue + ')' : '';
-                const marketFullName = (market.name || '') + specialVal;
+                const marketFullName = td(market.name || '') + specialVal;
                 html += `<div class="market-card">
                     <div class="market-header"><span class="market-name">${escapeHtml(marketFullName)}</span></div>
                     <div class="market-selections">`;
@@ -1100,6 +1109,15 @@
             loadTickerAndUpcoming();
         }
     }, 5000);
+
+    window.addEventListener('languageChanged', function() {
+        if (viewingMatchDetails && currentDetailEventId) {
+            refreshMatchDetails();
+            return;
+        }
+        updateSportsNav();
+        refreshMatches();
+    });
     
     console.log('[LIVE.JS] Inicializálás kész!');
 });
