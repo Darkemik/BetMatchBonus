@@ -93,7 +93,7 @@
     "backLink": "← Vissza a jelszó helyreállításához"
   },
   "betslip": {
-    "ticket": "Ticket",
+    "ticket": "Szelvény",
     "history": "Előzmények",
     "single": "Egyes",
     "combo": "Kötés",
@@ -102,7 +102,7 @@
     "totalOdds": "Összesített odds:",
     "stake": "Tét (Ft):",
     "potentialPayout": "Lehetséges nyeremény:",
-    "placeBet": "Ticket leadása",
+    "placeBet": "Szelvény leadása",
     "clearAll": "Összes törlése",
     "remove": "Eltávolítás",
     "mustLogin": "Be kell jelentkezned a fogadáshoz",
@@ -133,7 +133,7 @@
     "winLabel": "Nyeremény:",
     "potentialLabel": "Potenciális:",
     "noHistory": "Még nincs korábbi fogadás",
-    "noHistorySubtitle": "Az első ticket itt jelenik meg"
+    "noHistorySubtitle": "Az első szelvény itt jelenik meg"
   },
   "mainMenu": {
     "todayMatches": "Mai meccsek",

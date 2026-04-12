@@ -2,13 +2,13 @@
     <div class="betslip-header">
         <h3 class="betslip-title">
             <i class="fas fa-ticket-alt"></i>
-            <span id="betslip-label" data-i18n="betslip.ticket">Ticket</span>
+            <span id="betslip-label" data-i18n="betslip.ticket">Szelvény</span>
             <span class="betslip-count" id="betslip-count">0</span>
         </h3>
     </div>
 
     <div class="betslip-tabs">
-        <button class="betslip-tab active" data-tab="ticket">🎫 <span data-i18n="betslip.ticket">Ticket</span></button>
+        <button class="betslip-tab active" data-tab="ticket">🎫 <span data-i18n="betslip.ticket">Szelvény</span></button>
         <button class="betslip-tab" data-tab="elozmeny">📊 <span data-i18n="betslip.history">Előzmények</span></button>
     </div>
 
@@ -76,7 +76,7 @@
             style="display: none;"
             aria-label="Fogadás elhelyezése"
         >
-            <i class="fas fa-check"></i> <span data-i18n="betslip.placeBet">Ticket leadása</span>
+            <i class="fas fa-check"></i> <span data-i18n="betslip.placeBet">Szelvény leadása</span>
         </button>
 
         <button 
@@ -94,7 +94,7 @@
         <div class="elozmeny-empty" id="elozmeny-empty">
             <i class="fas fa-history"></i>
             <p data-i18n="betslip.noHistory">Még nincs korábbi fogadás</p>
-            <span style="font-size: 12px; color: #999;" data-i18n="betslip.noHistorySubtitle">Az első ticket itt jelenik meg</span>
+            <span style="font-size: 12px; color: #999;" data-i18n="betslip.noHistorySubtitle">Az első szelvény itt jelenik meg</span>
         </div>
 
         <div class="elozmeny-items" id="elozmeny-items" style="display: none;">
