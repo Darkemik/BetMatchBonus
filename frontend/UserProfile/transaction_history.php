@@ -39,7 +39,7 @@ foreach ($transactions as $t) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tranzakciótörténet | BetMatchBonus</title>
+    <title data-i18n="userProfile.transactionHistory.pageTitle">Tranzakciótörténet | BetMatchBonus</title>
     <link rel="stylesheet" href="../../css/RootColor/root.css">
     <link rel="stylesheet" href="../../css/Main/layout.css">
     <link rel="stylesheet" href="../../css/UserProfile/user_profile.css">
@@ -55,26 +55,26 @@ foreach ($transactions as $t) {
         <div class="row">
             <div class="col-md-3">
                 <nav class="profile-sidebar">
-                    <a href="personal_data.php" class="profile-nav-item"><i class="fas fa-user"></i> Személyes Adatok</a>
-                    <a href="change_password.php" class="profile-nav-item"><i class="fas fa-key"></i> Jelszó Módosítás</a>
-                    <a href="deposit.php" class="profile-nav-item"><i class="fas fa-plus-circle"></i> Befizetés</a>
-                    <a href="withdrawal.php" class="profile-nav-item"><i class="fas fa-minus-circle"></i> Kifizetés</a>
-                    <a href="transaction_history.php" class="profile-nav-item active"><i class="fas fa-history"></i> Tranzakciótörténet</a>
-                    <a href="my_bonuses.php" class="profile-nav-item"><i class="fas fa-gift"></i> Bónuszaim</a>
-                    <a href="activity_log.php" class="profile-nav-item"><i class="fas fa-list"></i> Napló</a>
-                    <a href="#" class="profile-nav-item logout profile-logout-btn" onclick="event.preventDefault();fetch('/BetMatchBonus/backend/Auth/logout.php',{method:'POST'}).then(function(){window.location.href='/BetMatchBonus/frontend/MainMenu/MainMenu.php';});"><i class="fas fa-sign-out-alt"></i> Kijelentkezés</a>
+                    <a href="personal_data.php" class="profile-nav-item"><i class="fas fa-user"></i> <span data-i18n="auth.personalData">Személyes Adatok</span></a>
+                    <a href="change_password.php" class="profile-nav-item"><i class="fas fa-key"></i> <span data-i18n="auth.changePassword">Jelszó Módosítás</span></a>
+                    <a href="deposit.php" class="profile-nav-item"><i class="fas fa-plus-circle"></i> <span data-i18n="auth.deposit">Befizetés</span></a>
+                    <a href="withdrawal.php" class="profile-nav-item"><i class="fas fa-minus-circle"></i> <span data-i18n="auth.withdrawal">Kifizetés</span></a>
+                    <a href="transaction_history.php" class="profile-nav-item active"><i class="fas fa-history"></i> <span data-i18n="auth.transactionHistory">Tranzakciótörténet</span></a>
+                    <a href="my_bonuses.php" class="profile-nav-item"><i class="fas fa-gift"></i> <span data-i18n="auth.myBonuses">Bónuszaim</span></a>
+                    <a href="activity_log.php" class="profile-nav-item"><i class="fas fa-list"></i> <span data-i18n="auth.activityLog">Napló</span></a>
+                    <a href="#" class="profile-nav-item logout profile-logout-btn" onclick="event.preventDefault();fetch('/BetMatchBonus/backend/Auth/logout.php',{method:'POST'}).then(function(){window.location.href='/BetMatchBonus/frontend/MainMenu/MainMenu.php';});"><i class="fas fa-sign-out-alt"></i> <span data-i18n="auth.logout">Kijelentkezés</span></a>
                 </nav>
             </div>
             <div class="col-md-9">
                 <div class="profile-content">
-                    <h1><i class="fas fa-history"></i> Tranzakciótörténet</h1>
+                    <h1><i class="fas fa-history"></i> <span data-i18n="auth.transactionHistory">Tranzakciótörténet</span></h1>
 
                     <!-- Összesítő kártyák -->
                     <div class="row g-3 mb-4">
                         <div class="col-md-4">
                             <div class="card text-center transaction-stat-card" style="background:#1a1a2e;">
                                 <div class="card-body py-3">
-                                    <div style="font-size:13px;color:#f5c518;text-transform:uppercase;letter-spacing:1px;">Összes befizetés</div>
+                                    <div style="font-size:13px;color:#f5c518;text-transform:uppercase;letter-spacing:1px;" data-i18n="userProfile.transactionHistory.totalDeposit">Összes befizetés</div>
                                     <div style="font-size:1.5rem;font-weight:700;color:#f5c518;"><?php echo number_format($totalDeposit, 0, ',', ' '); ?> Ft</div>
                                 </div>
                             </div>
@@ -82,7 +82,7 @@ foreach ($transactions as $t) {
                         <div class="col-md-4">
                             <div class="card text-center transaction-stat-card" style="background:#1a1a2e;">
                                 <div class="card-body py-3">
-                                    <div style="font-size:13px;color:#f5c518;text-transform:uppercase;letter-spacing:1px;">Összes kifizetés</div>
+                                    <div style="font-size:13px;color:#f5c518;text-transform:uppercase;letter-spacing:1px;" data-i18n="userProfile.transactionHistory.totalWithdrawal">Összes kifizetés</div>
                                     <div style="font-size:1.5rem;font-weight:700;color:#f5c518;"><?php echo number_format($totalWithdrawal, 0, ',', ' '); ?> Ft</div>
                                 </div>
                             </div>
@@ -90,7 +90,7 @@ foreach ($transactions as $t) {
                         <div class="col-md-4">
                             <div class="card text-center transaction-stat-card" style="background:#1a1a2e;">
                                 <div class="card-body py-3">
-                                    <div style="font-size:13px;color:#f5c518;text-transform:uppercase;letter-spacing:1px;">Függőben lévő</div>
+                                    <div style="font-size:13px;color:#f5c518;text-transform:uppercase;letter-spacing:1px;" data-i18n="userProfile.transactionHistory.pendingCount">Függőben lévő</div>
                                     <div style="font-size:1.5rem;font-weight:700;color:#f5c518;"><?php echo $pendingCount; ?> db</div>
                                 </div>
                             </div>
@@ -100,46 +100,46 @@ foreach ($transactions as $t) {
                     <!-- Keresés + Szűrők egy sorban -->
                     <div class="d-flex flex-wrap align-items-end gap-3 mb-3 transaction-filters">
                         <div class="flex-grow-1">
-                            <label class="form-label mb-1">Keresés</label>
-                            <input type="text" id="filterSearch" class="form-control form-control-sm" placeholder="Azonosító, összeg, dátum...">
+                            <label class="form-label mb-1" data-i18n="userProfile.transactionHistory.searchLabel">Keresés</label>
+                            <input type="text" id="filterSearch" class="form-control form-control-sm" placeholder="Azonosító, összeg, dátum..." data-i18n-placeholder="userProfile.transactionHistory.searchPlaceholder">
                         </div>
                         <div>
-                            <label class="form-label mb-1">Típus</label>
+                            <label class="form-label mb-1" data-i18n="userProfile.transactionHistory.typeLabel">Típus</label>
                             <select id="filterType" class="form-select form-select-sm" style="width:auto;">
-                                <option value="">Mind</option>
-                                <option value="Befizetés">Befizetés</option>
-                                <option value="Kifizetés">Kifizetés</option>
+                                <option value="" data-i18n="userProfile.transactionHistory.all">Mind</option>
+                                <option value="deposit" data-i18n="userProfile.transactionHistory.typeDeposit">Befizetés</option>
+                                <option value="withdrawal" data-i18n="userProfile.transactionHistory.typeWithdrawal">Kifizetés</option>
                             </select>
                         </div>
                         <div>
-                            <label class="form-label mb-1">Státusz</label>
+                            <label class="form-label mb-1" data-i18n="userProfile.transactionHistory.statusLabel">Státusz</label>
                             <select id="filterStatus" class="form-select form-select-sm" style="width:auto;">
-                                <option value="">Mind</option>
-                                <option value="Függőben">Függőben</option>
-                                <option value="Befejezve">Befejezve</option>
-                                <option value="Sikertelen">Sikertelen</option>
-                                <option value="Visszavont">Visszavont</option>
-                                <option value="Elutasítva">Elutasítva</option>
+                                <option value="" data-i18n="userProfile.transactionHistory.all">Mind</option>
+                                <option value="pending" data-i18n="userProfile.transactionHistory.statusPending">Függőben</option>
+                                <option value="completed" data-i18n="userProfile.transactionHistory.statusCompleted">Befejezve</option>
+                                <option value="failed" data-i18n="userProfile.transactionHistory.statusFailed">Sikertelen</option>
+                                <option value="cancelled" data-i18n="userProfile.transactionHistory.statusCancelled">Visszavont</option>
+                                <option value="rejected" data-i18n="userProfile.transactionHistory.statusRejected">Elutasítva</option>
                             </select>
                         </div>
                     </div>
                     
                     <?php if (empty($transactions)): ?>
                         <div class="alert alert-info">
-                            <i class="fas fa-info-circle"></i> Még nincs tranzakció a fiókodban.
+                            <i class="fas fa-info-circle"></i> <span data-i18n="userProfile.transactionHistory.noTransactions">Még nincs tranzakció a fiókodban.</span>
                         </div>
                     <?php else: ?>
                         <div class="table-responsive">
                             <table class="table transaction-table" id="transactionTable">
                                 <thead>
                                     <tr>
-                                        <th>Azonosító</th>
-                                        <th>Típus</th>
-                                        <th>Összeg</th>
-                                        <th>Fizetési Mód</th>
-                                        <th>Státusz</th>
-                                        <th>Dátum</th>
-                                        <th>Igazolás</th>
+                                        <th data-i18n="userProfile.transactionHistory.colId">Azonosító</th>
+                                        <th data-i18n="userProfile.transactionHistory.colType">Típus</th>
+                                        <th data-i18n="userProfile.transactionHistory.colAmount">Összeg</th>
+                                        <th data-i18n="userProfile.transactionHistory.colPaymentMethod">Fizetési Mód</th>
+                                        <th data-i18n="userProfile.transactionHistory.colStatus">Státusz</th>
+                                        <th data-i18n="userProfile.transactionHistory.colDate">Dátum</th>
+                                        <th data-i18n="userProfile.transactionHistory.colProof">Igazolás</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -148,11 +148,14 @@ foreach ($transactions as $t) {
                                             <td>
                                                 <code><?php echo htmlspecialchars($transaction['transaction_id']); ?></code>
                                             </td>
-                                            <td>
+                                            <td data-type="<?php echo htmlspecialchars($transaction['type']); ?>">
                                                 <?php 
                                                     $icon = $transaction['type'] === 'deposit' ? '<i class="fas fa-plus-circle text-success"></i>' : '<i class="fas fa-minus-circle text-danger"></i>';
+                                                    $type_key = $transaction['type'] === 'deposit'
+                                                        ? 'userProfile.transactionHistory.typeDeposit'
+                                                        : 'userProfile.transactionHistory.typeWithdrawal';
                                                     $type_label = $transaction['type'] === 'deposit' ? 'Befizetés' : 'Kifizetés';
-                                                    echo '<span style="display:inline-flex;align-items:center;gap:6px;">' . $icon . ' ' . $type_label . '</span>';
+                                                    echo '<span style="display:inline-flex;align-items:center;gap:6px;">' . $icon . ' <span data-i18n="' . $type_key . '">' . $type_label . '</span></span>';
                                                 ?>
                                             </td>
                                             <td>
@@ -171,14 +174,14 @@ foreach ($transactions as $t) {
                                                     echo $methods[$transaction['payment_method']] ?? htmlspecialchars($transaction['payment_method']);
                                                 ?>
                                             </td>
-                                            <td>
+                                            <td data-status="<?php echo htmlspecialchars($transaction['status']); ?>">
                                                 <?php 
                                                     $status_badges = [
-                                                        'pending' => '<span class="badge bg-warning">Függőben</span>',
-                                                        'completed' => '<span class="badge bg-success">Befejezve</span>',
-                                                        'failed' => '<span class="badge bg-danger">Sikertelen</span>',
-                                                        'cancelled' => '<span class="badge bg-secondary">Visszavont</span>',
-                                                        'rejected' => '<span class="badge bg-danger">Elutasítva</span>'
+                                                        'pending' => '<span class="badge bg-warning" data-i18n="userProfile.transactionHistory.statusPending">Függőben</span>',
+                                                        'completed' => '<span class="badge bg-success" data-i18n="userProfile.transactionHistory.statusCompleted">Befejezve</span>',
+                                                        'failed' => '<span class="badge bg-danger" data-i18n="userProfile.transactionHistory.statusFailed">Sikertelen</span>',
+                                                        'cancelled' => '<span class="badge bg-secondary" data-i18n="userProfile.transactionHistory.statusCancelled">Visszavont</span>',
+                                                        'rejected' => '<span class="badge bg-danger" data-i18n="userProfile.transactionHistory.statusRejected">Elutasítva</span>'
                                                     ];
                                                     echo $status_badges[$transaction['status']] ?? '<span class="badge bg-secondary">' . htmlspecialchars($transaction['status']) . '</span>';
                                                 ?>
@@ -189,13 +192,13 @@ foreach ($transactions as $t) {
                                             <td>
                                                 <?php if ($transaction['type'] === 'withdrawal' && $transaction['status'] === 'completed'): ?>
                                                     <a href="../../backend/ApiRequest/withdrawal_receipt.php?id=<?php echo $transaction['id']; ?>" 
-                                                       class="btn btn-sm btn-outline-primary" title="Kifizetési igazolás letöltése">
+                                                       class="btn btn-sm btn-outline-primary" title="Kifizetési igazolás letöltése" data-i18n-title="userProfile.transactionHistory.downloadProofTitle">
                                                         <i class="fas fa-file-pdf"></i>
                                                     </a>
                                                 <?php elseif ($transaction['type'] === 'withdrawal' && $transaction['status'] === 'rejected' && !empty($transaction['rejection_reason'])): ?>
                                                     <button type="button" class="btn btn-sm btn-outline-danger" 
                                                             data-bs-toggle="modal" data-bs-target="#rejectModal<?php echo $transaction['id']; ?>"
-                                                            title="Elutasítás oka">
+                                                            title="Elutasítás oka" data-i18n-title="userProfile.transactionHistory.rejectionReasonTitle">
                                                         <i class="fas fa-info-circle"></i>
                                                     </button>
                                                 <?php endif; ?>
@@ -212,19 +215,19 @@ foreach ($transactions as $t) {
                                         <div class="modal-dialog modal-dialog-centered">
                                             <div class="modal-content" style="background:#1a1a2e;color:#f5c518;border:1px solid #f5c518;">
                                                 <div class="modal-header border-bottom" style="border-color:#f5c518 !important;">
-                                                    <h5 class="modal-title"><i class="fas fa-times-circle text-danger"></i> Elutasítás oka</h5>
-                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Bezár"></button>
+                                                    <h5 class="modal-title"><i class="fas fa-times-circle text-danger"></i> <span data-i18n="userProfile.transactionHistory.rejectionReasonHeader">Elutasítás oka</span></h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Bezár" data-i18n-aria="common.close"></button>
                                                 </div>
                                                 <div class="modal-body">
-                                                    <p class="mb-1" style="color:#ccc;font-size:0.9rem;">Tranzakció: <code><?php echo htmlspecialchars($transaction['transaction_id']); ?></code></p>
-                                                    <p class="mb-1" style="color:#ccc;font-size:0.9rem;">Összeg: <strong><?php echo number_format($transaction['amount'], 0, ',', ' '); ?> Ft</strong></p>
+                                                    <p class="mb-1" style="color:#ccc;font-size:0.9rem;"><span data-i18n="userProfile.transactionHistory.transactionLabel">Tranzakció</span>: <code><?php echo htmlspecialchars($transaction['transaction_id']); ?></code></p>
+                                                    <p class="mb-1" style="color:#ccc;font-size:0.9rem;"><span data-i18n="userProfile.transactionHistory.amountLabel">Összeg</span>: <strong><?php echo number_format($transaction['amount'], 0, ',', ' '); ?> Ft</strong></p>
                                                     <hr style="border-color:#f5c518;">
                                                     <div style="background:#16213e;padding:12px 16px;border-radius:8px;border-left:4px solid #dc3545;color:#fff;">
                                                         <?php echo nl2br(htmlspecialchars($transaction['rejection_reason'])); ?>
                                                     </div>
                                                 </div>
                                                 <div class="modal-footer border-top" style="border-color:#f5c518 !important;">
-                                                    <button type="button" class="btn btn-sm btn-outline-warning" data-bs-dismiss="modal">Bezár</button>
+                                                    <button type="button" class="btn btn-sm btn-outline-warning" data-bs-dismiss="modal" data-i18n="common.close">Bezár</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -234,7 +237,7 @@ foreach ($transactions as $t) {
                         </div>
                     <?php endif; ?>
                     
-                    <a href="personal_data.php" class="btn btn-secondary"><i class="fas fa-undo"></i> Vissza</a>
+                    <a href="personal_data.php" class="btn btn-secondary"><i class="fas fa-undo"></i> <span data-i18n="common.back">Vissza</span></a>
                 </div>
             </div>
         </div>
@@ -249,16 +252,47 @@ foreach ($transactions as $t) {
     <script src="../../js/UserProfile/user_profile.js"></script>
     <script>
     $(document).ready(function() {
-        if ($('#transactionTable').length) {
-            var table = $('#transactionTable').DataTable({
-                language: {
-                    info: "_START_ - _END_ / _TOTAL_ tranzakció",
-                    infoEmpty: "Nincs tranzakció",
-                    infoFiltered: "(szűrve _MAX_ összesből)",
-                    paginate: { first: "Első", last: "Utolsó", next: "Következő", previous: "Előző" },
-                    zeroRecords: "Nincs találat",
-                    emptyTable: "Nincs adat"
+        var dtCustomFilterInstalled = false;
+
+        function installCustomFilters() {
+            if (dtCustomFilterInstalled) return;
+            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                if (settings.nTable.id !== 'transactionTable') return true;
+                var typeFilter = $('#filterType').val() || '';
+                var statusFilter = $('#filterStatus').val() || '';
+                var rowNode = settings.aoData[dataIndex] && settings.aoData[dataIndex].nTr;
+                if (!rowNode) return true;
+
+                var rowType = rowNode.querySelector('td[data-type]') ? rowNode.querySelector('td[data-type]').getAttribute('data-type') : '';
+                var rowStatus = rowNode.querySelector('td[data-status]') ? rowNode.querySelector('td[data-status]').getAttribute('data-status') : '';
+
+                if (typeFilter && rowType !== typeFilter) return false;
+                if (statusFilter && rowStatus !== statusFilter) return false;
+                return true;
+            });
+            dtCustomFilterInstalled = true;
+        }
+
+        function dtLang() {
+            return {
+                info: window.i18n ? window.i18n('userProfile.transactionHistory.dtInfo', '_START_ - _END_ / _TOTAL_ tranzakció') : '_START_ - _END_ / _TOTAL_ tranzakció',
+                infoEmpty: window.i18n ? window.i18n('userProfile.transactionHistory.dtInfoEmpty', 'Nincs tranzakció') : 'Nincs tranzakció',
+                infoFiltered: window.i18n ? window.i18n('userProfile.transactionHistory.dtInfoFiltered', '(szűrve _MAX_ összesből)') : '(szűrve _MAX_ összesből)',
+                paginate: {
+                    first: window.i18n ? window.i18n('userProfile.transactionHistory.dtFirst', 'Első') : 'Első',
+                    last: window.i18n ? window.i18n('userProfile.transactionHistory.dtLast', 'Utolsó') : 'Utolsó',
+                    next: window.i18n ? window.i18n('userProfile.transactionHistory.dtNext', 'Következő') : 'Következő',
+                    previous: window.i18n ? window.i18n('userProfile.transactionHistory.dtPrevious', 'Előző') : 'Előző'
                 },
+                zeroRecords: window.i18n ? window.i18n('userProfile.transactionHistory.dtZeroRecords', 'Nincs találat') : 'Nincs találat',
+                emptyTable: window.i18n ? window.i18n('userProfile.transactionHistory.dtEmptyTable', 'Nincs adat') : 'Nincs adat'
+            };
+        }
+
+        function buildTable() {
+            installCustomFilters();
+            return $('#transactionTable').DataTable({
+                language: dtLang(),
                 order: [[5, 'desc']],
                 pageLength: 25,
                 lengthChange: false,
@@ -268,6 +302,10 @@ foreach ($transactions as $t) {
                     { orderable: false, targets: 6 }
                 ]
             });
+        }
+
+        if ($('#transactionTable').length) {
+            var table = buildTable();
 
             // Saját keresőmező
             $('#filterSearch').on('keyup', function() {
@@ -276,12 +314,22 @@ foreach ($transactions as $t) {
 
             // Típus szűrő
             $('#filterType').on('change', function() {
-                table.column(1).search(this.value).draw();
+                table.draw();
             });
 
             // Státusz szűrő
             $('#filterStatus').on('change', function() {
-                table.column(4).search(this.value).draw();
+                table.draw();
+            });
+
+            // Nyelvváltás után DataTable UI szövegek újraépítése
+            window.addEventListener('languageChanged', function() {
+                var currentSearch = $('#filterSearch').val() || '';
+                var currentPage = table.page();
+                table.destroy();
+                table = buildTable();
+                table.search(currentSearch).draw();
+                table.page(currentPage).draw('page');
             });
         }
     });

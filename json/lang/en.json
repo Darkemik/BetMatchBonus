@@ -258,5 +258,51 @@
     "withdrawalQ": "💰 Withdrawal",
     "liveMatchesQ": "⚽ Live matches",
     "esportQ": "🎮 eSport"
+  },
+  "common": {
+    "close": "Close",
+    "back": "Back"
+  },
+  "userProfile": {
+    "transactionHistory": {
+      "pageTitle": "Transaction History | BetMatchBonus",
+      "totalDeposit": "Total deposits",
+      "totalWithdrawal": "Total withdrawals",
+      "pendingCount": "Pending",
+      "searchLabel": "Search",
+      "searchPlaceholder": "ID, amount, date...",
+      "typeLabel": "Type",
+      "statusLabel": "Status",
+      "all": "All",
+      "typeDeposit": "Deposit",
+      "typeWithdrawal": "Withdrawal",
+      "statusPending": "Pending",
+      "statusCompleted": "Completed",
+      "statusFailed": "Failed",
+      "statusCancelled": "Cancelled",
+      "statusRejected": "Rejected",
+      "noTransactions": "There are no transactions on your account yet.",
+      "colId": "ID",
+      "colType": "Type",
+      "colAmount": "Amount",
+      "colPaymentMethod": "Payment Method",
+      "colStatus": "Status",
+      "colDate": "Date",
+      "colProof": "Proof",
+      "downloadProofTitle": "Download payout receipt",
+      "rejectionReasonTitle": "Rejection reason",
+      "rejectionReasonHeader": "Rejection reason",
+      "transactionLabel": "Transaction",
+      "amountLabel": "Amount",
+      "dtInfo": "_START_ - _END_ / _TOTAL_ transactions",
+      "dtInfoEmpty": "No transactions",
+      "dtInfoFiltered": "(filtered from _MAX_ total)",
+      "dtFirst": "First",
+      "dtLast": "Last",
+      "dtNext": "Next",
+      "dtPrevious": "Previous",
+      "dtZeroRecords": "No matching records",
+      "dtEmptyTable": "No data"
+    }
   }
 }

@@ -258,5 +258,51 @@
     "withdrawalQ": "💰 Kifizetés",
     "liveMatchesQ": "⚽ Élő meccsek",
     "esportQ": "🎮 eSport"
+  },
+  "common": {
+    "close": "Bezár",
+    "back": "Vissza"
+  },
+  "userProfile": {
+    "transactionHistory": {
+      "pageTitle": "Tranzakciótörténet | BetMatchBonus",
+      "totalDeposit": "Összes befizetés",
+      "totalWithdrawal": "Összes kifizetés",
+      "pendingCount": "Függőben lévő",
+      "searchLabel": "Keresés",
+      "searchPlaceholder": "Azonosító, összeg, dátum...",
+      "typeLabel": "Típus",
+      "statusLabel": "Státusz",
+      "all": "Mind",
+      "typeDeposit": "Befizetés",
+      "typeWithdrawal": "Kifizetés",
+      "statusPending": "Függőben",
+      "statusCompleted": "Befejezve",
+      "statusFailed": "Sikertelen",
+      "statusCancelled": "Visszavont",
+      "statusRejected": "Elutasítva",
+      "noTransactions": "Még nincs tranzakció a fiókodban.",
+      "colId": "Azonosító",
+      "colType": "Típus",
+      "colAmount": "Összeg",
+      "colPaymentMethod": "Fizetési Mód",
+      "colStatus": "Státusz",
+      "colDate": "Dátum",
+      "colProof": "Igazolás",
+      "downloadProofTitle": "Kifizetési igazolás letöltése",
+      "rejectionReasonTitle": "Elutasítás oka",
+      "rejectionReasonHeader": "Elutasítás oka",
+      "transactionLabel": "Tranzakció",
+      "amountLabel": "Összeg",
+      "dtInfo": "_START_ - _END_ / _TOTAL_ tranzakció",
+      "dtInfoEmpty": "Nincs tranzakció",
+      "dtInfoFiltered": "(szűrve _MAX_ összesből)",
+      "dtFirst": "Első",
+      "dtLast": "Utolsó",
+      "dtNext": "Következő",
+      "dtPrevious": "Előző",
+      "dtZeroRecords": "Nincs találat",
+      "dtEmptyTable": "Nincs adat"
+    }
   }
 }
