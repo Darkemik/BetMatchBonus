@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jelszó Módosítás | BetMatchBonus</title>
+    <title data-i18n="userProfile.changePassword.pageTitle">Jelszó Módosítás | BetMatchBonus</title>
     <link rel="stylesheet" href="../../css/RootColor/root.css">
     <link rel="stylesheet" href="../../css/Main/layout.css">
     <link rel="stylesheet" href="../../css/UserProfile/user_profile.css">
@@ -84,19 +84,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
         <div class="row">
             <div class="col-md-3">
                 <nav class="profile-sidebar">
-                    <a href="personal_data.php" class="profile-nav-item"><i class="fas fa-user"></i> Személyes Adatok</a>
-                    <a href="change_password.php" class="profile-nav-item active"><i class="fas fa-key"></i> Jelszó Módosítás</a>
-                    <a href="deposit.php" class="profile-nav-item"><i class="fas fa-plus-circle"></i> Befizetés</a>
-                    <a href="withdrawal.php" class="profile-nav-item"><i class="fas fa-minus-circle"></i> Kifizetés</a>
-                    <a href="transaction_history.php" class="profile-nav-item"><i class="fas fa-history"></i> Tranzakciótörténet</a>
-                    <a href="my_bonuses.php" class="profile-nav-item"><i class="fas fa-gift"></i> Bónuszaim</a>
-                    <a href="activity_log.php" class="profile-nav-item"><i class="fas fa-list"></i> Napló</a>
-                    <a href="#" class="profile-nav-item logout profile-logout-btn" onclick="event.preventDefault();fetch('/BetMatchBonus/backend/Auth/logout.php',{method:'POST'}).then(function(){window.location.href='/BetMatchBonus/frontend/MainMenu/MainMenu.php';});"><i class="fas fa-sign-out-alt"></i> Kijelentkezés</a>
+                    <a href="personal_data.php" class="profile-nav-item"><i class="fas fa-user"></i> <span data-i18n="auth.personalData">Személyes Adatok</span></a>
+                    <a href="change_password.php" class="profile-nav-item active"><i class="fas fa-key"></i> <span data-i18n="auth.changePassword">Jelszó Módosítás</span></a>
+                    <a href="deposit.php" class="profile-nav-item"><i class="fas fa-plus-circle"></i> <span data-i18n="auth.deposit">Befizetés</span></a>
+                    <a href="withdrawal.php" class="profile-nav-item"><i class="fas fa-minus-circle"></i> <span data-i18n="auth.withdrawal">Kifizetés</span></a>
+                    <a href="transaction_history.php" class="profile-nav-item"><i class="fas fa-history"></i> <span data-i18n="auth.transactionHistory">Tranzakciótörténet</span></a>
+                    <a href="my_bonuses.php" class="profile-nav-item"><i class="fas fa-gift"></i> <span data-i18n="auth.myBonuses">Bónuszaim</span></a>
+                    <a href="activity_log.php" class="profile-nav-item"><i class="fas fa-list"></i> <span data-i18n="auth.activityLog">Napló</span></a>
+                    <a href="#" class="profile-nav-item logout profile-logout-btn" onclick="event.preventDefault();fetch('/BetMatchBonus/backend/Auth/logout.php',{method:'POST'}).then(function(){window.location.href='/BetMatchBonus/frontend/MainMenu/MainMenu.php';});"><i class="fas fa-sign-out-alt"></i> <span data-i18n="auth.logout">Kijelentkezés</span></a>
                 </nav>
             </div>
             <div class="col-md-9">
                 <div class="profile-content">
-                    <h1><i class="fas fa-key"></i> Jelszó Módosítás</h1>
+                    <h1><i class="fas fa-key"></i> <span data-i18n="auth.changePassword">Jelszó Módosítás</span></h1>
                     
                     <?php if (!empty($success_message)): ?>
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
                     
                     <form method="POST" class="profile-form">
                         <div class="form-group mb-3">
-                            <label for="current_password">Jelenlegi Jelszó</label>
+                            <label for="current_password" data-i18n="userProfile.changePassword.currentPassword">Jelenlegi Jelszó</label>
                             <div class="input-group">
                                 <input type="password" class="form-control" id="current_password" name="current_password" required>
                                 <button type="button" class="btn btn-outline-secondary toggle-password" data-target="current_password" tabindex="-1">
@@ -124,18 +124,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
                         </div>
                         
                         <div class="form-group mb-3">
-                            <label for="new_password">Új Jelszó</label>
+                            <label for="new_password" data-i18n="userProfile.changePassword.newPassword">Új Jelszó</label>
                             <div class="input-group">
                                 <input type="password" class="form-control" id="new_password" name="new_password" required>
                                 <button type="button" class="btn btn-outline-secondary toggle-password" data-target="new_password" tabindex="-1">
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
-                            <small class="form-text text-muted">Legalább 8 karakter hosszú kell legyen</small>
+                            <small class="form-text text-muted" data-i18n="userProfile.changePassword.minLengthHint">Legalább 8 karakter hosszú kell legyen</small>
                         </div>
                         
                         <div class="form-group mb-3">
-                            <label for="confirm_password">Jelszó Megerősítés</label>
+                            <label for="confirm_password" data-i18n="userProfile.changePassword.confirmPassword">Jelszó Megerősítés</label>
                             <div class="input-group">
                                 <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
                                 <button type="button" class="btn btn-outline-secondary toggle-password" data-target="confirm_password" tabindex="-1">
@@ -144,8 +144,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
                             </div>
                         </div>
                         
-                        <button type="submit" name="change_password" class="btn btn-primary"><i class="fas fa-save"></i> Jelszó Módosítása</button>
-                        <a href="personal_data.php" class="btn btn-secondary"><i class="fas fa-undo"></i> Mégse</a>
+                        <button type="submit" name="change_password" class="btn btn-primary"><i class="fas fa-save"></i> <span data-i18n="userProfile.changePassword.submit">Jelszó Módosítása</span></button>
+                        <a href="personal_data.php" class="btn btn-secondary"><i class="fas fa-undo"></i> <span data-i18n="userProfile.changePassword.cancel">Mégse</span></a>
                     </form>
                 </div>
             </div>

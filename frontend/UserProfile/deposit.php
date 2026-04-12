@@ -65,7 +65,7 @@ $bonus_stmt->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Befizetés | BetMatchBonus</title>
+    <title data-i18n="userProfile.deposit.pageTitle">Befizetés | BetMatchBonus</title>
     <link rel="stylesheet" href="../../css/RootColor/root.css">
     <link rel="stylesheet" href="../../css/Main/layout.css">
     <link rel="stylesheet" href="../../css/UserProfile/user_profile.css">
@@ -227,49 +227,45 @@ $bonus_stmt->close();
         <div class="row">
             <div class="col-md-3">
                 <nav class="profile-sidebar">
-                    <a href="personal_data.php" class="profile-nav-item"><i class="fas fa-user"></i> Személyes
-                        Adatok</a>
-                    <a href="change_password.php" class="profile-nav-item"><i class="fas fa-key"></i> Jelszó
-                        Módosítás</a>
-                    <a href="deposit.php" class="profile-nav-item active"><i class="fas fa-plus-circle"></i>
-                        Befizetés</a>
-                    <a href="withdrawal.php" class="profile-nav-item"><i class="fas fa-minus-circle"></i> Kifizetés</a>
-                    <a href="transaction_history.php" class="profile-nav-item"><i class="fas fa-history"></i>
-                        Tranzakciótörténet</a>
-                    <a href="my_bonuses.php" class="profile-nav-item"><i class="fas fa-gift"></i> Bónuszaim</a>
-                    <a href="activity_log.php" class="profile-nav-item"><i class="fas fa-list"></i> Napló</a>
+                    <a href="personal_data.php" class="profile-nav-item"><i class="fas fa-user"></i> <span data-i18n="auth.personalData">Személyes Adatok</span></a>
+                    <a href="change_password.php" class="profile-nav-item"><i class="fas fa-key"></i> <span data-i18n="auth.changePassword">Jelszó Módosítás</span></a>
+                    <a href="deposit.php" class="profile-nav-item active"><i class="fas fa-plus-circle"></i> <span data-i18n="auth.deposit">Befizetés</span></a>
+                    <a href="withdrawal.php" class="profile-nav-item"><i class="fas fa-minus-circle"></i> <span data-i18n="auth.withdrawal">Kifizetés</span></a>
+                    <a href="transaction_history.php" class="profile-nav-item"><i class="fas fa-history"></i> <span data-i18n="auth.transactionHistory">Tranzakciótörténet</span></a>
+                    <a href="my_bonuses.php" class="profile-nav-item"><i class="fas fa-gift"></i> <span data-i18n="auth.myBonuses">Bónuszaim</span></a>
+                    <a href="activity_log.php" class="profile-nav-item"><i class="fas fa-list"></i> <span data-i18n="auth.activityLog">Napló</span></a>
                     <a href="#" class="profile-nav-item logout profile-logout-btn" onclick="event.preventDefault();fetch('/BetMatchBonus/backend/Auth/logout.php',{method:'POST'}).then(function(){window.location.href='/BetMatchBonus/frontend/MainMenu/MainMenu.php';});"><i
-                            class="fas fa-sign-out-alt"></i> Kijelentkezés</a>
+                            class="fas fa-sign-out-alt"></i> <span data-i18n="auth.logout">Kijelentkezés</span></a>
                 </nav>
             </div>
             <div class="col-md-9">
                 <div class="profile-content">
-                    <h1><i class="fas fa-plus-circle"></i> Befizetés</h1>
+                    <h1><i class="fas fa-plus-circle"></i> <span data-i18n="auth.deposit">Befizetés</span></h1>
 
                     <!-- Egyenleg kártyák -->
                     <div class="alert alert-info py-3">
                         <div class="row g-2">
                             <div class="col-12 col-md-6">
                                 <div class="p-2 rounded" style="background: rgba(13, 110, 253, 0.12); border: 1px solid rgba(13, 110, 253, 0.25);">
-                                    <div style="font-weight:700; font-size: 0.9rem;">BEFIZETETT EGYENLEG</div>
+                                    <div style="font-weight:700; font-size: 0.9rem;" data-i18n="userProfile.balance.deposited">BEFIZETETT EGYENLEG</div>
                                     <div class="mt-1"><span class="badge bg-secondary"><?php echo number_format($deposited_balance, 0, ',', ' '); ?> FT</span></div>
                                 </div>
                             </div>
                             <div class="col-12 col-md-6">
                                 <div class="p-2 rounded" style="background: rgba(25, 135, 84, 0.12); border: 1px solid rgba(25, 135, 84, 0.25);">
-                                    <div style="font-weight:700; font-size: 0.9rem;">NYEREMÉNYEGYENLEG</div>
+                                    <div style="font-weight:700; font-size: 0.9rem;" data-i18n="userProfile.balance.winnings">NYEREMÉNYEGYENLEG</div>
                                     <div class="mt-1"><span class="badge bg-success"><?php echo number_format($winnings_balance, 0, ',', ' '); ?> FT</span></div>
                                 </div>
                             </div>
                             <div class="col-12 col-md-6">
                                 <div class="p-2 rounded" style="background: rgba(13, 110, 253, 0.12); border: 1px solid rgba(13, 110, 253, 0.25);">
-                                    <div style="font-weight:700; font-size: 0.9rem;">BEFIZETETT ÉS NYEREMÉNYEGYENLEG ÖSSZESEN</div>
+                                    <div style="font-weight:700; font-size: 0.9rem;" data-i18n="userProfile.balance.total">BEFIZETETT ÉS NYEREMÉNYEGYENLEG ÖSSZESEN</div>
                                     <div class="mt-1"><span class="badge bg-primary"><?php echo number_format($total_deposit_and_winnings, 0, ',', ' '); ?> FT</span></div>
                                 </div>
                             </div>
                             <div class="col-12 col-md-6">
                                 <div class="p-2 rounded" style="background: rgba(255, 193, 7, 0.14); border: 1px solid rgba(255, 193, 7, 0.35);">
-                                    <div style="font-weight:700; font-size: 0.9rem;">BÓNUSZ EGYENLEG (NEM KIUTALHATÓ)</div>
+                                    <div style="font-weight:700; font-size: 0.9rem;" data-i18n="userProfile.balance.bonus">BÓNUSZ EGYENLEG (NEM KIUTALHATÓ)</div>
                                     <div class="mt-1"><span class="badge bg-warning text-dark"><?php echo number_format($bonus_balance, 0, ',', ' '); ?> FT</span></div>
                                 </div>
                             </div>
@@ -314,7 +310,7 @@ $bonus_stmt->close();
                     <form method="POST" onsubmit="return handleDepositSubmit(event)">
 
                         <!-- Fizetési módok -->
-                        <div class="deposit-section-title">Fizetési mód választása</div>
+                        <div class="deposit-section-title" data-i18n="userProfile.deposit.paymentMethod">Fizetési mód választása</div>
                         <div class="payment-methods-grid">
                             <div class="payment-method-card selected" data-method="visa" onclick="selectPaymentMethod(this)">
                                 <i class="fab fa-cc-visa pm-icon visa"></i>
@@ -332,7 +328,7 @@ $bonus_stmt->close();
                         <input type="hidden" id="payment_method" name="payment_method" value="visa">
 
                         <!-- Összeg -->
-                        <div class="deposit-section-title">Befizetési összeg</div>
+                        <div class="deposit-section-title" data-i18n="userProfile.deposit.amount">Befizetési összeg</div>
                         <div class="deposit-input-wrapper">
                             <input type="number" id="amount" name="amount" min="3000" max="600000" step="1" required value="3000">
                             <span class="currency-label">FT</span>
@@ -349,11 +345,11 @@ $bonus_stmt->close();
 
                         <div class="deposit-info-bar">
                             <i class="fas fa-shield-alt"></i>
-                            <span>A befizetés biztonságosan, titkosított kapcsolaton keresztül kerül feldolgozásra. Minimális: <strong>3 000 FT</strong> | Maximális: <strong>600 000 FT</strong></span>
+                            <span data-i18n-html="userProfile.deposit.secureInfo">A befizetés biztonságosan, titkosított kapcsolaton keresztül kerül feldolgozásra. Minimális: <strong>3 000 FT</strong> | Maximális: <strong>600 000 FT</strong></span>
                         </div>
 
                         <button type="submit" class="deposit-submit-btn">
-                            <i class="fas fa-lock"></i>&nbsp; Biztonságos Befizetés
+                            <i class="fas fa-lock"></i>&nbsp; <span data-i18n="userProfile.deposit.submit">Biztonságos Befizetés</span>
                         </button>
                     </form>
                 </div>
@@ -395,7 +391,7 @@ $bonus_stmt->close();
             const method = document.getElementById('payment_method').value;
 
             if (amount < 3000 || amount > 600000) {
-                alert('Az összeg nem megfelelő! (3 000 - 600 000 FT)');
+                alert(window.i18n ? window.i18n('userProfile.deposit.invalidAmount', 'Az összeg nem megfelelő! (3 000 - 600 000 FT)') : 'Az összeg nem megfelelő! (3 000 - 600 000 FT)');
                 return false;
             }
 

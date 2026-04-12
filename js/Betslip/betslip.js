@@ -5,6 +5,7 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     const t = (key, fallback) => (typeof window.i18n === 'function' ? window.i18n(key, fallback) : (fallback || key));
+    const td = (text) => (typeof window.i18nDynamic === 'function' ? window.i18nDynamic(text) : text);
     console.log('[BETSLIP] Inicializálás...');
 
     let ticketItems = [];
@@ -368,11 +369,11 @@ document.addEventListener('DOMContentLoaded', function() {
             el.className = 'betslip-item';
             el.innerHTML = `
                 <div class="betslip-item-header">
-                    <span>${escapeHtml(item.homeTeam)} vs ${escapeHtml(item.awayTeam)}</span>
+                    <span>${escapeHtml(td(item.homeTeam))} vs ${escapeHtml(td(item.awayTeam))}</span>
                     <button class="betslip-remove" data-index="${idx}" title="${t('betslip.remove', 'Eltávolítás')}">×</button>
                 </div>
-                <div class="betslip-item-market">${escapeHtml(item.market)}</div>
-                <div class="betslip-item-pick">${escapeHtml(item.pick)}</div>
+                <div class="betslip-item-market">${escapeHtml(td(item.market))}</div>
+                <div class="betslip-item-pick">${escapeHtml(td(item.pick))}</div>
                 <div class="betslip-item-odds">${item.odds.toFixed(2)}${item.isDailyTip ? ' <span class="daily-tip-badge">Napi tipp</span>' : ''}</div>
             `;
             betsContainer.appendChild(el);
@@ -417,6 +418,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('[BETSLIP] Item removed, total:', ticketItems.length);
             }
         }
+    });
+
+    window.addEventListener('languageChanged', function() {
+        renderTicket();
     });
 
     function updatePotentialWin(totalOdds) {

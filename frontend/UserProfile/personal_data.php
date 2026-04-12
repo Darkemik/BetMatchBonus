@@ -179,7 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Személyes Adatok | BetMatchBonus</title>
+    <title data-i18n="userProfile.personalData.pageTitle">Személyes Adatok | BetMatchBonus</title>
     <link rel="stylesheet" href="../../css/RootColor/root.css">
     <link rel="stylesheet" href="../../css/Main/layout.css">
     <link rel="stylesheet" href="../../css/UserProfile/user_profile.css">
@@ -194,46 +194,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
         <div class="row">
             <div class="col-md-3">
                 <nav class="profile-sidebar">
-                    <a href="personal_data.php" class="profile-nav-item active"><i class="fas fa-user"></i> Személyes Adatok</a>
-                    <a href="change_password.php" class="profile-nav-item"><i class="fas fa-key"></i> Jelszó Módosítás</a>
-                    <a href="deposit.php" class="profile-nav-item"><i class="fas fa-plus-circle"></i> Befizetés</a>
-                    <a href="withdrawal.php" class="profile-nav-item"><i class="fas fa-minus-circle"></i> Kifizetés</a>
-                    <a href="transaction_history.php" class="profile-nav-item"><i class="fas fa-history"></i> Tranzakciótörténet</a>
-                    <a href="my_bonuses.php" class="profile-nav-item"><i class="fas fa-gift"></i> Bónuszaim</a>
-                    <a href="activity_log.php" class="profile-nav-item"><i class="fas fa-list"></i> Napló</a>
-                    <a href="#" class="profile-nav-item logout profile-logout-btn" onclick="event.preventDefault();fetch('/BetMatchBonus/backend/Auth/logout.php',{method:'POST'}).then(function(){window.location.href='/BetMatchBonus/frontend/MainMenu/MainMenu.php';});"><i class="fas fa-sign-out-alt"></i> Kijelentkezés</a>
+                    <a href="personal_data.php" class="profile-nav-item active"><i class="fas fa-user"></i> <span data-i18n="auth.personalData">Személyes Adatok</span></a>
+                    <a href="change_password.php" class="profile-nav-item"><i class="fas fa-key"></i> <span data-i18n="auth.changePassword">Jelszó Módosítás</span></a>
+                    <a href="deposit.php" class="profile-nav-item"><i class="fas fa-plus-circle"></i> <span data-i18n="auth.deposit">Befizetés</span></a>
+                    <a href="withdrawal.php" class="profile-nav-item"><i class="fas fa-minus-circle"></i> <span data-i18n="auth.withdrawal">Kifizetés</span></a>
+                    <a href="transaction_history.php" class="profile-nav-item"><i class="fas fa-history"></i> <span data-i18n="auth.transactionHistory">Tranzakciótörténet</span></a>
+                    <a href="my_bonuses.php" class="profile-nav-item"><i class="fas fa-gift"></i> <span data-i18n="auth.myBonuses">Bónuszaim</span></a>
+                    <a href="activity_log.php" class="profile-nav-item"><i class="fas fa-list"></i> <span data-i18n="auth.activityLog">Napló</span></a>
+                    <a href="#" class="profile-nav-item logout profile-logout-btn" onclick="event.preventDefault();fetch('/BetMatchBonus/backend/Auth/logout.php',{method:'POST'}).then(function(){window.location.href='/BetMatchBonus/frontend/MainMenu/MainMenu.php';});"><i class="fas fa-sign-out-alt"></i> <span data-i18n="auth.logout">Kijelentkezés</span></a>
                 </nav>
             </div>
             <div class="col-md-9">
                 <div class="profile-content">
-                    <h1><i class="fas fa-user"></i> Személyes Adatok</h1>
+                    <h1><i class="fas fa-user"></i> <span data-i18n="auth.personalData">Személyes Adatok</span></h1>
 
                     <?php if (!(int)($user['data_verified'] ?? 0)): ?>
                     
                     <?php if ($rejectedAt && !empty($user['data_rejection_reason'])): ?>
                     <div class="alert alert-danger" role="alert">
                         <i class="fas fa-times-circle"></i>
-                        <strong>Az adatellenőrzésed elutasításra került!</strong><br>
-                        <strong>Ok:</strong> <?php echo htmlspecialchars($user['data_rejection_reason']); ?><br>
+                        <strong data-i18n="userProfile.personalData.rejectedTitle">Az adatellenőrzésed elutasításra került!</strong><br>
+                        <strong data-i18n="userProfile.personalData.reason">Ok</strong>: <?php echo htmlspecialchars($user['data_rejection_reason']); ?><br>
                         <?php if ($rejectCooldownLeft > 0): ?>
                         <hr>
-                        <i class="fas fa-clock"></i> Újra beküldheted az adataidat <strong><span id="rejectCountdown"></span></strong> múlva.
+                        <i class="fas fa-clock"></i> <span data-i18n="userProfile.personalData.resubmitIn">Újra beküldheted az adataidat</span> <strong><span id="rejectCountdown"></span></strong> <span data-i18n="userProfile.personalData.inSuffix">múlva.</span>
                         <?php else: ?>
                         <hr>
-                        <i class="fas fa-check-circle" style="color:#28a745;"></i> Javítsd az adataid és küldd be újra az alábbi űrlap segítségével!
+                        <i class="fas fa-check-circle" style="color:#28a745;"></i> <span data-i18n="userProfile.personalData.resubmitNow">Javítsd az adataid és küldd be újra az alábbi űrlap segítségével!</span>
                         <?php endif; ?>
                     </div>
                     <?php else: ?>
                     <div class="alert alert-warning" role="alert">
                         <i class="fas fa-exclamation-triangle"></i>
-                        A kifizetés előtt kötelező kitölteni a lakcímadatokat (ország, város, irányítószám, cím). A fiókodat egy admin ellenőrzi, hogy a megadott adatok helyesek-e.
+                        <span data-i18n="userProfile.personalData.warningNeedAddress">A kifizetés előtt kötelező kitölteni a lakcímadatokat (ország, város, irányítószám, cím). A fiókodat egy admin ellenőrzi, hogy a megadott adatok helyesek-e.</span>
                     </div>
                     <?php endif; /* rejected or warning */ ?>
                     
                     <?php else: ?>
                     <div class="alert alert-success" role="alert">
                         <i class="fas fa-check-circle"></i>
-                        Az adataid ellenőrizve lettek. Kifizetést kezdeményezhetsz.
+                        <span data-i18n="userProfile.personalData.verifiedOk">Az adataid ellenőrizve lettek. Kifizetést kezdeményezhetsz.</span>
                     </div>
                     <?php endif; ?>
                     
@@ -253,86 +253,86 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                     
                     <form method="POST" enctype="multipart/form-data" class="profile-form">
                         <div class="form-group mb-3">
-                            <label for="username">Felhasználónév</label>
+                            <label for="username" data-i18n="registerModal.username">Felhasználónév</label>
                             <input type="text" class="form-control" id="username" value="<?php echo htmlspecialchars($user['username']); ?>" disabled>
-                            <small class="form-text" style="color: white;">A felhasználónév nem módosítható</small>
+                            <small class="form-text" style="color: white;" data-i18n="userProfile.personalData.usernameReadonly">A felhasználónév nem módosítható</small>
                         </div>
                         
                         <div class="form-group mb-3">
-                            <label for="email">Email</label>
+                            <label for="email" data-i18n="registerModal.email">Email</label>
                             <input type="email" class="form-control" id="email" value="<?php echo htmlspecialchars($user['email']); ?>" disabled>
-                            <small class="form-text" style="color: white;">Az email cím nem módosítható</small>
+                            <small class="form-text" style="color: white;" data-i18n="userProfile.personalData.emailReadonly">Az email cím nem módosítható</small>
                         </div>
                         
                         <div class="form-group mb-3">
-                            <label for="full_name">Teljes Név</label>
+                            <label for="full_name" data-i18n="userProfile.personalData.fullName">Teljes Név</label>
                             <input type="text" class="form-control" id="full_name" value="<?php echo htmlspecialchars($user['full_name'] ?? ''); ?>" disabled>
-                            <small class="form-text" style="color: white;">A teljes név nem módosítható</small>
+                            <small class="form-text" style="color: white;" data-i18n="userProfile.personalData.fullNameReadonly">A teljes név nem módosítható</small>
                         </div>
                         
                         <div class="form-group mb-3">
-                            <label for="phone">Telefon</label>
+                            <label for="phone" data-i18n="userProfile.personalData.phone">Telefon</label>
                             <input type="tel" class="form-control" id="phone" value="<?php echo htmlspecialchars($user['phone'] ?? ''); ?>" disabled>
-                            <small class="form-text" style="color: white;">A telefonszám nem módosítható</small>
+                            <small class="form-text" style="color: white;" data-i18n="userProfile.personalData.phoneReadonly">A telefonszám nem módosítható</small>
                         </div>
                         
                         <div class="form-group mb-3">
-                            <label for="country">Ország</label>
+                            <label for="country" data-i18n="userProfile.personalData.country">Ország</label>
                             <input type="text" class="form-control" id="country" name="country" value="<?php echo htmlspecialchars($user['country'] ?? ''); ?>" readonly>
-                            <small class="form-text" style="color: #aaa;">Az irányítószám alapján automatikusan kitöltődik</small>
+                            <small class="form-text" style="color: #aaa;" data-i18n="userProfile.personalData.autoByPostal">Az irányítószám alapján automatikusan kitöltődik</small>
                         </div>
                         
                         <div class="form-group mb-3">
-                            <label for="postal_code">Irányítószám</label>
+                            <label for="postal_code" data-i18n="userProfile.personalData.postalCode">Irányítószám</label>
                             <input type="text" class="form-control" id="postal_code" name="postal_code" value="<?php echo htmlspecialchars($user['postal_code'] ?? ''); ?>" maxlength="4" placeholder="pl. 1051">
                             <small class="form-text" id="postalFeedback" style="color: #aaa;"></small>
                         </div>
                         
                         <div class="form-group mb-3">
-                            <label for="city">Város / Község</label>
+                            <label for="city" data-i18n="userProfile.personalData.city">Város / Község</label>
                             <input type="text" class="form-control" id="city" name="city" value="<?php echo htmlspecialchars($user['city'] ?? ''); ?>" readonly>
-                            <small class="form-text" style="color: #aaa;">Az irányítószám alapján automatikusan kitöltődik</small>
+                            <small class="form-text" style="color: #aaa;" data-i18n="userProfile.personalData.autoByPostal">Az irányítószám alapján automatikusan kitöltődik</small>
                         </div>
                         
                         <div class="form-group mb-3">
-                            <label for="address">Cím</label>
+                            <label for="address" data-i18n="userProfile.personalData.address">Cím</label>
                             <input type="text" class="form-control" id="address" name="address" value="<?php echo htmlspecialchars($user['address'] ?? ''); ?>">
                         </div>
                         
                         <div class="form-group mb-3">
-                            <label for="bank_statement"><i class="fas fa-file-invoice"></i> Bankszámlakivonat</label>
+                            <label for="bank_statement"><i class="fas fa-file-invoice"></i> <span data-i18n="userProfile.personalData.bankStatement">Bankszámlakivonat</span></label>
                             <?php if (!empty($user['bank_statement_file'])): ?>
                                 <div class="mb-2">
-                                    <span class="badge bg-success"><i class="fas fa-check"></i> Feltöltve</span>
+                                    <span class="badge bg-success"><i class="fas fa-check"></i> <span data-i18n="userProfile.personalData.uploaded">Feltöltve</span></span>
                                     <small style="color:#aaa; margin-left:8px;"><?php echo htmlspecialchars($user['bank_statement_file']); ?></small>
                                 </div>
                             <?php endif; ?>
                             <input type="file" class="form-control" id="bank_statement" name="bank_statement" accept=".pdf,.jpg,.jpeg,.png,.webp">
-                            <small class="form-text" style="color: #aaa;">PDF, JPG, PNG vagy WEBP — max. 5 MB. <?php echo !empty($user['bank_statement_file']) ? 'Új feltöltéssel a régi felülíródik.' : 'A kifizetéshez szükséges.'; ?></small>
+                            <small class="form-text" style="color: #aaa;" data-i18n="userProfile.personalData.bankStatementHint">PDF, JPG, PNG vagy WEBP — max. 5 MB.</small>
                         </div>
 
                         <div class="form-group mb-3">
-                            <label for="birth_date">Születési Dátum</label>
+                            <label for="birth_date" data-i18n="userProfile.personalData.birthDate">Születési Dátum</label>
                             <input type="date" class="form-control" id="birth_date" value="<?php echo htmlspecialchars($user['birth_date'] ?? ''); ?>" disabled>
-                            <small class="form-text" style="color: white;">A születési dátum nem módosítható</small>
+                            <small class="form-text" style="color: white;" data-i18n="userProfile.personalData.birthDateReadonly">A születési dátum nem módosítható</small>
                         </div>
                         
                         <div class="form-group mb-3">
-                            <label for="created_at">Fiók Létrehozva</label>
+                            <label for="created_at" data-i18n="userProfile.personalData.createdAt">Fiók Létrehozva</label>
                             <input type="text" class="form-control" id="created_at" value="<?php echo htmlspecialchars($user['created_at']); ?>" disabled>
                         </div>
                         
-                        <button type="submit" name="update_profile" class="btn btn-primary" id="submitVerifyBtn" <?php if ($rejectCooldownLeft > 0) echo 'disabled'; ?>><i class="fas fa-check-circle"></i> Adatok Ellenőrzése</button>
-                        <a href="personal_data.php" class="btn btn-secondary"><i class="fas fa-undo"></i> Mégse</a>
+                        <button type="submit" name="update_profile" class="btn btn-primary" id="submitVerifyBtn" <?php if ($rejectCooldownLeft > 0) echo 'disabled'; ?>><i class="fas fa-check-circle"></i> <span data-i18n="userProfile.personalData.verifyData">Adatok Ellenőrzése</span></button>
+                        <a href="personal_data.php" class="btn btn-secondary"><i class="fas fa-undo"></i> <span data-i18n="userProfile.changePassword.cancel">Mégse</span></a>
                     </form>
 
                     <!-- Fiók törlése szekció -->
                     <hr style="border-color:#2a2a3e;margin-top:40px;">
                     <div class="mt-4">
-                        <h5 style="color:#dc3545;"><i class="fas fa-exclamation-triangle"></i> Veszélyzóna</h5>
-                        <p style="color:#aaa;font-size:14px;">Ha törlöd a fiókodat, az összes adatod, egyenleged, bónuszod és fogadásod véglegesen elvész. Ez a művelet nem vonható vissza.</p>
+                        <h5 style="color:#dc3545;"><i class="fas fa-exclamation-triangle"></i> <span data-i18n="userProfile.personalData.dangerZone">Veszélyzóna</span></h5>
+                        <p style="color:#aaa;font-size:14px;" data-i18n="userProfile.personalData.dangerText">Ha törlöd a fiókodat, az összes adatod, egyenleged, bónuszod és fogadásod véglegesen elvész. Ez a művelet nem vonható vissza.</p>
                         <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
-                            <i class="fas fa-trash-alt"></i> Felhasználóm törlése
+                            <i class="fas fa-trash-alt"></i> <span data-i18n="userProfile.personalData.deleteAccount">Felhasználóm törlése</span>
                         </button>
                     </div>
                 </div>
@@ -347,7 +347,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content" style="background:#1a1a2e;color:#f5c518;border:1px solid #dc3545;">
                 <div class="modal-header border-bottom" style="border-color:#dc3545 !important;">
-                    <h5 class="modal-title"><i class="fas fa-exclamation-triangle text-danger"></i> Fiók törlése</h5>
+                    <h5 class="modal-title"><i class="fas fa-exclamation-triangle text-danger"></i> <span data-i18n="userProfile.personalData.deleteAccount">Fiók törlése</span></h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Bezár"></button>
                 </div>
                 <div class="modal-body">
@@ -361,10 +361,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                             <li>A fiókodat <strong style="color:#ff6b6b;">nem lehet visszaállítani</strong></li>
                         </ul>
                     </div>
-                    <p style="color:#ccc;text-align:center;">Biztosan törölni szeretnéd a fiókodat?</p>
+                    <p style="color:#ccc;text-align:center;" data-i18n="userProfile.personalData.deleteConfirmQuestion">Biztosan törölni szeretnéd a fiókodat?</p>
                 </div>
                 <div class="modal-footer border-top d-flex justify-content-between" style="border-color:#dc3545 !important;">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-arrow-left"></i> Mégsem</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-arrow-left"></i> <span data-i18n="userProfile.personalData.notNow">Mégsem</span></button>
                     <button type="button" class="btn btn-danger" id="confirmDeleteStep1">
                         <i class="fas fa-trash-alt"></i> Igen, törölni akarom
                     </button>
@@ -378,26 +378,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content" style="background:#1a1a2e;color:#f5c518;border:1px solid #dc3545;">
                 <div class="modal-header border-bottom" style="border-color:#dc3545 !important;">
-                    <h5 class="modal-title"><i class="fas fa-skull-crossbones text-danger"></i> Utolsó figyelmeztetés</h5>
+                    <h5 class="modal-title"><i class="fas fa-skull-crossbones text-danger"></i> <span data-i18n="userProfile.personalData.finalWarning">Utolsó figyelmeztetés</span></h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Bezár"></button>
                 </div>
                 <div class="modal-body">
                     <p style="color:#ff6b6b;text-align:center;font-size:16px;font-weight:bold;">
                         Ez az utolsó lépés! A törlés után a fiókod véglegesen megszűnik.
                     </p>
-                    <p style="color:#ccc;text-align:center;margin-bottom:6px;">
-                        A megerősítéshez írd be a jelszavad:
-                    </p>
+                    <p style="color:#ccc;text-align:center;margin-bottom:6px;" data-i18n="userProfile.personalData.enterPassword">A megerősítéshez írd be a jelszavad:</p>
                     <input type="password" id="deleteConfirmPassword" class="form-control mb-2" placeholder="Jelszó..." 
                            style="background:#16213e;border:1px solid #2a2a3e;color:#f5c518;text-align:center;">
                     <small id="deletePasswordError" style="color:#dc3545;display:none;"></small>
                     <hr style="border-color:#2a2a3e;">
-                    <p style="color:#aaa;font-size:14px;margin-bottom:6px;">Írd meg nekünk, miért döntöttél a távozás mellett (nem kötelező):</p>
+                    <p style="color:#aaa;font-size:14px;margin-bottom:6px;" data-i18n="userProfile.personalData.leaveReason">Írd meg nekünk, miért döntöttél a távozás mellett (nem kötelező):</p>
                     <textarea id="deleteReasonText" class="form-control" rows="3" placeholder="Pl. nem használom az oldalt, más okból..." 
                               style="background:#16213e;border:1px solid #2a2a3e;color:#f5c518;resize:vertical;"></textarea>
                 </div>
                 <div class="modal-footer border-top d-flex justify-content-between" style="border-color:#dc3545 !important;">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-arrow-left"></i> Mégsem</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-arrow-left"></i> <span data-i18n="userProfile.personalData.notNow">Mégsem</span></button>
                     <button type="button" class="btn btn-danger" id="confirmDeleteStep2" disabled>
                         <i class="fas fa-trash-alt"></i> Véglegesen törlöm
                     </button>
@@ -412,11 +410,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
             <div class="modal-content" style="background:#1a1a2e;color:#f5c518;border:1px solid #f5c518;">
                 <div class="modal-body text-center" style="padding:40px 30px;">
                     <div style="font-size:3rem;margin-bottom:10px;">👋</div>
-                    <h4 style="color:#f5c518;">Köszönjük, hogy az oldalunkat használtad!</h4>
-                    <p style="color:#ccc;">A fiókod sikeresen törlésre került. Sajnáljuk, hogy távozol.</p>
+                    <h4 style="color:#f5c518;" data-i18n="userProfile.personalData.thanks">Köszönjük, hogy az oldalunkat használtad!</h4>
+                    <p style="color:#ccc;" data-i18n="userProfile.personalData.deletedInfo">A fiókod sikeresen törlésre került. Sajnáljuk, hogy távozol.</p>
                     <p style="color:#aaa;font-size:13px;">Automatikus átirányítás 5 másodperc múlva...</p>
                     <a href="/BetMatchBonus/frontend/MainMenu/MainMenu.php" class="btn btn-warning mt-3">
-                        <i class="fas fa-home"></i> Vissza a főoldalra
+                        <i class="fas fa-home"></i> <span data-i18n="userProfile.personalData.backToHome">Vissza a főoldalra</span>
                     </a>
                 </div>
             </div>
@@ -451,7 +449,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
             if (!password) return;
 
             confirmBtn.disabled = true;
-            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Törlés folyamatban...';
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (window.i18n ? window.i18n('userProfile.personalData.deleting', 'Törlés folyamatban...') : 'Törlés folyamatban...');
             errorEl.style.display = 'none';
 
             const reason = document.getElementById('deleteReasonText').value.trim();
@@ -474,19 +472,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                         window.location.href = '/BetMatchBonus/frontend/MainMenu/MainMenu.php';
                     }, 5000);
                 } else {
-                    errorEl.textContent = data.message || 'Ismeretlen hiba.';
+                    errorEl.textContent = data.message || (window.i18n ? window.i18n('userProfile.personalData.unknownError', 'Ismeretlen hiba.') : 'Ismeretlen hiba.');
                     errorEl.style.display = 'block';
                     confirmBtn.disabled = false;
-                    confirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Véglegesen törlöm';
+                    confirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> ' + (window.i18n ? window.i18n('userProfile.personalData.deletePermanently', 'Véglegesen törlöm') : 'Véglegesen törlöm');
                     passwordInput.value = '';
                     passwordInput.focus();
                 }
             })
             .catch(() => {
-                errorEl.textContent = 'Hiba történt a törlés során. Kérjük, próbáld újra.';
+                errorEl.textContent = window.i18n ? window.i18n('userProfile.personalData.deleteError', 'Hiba történt a törlés során. Kérjük, próbáld újra.') : 'Hiba történt a törlés során. Kérjük, próbáld újra.';
                 errorEl.style.display = 'block';
                 confirmBtn.disabled = false;
-                confirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Véglegesen törlöm';
+                confirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> ' + (window.i18n ? window.i18n('userProfile.personalData.deletePermanently', 'Véglegesen törlöm') : 'Véglegesen törlöm');
             });
         });
     })();

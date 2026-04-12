@@ -86,7 +86,7 @@ $expired_bonuses = count($archived_bonuses);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bónuszaim | BetMatchBonus</title>
+    <title data-i18n="userProfile.myBonuses.pageTitle">Bónuszaim | BetMatchBonus</title>
     <link rel="stylesheet" href="../../css/RootColor/root.css">
     <link rel="stylesheet" href="../../css/Main/layout.css">
     <link rel="stylesheet" href="../../css/UserProfile/user_profile.css">
@@ -101,25 +101,25 @@ $expired_bonuses = count($archived_bonuses);
         <div class="row">
             <div class="col-md-3">
                 <nav class="profile-sidebar">
-                    <a href="personal_data.php" class="profile-nav-item"><i class="fas fa-user"></i> Személyes Adatok</a>
-                    <a href="change_password.php" class="profile-nav-item"><i class="fas fa-key"></i> Jelszó Módosítás</a>
-                    <a href="deposit.php" class="profile-nav-item"><i class="fas fa-plus-circle"></i> Befizetés</a>
-                    <a href="withdrawal.php" class="profile-nav-item"><i class="fas fa-minus-circle"></i> Kifizetés</a>
-                    <a href="transaction_history.php" class="profile-nav-item"><i class="fas fa-history"></i> Tranzakciótörténet</a>
-                    <a href="my_bonuses.php" class="profile-nav-item active"><i class="fas fa-gift"></i> Bónuszaim</a>
-                    <a href="activity_log.php" class="profile-nav-item"><i class="fas fa-list"></i> Napló</a>
-                    <a href="#" class="profile-nav-item logout profile-logout-btn" onclick="event.preventDefault();fetch('/BetMatchBonus/backend/Auth/logout.php',{method:'POST'}).then(function(){window.location.href='/BetMatchBonus/frontend/MainMenu/MainMenu.php';});"><i class="fas fa-sign-out-alt"></i> Kijelentkezés</a>
+                    <a href="personal_data.php" class="profile-nav-item"><i class="fas fa-user"></i> <span data-i18n="auth.personalData">Személyes Adatok</span></a>
+                    <a href="change_password.php" class="profile-nav-item"><i class="fas fa-key"></i> <span data-i18n="auth.changePassword">Jelszó Módosítás</span></a>
+                    <a href="deposit.php" class="profile-nav-item"><i class="fas fa-plus-circle"></i> <span data-i18n="auth.deposit">Befizetés</span></a>
+                    <a href="withdrawal.php" class="profile-nav-item"><i class="fas fa-minus-circle"></i> <span data-i18n="auth.withdrawal">Kifizetés</span></a>
+                    <a href="transaction_history.php" class="profile-nav-item"><i class="fas fa-history"></i> <span data-i18n="auth.transactionHistory">Tranzakciótörténet</span></a>
+                    <a href="my_bonuses.php" class="profile-nav-item active"><i class="fas fa-gift"></i> <span data-i18n="auth.myBonuses">Bónuszaim</span></a>
+                    <a href="activity_log.php" class="profile-nav-item"><i class="fas fa-list"></i> <span data-i18n="auth.activityLog">Napló</span></a>
+                    <a href="#" class="profile-nav-item logout profile-logout-btn" onclick="event.preventDefault();fetch('/BetMatchBonus/backend/Auth/logout.php',{method:'POST'}).then(function(){window.location.href='/BetMatchBonus/frontend/MainMenu/MainMenu.php';});"><i class="fas fa-sign-out-alt"></i> <span data-i18n="auth.logout">Kijelentkezés</span></a>
                 </nav>
             </div>
             <div class="col-md-9">
                 <div class="profile-content">
-                    <h1><i class="fas fa-gift"></i> Bónuszaim</h1>
+                    <h1><i class="fas fa-gift"></i> <span data-i18n="auth.myBonuses">Bónuszaim</span></h1>
                     
                     <div class="row mb-4">
                         <div class="col-md-3">
                             <div class="card bonus-card">
                                 <div class="card-body">
-                                    <h6 class="card-title">Aktív Bónuszok</h6>
+                                    <h6 class="card-title" data-i18n="userProfile.myBonuses.activeBonuses">Aktív Bónuszok</h6>
                                     <h2 class="text-success"><?php echo $active_bonuses; ?></h2>
                                 </div>
                             </div>
@@ -127,7 +127,7 @@ $expired_bonuses = count($archived_bonuses);
                         <div class="col-md-3">
                             <div class="card bonus-card">
                                 <div class="card-body">
-                                    <h6 class="card-title">Ingyenes Fogadások</h6>
+                                    <h6 class="card-title" data-i18n="userProfile.myBonuses.freeBets">Ingyenes Fogadások</h6>
                                     <h2 class="text-primary"><?php echo number_format($total_free_bet_amount, 0, ',', ' '); ?> FT</h2>
                                 </div>
                             </div>
@@ -135,7 +135,7 @@ $expired_bonuses = count($archived_bonuses);
                         <div class="col-md-3">
                             <div class="card bonus-card">
                                 <div class="card-body">
-                                    <h6 class="card-title">Bónusz Egyenleg</h6>
+                                    <h6 class="card-title" data-i18n="userProfile.myBonuses.bonusBalance">Bónusz Egyenleg</h6>
                                     <h2 class="text-warning"><?php echo number_format($bonus_balance, 0, ',', ' '); ?> FT</h2>
                                 </div>
                             </div>
@@ -143,7 +143,7 @@ $expired_bonuses = count($archived_bonuses);
                         <div class="col-md-3">
                             <div class="card bonus-card">
                                 <div class="card-body">
-                                    <h6 class="card-title">Lejárt/Felhasznált</h6>
+                                    <h6 class="card-title" data-i18n="userProfile.myBonuses.expiredUsed">Lejárt/Felhasznált</h6>
                                     <h2 class="text-danger"><?php echo $expired_bonuses; ?></h2>
                                 </div>
                             </div>
@@ -153,7 +153,7 @@ $expired_bonuses = count($archived_bonuses);
                     <!-- Bónuszkód Beváltó Szekció -->
                     <div class="card mb-4 shadow-sm" style="background-color: #16213e; border: 1px solid #e94560;">
                         <div class="card-body">
-                            <h5 class="card-title" style="color: #e94560;"><i class="fas fa-ticket-alt"></i> Van promóciós kódod?</h5>
+                            <h5 class="card-title" style="color: #e94560;"><i class="fas fa-ticket-alt"></i> <span data-i18n="userProfile.myBonuses.havePromoCode">Van promóciós kódod?</span></h5>
                             <form id="claimBonusForm" class="d-flex mt-3 gap-2">
                                 <style>
                                     #bonus_code::placeholder { 
@@ -161,8 +161,8 @@ $expired_bonuses = count($archived_bonuses);
                                         opacity: 1; 
                                     }
                                 </style>
-                                <input type="text" id="bonus_code" name="bonus_code" class="form-control text-white" placeholder="Írd be ide a bónuszkódot" required style="background: #0f3460; color: #ffffff !important; border: 1px solid #333;">
-                                <button type="submit" class="btn btn-primary" style="background-color: #e94560; border-color: #e94560; font-weight: bold;">Beváltás</button>
+                                <input type="text" id="bonus_code" name="bonus_code" class="form-control text-white" placeholder="Írd be ide a bónuszkódot" data-i18n-placeholder="userProfile.myBonuses.codePlaceholder" required style="background: #0f3460; color: #ffffff !important; border: 1px solid #333;">
+                                <button type="submit" class="btn btn-primary" style="background-color: #e94560; border-color: #e94560; font-weight: bold;" data-i18n="userProfile.myBonuses.redeem">Beváltás</button>
                             </form>
                             <div id="bonusMessage" class="mt-2" style="display:none; font-weight: bold;"></div>
                         </div>
@@ -170,7 +170,7 @@ $expired_bonuses = count($archived_bonuses);
                     
                     <?php if (empty($current_bonuses)): ?>
                         <div class="alert alert-info" style="background: #0f3460; color: #fff; border: none;">
-                            <i class="fas fa-info-circle"></i> Jelenleg nincs aktív vagy várakozó bónuszod. Látogasd meg a <a href="../../frontend/Bonus/bonus.php" style="color: #e94560; font-weight: bold;">Bónuszok</a> oldalt a lehetőségekért!
+                            <i class="fas fa-info-circle"></i> <span data-i18n="userProfile.myBonuses.noActive">Jelenleg nincs aktív vagy várakozó bónuszod.</span> <a href="../../frontend/Bonus/bonus.php" style="color: #e94560; font-weight: bold;" data-i18n="nav.bonuses">Bónuszok</a> <span data-i18n="userProfile.myBonuses.visitBonuses">oldalt a lehetőségekért!</span>
                         </div>
                     <?php else: ?>
                         <div class="bonus-list">
@@ -184,22 +184,22 @@ $expired_bonuses = count($archived_bonuses);
                                                     <?php echo htmlspecialchars($bonus['bonus_name'] ?? 'Ismeretlen Bónusz'); ?>
                                                 </h5>
                                                 <p class="card-text mb-1">
-                                                    <strong>Érték:</strong> <span class="text-success"><?php echo number_format($bonus['granted_amount'], 0, ',', ' '); ?> FT</span>
+                                                        <strong data-i18n="userProfile.myBonuses.value">Érték:</strong> <span class="text-success"><?php echo number_format($bonus['granted_amount'], 0, ',', ' '); ?> FT</span>
                                                 </p>
                                                 <p class="card-text mb-1">
-                                                    <strong>Szükséges forgatás:</strong> 
+                                                    <strong data-i18n="userProfile.myBonuses.wageringRequired">Szükséges forgatás:</strong> 
                                                     <?php 
                                                         if ($bonus['wagering_required'] > 0) {
                                                             $progress = $bonus['wagering_progress'] ?? 0;
                                                             $percentage = min(100, ($progress / $bonus['wagering_required']) * 100);
                                                             echo number_format($progress, 0, ',', ' ') . ' / ' . number_format($bonus['wagering_required'], 0, ',', ' ') . ' FT (' . round($percentage, 1) . '%)';
                                                         } else {
-                                                            echo '<span class="text-white">Nincs szükséges forgatás</span>';
+                                                            echo '<span class="text-white" data-i18n="userProfile.myBonuses.noWagering">Nincs szükséges forgatás</span>';
                                                         }
                                                     ?>
                                                 </p>
                                                 <p class="card-text mb-1">
-                                                    <strong>Lejárat:</strong> 
+                                                    <strong data-i18n="userProfile.myBonuses.expiry">Lejárat:</strong> 
                                                     <?php
                                                         if (!empty($bonus['expires_at'])) {
                                                             echo date('Y-m-d H:i', strtotime($bonus['expires_at']));
@@ -220,7 +220,7 @@ $expired_bonuses = count($archived_bonuses);
                                                             $createdAt->setTime(23, 59, 0);
                                                             echo $createdAt->format('Y-m-d H:i');
                                                         } else {
-                                                            echo '<span class="text-white">Nincs megadva</span>';
+                                                            echo '<span class="text-white" data-i18n="userProfile.myBonuses.notSpecified">Nincs megadva</span>';
                                                         }
                                                     ?>
                                                 </p>
@@ -242,7 +242,7 @@ $expired_bonuses = count($archived_bonuses);
                                                         data-min-odds-event="<?= number_format((float)($bonus['min_odds_per_event'] ?? 0), 2, ',', ' ') ?>"
                                                         data-bonus-trigger="<?= htmlspecialchars((string)($bonus['bonus_trigger'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
                                                     >
-                                                        <i class="fas fa-info-circle"></i> Bónusz leírása
+                                                        <i class="fas fa-info-circle"></i> <span data-i18n="userProfile.myBonuses.bonusDescription">Bónusz leírása</span>
                                                     </button>
                                                 </div>
                                             </div>
@@ -273,7 +273,7 @@ $expired_bonuses = count($archived_bonuses);
                     <?php if (!empty($archived_bonuses)): ?>
                         <div class="card mt-4" style="background: #121212; border: 1px solid #3f3f3f; color: #ddd;">
                             <div class="card-body">
-                                <h5 class="mb-3" style="color: #f2b705;"><i class="fas fa-archive"></i> Felhasznált / Lejárt Bónuszok</h5>
+                                <h5 class="mb-3" style="color: #f2b705;"><i class="fas fa-archive"></i> <span data-i18n="userProfile.myBonuses.usedOrExpired">Felhasznált / Lejárt Bónuszok</span></h5>
                                 <?php foreach ($archived_bonuses as $bonus): ?>
                                     <div class="card mb-3" style="background: #1b2436; border: 1px solid #3d4658; color: #ddd;">
                                         <div class="card-body">
@@ -284,10 +284,10 @@ $expired_bonuses = count($archived_bonuses);
                                                         <?php echo htmlspecialchars($bonus['bonus_name'] ?? 'Ismeretlen Bónusz'); ?>
                                                     </h6>
                                                     <p class="card-text mb-1">
-                                                        <strong>Érték:</strong> <span class="text-warning"><?php echo number_format($bonus['granted_amount'], 0, ',', ' '); ?> FT</span>
+                                                        <strong data-i18n="userProfile.myBonuses.value">Érték:</strong> <span class="text-warning"><?php echo number_format($bonus['granted_amount'], 0, ',', ' '); ?> FT</span>
                                                     </p>
                                                     <p class="card-text mb-1">
-                                                        <strong>Lejárat:</strong>
+                                                        <strong data-i18n="userProfile.myBonuses.expiry">Lejárat:</strong>
                                                         <?php
                                                             if (!empty($bonus['expires_at'])) {
                                                                 echo date('Y-m-d H:i', strtotime($bonus['expires_at']));
@@ -307,7 +307,7 @@ $expired_bonuses = count($archived_bonuses);
                                                                 $createdAt->setTime(23, 59, 0);
                                                                 echo $createdAt->format('Y-m-d H:i');
                                                             } else {
-                                                                echo '<span class="text-white">Nincs megadva</span>';
+                                                                echo '<span class="text-white" data-i18n="userProfile.myBonuses.notSpecified">Nincs megadva</span>';
                                                             }
                                                         ?>
                                                     </p>
@@ -323,7 +323,7 @@ $expired_bonuses = count($archived_bonuses);
                                                         } elseif (!$is_valid) {
                                                             echo '<span class="badge bg-danger"><i class="fas fa-times-circle"></i> Lejárt</span>';
                                                         } else {
-                                                            echo '<span class="badge bg-secondary">Archivált</span>';
+                                                            echo '<span class="badge bg-secondary" data-i18n="userProfile.myBonuses.archived">Archivált</span>';
                                                         }
                                                     ?>
                                                 </div>
@@ -335,7 +335,7 @@ $expired_bonuses = count($archived_bonuses);
                         </div>
                     <?php endif; ?>
                     
-                    <a href="personal_data.php" class="btn btn-secondary mt-3"><i class="fas fa-undo"></i> Vissza</a>
+                    <a href="personal_data.php" class="btn btn-secondary mt-3"><i class="fas fa-undo"></i> <span data-i18n="common.back">Vissza</span></a>
                 </div>
             </div>
         </div>
@@ -347,16 +347,16 @@ $expired_bonuses = count($archived_bonuses);
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content" style="background: #16213e; color: #eee; border: 1px solid #e94560;">
                 <div class="modal-header" style="border-bottom: 1px solid rgba(233, 69, 96, 0.35);">
-                    <h5 class="modal-title" id="bonusDescTitle" style="color: #e94560;">Bónusz leírása</h5>
+                    <h5 class="modal-title" id="bonusDescTitle" style="color: #e94560;" data-i18n="userProfile.myBonuses.bonusDescription">Bónusz leírása</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Bezárás"></button>
                 </div>
                 <div class="modal-body">
-                    <p id="bonusDescText" class="mb-3" style="line-height: 1.5;">Nincs leírás.</p>
+                    <p id="bonusDescText" class="mb-3" style="line-height: 1.5;" data-i18n="userProfile.myBonuses.noDescription">Nincs leírás.</p>
                     <ul class="list-group" id="bonusRequirementsList">
                     </ul>
                 </div>
                 <div class="modal-footer" style="border-top: 1px solid rgba(233, 69, 96, 0.35);">
-                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Bezárás</button>
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal" data-i18n="common.close">Bezárás</button>
                 </div>
             </div>
         </div>
@@ -399,15 +399,15 @@ $expired_bonuses = count($archived_bonuses);
         .catch(error => {
             msgDiv.style.display = 'block';
             msgDiv.className = 'mt-2 text-danger';
-            msgDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Hálózati hiba történt.';
+            msgDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + (window.i18n ? window.i18n('userProfile.myBonuses.networkError', 'Hálózati hiba történt.') : 'Hálózati hiba történt.');
             btn.disabled = false;
         });
     });
 
     document.querySelectorAll('.bonus-desc-btn').forEach((btn) => {
         btn.addEventListener('click', () => {
-            const title = btn.getAttribute('data-bonus-name') || 'Bónusz leírása';
-            const description = btn.getAttribute('data-bonus-description') || 'Nincs külön leírás ehhez a bónuszhoz.';
+            const title = btn.getAttribute('data-bonus-name') || (window.i18n ? window.i18n('userProfile.myBonuses.bonusDescription', 'Bónusz leírása') : 'Bónusz leírása');
+            const description = btn.getAttribute('data-bonus-description') || (window.i18n ? window.i18n('userProfile.myBonuses.noDescriptionLong', 'Nincs külön leírás ehhez a bónuszhoz.') : 'Nincs külön leírás ehhez a bónuszhoz.');
             const minDeposit = btn.getAttribute('data-min-deposit') || '0';
             const matchPercent = btn.getAttribute('data-match-percent') || '0';
             const maxBonus = btn.getAttribute('data-max-bonus') || '0';
@@ -433,25 +433,25 @@ $expired_bonuses = count($archived_bonuses);
                 reqList.appendChild(li);
             };
 
-            addReq('Aktiválás módja', bonusTrigger === 'DEPOSIT' ? 'Befizetéshez kötött' : 'Azonnali');
-            addReq('Minimum befizetés', `${minDeposit} FT`);
+            addReq(window.i18n ? window.i18n('userProfile.myBonuses.activationMode', 'Aktiválás módja') : 'Aktiválás módja', bonusTrigger === 'DEPOSIT' ? (window.i18n ? window.i18n('userProfile.myBonuses.depositBased', 'Befizetéshez kötött') : 'Befizetéshez kötött') : (window.i18n ? window.i18n('userProfile.myBonuses.instant', 'Azonnali') : 'Azonnali'));
+            addReq(window.i18n ? window.i18n('userProfile.myBonuses.minDeposit', 'Minimum befizetés') : 'Minimum befizetés', `${minDeposit} FT`);
 
             if (Number(String(matchPercent).replace(',', '.')) > 0) {
-                addReq('Bónusz mértéke', `${matchPercent}% (max ${maxBonus} FT)`);
+                addReq(window.i18n ? window.i18n('userProfile.myBonuses.bonusRate', 'Bónusz mértéke') : 'Bónusz mértéke', `${matchPercent}% (max ${maxBonus} FT)`);
             } else {
-                addReq('Maximális bónusz', `${maxBonus} FT`);
+                addReq(window.i18n ? window.i18n('userProfile.myBonuses.maxBonus', 'Maximális bónusz') : 'Maximális bónusz', `${maxBonus} FT`);
             }
 
-            addReq('Forgatási követelmény', `${wageringMultiplier}x`);
+            addReq(window.i18n ? window.i18n('userProfile.myBonuses.wageringRequirement', 'Forgatási követelmény') : 'Forgatási követelmény', `${wageringMultiplier}x`);
 
             if (parseInt(minCombo, 10) > 0) {
-                addReq('Minimum kötés', `${minCombo} esemény`);
+                addReq(window.i18n ? window.i18n('userProfile.myBonuses.minCombo', 'Minimum kötés') : 'Minimum kötés', `${minCombo} ${window.i18n ? window.i18n('userProfile.myBonuses.events', 'esemény') : 'esemény'}`);
             }
             if (Number(String(minOdds).replace(',', '.')) > 0) {
-                addReq('Minimum össz odds', minOdds);
+                addReq(window.i18n ? window.i18n('userProfile.myBonuses.minTotalOdds', 'Minimum össz odds') : 'Minimum össz odds', minOdds);
             }
             if (Number(String(minOddsEvent).replace(',', '.')) > 0) {
-                addReq('Minimum odds eseményenként', minOddsEvent);
+                addReq(window.i18n ? window.i18n('userProfile.myBonuses.minOddsPerEvent', 'Minimum odds eseményenként') : 'Minimum odds eseményenként', minOddsEvent);
             }
         });
     });

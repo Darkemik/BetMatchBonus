@@ -256,7 +256,7 @@ while ($row = $res->fetch_assoc()) {
 $stmt->close();
 
 if (empty($leagues)) {
-    echo '<div class="no-matches"><i class="fas fa-futbol" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i>Jelenleg nincs elo meccs ehhez a sporthoz.</div>';
+    echo '<div class="no-matches"><i class="fas fa-futbol" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i><span data-i18n="live.noMatchesForSport">Jelenleg nincs elo meccs ehhez a sporthoz.</span></div>';
     exit;
 }
 
@@ -310,8 +310,8 @@ $leagueIndex = 0;
                                 <span class="live-time-value"><?php echo htmlspecialchars($m['liveTime']); ?></span>
                             </div>
                         <?php else: ?>
-                            <button class="btn-add-bet" data-match-id="<?php echo $m['matchId']; ?>" title="Fogadások megtekintése">
-                                <i class="fas fa-plus"></i> Fogadás
+                            <button class="btn-add-bet" data-match-id="<?php echo $m['matchId']; ?>" title="Fogadások megtekintése" data-i18n-title="live.betButton">
+                                <i class="fas fa-plus"></i> <span data-i18n="live.betButton">Fogadás</span>
                             </button>
                         <?php endif; ?>
                     </td>
@@ -324,6 +324,6 @@ $leagueIndex = 0;
 <?php endforeach; ?>
 <?php if ($totalLeagues > 5): ?>
 <button class="load-more-leagues-btn">
-    <i class="fas fa-chevron-down"></i> Többi bajnokság betöltése (<span class="load-more-count"><?php echo $totalLeagues - 5; ?></span>)
+    <i class="fas fa-chevron-down"></i> <span data-i18n="live.loadMoreLeagues">Többi bajnokság betöltése</span> (<span class="load-more-count"><?php echo $totalLeagues - 5; ?></span>)
 </button>
 <?php endif; ?>

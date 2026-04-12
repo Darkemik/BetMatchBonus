@@ -37,7 +37,7 @@ if (empty($activities)) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Napló | BetMatchBonus</title>
+    <title data-i18n="userProfile.activityLog.pageTitle">Napló | BetMatchBonus</title>
     <link rel="stylesheet" href="../../css/RootColor/root.css">
     <link rel="stylesheet" href="../../css/Main/layout.css">
     <link rel="stylesheet" href="../../css/UserProfile/user_profile.css">
@@ -52,23 +52,23 @@ if (empty($activities)) {
         <div class="row">
             <div class="col-md-3">
                 <nav class="profile-sidebar">
-                    <a href="personal_data.php" class="profile-nav-item"><i class="fas fa-user"></i> Személyes Adatok</a>
-                    <a href="change_password.php" class="profile-nav-item"><i class="fas fa-key"></i> Jelszó Módosítás</a>
-                    <a href="deposit.php" class="profile-nav-item"><i class="fas fa-plus-circle"></i> Befizetés</a>
-                    <a href="withdrawal.php" class="profile-nav-item"><i class="fas fa-minus-circle"></i> Kifizetés</a>
-                    <a href="transaction_history.php" class="profile-nav-item"><i class="fas fa-history"></i> Tranzakciótörténet</a>
-                    <a href="my_bonuses.php" class="profile-nav-item"><i class="fas fa-gift"></i> Bónuszaim</a>
-                    <a href="activity_log.php" class="profile-nav-item active"><i class="fas fa-list"></i> Napló</a>
-                    <a href="#" class="profile-nav-item logout profile-logout-btn" onclick="event.preventDefault();fetch('/BetMatchBonus/backend/Auth/logout.php',{method:'POST'}).then(function(){window.location.href='/BetMatchBonus/frontend/MainMenu/MainMenu.php';});"><i class="fas fa-sign-out-alt"></i> Kijelentkezés</a>
+                    <a href="personal_data.php" class="profile-nav-item"><i class="fas fa-user"></i> <span data-i18n="auth.personalData">Személyes Adatok</span></a>
+                    <a href="change_password.php" class="profile-nav-item"><i class="fas fa-key"></i> <span data-i18n="auth.changePassword">Jelszó Módosítás</span></a>
+                    <a href="deposit.php" class="profile-nav-item"><i class="fas fa-plus-circle"></i> <span data-i18n="auth.deposit">Befizetés</span></a>
+                    <a href="withdrawal.php" class="profile-nav-item"><i class="fas fa-minus-circle"></i> <span data-i18n="auth.withdrawal">Kifizetés</span></a>
+                    <a href="transaction_history.php" class="profile-nav-item"><i class="fas fa-history"></i> <span data-i18n="auth.transactionHistory">Tranzakciótörténet</span></a>
+                    <a href="my_bonuses.php" class="profile-nav-item"><i class="fas fa-gift"></i> <span data-i18n="auth.myBonuses">Bónuszaim</span></a>
+                    <a href="activity_log.php" class="profile-nav-item active"><i class="fas fa-list"></i> <span data-i18n="auth.activityLog">Napló</span></a>
+                    <a href="#" class="profile-nav-item logout profile-logout-btn" onclick="event.preventDefault();fetch('/BetMatchBonus/backend/Auth/logout.php',{method:'POST'}).then(function(){window.location.href='/BetMatchBonus/frontend/MainMenu/MainMenu.php';});"><i class="fas fa-sign-out-alt"></i> <span data-i18n="auth.logout">Kijelentkezés</span></a>
                 </nav>
             </div>
             <div class="col-md-9">
                 <div class="profile-content">
-                    <h1><i class="fas fa-list"></i> Tevékenységi Napló</h1>
+                    <h1><i class="fas fa-list"></i> <span data-i18n="auth.activityLog">Napló</span></h1>
                     
                     <?php if (empty($activities)): ?>
                         <div class="alert alert-info">
-                            <i class="fas fa-info-circle"></i> Még nincs tevékenységi bejegyzés.
+                            <i class="fas fa-info-circle"></i> <span data-i18n="userProfile.activityLog.empty">Még nincs tevékenységi bejegyzés.</span>
                         </div>
                     <?php else: ?>
                         <div class="activity-timeline">
@@ -105,7 +105,7 @@ if (empty($activities)) {
                                         <i class="<?php echo $icon_class; ?>"></i>
                                     </div>
                                     <div class="activity-content">
-                                        <h6><?php echo htmlspecialchars($activity['activity_type'] ?? 'Unknown'); ?></h6>
+                                        <h6><?php echo htmlspecialchars($activity['activity_type'] ?? 'Ismeretlen'); ?></h6>
                                         <p class="activity-description">
                                             <?php echo htmlspecialchars($activity['description'] ?? 'Nincs leírás'); ?>
                                         </p>
@@ -115,7 +115,7 @@ if (empty($activities)) {
                                         </small>
                                         <?php if (!empty($activity['ip_address'])): ?>
                                             <small class="activity-ip d-block">
-                                                <i class="fas fa-network-wired"></i> IP: <?php echo htmlspecialchars($activity['ip_address']); ?>
+                                                <i class="fas fa-network-wired"></i> <span data-i18n="userProfile.activityLog.ip">IP</span>: <?php echo htmlspecialchars($activity['ip_address']); ?>
                                             </small>
                                         <?php endif; ?>
                                     </div>
@@ -124,7 +124,7 @@ if (empty($activities)) {
                         </div>
                     <?php endif; ?>
                     
-                    <a href="personal_data.php" class="btn btn-secondary"><i class="fas fa-undo"></i> Vissza</a>
+                    <a href="personal_data.php" class="btn btn-secondary"><i class="fas fa-undo"></i> <span data-i18n="common.back">Vissza</span></a>
                 </div>
             </div>
         </div>

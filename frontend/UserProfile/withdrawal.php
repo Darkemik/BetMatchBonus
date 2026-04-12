@@ -231,7 +231,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kifizetés | BetMatchBonus</title>
+    <title data-i18n="userProfile.withdrawal.pageTitle">Kifizetés | BetMatchBonus</title>
     <link rel="stylesheet" href="../../css/RootColor/root.css">
     <link rel="stylesheet" href="../../css/Main/layout.css">
     <link rel="stylesheet" href="../../css/UserProfile/user_profile.css">
@@ -404,43 +404,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
         <div class="row">
             <div class="col-md-3">
                 <nav class="profile-sidebar">
-                    <a href="personal_data.php" class="profile-nav-item"><i class="fas fa-user"></i> Személyes Adatok</a>
-                    <a href="change_password.php" class="profile-nav-item"><i class="fas fa-key"></i> Jelszó Módosítás</a>
-                    <a href="deposit.php" class="profile-nav-item"><i class="fas fa-plus-circle"></i> Befizetés</a>
-                    <a href="withdrawal.php" class="profile-nav-item active"><i class="fas fa-minus-circle"></i> Kifizetés</a>
-                    <a href="transaction_history.php" class="profile-nav-item"><i class="fas fa-history"></i> Tranzakciótörténet</a>
-                    <a href="my_bonuses.php" class="profile-nav-item"><i class="fas fa-gift"></i> Bónuszaim</a>
-                    <a href="activity_log.php" class="profile-nav-item"><i class="fas fa-list"></i> Napló</a>
-                    <a href="#" class="profile-nav-item logout profile-logout-btn" onclick="event.preventDefault();fetch('/BetMatchBonus/backend/Auth/logout.php',{method:'POST'}).then(function(){window.location.href='/BetMatchBonus/frontend/MainMenu/MainMenu.php';});"><i class="fas fa-sign-out-alt"></i> Kijelentkezés</a>
+                    <a href="personal_data.php" class="profile-nav-item"><i class="fas fa-user"></i> <span data-i18n="auth.personalData">Személyes Adatok</span></a>
+                    <a href="change_password.php" class="profile-nav-item"><i class="fas fa-key"></i> <span data-i18n="auth.changePassword">Jelszó Módosítás</span></a>
+                    <a href="deposit.php" class="profile-nav-item"><i class="fas fa-plus-circle"></i> <span data-i18n="auth.deposit">Befizetés</span></a>
+                    <a href="withdrawal.php" class="profile-nav-item active"><i class="fas fa-minus-circle"></i> <span data-i18n="auth.withdrawal">Kifizetés</span></a>
+                    <a href="transaction_history.php" class="profile-nav-item"><i class="fas fa-history"></i> <span data-i18n="auth.transactionHistory">Tranzakciótörténet</span></a>
+                    <a href="my_bonuses.php" class="profile-nav-item"><i class="fas fa-gift"></i> <span data-i18n="auth.myBonuses">Bónuszaim</span></a>
+                    <a href="activity_log.php" class="profile-nav-item"><i class="fas fa-list"></i> <span data-i18n="auth.activityLog">Napló</span></a>
+                    <a href="#" class="profile-nav-item logout profile-logout-btn" onclick="event.preventDefault();fetch('/BetMatchBonus/backend/Auth/logout.php',{method:'POST'}).then(function(){window.location.href='/BetMatchBonus/frontend/MainMenu/MainMenu.php';});"><i class="fas fa-sign-out-alt"></i> <span data-i18n="auth.logout">Kijelentkezés</span></a>
                 </nav>
             </div>
             <div class="col-md-9">
                 <div class="profile-content">
-                    <h1><i class="fas fa-minus-circle"></i> Kifizetés</h1>
+                    <h1><i class="fas fa-minus-circle"></i> <span data-i18n="auth.withdrawal">Kifizetés</span></h1>
                     
                     <div class="alert alert-info py-3">
                         <div class="row g-2">
                             <div class="col-12 col-md-6">
                                 <div class="p-2 rounded" style="background: rgba(13, 110, 253, 0.12); border: 1px solid rgba(13, 110, 253, 0.25);">
-                                    <div style="font-weight:700; font-size: 0.9rem;">BEFIZETETT EGYENLEG</div>
+                                    <div style="font-weight:700; font-size: 0.9rem;" data-i18n="userProfile.balance.deposited">BEFIZETETT EGYENLEG</div>
                                     <div class="mt-1"><span id="balDeposited" class="badge bg-secondary"><?php echo number_format($deposited_balance, 0, ',', ' '); ?> FT</span></div>
                                 </div>
                             </div>
                             <div class="col-12 col-md-6">
                                 <div class="p-2 rounded" style="background: rgba(25, 135, 84, 0.12); border: 1px solid rgba(25, 135, 84, 0.25);">
-                                    <div style="font-weight:700; font-size: 0.9rem;">NYEREMÉNYEGYENLEG</div>
+                                    <div style="font-weight:700; font-size: 0.9rem;" data-i18n="userProfile.balance.winnings">NYEREMÉNYEGYENLEG</div>
                                     <div class="mt-1"><span id="balWinnings" class="badge bg-success"><?php echo number_format($winnings_balance, 0, ',', ' '); ?> FT</span></div>
                                 </div>
                             </div>
                             <div class="col-12 col-md-6">
                                 <div class="p-2 rounded" style="background: rgba(13, 110, 253, 0.12); border: 1px solid rgba(13, 110, 253, 0.25);">
-                                    <div style="font-weight:700; font-size: 0.9rem;">BEFIZETETT ÉS NYEREMÉNYEGYENLEG ÖSSZESEN</div>
+                                    <div style="font-weight:700; font-size: 0.9rem;" data-i18n="userProfile.balance.total">BEFIZETETT ÉS NYEREMÉNYEGYENLEG ÖSSZESEN</div>
                                     <div class="mt-1"><span id="balTotal" class="badge bg-primary"><?php echo number_format($total_deposit_and_winnings, 0, ',', ' '); ?> FT</span></div>
                                 </div>
                             </div>
                             <div class="col-12 col-md-6">
                                 <div class="p-2 rounded" style="background: rgba(255, 193, 7, 0.14); border: 1px solid rgba(255, 193, 7, 0.35);">
-                                    <div style="font-weight:700; font-size: 0.9rem;">BÓNUSZ EGYENLEG (NEM KIUTALHATÓ)</div>
+                                    <div style="font-weight:700; font-size: 0.9rem;" data-i18n="userProfile.balance.bonus">BÓNUSZ EGYENLEG (NEM KIUTALHATÓ)</div>
                                     <div class="mt-1"><span id="balBonus" class="badge bg-warning text-dark"><?php echo number_format($bonus_balance, 0, ',', ' '); ?> FT</span></div>
                                 </div>
                             </div>
@@ -456,18 +456,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                     <div id="withdrawableSection" class="p-3 rounded mb-3" style="background: <?php echo $can_withdraw ? 'rgba(25,135,84,0.08)' : 'rgba(220,53,69,0.08)'; ?>; border: 2px solid <?php echo $can_withdraw ? 'rgba(25,135,84,0.3)' : 'rgba(220,53,69,0.3)'; ?>; text-align:center;">
                         <div id="withdrawableLabel" style="font-weight:700; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.5px; color:<?php echo $can_withdraw ? '#198754' : '#dc3545'; ?>; margin-bottom:4px;">
                             <i class="fas fa-<?php echo $can_withdraw ? 'check-circle' : 'times-circle'; ?>"></i>
-                            Kiutalható összeg
+                            <span data-i18n="userProfile.withdrawal.withdrawable">Kiutalható összeg</span>
                         </div>
                         <div id="withdrawableAmount" style="font-size:1.6rem; font-weight:800; color:<?php echo $can_withdraw ? '#198754' : '#dc3545'; ?>;">
                             <?php echo number_format($withdrawable, 0, ',', ' '); ?> FT
                         </div>
                         <?php if (!$can_withdraw): ?>
                             <div style="font-size:0.8rem; color:#dc3545; margin-top:6px;">
-                                <i class="fas fa-info-circle"></i> A kifizetéshez legalább <strong>6 000 FT</strong> nyereményegyenleg szükséges.
+                                <i class="fas fa-info-circle"></i> <span data-i18n-html="userProfile.withdrawal.minRequiredInfo">A kifizetéshez legalább <strong>6 000 FT</strong> nyereményegyenleg szükséges.</span>
                             </div>
                         <?php else: ?>
                             <div style="font-size:0.8rem; color:#666; margin-top:6px;">
-                                Kifizetés csak a nyereményegyenlegből lehetséges. Minimum: <strong>6 000 FT</strong>
+                                <span data-i18n-html="userProfile.withdrawal.winningsOnlyInfo">Kifizetés csak a nyereményegyenlegből lehetséges. Minimum: <strong>6 000 FT</strong></span>
                             </div>
                         <?php endif; ?>
                     </div>
@@ -477,7 +477,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                     <div class="withdrawal-info-bar" style="border-color:rgba(255,193,7,0.4);background:rgba(255,193,7,0.08);">
                         <i class="fas fa-clock" style="color:#ffc107;font-size:1.2rem;"></i>
                         <div>
-                            <div style="font-weight:700;color:#856404;font-size:0.9rem;margin-bottom:4px;">Függőben lévő kifizetési kérelmek</div>
+                            <div style="font-weight:700;color:#856404;font-size:0.9rem;margin-bottom:4px;" data-i18n="userProfile.withdrawal.pendingRequests">Függőben lévő kifizetési kérelmek</div>
                             <?php foreach ($pending_withdrawals as $pw): ?>
                                 <div style="color:#666;font-size:0.85rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
                                     <span>
@@ -485,16 +485,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                                         — <?php echo date('Y.m.d H:i', strtotime($pw['created_at'])); ?>
                                         <span style="color:#999;font-size:0.75rem;">(<?php echo htmlspecialchars($pw['transaction_id']); ?>)</span>
                                     </span>
-                                    <form method="POST" style="display:inline;margin:0;" onsubmit="return confirm('Biztosan visszavonod ezt a kifizetési kérelmet?');">
+                                    <form method="POST" style="display:inline;margin:0;" onsubmit="return confirm(window.i18n ? window.i18n('userProfile.withdrawal.confirmCancelRequest', 'Biztosan visszavonod ezt a kifizetési kérelmet?') : 'Biztosan visszavonod ezt a kifizetési kérelmet?');">
                                         <input type="hidden" name="cancel_id" value="<?php echo (int)$pw['id']; ?>">
                                         <button type="submit" name="cancel_withdrawal" value="1" style="background:#dc3545;color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;">
-                                            <i class="fas fa-times"></i> Visszavonás
+                                            <i class="fas fa-times"></i> <span data-i18n="userProfile.withdrawal.cancelRequest">Visszavonás</span>
                                         </button>
                                     </form>
                                 </div>
                             <?php endforeach; ?>
                             <div style="color:#856404;font-size:0.78rem;margin-top:4px;">
-                                <i class="fas fa-info-circle"></i> Az admin hamarosan elbírálja, emailben értesítünk.
+                                <i class="fas fa-info-circle"></i> <span data-i18n="userProfile.withdrawal.pendingInfo">Az admin hamarosan elbírálja, emailben értesítünk.</span>
                             </div>
                         </div>
                     </div>
@@ -526,13 +526,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                         <input type="hidden" name="payment_method" value="bank_transfer">
 
                         <!-- Összeg -->
-                        <div class="withdrawal-section-title">Kifizetési összeg</div>
+                        <div class="withdrawal-section-title" data-i18n="userProfile.withdrawal.amount">Kifizetési összeg</div>
                         <div class="withdrawal-input-wrapper">
                             <input type="number" id="amount" name="amount" min="6000" step="1" max="<?php echo $winnings_balance; ?>" required value="6000">
                             <span class="currency-label">FT</span>
                         </div>
                         <div class="withdrawal-hint" id="withdrawalHint">
-                            Min: <strong>6 000 FT</strong> &nbsp;|&nbsp; Max (nyereményegyenleg): <strong><?php echo number_format($winnings_balance, 0, ',', ' '); ?> FT</strong>
+                            <span data-i18n="userProfile.withdrawal.minLabel">Min</span>: <strong>6 000 FT</strong> &nbsp;|&nbsp; <span data-i18n="userProfile.withdrawal.maxWinningsLabel">Max (nyereményegyenleg)</span>: <strong><?php echo number_format($winnings_balance, 0, ',', ' '); ?> FT</strong>
                         </div>
 
                         <!-- Gyors összegek -->
@@ -544,18 +544,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                         </div>
 
                         <!-- Bankszámla adatok -->
-                        <div class="withdrawal-section-title">Bankszámla adatok</div>
+                        <div class="withdrawal-section-title" data-i18n="userProfile.withdrawal.bankData">Bankszámla adatok</div>
 
                         <div class="withdrawal-field mb-3">
-                            <label for="account_holder"><i class="fas fa-user"></i> Számlán szereplő név</label>
-                            <input type="text" class="form-control" id="account_holder" name="account_holder" required placeholder="pl. Kovács János">
-                            <div class="field-hint">A névnek egyeznie kell a regisztrációkor megadott teljes névvel.</div>
+                            <label for="account_holder"><i class="fas fa-user"></i> <span data-i18n="userProfile.withdrawal.accountHolder">Számlán szereplő név</span></label>
+                            <input type="text" class="form-control" id="account_holder" name="account_holder" required placeholder="pl. Kovács János" data-i18n-placeholder="userProfile.withdrawal.accountHolderPlaceholder">
+                            <div class="field-hint" data-i18n="userProfile.withdrawal.accountHolderHint">A névnek egyeznie kell a regisztrációkor megadott teljes névvel.</div>
                         </div>
 
                         <div class="withdrawal-field mb-3">
-                            <label for="account_number"><i class="fas fa-university"></i> Bankszámlaszám</label>
-                            <input type="text" class="form-control" id="account_number" name="account_number" required placeholder="12345678-87654321">
-                            <div class="field-hint">16 vagy 24 számjegy (pl: 12345678-87654321)</div>
+                            <label for="account_number"><i class="fas fa-university"></i> <span data-i18n="userProfile.withdrawal.accountNumber">Bankszámlaszám</span></label>
+                            <input type="text" class="form-control" id="account_number" name="account_number" required placeholder="12345678-87654321" data-i18n-placeholder="userProfile.withdrawal.accountNumberPlaceholder">
+                            <div class="field-hint" data-i18n="userProfile.withdrawal.accountNumberHint">16 vagy 24 számjegy (pl: 12345678-87654321)</div>
                         </div>
 
                         <!-- Nyilatkozat -->
@@ -563,20 +563,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="agreement" name="agreement" required>
                                 <label class="form-check-label" for="agreement">
-                                    Kijelentem, hogy a kifizetést a saját nevemre szóló bankszámlára kérem, és az megfelel a hatályos jogszabályi előírásoknak.
+                                    <span data-i18n="userProfile.withdrawal.agreement">Kijelentem, hogy a kifizetést a saját nevemre szóló bankszámlára kérem, és az megfelel a hatályos jogszabályi előírásoknak.</span>
                                 </label>
                             </div>
                         </div>
 
                         <div class="withdrawal-info-bar">
                             <i class="fas fa-shield-alt"></i>
-                            <span>A kifizetést egy admin dolgozza fel. A pénz <strong>1–3 munkanap</strong> alatt érkezik meg a bankszámládra.</span>
+                            <span data-i18n-html="userProfile.withdrawal.processingInfo">A kifizetést egy admin dolgozza fel. A pénz <strong>1–3 munkanap</strong> alatt érkezik meg a bankszámládra.</span>
                         </div>
 
                         <button type="submit" name="submit_withdrawal" class="withdrawal-submit-btn">
-                            <i class="fas fa-arrow-down"></i>&nbsp; Kifizetés Kérelmezése
+                            <i class="fas fa-arrow-down"></i>&nbsp; <span data-i18n="userProfile.withdrawal.submit">Kifizetés Kérelmezése</span>
                         </button>
-                        <a href="personal_data.php" class="withdrawal-back-btn"><i class="fas fa-arrow-left"></i>&nbsp; Vissza</a>
+                        <a href="personal_data.php" class="withdrawal-back-btn"><i class="fas fa-arrow-left"></i>&nbsp; <span data-i18n="common.back">Vissza</span></a>
                     </form>
                 </div>
             </div>
@@ -663,14 +663,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                         var lbl = document.getElementById('withdrawableLabel');
                         if (lbl) {
                             lbl.style.color = canW ? '#198754' : '#dc3545';
-                            lbl.innerHTML = '<i class="fas fa-' + (canW ? 'check-circle' : 'times-circle') + '"></i> Kiutalható összeg';
+                            lbl.innerHTML = '<i class="fas fa-' + (canW ? 'check-circle' : 'times-circle') + '"></i> ' + (window.i18n ? window.i18n('userProfile.withdrawal.withdrawable', 'Kiutalható összeg') : 'Kiutalható összeg');
                         }
 
                         // Input max + hint frissítése
                         var amtInput = document.getElementById('amount');
                         if (amtInput) amtInput.max = w;
                         var hint = document.getElementById('withdrawalHint');
-                        if (hint) hint.innerHTML = 'Min: <strong>6 000 FT</strong> &nbsp;|&nbsp; Max (nyereményegyenleg): <strong>' + fmt(w) + '</strong>';
+                        if (hint) {
+                            const minText = window.i18n ? window.i18n('userProfile.withdrawal.minLabel', 'Min') : 'Min';
+                            const maxText = window.i18n ? window.i18n('userProfile.withdrawal.maxWinningsLabel', 'Max (nyereményegyenleg)') : 'Max (nyereményegyenleg)';
+                            hint.innerHTML = minText + ': <strong>6 000 FT</strong> &nbsp;|&nbsp; ' + maxText + ': <strong>' + fmt(w) + '</strong>';
+                        }
 
                         // Form engedélyezése/letiltása
                         var form = document.getElementById('withdrawalForm');
@@ -688,18 +692,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
 
                         let html = '<div class="withdrawal-info-bar" style="border-color:rgba(255,193,7,0.4);background:rgba(255,193,7,0.08);">';
                         html += '<i class="fas fa-clock" style="color:#ffc107;font-size:1.2rem;"></i><div>';
-                        html += '<div style="font-weight:700;color:#856404;font-size:0.9rem;margin-bottom:4px;">Függőben lévő kifizetési kérelmek</div>';
+                        html += '<div style="font-weight:700;color:#856404;font-size:0.9rem;margin-bottom:4px;">' + (window.i18n ? window.i18n('userProfile.withdrawal.pendingRequests', 'Függőben lévő kifizetési kérelmek') : 'Függőben lévő kifizetési kérelmek') + '</div>';
                         data.pending.forEach(pw => {
                             const amt = Number(pw.amount).toLocaleString('hu-HU');
                             const date = pw.created_at.substring(0, 16).replace(/-/g, '.');
                             html += '<div style="color:#666;font-size:0.85rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">';
                             html += '<span><strong>' + amt + ' FT</strong> — ' + date + ' <span style="color:#999;font-size:0.75rem;">(' + pw.transaction_id + ')</span></span>';
-                            html += '<form method="POST" style="display:inline;margin:0;" onsubmit="return confirm(\'Biztosan visszavonod ezt a kifizetési kérelmet?\');">';
+                            html += '<form method="POST" style="display:inline;margin:0;" onsubmit="return confirm(\'' + (window.i18n ? window.i18n('userProfile.withdrawal.confirmCancelRequest', 'Biztosan visszavonod ezt a kifizetési kérelmet?') : 'Biztosan visszavonod ezt a kifizetési kérelmet?') + '\');">';
                             html += '<input type="hidden" name="cancel_id" value="' + pw.id + '">';
                             html += '<button type="submit" name="cancel_withdrawal" value="1" style="background:#dc3545;color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;">';
-                            html += '<i class="fas fa-times"></i> Visszavonás</button></form></div>';
+                            html += '<i class="fas fa-times"></i> ' + (window.i18n ? window.i18n('userProfile.withdrawal.cancelRequest', 'Visszavonás') : 'Visszavonás') + '</button></form></div>';
                         });
-                        html += '<div style="color:#856404;font-size:0.78rem;margin-top:4px;"><i class="fas fa-info-circle"></i> Az admin hamarosan elbírálja, emailben értesítünk.</div>';
+                        html += '<div style="color:#856404;font-size:0.78rem;margin-top:4px;"><i class="fas fa-info-circle"></i> ' + (window.i18n ? window.i18n('userProfile.withdrawal.pendingInfo', 'Az admin hamarosan elbírálja, emailben értesítünk.') : 'Az admin hamarosan elbírálja, emailben értesítünk.') + '</div>';
                         html += '</div></div>';
                         container.innerHTML = html;
                     })
