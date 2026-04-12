@@ -200,7 +200,10 @@
     "matchDefaultName": "Meccs",
     "liveBadge": "ÉLŐBEN",
     "errorPrefix": "Hiba:",
-    "noMatchData": "Nincsenek meccs adatok"
+    "noMatchData": "Nincsenek meccs adatok",
+    "noMatchesForSport": "Jelenleg nincs élő meccs ehhez a sporthoz.",
+    "betButton": "Fogadás",
+    "loadMoreLeagues": "Többi bajnokság betöltése"
   },
   "esport": {
     "title": "eSport",

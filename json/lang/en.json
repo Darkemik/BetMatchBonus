@@ -200,7 +200,10 @@
     "matchDefaultName": "Match",
     "liveBadge": "LIVE",
     "errorPrefix": "Error:",
-    "noMatchData": "No match data"
+    "noMatchData": "No match data",
+    "noMatchesForSport": "Currently there are no live matches for this sport.",
+    "betButton": "Bet",
+    "loadMoreLeagues": "Load more leagues"
   },
   "esport": {
     "title": "eSport",

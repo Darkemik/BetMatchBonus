@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     'data-pick="' + escapeHtml(sel.name) + '" ' +
                     'data-odd="' + oddsValue + '" ' +
                     'data-market="' + escapeHtml(marketFullName) + '">' +
-                    '<span class="selection-name">' + escapeHtml(sel.name) + '</span>' +
+                    '<span class="selection-name">' + escapeHtml(td(sel.name)) + '</span>' +
                     '<span class="selection-odd">' + oddsValue.toFixed(2) + '</span>' +
                 '</button>';
             });

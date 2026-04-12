@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function applyDynamicTranslations(root) {
       if (!root) return;
-      root.querySelectorAll('.country-name, .league-name, .market-name, .sidebar-country-header, .sidebar-comp-header, .user-bet-market, .tip-league, .tip-combo-market').forEach(el => {
+      root.querySelectorAll('.country-name, .league-name, .league-country, .league-title, .market-name, .selection-name, .sidebar-country-header, .sidebar-comp-header, .user-bet-market, .tip-league, .tip-combo-market').forEach(el => {
           el.textContent = td(el.textContent);
       });
   }
@@ -605,7 +605,7 @@ document.addEventListener('DOMContentLoaded', function () {
                               data-pick="${escapeHtml(selection.name)}"
                               data-market="${escapeHtml(marketFullName)}"
                               data-odd="${oddsValue}">
-                              <span class="selection-name">${escapeHtml(selection.name)}</span>
+                              <span class="selection-name">${escapeHtml(td(selection.name))}</span>
                               ${isBoosted
                                   ? `<span class="selection-odd boosted-odd-display">
                                         <span class="original-odd-crossed">${originalOdds.toFixed(2)}</span>
@@ -795,7 +795,7 @@ document.addEventListener('DOMContentLoaded', function () {
                       const statusIcon = outcome.status === 'WON' ? '<i class="fas fa-check-circle"></i> ' : (outcome.status === 'LOST' ? '<i class="fas fa-times-circle"></i> ' : '');
                       html += `
                           <div class="selection-btn finished-outcome ${statusClass}">
-                              <span class="selection-name">${statusIcon}${escapeHtml(outcome.label)}</span>
+                              <span class="selection-name">${statusIcon}${escapeHtml(td(outcome.label))}</span>
                               <span class="selection-odd">${outcome.odds.toFixed(2)}</span>
                           </div>`;
                   });
@@ -824,7 +824,7 @@ document.addEventListener('DOMContentLoaded', function () {
                       <div class="user-bet-body">
                           <div class="user-bet-row">
                               <span>${t('mainMenu.yourPick', 'Tipped:')}</span>
-                              <span class="user-bet-pick">${escapeHtml(bet.pick || '')}</span>
+                              <span class="user-bet-pick">${escapeHtml(td(bet.pick || ''))}</span>
                           </div>
                           <div class="user-bet-row">
                               <span>${t('mainMenu.oddsAtPick', 'Odds:')}</span>

@@ -12,7 +12,7 @@
 
     function applyDynamicTranslations(root) {
         if (!root) return;
-        root.querySelectorAll('.country-name, .league-name, .market-name, .sport-name').forEach(el => {
+        root.querySelectorAll('.country-name, .league-name, .league-country, .league-title, .market-name, .selection-name, .sport-name').forEach(el => {
             el.textContent = td(el.textContent);
         });
     }
@@ -441,6 +441,9 @@
 
             console.log('[LIVE.JS] HTML kapott, hossz:', html.length);
             matchesContainer.innerHTML = html;
+            if (typeof window.applyI18n === 'function') {
+                window.applyI18n(matchesContainer);
+            }
             applyDynamicTranslations(matchesContainer);
             
             attachMatchClickHandlers();
@@ -533,7 +536,7 @@
                         
                         modalHTML += `
                             <button class="selection-btn${stateClass}"${isDisabled} data-match-id="${match.id}" data-home="${escapeHtml(match.homeTeam || '')}" data-away="${escapeHtml(match.awayTeam || '')}" data-pick="${escapeHtml(selection.name)}" data-market="${escapeHtml(marketFullName)}" data-odd="${oddsValue}">
-                                <div class="selection-name">${escapeHtml(selection.name)}</div>
+                                <div class="selection-name">${escapeHtml(td(selection.name))}</div>
                                 <div class="selection-odds">${oddsValue.toFixed(2)}</div>
                             </button>`;
                     });
@@ -725,7 +728,7 @@
                         
                         html += `
                             <button class="selection-btn${stateClass}"${isDisabled} data-match-id="${match.id}" data-home="${escapeHtml(match.homeTeam || '')}" data-away="${escapeHtml(match.awayTeam || '')}" data-pick="${escapeHtml(selection.name)}" data-market="${escapeHtml(marketFullName)}" data-odd="${oddsValue}">
-                                <div class="selection-name">${escapeHtml(selection.name)}</div>
+                                <div class="selection-name">${escapeHtml(td(selection.name))}</div>
                                 <div class="selection-odds">${oddsValue.toFixed(2)}</div>
                             </button>`;
                     });
