@@ -1135,6 +1135,15 @@ document.addEventListener('DOMContentLoaded', function () {
           renderSportsList(sportsData, matchSearch ? matchSearch.value : '');
       }
 
+      const activeSportId = currentSportId || 66;
+      if (isFinishedView) {
+          loadFinishedMatches(activeSportId);
+      } else {
+          loadMatches(activeSportId);
+      }
+
+      loadDailyTips();
+
       if (centerTitle && currentSportId) {
           const sport = sportsData.find(s => s.sport_api_id === currentSportId);
           if (sport) {
