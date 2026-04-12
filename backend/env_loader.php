@@ -23,7 +23,7 @@ function loadEnv(string $path): void
         [$key, $value] = explode('=', $line, 2);
         $key   = trim($key);
         $value = trim($value);
-        if (!array_key_exists($key, $_ENV)) {
+        if (!array_key_exists($key, $_ENV) || $_ENV[$key] === '') {
             $_ENV[$key] = $value;
             putenv("$key=$value");
         }

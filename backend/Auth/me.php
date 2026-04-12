@@ -47,6 +47,9 @@ if (isset($_SESSION['user_id'])) {
     $_SESSION['login_started_at'] = time();
   }
 
+  // Inaktivitás frissítése (check_session.php 30 perces timeout-ot néz ezen)
+  $_SESSION['last_activity'] = time();
+
   // 1 órás session limit ellenőrzés
   $sessionMaxSeconds = 3600; // 1 óra
   $elapsed = time() - (int)$_SESSION['login_started_at'];

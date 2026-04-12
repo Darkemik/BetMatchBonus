@@ -852,9 +852,9 @@
 
     function getFeedStartTime(sportId) {
         if (!sportFeedStartTimes.has(sportId)) {
-            // Első kiválasztáskor: utolsó 1 perc változásait mutatjuk
+            // Első kiválasztáskor: utolsó 5 perc változásait mutatjuk
             // Mindig az aktuális serverTimeOffset-et használjuk (ne legyen rossz ha 0 volt induláskor)
-            sportFeedStartTimes.set(sportId, Math.floor(Date.now() / 1000) + serverTimeOffset - 60);
+            sportFeedStartTimes.set(sportId, Math.floor(Date.now() / 1000) + serverTimeOffset - 300);
         }
         return sportFeedStartTimes.get(sportId);
     }

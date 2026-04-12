@@ -377,16 +377,8 @@ try {
         $consumeFreeBetStmt->close();
     }
     
-    // 6. TRANSACTION RÖGZÍTÉSE - UserProfile modulos Transactions táblához
-    $paymentMethodForTx = $isFreeBetTicket ? 'free_bet' : 'bet';
-    $stmtTransaction = $conn->prepare(" 
-        INSERT INTO Transactions (user_id, type, amount, payment_method, status, transaction_id, created_at)
-        VALUES (?, 'withdrawal', ?, ?, 'completed', ?, NOW())
-    ");
-    $transactionId = uniqid('BET_');
-    $stmtTransaction->bind_param("idss", $userId, $stake, $paymentMethodForTx, $transactionId);
-    $stmtTransaction->execute();
-    $stmtTransaction->close();
+    // 6. Fogadás már rögzítve a WalletTransactions-ben (fentebb, 4. lépés)
+    // A Transactions tábla csak valódi be/kifizetésekhez (deposit/withdrawal) használatos.
 
     // 6.5. Korábbi hibából lezárt, de valójában nem teljesített DEPOSIT bónuszok visszanyitása
     $stmtReopenInconsistentBonus = $conn->prepare(" 

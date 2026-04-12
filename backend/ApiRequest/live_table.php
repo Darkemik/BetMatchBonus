@@ -155,6 +155,22 @@ $sportIcon = getSportIcon($sport_id);
 $priorityOrder = LEAGUE_PRIORITY_SQL;
 
 // Élő meccsek lekérése DB-ből (bajnokság prioritás + ország)
+$gameTag = isset($_GET['game_tag']) ? trim($_GET['game_tag']) : '';
+
+// game_tag szűrés (esport alcímke)
+$gameTagFilter = '';
+$bindTypes = 'i';
+$bindParams = [$sport_id];
+if ($gameTag !== '') {
+    if ($gameTag === 'other') {
+        $gameTagFilter = ' AND (comp.game_tag IS NULL OR comp.game_tag = \'\')';
+    } else {
+        $gameTagFilter = ' AND comp.game_tag = ?';
+        $bindTypes .= 's';
+        $bindParams[] = $gameTag;
+    }
+}
+
 $stmt = $conn->prepare("
     SELECT 
         e.api_id,
@@ -174,15 +190,16 @@ $stmt = $conn->prepare("
     WHERE s.api_id = ?
       AND e.is_live = 1
       AND (e.live_time IS NULL OR LOWER(TRIM(e.live_time)) NOT IN ('nem kezdődött el', 'not started', '', 'unknown'))
+      $gameTagFilter
     ORDER BY $priorityOrder, comp.name ASC, e.start_time ASC
 ");
 
 if (!$stmt) {
-    echo '<div class="no-matches">Hiba az adatbázis lekérdezésnél.</div>';
+    echo '<div class=\"no-matches\">Hiba az adatbázis lekérdezésnél.</div>';
     exit;
 }
 
-$stmt->bind_param("i", $sport_id);
+$stmt->bind_param($bindTypes, ...$bindParams);
 $stmt->execute();
 $res = $stmt->get_result();
 

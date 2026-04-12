@@ -110,11 +110,13 @@ CREATE TABLE IF NOT EXISTS Competitions (
   id         INT           AUTO_INCREMENT PRIMARY KEY,
   api_id     INT           NOT NULL UNIQUE,
   name       VARCHAR(150)  NOT NULL,
+  game_tag   VARCHAR(30)   DEFAULT NULL,
   sport_id   INT           NOT NULL,
   country_id INT           DEFAULT NULL,
   logo_url   VARCHAR(255)  DEFAULT NULL,
   sort_order INT           DEFAULT NULL,
   is_active  TINYINT(1)    NOT NULL DEFAULT 1,
+  INDEX idx_game_tag (game_tag),
   CONSTRAINT fk_comp_sport   FOREIGN KEY (sport_id)   REFERENCES Sports(id)    ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT fk_comp_country FOREIGN KEY (country_id) REFERENCES Countries(id) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;

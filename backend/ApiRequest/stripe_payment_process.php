@@ -43,7 +43,7 @@ if ($posted_method === 'paypal') {
         exit;
     }
 
-    $payment_method_label = 'paypal_demo';
+    $payment_method_label = 'paypal';
 
 } else {
     // === Kártya validáció (Visa / Mastercard) ===
@@ -106,7 +106,7 @@ if ($posted_method === 'paypal') {
         exit;
     }
 
-    $payment_method_label = 'card_demo';
+    $payment_method_label = $posted_method; // visa or mastercard
 }
 
 // Simulate payment processing delay for demo mode

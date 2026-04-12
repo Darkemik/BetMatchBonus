@@ -93,6 +93,11 @@ require_once "../../backend/connect.php";
                     <!-- JS-ből épül fel dinamikusan -->
                 </nav>
 
+                <!-- Játék al-szűrő (csak sport_id=145 kiválasztásakor jelenik meg) -->
+                <nav class="esport-games-nav" id="esportGamesNav" style="display:none;">
+                    <!-- JS-ből épül fel dinamikusan -->
+                </nav>
+
                 <div class="tabs-container">
                     <button class="tab-button active" data-tab="today">
                         <i class="fas fa-calendar-day"></i> <span data-i18n="esport.allTodayMatches">Összes mai meccs</span>

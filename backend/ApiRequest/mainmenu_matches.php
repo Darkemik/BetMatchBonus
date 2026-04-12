@@ -13,6 +13,7 @@ header('Content-Type: text/html; charset=utf-8');
 date_default_timezone_set('Europe/Budapest');
 
 $sportId = isset($_GET['sport_id']) ? (int)$_GET['sport_id'] : 0;
+$gameTag = isset($_GET['game_tag']) ? trim($_GET['game_tag']) : '';
 
 $from = (new DateTime('now', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
 $to   = (new DateTime('+3 days 23:59:59', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
@@ -26,6 +27,16 @@ $naFilter = "
     AND TRIM(ch.name) != ''
     AND (c.name IS NULL OR (LOWER(TRIM(c.name)) != 'n/a' AND TRIM(c.name) != ''))
 ";
+
+// game_tag szűrés (esport alcímke)
+$gameTagFilter = '';
+if ($gameTag !== '') {
+    if ($gameTag === 'other') {
+        $gameTagFilter = " AND (ch.game_tag IS NULL OR ch.game_tag = '')";
+    } else {
+        $gameTagFilter = " AND ch.game_tag = ?";
+    }
+}
 
 if ($sportId > 0) {
     $sql = "
@@ -50,6 +61,7 @@ if ($sportId > 0) {
       AND TRIM(m.name) != ''
       AND m.start_time IS NOT NULL
       $naFilter
+      $gameTagFilter
     ORDER BY $priorityOrder, m.start_time ASC
     ";
     $stmt = $conn->prepare($sql);
@@ -57,7 +69,11 @@ if ($sportId > 0) {
         echo '<div class="no-matches">Hiba az adatbázis lekérdezésnél.</div>';
         exit;
     }
-    $stmt->bind_param("iss", $sportId, $from, $to);
+    if ($gameTag !== '' && $gameTag !== 'other') {
+        $stmt->bind_param("isss", $sportId, $from, $to, $gameTag);
+    } else {
+        $stmt->bind_param("iss", $sportId, $from, $to);
+    }
 } else {
     $sql = "
     SELECT 
@@ -80,6 +96,7 @@ if ($sportId > 0) {
       AND TRIM(m.name) != ''
       AND m.start_time IS NOT NULL
       $naFilter
+      $gameTagFilter
     ORDER BY $priorityOrder, m.start_time ASC
     ";
     $stmt = $conn->prepare($sql);
@@ -87,7 +104,11 @@ if ($sportId > 0) {
         echo '<div class="no-matches">Hiba az adatbázis lekérdezésnél.</div>';
         exit;
     }
-    $stmt->bind_param("ss", $from, $to);
+    if ($gameTag !== '' && $gameTag !== 'other') {
+        $stmt->bind_param("sss", $from, $to, $gameTag);
+    } else {
+        $stmt->bind_param("ss", $from, $to);
+    }
 }
 
 $stmt->execute();

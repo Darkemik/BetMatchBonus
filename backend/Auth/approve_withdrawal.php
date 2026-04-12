@@ -87,11 +87,24 @@ if ($action === 'approve') {
     ', true);
 
 } else {
-    // Elutasítás: egyenleg visszaírása, státusz frissítése, token törlése
+    // Elutasítás: ha GET, akkor űrlapot mutatunk az ok megadásához
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        showRejectForm($token, htmlspecialchars($tx['username']), $amountFormatted);
+        exit;
+    }
+
+    // POST: elutasítás végrehajtása
+    $reason = trim($_POST['reason'] ?? '');
+    if ($reason === '') {
+        showRejectForm($token, htmlspecialchars($tx['username']), $amountFormatted, 'Kérjük, add meg az elutasítás okát!');
+        exit;
+    }
+
+    // Egyenleg visszaírása, státusz frissítése, ok mentése, token törlése
     $conn->begin_transaction();
     try {
-        $upd = $conn->prepare("UPDATE Transactions SET status = 'rejected', approval_token = NULL, updated_at = NOW() WHERE id = ?");
-        $upd->bind_param("i", $tx['id']);
+        $upd = $conn->prepare("UPDATE Transactions SET status = 'rejected', approval_token = NULL, rejection_reason = ?, updated_at = NOW() WHERE id = ?");
+        $upd->bind_param("si", $reason, $tx['id']);
         $upd->execute();
         $upd->close();
 
@@ -122,18 +135,23 @@ if ($action === 'approve') {
         '❌ Kifizetésed elutasítva - ' . $amountFormatted . ' FT',
         '<div style="text-align:center;padding:20px;">
             <div style="font-size:3rem;margin-bottom:10px;">❌</div>
-            <h2 style="color:#dc3545;margin:0 0 10px;">Kifizetésed elutasítva</h2>
-            <p style="color:#555;font-size:1rem;">Kedves <strong>' . htmlspecialchars($tx['username']) . '</strong>,</p>
-            <p style="color:#333;font-size:1.1rem;">A kifizetési kérelmed (<strong>' . $amountFormatted . ' FT</strong>) elutasításra került.</p>
-            <p style="color:#555;">Az összeg visszakerült az egyenlegedre. Ha kérdésed van, keresd ügyfélszolgálatunkat.</p>
-            <p style="color:#999;font-size:0.85rem;">Tranzakció azonosító: ' . htmlspecialchars($tx['transaction_id']) . '</p>
-        </div>'
+            <h2 style="color:#ff6b6b;margin:0 0 10px;">Kifizetésed elutasítva</h2>
+            <p style="color:#ccc;font-size:1rem;">Kedves <strong style="color:#f5c518;">' . htmlspecialchars($tx['username']) . '</strong>,</p>
+            <p style="color:#ddd;font-size:1.1rem;">A kifizetési kérelmed (<strong style="color:#f5c518;">' . $amountFormatted . ' FT</strong>) elutasításra került.</p>
+            <div style="background:#16213e;border-left:4px solid #dc3545;padding:12px 16px;margin:16px 0;border-radius:4px;color:#eee;text-align:left;">
+                <strong style="color:#ff6b6b;">Elutasítás oka:</strong><br>' . nl2br(htmlspecialchars($reason)) . '
+            </div>
+            <p style="color:#ccc;">Az összeg visszakerült az egyenlegedre. Ha kérdésed van, keresd ügyfélszolgálatunkat.</p>
+            <p style="color:#888;font-size:0.85rem;">Tranzakció azonosító: ' . htmlspecialchars($tx['transaction_id']) . '</p>
+        </div>',
+        true
     );
 
     showPage('Kifizetés elutasítva', '
         <b>' . htmlspecialchars($tx['username']) . '</b> kifizetési kérelme elutasítva.<br><br>
         Összeg: <b>' . $amountFormatted . ' FT</b> — visszaírva az egyenlegre.<br>
-        Tranzakció: <b>' . htmlspecialchars($tx['transaction_id']) . '</b><br><br>
+        Tranzakció: <b>' . htmlspecialchars($tx['transaction_id']) . '</b><br>
+        Ok: <b>' . htmlspecialchars($reason) . '</b><br><br>
         A felhasználó emailben értesítve lett.
     ', true);
 }
@@ -141,7 +159,10 @@ if ($action === 'approve') {
 // ════════════════════════════════════════
 // SEGÉDFÜGGVÉNYEK
 // ════════════════════════════════════════
-function sendUserEmail($toEmail, $toName, $subject, $bodyContent) {
+function sendUserEmail($toEmail, $toName, $subject, $bodyContent, $dark = false) {
+    $bgOuter = $dark ? '#0d1117' : '#f4f4f4';
+    $bgCard  = $dark ? '#1a1a2e' : '#fff';
+    $bgHeader = $dark ? '#16213e' : '#007bff';
     try {
         $mail = new PHPMailer(true);
         $mail->isSMTP();
@@ -157,9 +178,9 @@ function sendUserEmail($toEmail, $toName, $subject, $bodyContent) {
         $mail->isHTML(true);
         $mail->Subject = $subject;
         $mail->Body = '
-        <html><body style="font-family:Arial,sans-serif;background:#f4f4f4;padding:20px;">
-        <div style="max-width:500px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.1);">
-            <div style="background:#007bff;color:#fff;padding:15px 25px;text-align:center;">
+        <html><body style="font-family:Arial,sans-serif;background:' . $bgOuter . ';padding:20px;">
+        <div style="max-width:500px;margin:0 auto;background:' . $bgCard . ';border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.3);">
+            <div style="background:' . $bgHeader . ';color:#fff;padding:15px 25px;text-align:center;">
                 <h3 style="margin:0;">BetMatchBonus</h3>
             </div>
             <div style="padding:20px 25px;">' . $bodyContent . '</div>
@@ -169,6 +190,29 @@ function sendUserEmail($toEmail, $toName, $subject, $bodyContent) {
     } catch (MailException $e) {
         error_log('Withdrawal notification email error: ' . $e->getMessage());
     }
+}
+
+function showRejectForm($token, $username, $amount, $error = '') {
+    $errorHtml = $error ? '<div style="background:rgba(220,53,69,0.15);color:#ff6b6b;padding:10px;border-radius:6px;margin-bottom:15px;font-weight:600;">' . htmlspecialchars($error) . '</div>' : '';
+    echo '<!DOCTYPE html><html lang="hu"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Kifizetés elutasítása | BetMatchBonus</title>
+    <style>body{font-family:Arial,sans-serif;background:#0d1117;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;}
+    .card{background:#1a1a2e;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.4);max-width:540px;width:90%;padding:40px;text-align:center;}
+    .icon{font-size:3rem;margin-bottom:10px;} h2{color:#ff6b6b;margin:0 0 10px;} .info{color:#ccc;margin-bottom:20px;} .info strong{color:#f5c518;}
+    textarea{width:100%;min-height:100px;padding:10px;border:2px solid #2a2a4a;border-radius:8px;font-size:1rem;font-family:inherit;resize:vertical;box-sizing:border-box;background:#16213e;color:#eee;}
+    textarea:focus{border-color:#f5c518;outline:none;}
+    .btn{display:inline-block;padding:12px 30px;background:#dc3545;color:#fff;border:none;border-radius:8px;font-size:1rem;cursor:pointer;margin-top:15px;font-weight:600;}
+    .btn:hover{background:#c82333;}</style>
+    </head><body><div class="card">
+    <div class="icon">⚠️</div>
+    <h2>Kifizetés elutasítása</h2>
+    <p class="info">Felhasználó: <strong>' . $username . '</strong><br>Összeg: <strong>' . $amount . ' FT</strong></p>
+    ' . $errorHtml . '
+    <form method="POST" action="?token=' . htmlspecialchars(urlencode($token)) . '&action=reject">
+        <textarea name="reason" placeholder="Add meg az elutasítás okát..." required>' . htmlspecialchars($_POST['reason'] ?? '') . '</textarea>
+        <br><button type="submit" class="btn">Elutasítás véglegesítése</button>
+    </form>
+    </div></body></html>';
 }
 
 function showPage($title, $message, $success) {

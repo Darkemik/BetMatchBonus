@@ -124,15 +124,8 @@ if ($method === 'POST') {
         $stmtTx->execute();
         $stmtTx->close();
 
-        // 5. Transactions táblába is
-        $txId = uniqid('CASHOUT_');
-        $stmtTrans = $conn->prepare("
-            INSERT INTO Transactions (user_id, type, amount, payment_method, status, transaction_id, created_at)
-            VALUES (?, 'deposit', ?, 'cashout', 'completed', ?, NOW())
-        ");
-        $stmtTrans->bind_param("ids", $userId, $cashoutAmount, $txId);
-        $stmtTrans->execute();
-        $stmtTrans->close();
+        // 5. Cashout már rögzítve a WalletTransactions-ben (fentebb)
+        // A Transactions tábla csak valódi be/kifizetésekhez használatos.
 
         $conn->commit();
 

@@ -10,6 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // All eSport sport IDs
     const ESPORT_SPORT_IDS = [145, 146, 147, 148];
     let currentEsportId = null; // null = "Összes"
+    let currentGameTag = null;  // null = összes játék (csak sport_id=145 esetén)
+    let gameTagsData = {};      // { lol: { name, icon, liveCount, todayCount }, ... }
 
     // eSport sport config (names + icons)
     const ESPORT_CONFIG = {
@@ -141,8 +143,10 @@ document.addEventListener("DOMContentLoaded", () => {
         allBtn.addEventListener('click', function(e) {
             e.preventDefault();
             currentEsportId = null;
+            currentGameTag = null;
             currentMatchId = null;
             buildEsportSportsNav(liveCounts, todayCounts);
+            updateGameNav();
             refreshActive();
         });
         esportSportsNav.appendChild(allBtn);
@@ -165,11 +169,85 @@ document.addEventListener("DOMContentLoaded", () => {
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
                 currentEsportId = sportId;
+                currentGameTag = null;
                 currentMatchId = null;
                 buildEsportSportsNav(liveCounts, todayCounts);
+                updateGameNav();
                 refreshActive();
             });
             esportSportsNav.appendChild(btn);
+        });
+
+        updateGameNav();
+    }
+
+    // ===== JÁTÉK AL-SZŰRŐ NAV =====
+    const esportGamesNav = document.getElementById('esportGamesNav');
+
+    function fetchGameTags() {
+        return fetch('../../backend/ApiRequest/get_esport_game_tags.php')
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                gameTagsData = data.tags || {};
+            })
+            .catch(function(err) { console.error('[ESPORT] Game tags hiba:', err); });
+    }
+
+    function updateGameNav() {
+        if (!esportGamesNav) return;
+        // Csak sport_id=145 (E-sportok) esetén mutatjuk
+        if (currentEsportId !== 145) {
+            esportGamesNav.style.display = 'none';
+            return;
+        }
+        esportGamesNav.style.display = 'flex';
+        esportGamesNav.innerHTML = '';
+
+        var tags = gameTagsData;
+        var allTags = Object.keys(tags);
+        if (allTags.length === 0) return;
+
+        // "Összes" gomb
+        var totalCount = allTags.reduce(function(sum, tag) {
+            return sum + (activeTab === 'live' ? (tags[tag].liveCount || 0) : (tags[tag].todayCount || 0));
+        }, 0);
+
+        var allGameBtn = document.createElement('a');
+        allGameBtn.href = '#';
+        allGameBtn.className = 'esport-game-item' + (currentGameTag === null ? ' active' : '');
+        allGameBtn.innerHTML =
+            '<div class="esport-game-icon"><i class="fas fa-layer-group"></i></div>' +
+            '<span>' + t('esport.allGames', 'Összes') + '</span>' +
+            '<span class="esport-game-count' + (totalCount > 0 ? ' has-live' : '') + '">' + totalCount + '</span>';
+        allGameBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            currentGameTag = null;
+            currentMatchId = null;
+            updateGameNav();
+            refreshActive();
+        });
+        esportGamesNav.appendChild(allGameBtn);
+
+        // Egyedi játék gombok
+        allTags.forEach(function(tag) {
+            var info = tags[tag];
+            var count = activeTab === 'live' ? (info.liveCount || 0) : (info.todayCount || 0);
+
+            var btn = document.createElement('a');
+            btn.href = '#';
+            btn.className = 'esport-game-item' + (currentGameTag === tag ? ' active' : '');
+            btn.innerHTML =
+                '<div class="esport-game-icon"><i class="fas ' + escapeHtml(info.icon || 'fa-gamepad') + '"></i></div>' +
+                '<span>' + escapeHtml(info.name) + '</span>' +
+                '<span class="esport-game-count' + (count > 0 ? ' has-live' : '') + '">' + count + '</span>';
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                currentGameTag = tag;
+                currentMatchId = null;
+                updateGameNav();
+                refreshActive();
+            });
+            esportGamesNav.appendChild(btn);
         });
     }
 
@@ -231,6 +309,14 @@ document.addEventListener("DOMContentLoaded", () => {
         return ESPORT_SPORT_IDS;
     }
 
+    // ===== GAME TAG QUERY PARAM =====
+    function getGameTagParam() {
+        if (currentEsportId === 145 && currentGameTag !== null) {
+            return '&game_tag=' + encodeURIComponent(currentGameTag);
+        }
+        return '';
+    }
+
     // ===== ÉLŐ MECCSEK FRISSÍTÉS =====
     function refreshLiveMatches() {
         if (activeTab !== 'live') return;
@@ -249,7 +335,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         liveCounts[id] = apiResult.sports[id] || apiResult.sports[String(id)] || 0;
                     });
                     var totalLive = ESPORT_SPORT_IDS.reduce(function(sum, id) { return sum + (liveCounts[id] || 0); }, 0);
-                    updateLiveCount(totalLive);
+                    // Badge: ha egy sport ki van választva, annak a számát mutassuk
+                    var displayLiveCount = currentEsportId !== null ? (liveCounts[currentEsportId] || 0) : totalLive;
+                    updateLiveCount(displayLiveCount);
                 }
 
                 // Save sport details from backend
@@ -265,16 +353,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // Fetch live tables for the selected sport(s)
                 var sportIds = getSportIdsToFetch();
+                var gameParam = getGameTagParam();
                 var fetches = sportIds.map(function(sid) {
-                    return fetch("../../backend/ApiRequest/live_table.php?sport_id=" + sid)
+                    return fetch("../../backend/ApiRequest/live_table.php?sport_id=" + sid + gameParam)
                         .then(function(res) { return res.text(); });
                 });
                 return Promise.all(fetches);
             })
             .then(function(htmlParts) {
                 if (!htmlParts) return;
-                var combinedHtml = htmlParts.join('');
-                if (combinedHtml.trim() === '' || combinedHtml.indexOf('Nincs élő') !== -1 && htmlParts.every(function(h) { return h.indexOf('match-row') === -1; })) {
+                // Kiszűrjük a "nincs meccs" placeholder div-eket, csak a tényleges tartalmat tartjuk meg
+                var filteredParts = htmlParts.map(function(html) {
+                    var temp = document.createElement('div');
+                    temp.innerHTML = html;
+                    // Ha csak no-matches div van benne (nincs league-group), üresre cseréljük
+                    if (temp.querySelectorAll('.league-group').length === 0) return '';
+                    // Ha van league-group, de no-matches div is, csak a no-matches-t töröljük
+                    temp.querySelectorAll('.no-matches').forEach(function(el) { el.remove(); });
+                    return temp.innerHTML;
+                });
+                var combinedHtml = filteredParts.join('');
+                if (combinedHtml.trim() === '') {
                     liveContainer.innerHTML = '<div class="no-matches"><i class="fas fa-gamepad" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i>' + t('esport.noLiveEsport', 'Jelenleg nincs élő eSport meccs.') + '</div>';
                 } else {
                     liveContainer.innerHTML = combinedHtml;
@@ -299,17 +398,24 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         var sportIds = getSportIdsToFetch();
+        var gameParam = getGameTagParam();
 
         var liveFetch = fetch("../../backend/ApiRequest/get_matches_live.php").then(function(res) { return res.json(); });
-        var todayFetches = sportIds.map(function(sid) {
+        // Mindig lekérjük az összes sport adatait a számláló navhoz (szűrés nélkül)
+        var allTodayFetches = ESPORT_SPORT_IDS.map(function(sid) {
             return fetch("../../backend/ApiRequest/mainmenu_matches.php?sport_id=" + sid)
                 .then(function(res) { return res.text(); });
         });
+        // Ha game_tag szűrés aktív, külön lekérjük a szűrt adatot is
+        var filteredFetch = (currentEsportId === 145 && currentGameTag !== null)
+            ? fetch("../../backend/ApiRequest/mainmenu_matches.php?sport_id=145" + gameParam).then(function(res) { return res.text(); })
+            : Promise.resolve(null);
 
-        Promise.all([liveFetch, Promise.all(todayFetches)])
+        Promise.all([liveFetch, Promise.all(allTodayFetches), filteredFetch])
         .then(function(results) {
             var liveResult = results[0];
-            var todayHtmlParts = results[1];
+            var allHtmlParts = results[1];
+            var filteredHtml = results[2]; // null ha nincs game_tag szűrés
 
             var liveCounts = {};
             var todayCounts = {};
@@ -318,7 +424,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     liveCounts[id] = liveResult.sports[id] || liveResult.sports[String(id)] || 0;
                 });
                 var totalLive = ESPORT_SPORT_IDS.reduce(function(sum, id) { return sum + (liveCounts[id] || 0); }, 0);
-                updateLiveCount(totalLive);
+                // Badge: ha egy sport ki van választva, annak a számát mutassuk
+                var displayLiveCount = currentEsportId !== null ? (liveCounts[currentEsportId] || 0) : totalLive;
+                updateLiveCount(displayLiveCount);
             }
 
             // Save sport details from backend
@@ -330,24 +438,32 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
             }
 
-            var combinedHtml = todayHtmlParts.join('');
+            // Today counts for nav — mindig minden sporthoz kiszámoljuk
+            ESPORT_SPORT_IDS.forEach(function(sid, idx) {
+                var tempDiv = document.createElement('div');
+                tempDiv.innerHTML = allHtmlParts[idx];
+                todayCounts[sid] = tempDiv.querySelectorAll('.match-row').length;
+            });
+
+            // Csak a kiválasztott sportok HTML-jét rendereljük
+            var displayHtmlParts = [];
+            if (filteredHtml !== null) {
+                // Game tag szűrt adat használata
+                displayHtmlParts.push(filteredHtml);
+            } else {
+                ESPORT_SPORT_IDS.forEach(function(sid, idx) {
+                    if (currentEsportId === null || currentEsportId === sid) {
+                        displayHtmlParts.push(allHtmlParts[idx]);
+                    }
+                });
+            }
+            var combinedHtml = displayHtmlParts.join('');
             todayContainer.innerHTML = combinedHtml;
 
             // Badge frissítés: megszámoljuk a renderelt meccseket
             var matchRows = todayContainer.querySelectorAll('.match-row');
             var todayTotal = matchRows.length;
             updateTodayCount(todayTotal);
-
-            // Today counts for nav
-            sportIds.forEach(function(sid, idx) {
-                var tempDiv = document.createElement('div');
-                tempDiv.innerHTML = todayHtmlParts[idx];
-                todayCounts[sid] = tempDiv.querySelectorAll('.match-row').length;
-            });
-            // If "Összes" is selected, fill all sport counts
-            if (currentEsportId === null) {
-                // Already filled above
-            }
 
             buildEsportSportsNav(liveCounts, todayCounts);
 
@@ -377,13 +493,27 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
 
-        // League-header kattintás → expand/collapse
+        // League-header kattintás → accordion (collapse sibling groups)
         container.querySelectorAll('.league-header').forEach(function(header) {
+            // Remove inline onclick to avoid double-toggle conflict
+            header.removeAttribute('onclick');
             header.addEventListener('click', function() {
                 var group = header.closest('.league-group');
-                if (group) group.classList.toggle('expanded');
+                if (!group) return;
+                var wasExpanded = group.classList.contains('expanded');
+                // Collapse all siblings
+                container.querySelectorAll('.league-group.expanded').forEach(function(g) {
+                    g.classList.remove('expanded');
+                });
+                // Toggle the clicked one
+                if (!wasExpanded) {
+                    group.classList.add('expanded');
+                }
             });
         });
+
+        // Load-more bajnokság gomb kezelés (első 10 látszik)
+        applyLeagueLimitEsport(container);
     }
 
     function loadMatchDetails(eventId) {
@@ -410,10 +540,13 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(function(res) { return res.json(); })
             .then(function(apiResult) {
                 if (apiResult && apiResult.sports) {
-                    var totalLive = ESPORT_SPORT_IDS.reduce(function(sum, id) {
-                        return sum + (apiResult.sports[id] || apiResult.sports[String(id)] || 0);
-                    }, 0);
-                    updateLiveCount(totalLive);
+                    var liveCounts = {};
+                    ESPORT_SPORT_IDS.forEach(function(id) {
+                        liveCounts[id] = apiResult.sports[id] || apiResult.sports[String(id)] || 0;
+                    });
+                    var totalLive = ESPORT_SPORT_IDS.reduce(function(sum, id) { return sum + (liveCounts[id] || 0); }, 0);
+                    var displayLiveCount = currentEsportId !== null ? (liveCounts[currentEsportId] || 0) : totalLive;
+                    updateLiveCount(displayLiveCount);
                 }
                 return fetch("../../backend/ApiRequest/get_match_details.php?eventId=" + eventId);
             })
@@ -517,6 +650,38 @@ document.addEventListener("DOMContentLoaded", () => {
         return div.innerHTML;
     }
 
+    // ===== LEAGUE LIMIT (első 10 bajnokság, utána "Több betöltése" gomb) =====
+    var esportVisibleLeagueCount = 10;
+
+    function applyLeagueLimitEsport(container) {
+        if (!container) return;
+        var allGroups = container.querySelectorAll('.league-group');
+        var totalLeagues = allGroups.length;
+        allGroups.forEach(function(group, idx) {
+            if (idx < esportVisibleLeagueCount) {
+                group.style.display = '';
+            } else {
+                group.style.display = 'none';
+            }
+        });
+
+        // Remove old load-more button if present
+        var oldBtn = container.querySelector('.load-more-leagues-btn');
+        if (oldBtn) oldBtn.remove();
+
+        var stillHidden = totalLeagues - esportVisibleLeagueCount;
+        if (stillHidden > 0) {
+            var loadBtn = document.createElement('button');
+            loadBtn.className = 'load-more-leagues-btn';
+            loadBtn.innerHTML = '<i class="fas fa-chevron-down"></i> ' + t('esport.loadMore', 'Többi bajnokság betöltése') + ' (<span class="load-more-count">' + stillHidden + '</span>)';
+            loadBtn.addEventListener('click', function() {
+                esportVisibleLeagueCount += 10;
+                applyLeagueLimitEsport(container);
+            });
+            container.appendChild(loadBtn);
+        }
+    }
+
     // ===== AUTO REFRESH =====
     function refreshActive() {
         if (activeTab === 'live') {
@@ -556,25 +721,34 @@ document.addEventListener("DOMContentLoaded", () => {
     setInterval(syncFromApi, 60000);
 
     // ===== INDÍTÁS =====
-    fetch("../../backend/ApiRequest/get_matches_live.php")
-        .then(function(res) { return res.json(); })
-        .then(function(apiResult) {
-            if (apiResult && apiResult.sports) {
-                var totalLive = ESPORT_SPORT_IDS.reduce(function(sum, id) {
-                    return sum + (apiResult.sports[String(id)] || apiResult.sports[id] || 0);
-                }, 0);
-                updateLiveCount(totalLive);
-            }
-            if (apiResult && apiResult.sportDetails) {
-                ESPORT_SPORT_IDS.forEach(function(id) {
-                    if (apiResult.sportDetails[id] || apiResult.sportDetails[String(id)]) {
-                        esportDetails[id] = apiResult.sportDetails[id] || apiResult.sportDetails[String(id)];
-                    }
-                });
-            }
-        })
-        .catch(function() {});
+    // Játék tag-ek betöltése, majd meccsek frissítése
+    fetchGameTags().then(function() {
+        return fetch("../../backend/ApiRequest/get_matches_live.php")
+            .then(function(res) { return res.json(); })
+            .then(function(apiResult) {
+                if (apiResult && apiResult.sports) {
+                    var liveCounts = {};
+                    ESPORT_SPORT_IDS.forEach(function(id) {
+                        liveCounts[id] = apiResult.sports[String(id)] || apiResult.sports[id] || 0;
+                    });
+                    var totalLive = ESPORT_SPORT_IDS.reduce(function(sum, id) { return sum + (liveCounts[id] || 0); }, 0);
+                    var displayLiveCount = currentEsportId !== null ? (liveCounts[currentEsportId] || 0) : totalLive;
+                    updateLiveCount(displayLiveCount);
+                }
+                if (apiResult && apiResult.sportDetails) {
+                    ESPORT_SPORT_IDS.forEach(function(id) {
+                        if (apiResult.sportDetails[id] || apiResult.sportDetails[String(id)]) {
+                            esportDetails[id] = apiResult.sportDetails[id] || apiResult.sportDetails[String(id)];
+                        }
+                    });
+                }
+            })
+            .catch(function() {});
+    }).then(function() {
+        refreshTodayMatches();
+        startAutoRefresh();
+    });
 
-    refreshTodayMatches();
-    startAutoRefresh();
+    // Game tags frissítése percenként (szinkronban a meccsekkel)
+    setInterval(fetchGameTags, 60000);
 });

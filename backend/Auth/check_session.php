@@ -11,7 +11,7 @@ if (session_status() === PHP_SESSION_NONE) {
 // Felhasználó bejelentkezésének ellenőrzése
 if (!isset($_SESSION['user_id'])) {
     // Ha nincs bejelentkezve, átirányítás a login oldalra
-    header("Location: /frontend/MainMenu/MainMenu.php");
+    header("Location: /BetMatchBonus/frontend/MainMenu/MainMenu.php");
     exit();
 }
 
@@ -21,7 +21,7 @@ if (isset($_SESSION['last_activity'])) {
     if (time() - $_SESSION['last_activity'] > $timeout) {
         // Session lejárt
         session_destroy();
-        header("Location: /frontend/MainMenu/MainMenu.php?timeout=1");
+        header("Location: /BetMatchBonus/frontend/MainMenu/MainMenu.php?timeout=1");
         exit();
     }
 }

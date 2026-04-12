@@ -16,7 +16,7 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 // Felhasználó adatainak lekérése
-$query = "SELECT id, username, email, full_name, mobile_number as phone, country, city, postal_code, address, birth_date, created_at, data_verified, bank_statement_file FROM Users WHERE id = ?";
+$query = "SELECT id, username, email, full_name, mobile_number as phone, country, city, postal_code, address, birth_date, created_at, data_verified, bank_statement_file, data_rejected_at, data_rejection_reason FROM Users WHERE id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -24,8 +24,22 @@ $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 $stmt->close();
 
+// Elutasítás utáni 15 perces várakozás ellenőrzése
+$rejectedAt = $user['data_rejected_at'] ? strtotime($user['data_rejected_at']) : null;
+$rejectCooldownLeft = 0;
+if ($rejectedAt) {
+    $rejectCooldownLeft = max(0, ($rejectedAt + 15 * 60) - time());
+}
+
 // POST kérelmen adatok ellenőrzésre küldése
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
+    // 15 perces cooldown ellenőrzés elutasítás után
+    if ($rejectedAt && $rejectCooldownLeft > 0) {
+        $_SESSION['error_message'] = "Az elutasítás után még " . ceil($rejectCooldownLeft / 60) . " percet kell várnod az újraküldéshez!";
+        header("Location: personal_data.php");
+        exit();
+    }
+
     $country = htmlspecialchars($_POST['country'] ?? '');
     $city = htmlspecialchars($_POST['city'] ?? '');
     $postal_code = htmlspecialchars($_POST['postal_code'] ?? '');
@@ -80,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     // Token generálás
     $token = bin2hex(random_bytes(32));
 
-    $update_query = "UPDATE Users SET country = ?, city = ?, postal_code = ?, address = ?, data_verification_token = ?, bank_statement_file = ? WHERE id = ?";
+    $update_query = "UPDATE Users SET country = ?, city = ?, postal_code = ?, address = ?, data_verification_token = ?, bank_statement_file = ?, data_rejected_at = NULL, data_rejection_reason = NULL WHERE id = ?";
     $update_stmt = $conn->prepare($update_query);
     $update_stmt->bind_param("ssssssi", $country, $city, $postal_code, $address, $token, $bank_statement_path, $user_id);
     
@@ -92,6 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
         require_once "../../backend/PHPMailer/SMTP.php";
 
         $approveUrl = SITE_BASE_URL . '/backend/Auth/approve_data_verification.php?token=' . $token;
+        $rejectUrl  = SITE_BASE_URL . '/backend/Auth/reject_data_verification.php?token=' . $token;
 
         try {
             $mail = new PHPMailer(true);
@@ -140,8 +155,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                 <br>
                 <p>Ha az adatok helyesek, kattints az alábbi gombra a jóváhagyáshoz:</p>
                 <a href="' . $approveUrl . '" style="display:inline-block;padding:12px 24px;background:#28a745;color:#fff;text-decoration:none;border-radius:6px;font-weight:bold;">✅ Adatok Jóváhagyása</a>
+                &nbsp;&nbsp;
+                <a href="' . $rejectUrl . '" style="display:inline-block;padding:12px 24px;background:#dc3545;color:#fff;text-decoration:none;border-radius:6px;font-weight:bold;">❌ Elutasítás</a>
                 <br><br>
-                <p style="color:#888;font-size:12px;">Ha nem hagyod jóvá, nem kell tenned semmit.</p>
+                <p style="color:#888;font-size:12px;">Az elutasításnál meg kell adnod az okot, amit a felhasználó emailben megkap.</p>
             ';
 
             $mail->send();
@@ -192,10 +209,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                     <h1><i class="fas fa-user"></i> Személyes Adatok</h1>
 
                     <?php if (!(int)($user['data_verified'] ?? 0)): ?>
+                    
+                    <?php if ($rejectedAt && !empty($user['data_rejection_reason'])): ?>
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-times-circle"></i>
+                        <strong>Az adatellenőrzésed elutasításra került!</strong><br>
+                        <strong>Ok:</strong> <?php echo htmlspecialchars($user['data_rejection_reason']); ?><br>
+                        <?php if ($rejectCooldownLeft > 0): ?>
+                        <hr>
+                        <i class="fas fa-clock"></i> Újra beküldheted az adataidat <strong><span id="rejectCountdown"></span></strong> múlva.
+                        <?php else: ?>
+                        <hr>
+                        <i class="fas fa-check-circle" style="color:#28a745;"></i> Javítsd az adataid és küldd be újra az alábbi űrlap segítségével!
+                        <?php endif; ?>
+                    </div>
+                    <?php else: ?>
                     <div class="alert alert-warning" role="alert">
                         <i class="fas fa-exclamation-triangle"></i>
                         A kifizetés előtt kötelező kitölteni a lakcímadatokat (ország, város, irányítószám, cím). A fiókodat egy admin ellenőrzi, hogy a megadott adatok helyesek-e.
                     </div>
+                    <?php endif; /* rejected or warning */ ?>
+                    
                     <?php else: ?>
                     <div class="alert alert-success" role="alert">
                         <i class="fas fa-check-circle"></i>
@@ -288,7 +322,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                             <input type="text" class="form-control" id="created_at" value="<?php echo htmlspecialchars($user['created_at']); ?>" disabled>
                         </div>
                         
-                        <button type="submit" name="update_profile" class="btn btn-primary"><i class="fas fa-check-circle"></i> Adatok Ellenőrzése</button>
+                        <button type="submit" name="update_profile" class="btn btn-primary" id="submitVerifyBtn" <?php if ($rejectCooldownLeft > 0) echo 'disabled'; ?>><i class="fas fa-check-circle"></i> Adatok Ellenőrzése</button>
                         <a href="personal_data.php" class="btn btn-secondary"><i class="fas fa-undo"></i> Mégse</a>
                     </form>
                 </div>
@@ -300,6 +334,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../../js/UserProfile/user_profile.js"></script>
+
+    <?php if ($rejectCooldownLeft > 0): ?>
+    <script>
+    (function() {
+        let left = <?php echo (int)$rejectCooldownLeft; ?>;
+        const el = document.getElementById('rejectCountdown');
+        const btn = document.getElementById('submitVerifyBtn');
+        function tick() {
+            if (left <= 0) {
+                if (el) el.textContent = '';
+                if (btn) btn.disabled = false;
+                location.reload();
+                return;
+            }
+            const m = Math.floor(left / 60);
+            const s = left % 60;
+            if (el) el.textContent = m + ':' + String(s).padStart(2, '0');
+            left--;
+            setTimeout(tick, 1000);
+        }
+        tick();
+    })();
+    </script>
+    <?php endif; ?>
     <?php include '../../frontend/Components/chatbot.php'; ?>
 </body>
 </html>

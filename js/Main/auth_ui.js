@@ -1,3 +1,10 @@
+// --- Inaktivitás-figyelés (30 perc) ---
+window.__lastUserActivity = Date.now();
+const INACTIVITY_LIMIT_MS = 30 * 60 * 1000; // 30 perc
+['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evt => {
+  document.addEventListener(evt, () => { window.__lastUserActivity = Date.now(); }, { passive: true });
+});
+
 async function refreshAuthUI() {
   const loginBtn = document.querySelector('.loginbtn');
   const regBtn = document.querySelector('.registrationbtn');
@@ -94,7 +101,18 @@ async function refreshAuthUI() {
           }
         }
 
-        // Ha lejárt: automatikus kijelentkezés
+        // Inaktivitás ellenőrzés (30 perc)
+        const idleMs = Date.now() - (window.__lastUserActivity || Date.now());
+        if (idleMs >= INACTIVITY_LIMIT_MS) {
+          clearInterval(window.__sessionLoginDurationTimer);
+          fetch('/BetMatchBonus/backend/Auth/logout.php', { method: 'POST' }).finally(() => {
+            alert('30 percig inaktív voltál, ezért kijelentkeztettünk. Kérjük, jelentkezz be újra!');
+            window.location.href = '/BetMatchBonus/frontend/MainMenu/MainMenu.php';
+          });
+          return;
+        }
+
+        // Ha lejárt az 1 órás limit: automatikus kijelentkezés
         if (left <= 0) {
           clearInterval(window.__sessionLoginDurationTimer);
           fetch('/BetMatchBonus/backend/Auth/logout.php', { method: 'POST' }).finally(() => {

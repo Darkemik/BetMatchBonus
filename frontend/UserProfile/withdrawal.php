@@ -59,12 +59,57 @@ $data_verified = (int)($user['data_verified'] ?? 0);
 $stmt->close();
 
 // Függőben lévő kifizetési kérelmek lekérdezése
-$pendingStmt = $conn->prepare("SELECT transaction_id, amount, created_at FROM Transactions WHERE user_id = ? AND type = 'withdrawal' AND status = 'pending' ORDER BY created_at DESC");
+$pendingStmt = $conn->prepare("SELECT id, transaction_id, amount, created_at FROM Transactions WHERE user_id = ? AND type = 'withdrawal' AND status = 'pending' ORDER BY created_at DESC");
 $pendingStmt->bind_param("i", $user_id);
 $pendingStmt->execute();
 $pendingResult = $pendingStmt->get_result();
 $pending_withdrawals = $pendingResult->fetch_all(MYSQLI_ASSOC);
 $pendingStmt->close();
+
+// Kifizetés visszavonása
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_withdrawal'])) {
+    $cancel_id = (int)($_POST['cancel_id'] ?? 0);
+    if ($cancel_id > 0) {
+        // Ellenőrizzük, hogy a tranzakció a felhasználóé és pending
+        $checkStmt = $conn->prepare("SELECT id, amount FROM Transactions WHERE id = ? AND user_id = ? AND type = 'withdrawal' AND status = 'pending' LIMIT 1");
+        $checkStmt->bind_param("ii", $cancel_id, $user_id);
+        $checkStmt->execute();
+        $cancelTx = $checkStmt->get_result()->fetch_assoc();
+        $checkStmt->close();
+
+        if ($cancelTx) {
+            $conn->begin_transaction();
+            try {
+                // Státusz frissítése
+                $updStmt = $conn->prepare("UPDATE Transactions SET status = 'cancelled', approval_token = NULL, updated_at = NOW() WHERE id = ?");
+                $updStmt->bind_param("i", $cancelTx['id']);
+                $updStmt->execute();
+                $updStmt->close();
+
+                // Egyenleg visszaírása
+                if ($hasWinningsBalance) {
+                    $balStmt = $conn->prepare("UPDATE Users SET balance = balance + ?, winnings_balance = winnings_balance + ? WHERE id = ?");
+                    $balStmt->bind_param("ddi", $cancelTx['amount'], $cancelTx['amount'], $user_id);
+                } else {
+                    $balStmt = $conn->prepare("UPDATE Users SET balance = balance + ? WHERE id = ?");
+                    $balStmt->bind_param("di", $cancelTx['amount'], $user_id);
+                }
+                $balStmt->execute();
+                $balStmt->close();
+
+                $conn->commit();
+                $_SESSION['success_message'] = '✅ A kifizetési kérelem sikeresen visszavonva. Az összeg visszakerült az egyenlegedre.';
+            } catch (Exception $e) {
+                $conn->rollback();
+                $error_message = 'Hiba történt a visszavonás során.';
+            }
+        } else {
+            $error_message = 'A kifizetési kérelem nem található vagy már feldolgozásra került.';
+        }
+    }
+    header("Location: withdrawal.php");
+    exit();
+}
 
 // POST kérelmen kivét feldolgozása
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal'])) {
@@ -98,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
         $status = 'pending';
         $insert_query = "INSERT INTO Transactions (user_id, type, amount, payment_method, status, transaction_id, approval_token, account_holder, account_number, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
         $insert_stmt = $conn->prepare($insert_query);
-        $insert_stmt->bind_param("issdsssss", $user_id, $type, $amount, $payment_method, $status, $transaction_id, $approval_token, $account_holder, $account_number);
+        $insert_stmt->bind_param("isdssssss", $user_id, $type, $amount, $payment_method, $status, $transaction_id, $approval_token, $account_holder, $account_number);
         
         if ($insert_stmt->execute()) {
             // Egyenleg zárolása (levonás azonnal, hogy ne költhesse el)
@@ -378,25 +423,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                             <div class="col-12 col-md-6">
                                 <div class="p-2 rounded" style="background: rgba(13, 110, 253, 0.12); border: 1px solid rgba(13, 110, 253, 0.25);">
                                     <div style="font-weight:700; font-size: 0.9rem;">BEFIZETETT EGYENLEG</div>
-                                    <div class="mt-1"><span class="badge bg-secondary"><?php echo number_format($deposited_balance, 0, ',', ' '); ?> FT</span></div>
+                                    <div class="mt-1"><span id="balDeposited" class="badge bg-secondary"><?php echo number_format($deposited_balance, 0, ',', ' '); ?> FT</span></div>
                                 </div>
                             </div>
                             <div class="col-12 col-md-6">
                                 <div class="p-2 rounded" style="background: rgba(25, 135, 84, 0.12); border: 1px solid rgba(25, 135, 84, 0.25);">
                                     <div style="font-weight:700; font-size: 0.9rem;">NYEREMÉNYEGYENLEG</div>
-                                    <div class="mt-1"><span class="badge bg-success"><?php echo number_format($winnings_balance, 0, ',', ' '); ?> FT</span></div>
+                                    <div class="mt-1"><span id="balWinnings" class="badge bg-success"><?php echo number_format($winnings_balance, 0, ',', ' '); ?> FT</span></div>
                                 </div>
                             </div>
                             <div class="col-12 col-md-6">
                                 <div class="p-2 rounded" style="background: rgba(13, 110, 253, 0.12); border: 1px solid rgba(13, 110, 253, 0.25);">
                                     <div style="font-weight:700; font-size: 0.9rem;">BEFIZETETT ÉS NYEREMÉNYEGYENLEG ÖSSZESEN</div>
-                                    <div class="mt-1"><span class="badge bg-primary"><?php echo number_format($total_deposit_and_winnings, 0, ',', ' '); ?> FT</span></div>
+                                    <div class="mt-1"><span id="balTotal" class="badge bg-primary"><?php echo number_format($total_deposit_and_winnings, 0, ',', ' '); ?> FT</span></div>
                                 </div>
                             </div>
                             <div class="col-12 col-md-6">
                                 <div class="p-2 rounded" style="background: rgba(255, 193, 7, 0.14); border: 1px solid rgba(255, 193, 7, 0.35);">
                                     <div style="font-weight:700; font-size: 0.9rem;">BÓNUSZ EGYENLEG (NEM KIUTALHATÓ)</div>
-                                    <div class="mt-1"><span class="badge bg-warning text-dark"><?php echo number_format($bonus_balance, 0, ',', ' '); ?> FT</span></div>
+                                    <div class="mt-1"><span id="balBonus" class="badge bg-warning text-dark"><?php echo number_format($bonus_balance, 0, ',', ' '); ?> FT</span></div>
                                 </div>
                             </div>
                         </div>
@@ -408,12 +453,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                     ?>
 
                     <!-- Kiutalható összeg -->
-                    <div class="p-3 rounded mb-3" style="background: <?php echo $can_withdraw ? 'rgba(25,135,84,0.08)' : 'rgba(220,53,69,0.08)'; ?>; border: 2px solid <?php echo $can_withdraw ? 'rgba(25,135,84,0.3)' : 'rgba(220,53,69,0.3)'; ?>; text-align:center;">
-                        <div style="font-weight:700; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.5px; color:<?php echo $can_withdraw ? '#198754' : '#dc3545'; ?>; margin-bottom:4px;">
+                    <div id="withdrawableSection" class="p-3 rounded mb-3" style="background: <?php echo $can_withdraw ? 'rgba(25,135,84,0.08)' : 'rgba(220,53,69,0.08)'; ?>; border: 2px solid <?php echo $can_withdraw ? 'rgba(25,135,84,0.3)' : 'rgba(220,53,69,0.3)'; ?>; text-align:center;">
+                        <div id="withdrawableLabel" style="font-weight:700; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.5px; color:<?php echo $can_withdraw ? '#198754' : '#dc3545'; ?>; margin-bottom:4px;">
                             <i class="fas fa-<?php echo $can_withdraw ? 'check-circle' : 'times-circle'; ?>"></i>
                             Kiutalható összeg
                         </div>
-                        <div style="font-size:1.6rem; font-weight:800; color:<?php echo $can_withdraw ? '#198754' : '#dc3545'; ?>;">
+                        <div id="withdrawableAmount" style="font-size:1.6rem; font-weight:800; color:<?php echo $can_withdraw ? '#198754' : '#dc3545'; ?>;">
                             <?php echo number_format($withdrawable, 0, ',', ' '); ?> FT
                         </div>
                         <?php if (!$can_withdraw): ?>
@@ -427,16 +472,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                         <?php endif; ?>
                     </div>
 
+                    <div id="pendingWithdrawalsContainer">
                     <?php if (!empty($pending_withdrawals)): ?>
                     <div class="withdrawal-info-bar" style="border-color:rgba(255,193,7,0.4);background:rgba(255,193,7,0.08);">
                         <i class="fas fa-clock" style="color:#ffc107;font-size:1.2rem;"></i>
                         <div>
                             <div style="font-weight:700;color:#856404;font-size:0.9rem;margin-bottom:4px;">Függőben lévő kifizetési kérelmek</div>
                             <?php foreach ($pending_withdrawals as $pw): ?>
-                                <div style="color:#666;font-size:0.85rem;">
-                                    <strong><?php echo number_format((float)$pw['amount'], 0, ',', ' '); ?> FT</strong>
-                                    — <?php echo date('Y.m.d H:i', strtotime($pw['created_at'])); ?>
-                                    <span style="color:#999;font-size:0.75rem;">(<?php echo htmlspecialchars($pw['transaction_id']); ?>)</span>
+                                <div style="color:#666;font-size:0.85rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+                                    <span>
+                                        <strong><?php echo number_format((float)$pw['amount'], 0, ',', ' '); ?> FT</strong>
+                                        — <?php echo date('Y.m.d H:i', strtotime($pw['created_at'])); ?>
+                                        <span style="color:#999;font-size:0.75rem;">(<?php echo htmlspecialchars($pw['transaction_id']); ?>)</span>
+                                    </span>
+                                    <form method="POST" style="display:inline;margin:0;" onsubmit="return confirm('Biztosan visszavonod ezt a kifizetési kérelmet?');">
+                                        <input type="hidden" name="cancel_id" value="<?php echo (int)$pw['id']; ?>">
+                                        <button type="submit" name="cancel_withdrawal" value="1" style="background:#dc3545;color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;">
+                                            <i class="fas fa-times"></i> Visszavonás
+                                        </button>
+                                    </form>
                                 </div>
                             <?php endforeach; ?>
                             <div style="color:#856404;font-size:0.78rem;margin-top:4px;">
@@ -445,6 +499,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                         </div>
                     </div>
                     <?php endif; ?>
+                    </div>
 
                     <?php if (!$data_verified): ?>
                     <div class="alert alert-danger" role="alert">
@@ -467,7 +522,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                         </div>
                     <?php endif; ?>
                     
-                    <form method="POST" <?php if (!$can_withdraw) echo 'style="opacity:0.5; pointer-events:none;"'; ?>>
+                    <form id="withdrawalForm" method="POST" <?php if (!$can_withdraw) echo 'style="opacity:0.5; pointer-events:none;"'; ?>>
                         <input type="hidden" name="payment_method" value="bank_transfer">
 
                         <!-- Összeg -->
@@ -476,7 +531,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                             <input type="number" id="amount" name="amount" min="6000" step="1" max="<?php echo $winnings_balance; ?>" required value="6000">
                             <span class="currency-label">FT</span>
                         </div>
-                        <div class="withdrawal-hint">
+                        <div class="withdrawal-hint" id="withdrawalHint">
                             Min: <strong>6 000 FT</strong> &nbsp;|&nbsp; Max (nyereményegyenleg): <strong><?php echo number_format($winnings_balance, 0, ',', ' '); ?> FT</strong>
                         </div>
 
@@ -578,6 +633,79 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                     e.target.value = formatted;
                 });
             }
+
+            // Pendingek automatikus frissítése 15 másodpercenként
+            function refreshPending() {
+                fetch('../../backend/ApiRequest/UserProfile/get_pending_withdrawals.php')
+                    .then(r => r.json())
+                    .then(data => {
+                        if (!data.success) return;
+                        const container = document.getElementById('pendingWithdrawalsContainer');
+
+                        // Egyenleg frissítése
+                        function fmt(n) { return Number(n).toLocaleString('hu-HU') + ' FT'; }
+                        var el, w = data.winnings_balance, canW = w >= 6000;
+                        if ((el = document.getElementById('balDeposited'))) el.textContent = fmt(data.deposited_balance);
+                        if ((el = document.getElementById('balWinnings'))) el.textContent = fmt(w);
+                        if ((el = document.getElementById('balTotal'))) el.textContent = fmt(data.total_deposit_and_winnings);
+                        if ((el = document.getElementById('balBonus'))) el.textContent = fmt(data.bonus_balance);
+                        if ((el = document.getElementById('withdrawableAmount'))) {
+                            el.textContent = fmt(w);
+                            el.style.color = canW ? '#198754' : '#dc3545';
+                        }
+
+                        // Kiutalható szekció szín
+                        var sec = document.getElementById('withdrawableSection');
+                        if (sec) {
+                            sec.style.background = canW ? 'rgba(25,135,84,0.08)' : 'rgba(220,53,69,0.08)';
+                            sec.style.borderColor = canW ? 'rgba(25,135,84,0.3)' : 'rgba(220,53,69,0.3)';
+                        }
+                        var lbl = document.getElementById('withdrawableLabel');
+                        if (lbl) {
+                            lbl.style.color = canW ? '#198754' : '#dc3545';
+                            lbl.innerHTML = '<i class="fas fa-' + (canW ? 'check-circle' : 'times-circle') + '"></i> Kiutalható összeg';
+                        }
+
+                        // Input max + hint frissítése
+                        var amtInput = document.getElementById('amount');
+                        if (amtInput) amtInput.max = w;
+                        var hint = document.getElementById('withdrawalHint');
+                        if (hint) hint.innerHTML = 'Min: <strong>6 000 FT</strong> &nbsp;|&nbsp; Max (nyereményegyenleg): <strong>' + fmt(w) + '</strong>';
+
+                        // Form engedélyezése/letiltása
+                        var form = document.getElementById('withdrawalForm');
+                        if (form) {
+                            form.style.opacity = canW ? '1' : '0.5';
+                            form.style.pointerEvents = canW ? 'auto' : 'none';
+                        }
+
+                        if (!container) return;
+
+                        if (data.pending.length === 0) {
+                            container.innerHTML = '';
+                            return;
+                        }
+
+                        let html = '<div class="withdrawal-info-bar" style="border-color:rgba(255,193,7,0.4);background:rgba(255,193,7,0.08);">';
+                        html += '<i class="fas fa-clock" style="color:#ffc107;font-size:1.2rem;"></i><div>';
+                        html += '<div style="font-weight:700;color:#856404;font-size:0.9rem;margin-bottom:4px;">Függőben lévő kifizetési kérelmek</div>';
+                        data.pending.forEach(pw => {
+                            const amt = Number(pw.amount).toLocaleString('hu-HU');
+                            const date = pw.created_at.substring(0, 16).replace(/-/g, '.');
+                            html += '<div style="color:#666;font-size:0.85rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">';
+                            html += '<span><strong>' + amt + ' FT</strong> — ' + date + ' <span style="color:#999;font-size:0.75rem;">(' + pw.transaction_id + ')</span></span>';
+                            html += '<form method="POST" style="display:inline;margin:0;" onsubmit="return confirm(\'Biztosan visszavonod ezt a kifizetési kérelmet?\');">';
+                            html += '<input type="hidden" name="cancel_id" value="' + pw.id + '">';
+                            html += '<button type="submit" name="cancel_withdrawal" value="1" style="background:#dc3545;color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;">';
+                            html += '<i class="fas fa-times"></i> Visszavonás</button></form></div>';
+                        });
+                        html += '<div style="color:#856404;font-size:0.78rem;margin-top:4px;"><i class="fas fa-info-circle"></i> Az admin hamarosan elbírálja, emailben értesítünk.</div>';
+                        html += '</div></div>';
+                        container.innerHTML = html;
+                    })
+                    .catch(() => {});
+            }
+            setInterval(refreshPending, 15000);
         });
     </script>
     <?php include '../../frontend/Components/chatbot.php'; ?>

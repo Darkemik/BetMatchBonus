@@ -738,6 +738,97 @@
     color: #fff;
 }
 
+/* ===== JÁTÉK AL-SZŰRŐ NAV (sport_id=145 alatt) ===== */
+.esport-games-nav {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    padding: 6px 0;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(186, 104, 200, 0.3) transparent;
+    flex-wrap: wrap;
+}
+
+.esport-games-nav::-webkit-scrollbar {
+    height: 4px;
+}
+.esport-games-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+.esport-games-nav::-webkit-scrollbar-thumb {
+    background: rgba(186, 104, 200, 0.3);
+    border-radius: 4px;
+}
+
+.esport-game-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    background: rgba(186, 104, 200, 0.04);
+    border: 1px solid rgba(186, 104, 200, 0.10);
+    border-radius: 8px;
+    color: #99a;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.esport-game-item:hover {
+    background: rgba(186, 104, 200, 0.12);
+    border-color: rgba(186, 104, 200, 0.30);
+    color: #BA68C8;
+    text-decoration: none;
+}
+
+.esport-game-item.active {
+    background: rgba(186, 104, 200, 0.15);
+    border-color: #BA68C8;
+    color: #BA68C8;
+    font-weight: 700;
+}
+
+.esport-game-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: rgba(186, 104, 200, 0.08);
+    font-size: 12px;
+    color: inherit;
+    flex-shrink: 0;
+}
+
+.esport-game-item.active .esport-game-icon {
+    background: rgba(186, 104, 200, 0.22);
+    color: #BA68C8;
+}
+
+.esport-game-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    background: rgba(186, 104, 200, 0.12);
+    color: #BA68C8;
+}
+
+.esport-game-count.has-live {
+    background: #BA68C8;
+    color: #fff;
+}
+
 
 /* ===== 2 OSZLOPOS PIAC RESPONSIVE ===== */
 .no-markets { grid-column: 1 / -1; }

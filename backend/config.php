@@ -80,6 +80,73 @@ const SPORT_NAMES = [
     151 => 'Snooker',
 ];
 
+// ── eSport játék tag-ek (game_tag) ───────────────
+// Kulcsszó-térkép: bajnokságnév alapján azonosítja az esport játékot.
+// A kulcsszavakat kisbetűvel kell megadni; a keresés case-insensitive.
+const ESPORT_GAME_TAGS = [
+    'lol' => [
+        'name' => 'League of Legends',
+        'icon' => 'fa-hat-wizard',
+        'keywords' => ['league of legends', 'lol ', ' lol', 'lck', 'lec ', 'lcs ', 'lpl ', 'lcp ',
+                        'cblol', 'lck cl', 'garena challenger', 'lms ', 'ljl ', 'pcs ', 'nacl',
+                        'worlds ', ' worlds', 'msi '],
+    ],
+    'cs' => [
+        'name' => 'Counter-Strike',
+        'icon' => 'fa-crosshairs',
+        'keywords' => ['counter-strike', 'counter strike', 'cs2', 'csgo', 'cs:go', ' cct ',
+                        'intel extreme masters', 'iem ', 'esl pro', 'blast ', 'elisa ',
+                        'european pro league', 'dust2', 'nodwin clutch', 'parken challenger',
+                        'mad dogs', 'conquest of'],
+    ],
+    'valorant' => [
+        'name' => 'Valorant',
+        'icon' => 'fa-shield-alt',
+        'keywords' => ['valorant', 'vct ', 'challengers 2026'],
+    ],
+    'dota2' => [
+        'name' => 'Dota 2',
+        'icon' => 'fa-dragon',
+        'keywords' => ['dota', 'dpc ', 'the international'],
+    ],
+    'ow' => [
+        'name' => 'Overwatch',
+        'icon' => 'fa-robot',
+        'keywords' => ['overwatch'],
+    ],
+    'fortnite' => [
+        'name' => 'Fortnite',
+        'icon' => 'fa-campground',
+        'keywords' => ['fortnite'],
+    ],
+    'apex' => [
+        'name' => 'Apex Legends',
+        'icon' => 'fa-skull-crossbones',
+        'keywords' => ['apex legends'],
+    ],
+    'ml' => [
+        'name' => 'Mobile Legends',
+        'icon' => 'fa-mobile-alt',
+        'keywords' => ['mpl ', 'mobile legends'],
+    ],
+];
+
+/**
+ * Bajnokságnév alapján game_tag meghatározása.
+ * Ha nincs találat, null-t ad vissza (→ "Egyéb" kategória).
+ */
+function resolveGameTag(string $competitionName): ?string {
+    $lower = ' ' . mb_strtolower($competitionName) . ' ';
+    foreach (ESPORT_GAME_TAGS as $tag => $config) {
+        foreach ($config['keywords'] as $kw) {
+            if (strpos($lower, $kw) !== false) {
+                return $tag;
+            }
+        }
+    }
+    return null;
+}
+
 // ── Ország kódok → magyar nevek ──────────────────
 const COUNTRY_MAP = [
     'INT' => 'Nemzetközi',

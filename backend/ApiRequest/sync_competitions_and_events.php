@@ -105,17 +105,25 @@ function getCountryId(mysqli $conn, string $countryCode): ?int {
 
 /**
  * Bajnokság upsert → visszaadja a lokális ID-t
+ * $sportApiId: a sport API azonosítója (game_tag meghatározáshoz)
  */
-function upsertCompetition(mysqli $conn, int $leagueApiId, int $sportLocalId, string $name, ?int $countryId): int {
+function upsertCompetition(mysqli $conn, int $leagueApiId, int $sportLocalId, string $name, ?int $countryId, int $sportApiId = 0): int {
+    // eSport game_tag meghatározása bajnokságnév alapján (csak sport_id=145-nél)
+    $gameTag = null;
+    if ($sportApiId === 145 && function_exists('resolveGameTag')) {
+        $gameTag = resolveGameTag($name);
+    }
+
     $stmt = $conn->prepare("
-        INSERT INTO Competitions (api_id, sport_id, country_id, name)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO Competitions (api_id, sport_id, country_id, name, game_tag)
+        VALUES (?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
             sport_id   = VALUES(sport_id),
             country_id = VALUES(country_id),
-            name       = VALUES(name)
+            name       = VALUES(name),
+            game_tag   = VALUES(game_tag)
     ");
-    $stmt->bind_param('iiis', $leagueApiId, $sportLocalId, $countryId, $name);
+    $stmt->bind_param('iiiss', $leagueApiId, $sportLocalId, $countryId, $name, $gameTag);
     $stmt->execute();
     $stmt->close();
 
@@ -224,7 +232,7 @@ try {
             if ($leagueApiId <= 0 || $leagueName === '') continue;
 
             $countryId = getCountryId($conn, $countryCode);
-            upsertCompetition($conn, $leagueApiId, $sportLocalId, $leagueName, $countryId);
+            upsertCompetition($conn, $leagueApiId, $sportLocalId, $leagueName, $countryId, $sportApiId);
 
             $leagueNameMap[$leagueApiId]    = $leagueName;
             if ($countryId !== null) {
@@ -309,7 +317,7 @@ try {
             // Ország biztosítása
             $countryId = $leagueCountryMap[$leagueApiId] ?? null;
 
-            $competitionId = upsertCompetition($conn, $leagueApiId, $sportLocalId, $leagueName, $countryId);
+            $competitionId = upsertCompetition($conn, $leagueApiId, $sportLocalId, $leagueName, $countryId, $sportApiId);
             $statusId      = resolveStatusId($conn, $eventApiId, $isLive);
 
             upsertEvent(
