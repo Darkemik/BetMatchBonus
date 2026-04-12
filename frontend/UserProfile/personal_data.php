@@ -325,6 +325,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                         <button type="submit" name="update_profile" class="btn btn-primary" id="submitVerifyBtn" <?php if ($rejectCooldownLeft > 0) echo 'disabled'; ?>><i class="fas fa-check-circle"></i> Adatok Ellenőrzése</button>
                         <a href="personal_data.php" class="btn btn-secondary"><i class="fas fa-undo"></i> Mégse</a>
                     </form>
+
+                    <!-- Fiók törlése szekció -->
+                    <hr style="border-color:#2a2a3e;margin-top:40px;">
+                    <div class="mt-4">
+                        <h5 style="color:#dc3545;"><i class="fas fa-exclamation-triangle"></i> Veszélyzóna</h5>
+                        <p style="color:#aaa;font-size:14px;">Ha törlöd a fiókodat, az összes adatod, egyenleged, bónuszod és fogadásod véglegesen elvész. Ez a művelet nem vonható vissza.</p>
+                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                            <i class="fas fa-trash-alt"></i> Felhasználóm törlése
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -332,8 +342,155 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
 
     <?php require_once "../Components/footer.php"; ?>
 
+    <!-- 1. Fiók törlése - Figyelmeztetés modal -->
+    <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background:#1a1a2e;color:#f5c518;border:1px solid #dc3545;">
+                <div class="modal-header border-bottom" style="border-color:#dc3545 !important;">
+                    <h5 class="modal-title"><i class="fas fa-exclamation-triangle text-danger"></i> Fiók törlése</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Bezár"></button>
+                </div>
+                <div class="modal-body">
+                    <div style="background:#2a1a1a;border:1px solid #dc3545;border-radius:8px;padding:16px;margin-bottom:16px;">
+                        <p style="color:#ff6b6b;font-weight:bold;margin-bottom:12px;"><i class="fas fa-exclamation-circle"></i> Figyelem! Ez a művelet visszavonhatatlan!</p>
+                        <ul style="color:#ccc;font-size:14px;padding-left:20px;margin-bottom:0;">
+                            <li>Az összes <strong style="color:#f5c518;">egyenleged</strong> (befizetett, nyeremény, bónusz) véglegesen elvész</li>
+                            <li>Az összes <strong style="color:#f5c518;">fogadásod</strong> és tranzakciód törlésre kerül</li>
+                            <li>Az összes <strong style="color:#f5c518;">bónuszod</strong> érvényét veszti</li>
+                            <li>A feltöltött <strong style="color:#f5c518;">dokumentumaid</strong> törlésre kerülnek</li>
+                            <li>A fiókodat <strong style="color:#ff6b6b;">nem lehet visszaállítani</strong></li>
+                        </ul>
+                    </div>
+                    <p style="color:#ccc;text-align:center;">Biztosan törölni szeretnéd a fiókodat?</p>
+                </div>
+                <div class="modal-footer border-top d-flex justify-content-between" style="border-color:#dc3545 !important;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-arrow-left"></i> Mégsem</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteStep1">
+                        <i class="fas fa-trash-alt"></i> Igen, törölni akarom
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Második megerősítés modal -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background:#1a1a2e;color:#f5c518;border:1px solid #dc3545;">
+                <div class="modal-header border-bottom" style="border-color:#dc3545 !important;">
+                    <h5 class="modal-title"><i class="fas fa-skull-crossbones text-danger"></i> Utolsó figyelmeztetés</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Bezár"></button>
+                </div>
+                <div class="modal-body">
+                    <p style="color:#ff6b6b;text-align:center;font-size:16px;font-weight:bold;">
+                        Ez az utolsó lépés! A törlés után a fiókod véglegesen megszűnik.
+                    </p>
+                    <p style="color:#ccc;text-align:center;margin-bottom:6px;">
+                        A megerősítéshez írd be a jelszavad:
+                    </p>
+                    <input type="password" id="deleteConfirmPassword" class="form-control mb-2" placeholder="Jelszó..." 
+                           style="background:#16213e;border:1px solid #2a2a3e;color:#f5c518;text-align:center;">
+                    <small id="deletePasswordError" style="color:#dc3545;display:none;"></small>
+                    <hr style="border-color:#2a2a3e;">
+                    <p style="color:#aaa;font-size:14px;margin-bottom:6px;">Írd meg nekünk, miért döntöttél a távozás mellett (nem kötelező):</p>
+                    <textarea id="deleteReasonText" class="form-control" rows="3" placeholder="Pl. nem használom az oldalt, más okból..." 
+                              style="background:#16213e;border:1px solid #2a2a3e;color:#f5c518;resize:vertical;"></textarea>
+                </div>
+                <div class="modal-footer border-top d-flex justify-content-between" style="border-color:#dc3545 !important;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-arrow-left"></i> Mégsem</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteStep2" disabled>
+                        <i class="fas fa-trash-alt"></i> Véglegesen törlöm
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Búcsú modal -->
+    <div class="modal fade" id="deleteFarewellModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background:#1a1a2e;color:#f5c518;border:1px solid #f5c518;">
+                <div class="modal-body text-center" style="padding:40px 30px;">
+                    <div style="font-size:3rem;margin-bottom:10px;">👋</div>
+                    <h4 style="color:#f5c518;">Köszönjük, hogy az oldalunkat használtad!</h4>
+                    <p style="color:#ccc;">A fiókod sikeresen törlésre került. Sajnáljuk, hogy távozol.</p>
+                    <p style="color:#aaa;font-size:13px;">Automatikus átirányítás 5 másodperc múlva...</p>
+                    <a href="/BetMatchBonus/frontend/MainMenu/MainMenu.php" class="btn btn-warning mt-3">
+                        <i class="fas fa-home"></i> Vissza a főoldalra
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../../js/UserProfile/user_profile.js"></script>
+
+    <script>
+    // --- Fiók törlés flow ---
+    (function() {
+        // 1. lépés: Első figyelmeztetés → második megerősítés
+        document.getElementById('confirmDeleteStep1').addEventListener('click', function() {
+            bootstrap.Modal.getInstance(document.getElementById('deleteAccountModal')).hide();
+            new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
+        });
+
+        // 2. lépés: Jelszó mező - gomb engedélyezés ha van input
+        const passwordInput = document.getElementById('deleteConfirmPassword');
+        const confirmBtn = document.getElementById('confirmDeleteStep2');
+        const errorEl = document.getElementById('deletePasswordError');
+
+        passwordInput.addEventListener('input', function() {
+            confirmBtn.disabled = this.value.length === 0;
+            errorEl.style.display = 'none';
+        });
+
+        // 2. lépés: Végleges törlés - jelszó ellenőrzéssel + reason küldés
+        confirmBtn.addEventListener('click', function() {
+            const password = passwordInput.value;
+            if (!password) return;
+
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Törlés folyamatban...';
+            errorEl.style.display = 'none';
+
+            const reason = document.getElementById('deleteReasonText').value.trim();
+
+            const formData = new FormData();
+            formData.append('delete_confirmed', '1');
+            formData.append('password', password);
+            formData.append('reason', reason);
+
+            fetch('../../backend/ApiRequest/UserProfile/delete_account.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
+                    new bootstrap.Modal(document.getElementById('deleteFarewellModal')).show();
+                    setTimeout(function() {
+                        window.location.href = '/BetMatchBonus/frontend/MainMenu/MainMenu.php';
+                    }, 5000);
+                } else {
+                    errorEl.textContent = data.message || 'Ismeretlen hiba.';
+                    errorEl.style.display = 'block';
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Véglegesen törlöm';
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                }
+            })
+            .catch(() => {
+                errorEl.textContent = 'Hiba történt a törlés során. Kérjük, próbáld újra.';
+                errorEl.style.display = 'block';
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Véglegesen törlöm';
+            });
+        });
+    })();
+    </script>
 
     <?php if ($rejectCooldownLeft > 0): ?>
     <script>

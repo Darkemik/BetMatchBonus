@@ -241,6 +241,7 @@ CREATE TABLE IF NOT EXISTS Users (
   id_image_first      VARCHAR(255)  DEFAULT NULL,
   id_image_second     VARCHAR(255)  DEFAULT NULL,
   address_image       VARCHAR(255)  DEFAULT NULL,
+  bank_statement_file VARCHAR(255)  DEFAULT NULL,
   balance             DECIMAL(12,2) NOT NULL DEFAULT 0.00,
   winnings_balance    DECIMAL(12,2) NOT NULL DEFAULT 0.00,
   bonus_balance       DECIMAL(12,2) NOT NULL DEFAULT 0.00,
@@ -253,6 +254,8 @@ CREATE TABLE IF NOT EXISTS Users (
   approval_token      VARCHAR(64)   DEFAULT NULL,
   data_verified       TINYINT(1)    NOT NULL DEFAULT 0,
   data_verification_token VARCHAR(64) DEFAULT NULL,
+  data_rejected_at    DATETIME      DEFAULT NULL,
+  data_rejection_reason TEXT        DEFAULT NULL,
   password_changed_at DATETIME      DEFAULT NULL,
   created_at          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -477,9 +480,13 @@ CREATE TABLE IF NOT EXISTS Transactions (
     type ENUM('deposit', 'withdrawal') NOT NULL,
     amount DECIMAL(10, 2) NOT NULL,
     payment_method VARCHAR(50),
-    status ENUM('pending', 'completed', 'failed', 'cancelled') DEFAULT 'pending',
+    status ENUM('pending', 'completed', 'failed', 'cancelled', 'rejected') DEFAULT 'pending',
     transaction_id VARCHAR(100) UNIQUE,
     description TEXT,
+    rejection_reason TEXT,
+    approval_token VARCHAR(128) DEFAULT NULL,
+    account_holder VARCHAR(100) DEFAULT NULL,
+    account_number VARCHAR(100) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
@@ -1230,7 +1237,8 @@ VALUES
 ALTER TABLE Transactions
   ADD COLUMN IF NOT EXISTS account_holder VARCHAR(100) DEFAULT NULL AFTER description,
   ADD COLUMN IF NOT EXISTS account_number VARCHAR(100) DEFAULT NULL AFTER account_holder,
-  ADD COLUMN IF NOT EXISTS approval_token VARCHAR(64)  DEFAULT NULL AFTER account_number;
+  ADD COLUMN IF NOT EXISTS approval_token VARCHAR(64)  DEFAULT NULL AFTER account_number,
+  ADD COLUMN IF NOT EXISTS rejection_reason TEXT DEFAULT NULL AFTER approval_token;
 
 ALTER TABLE Transactions
   MODIFY COLUMN status ENUM('pending', 'completed', 'failed', 'cancelled', 'rejected') DEFAULT 'pending';

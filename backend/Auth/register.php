@@ -231,6 +231,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception as MailException;
 
 $approveUrl = SITE_BASE_URL . '/backend/Auth/approve_registration.php?token=' . $approvalToken;
+$rejectUrl  = SITE_BASE_URL . '/backend/Auth/reject_registration.php?token=' . $approvalToken;
 
 $emailBody  = "<h2>Új regisztráció érkezett – BetMatchBonus</h2>";
 $emailBody .= "<table style='border-collapse:collapse;' cellpadding='6'>";
@@ -242,8 +243,11 @@ $emailBody .= "<tr><td><b>Születési dátum:</b></td><td>" . htmlspecialchars($
 $emailBody .= "<tr><td><b>Telefonszám:</b></td><td>" . htmlspecialchars($phone) . "</td></tr>";
 $emailBody .= "<tr><td><b>Anyja neve:</b></td><td>" . htmlspecialchars($mother_full_name) . "</td></tr>";
 $emailBody .= "</table>";
-$emailBody .= "<br><p><a href='" . htmlspecialchars($approveUrl) . "' style='display:inline-block;padding:12px 24px;background:#28a745;color:#fff;text-decoration:none;border-radius:6px;font-size:16px;font-weight:bold;'>✅ Regisztráció jóváhagyása</a></p>";
-$emailBody .= "<br><p style='color:#888;font-size:12px;'>Ha nem hagyod jóvá, a felhasználó nem tud belépni.</p>";
+$emailBody .= "<br><p style='display:flex;gap:12px;justify-content:center;'>";
+$emailBody .= "<a href='" . htmlspecialchars($approveUrl) . "' style='display:inline-block;padding:12px 24px;background:#28a745;color:#fff;text-decoration:none;border-radius:6px;font-size:16px;font-weight:bold;'>✅ Jóváhagyás</a>";
+$emailBody .= "<a href='" . htmlspecialchars($rejectUrl) . "' style='display:inline-block;padding:12px 24px;background:#dc3545;color:#fff;text-decoration:none;border-radius:6px;font-size:16px;font-weight:bold;'>❌ Elutasítás</a>";
+$emailBody .= "</p>";
+$emailBody .= "<br><p style='color:#888;font-size:12px;'>Ha elutasítod, a felhasználó fiókja törlésre kerül és értesítést kap emailben.</p>";
 
 try {
     $mail = new PHPMailer(true);

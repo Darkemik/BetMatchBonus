@@ -895,16 +895,20 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // ========== LEJÁTSZOTT MECCSEK ==========
+  function setFinishedViewMode(enabled) {
+      isFinishedView = !!enabled;
+      const finishedBtn = document.getElementById('show-finished-matches');
+      if (finishedBtn) {
+          finishedBtn.classList.toggle('active', isFinishedView);
+      }
+      if (sportsData.length) {
+          renderSportsList(sportsData);
+      }
+  }
+
   function loadFinishedMatches(sportId) {
       if (!matchesContainer) return;
-      isFinishedView = true;
-
-      // Gomb aktív állapot frissítése
-      const finishedBtn = document.getElementById('show-finished-matches');
-      if (finishedBtn) finishedBtn.classList.add('active');
-
-      // Sidebar újrarenderelése (számok frissítése)
-      if (sportsData.length) renderSportsList(sportsData);
+      setFinishedViewMode(true);
 
       matchesContainer.innerHTML = '<div class="loading-details"><i class="fas fa-spinner fa-spin"></i> ' + t('mainMenu.loadingMatches', 'Meccsek betöltése...') + '</div>';
 
@@ -937,10 +941,7 @@ document.addEventListener('DOMContentLoaded', function () {
               const backBtn = document.getElementById('back-to-today');
               if (backBtn) {
                   backBtn.addEventListener('click', function () {
-                      isFinishedView = false;
-                      const finBtn = document.getElementById('show-finished-matches');
-                      if (finBtn) finBtn.classList.remove('active');
-                      if (sportsData.length) renderSportsList(sportsData);
+                      setFinishedViewMode(false);
                       loadMatches(currentSportId);
                   });
               }
@@ -958,9 +959,7 @@ document.addEventListener('DOMContentLoaded', function () {
           e.preventDefault();
           if (isFinishedView) {
               // Ha már a finished nézetben vagyunk, visszaváltunk
-              isFinishedView = false;
-              this.classList.remove('active');
-              if (sportsData.length) renderSportsList(sportsData);
+              setFinishedViewMode(false);
               loadMatches(currentSportId);
           } else {
               loadFinishedMatches(currentSportId);
@@ -973,7 +972,7 @@ document.addEventListener('DOMContentLoaded', function () {
   if (boostedMatchBtn) {
       boostedMatchBtn.addEventListener('click', function (e) {
           e.preventDefault();
-          isFinishedView = false;
+          setFinishedViewMode(false);
           if (centerTitle) {
               centerTitle.innerHTML = '<i class="fas fa-rocket"></i> ' + t('mainMenu.oddsShipTitle', 'Oddsűrhajó — Mai kiemelt szorzó');
           }

@@ -39,15 +39,51 @@ function extractScore(array $m): array {
 /**
  * Meccs status_id meghatározása
  */
-function resolveStatusId(mysqli $conn, int $eventApiId, bool $isLive): int {
-    if ($isLive) return 2; // LIVE
-    // Ha már létezik az event és befejezett, megtartjuk
+function resolveStatusId(
+    mysqli $conn,
+    int $eventApiId,
+    bool $isLive,
+    ?string $liveStatus,
+    ?string $startUtc
+): int {
+    if ($isLive) {
+        return 2; // LIVE
+    }
+
+    // Ha már létezik az event és befejezett, megtartjuk.
     $stmt = $conn->prepare("SELECT status_id FROM Events WHERE api_id = ? LIMIT 1");
     $stmt->bind_param('i', $eventApiId);
     $stmt->execute();
     $row = $stmt->get_result()->fetch_assoc();
     $stmt->close();
-    if ($row && (int)$row['status_id'] === 3) return 3; // Ended
+    if ($row && (int)$row['status_id'] === 3) {
+        return 3; // Ended
+    }
+
+    // API státusz szöveg alapján befejezett meccs detektálása.
+    $statusText = mb_strtolower(trim((string)$liveStatus));
+    if ($statusText !== '') {
+        foreach (FINISHED_KEYWORDS as $kw) {
+            if (strpos($statusText, $kw) !== false) {
+                return 3;
+            }
+        }
+    }
+
+    // Ha múltbeli meccs (a kezdés már elmúlt), új adatbázisnál is legyen
+    // nagy eséllyel befejezettnek jelölve, ne ragadjon UPCOMING-on.
+    if (!empty($startUtc)) {
+        try {
+            $start = new DateTime($startUtc, new DateTimeZone('UTC'));
+            $nowUtc = new DateTime('now', new DateTimeZone('UTC'));
+            if ($start <= $nowUtc) {
+                return 3;
+            }
+        } catch (Throwable $e) {
+            // Hibás dátumnál marad az alapértelmezett UPCOMING.
+        }
+    }
+
     return 1; // Upcoming
 }
 
@@ -241,17 +277,18 @@ try {
         }
     }
 
-    // ── 3) MECCSEK (élő + következő 3 nap) ──────────────────────────
+    // ── 3) MECCSEK (élő + előző 3 nap + következő 3 nap) ─────────────
     $syncDays = [];
-    for ($d = 0; $d <= 3; $d++) {
-        $syncDays[] = (new DateTime("+{$d} days"))->format('Y-m-d');
+    for ($d = -3; $d <= 3; $d++) {
+        $expr = $d >= 0 ? "+{$d} days" : "{$d} days";
+        $syncDays[] = (new DateTime($expr))->format('Y-m-d');
     }
     $allLiveApiIds = []; // Összegyűjtjük az összes API-ból kapott live event ID-t
 
     foreach ($sportLocalMap as $sportApiId => $sportLocalId) {
         // Élő meccsek
         $liveMatches = apiGet(EP_MATCHES_LIVE, ['sportId' => $sportApiId]);
-        // Következő 3 nap meccsei
+        // Előző 3 nap + következő 3 nap meccsei
         $dateMatches = [];
         foreach ($syncDays as $day) {
             $dayMatches = apiGet(EP_MATCHES_DATE, ['sportId' => $sportApiId, 'date' => $day]);
@@ -318,7 +355,8 @@ try {
             $countryId = $leagueCountryMap[$leagueApiId] ?? null;
 
             $competitionId = upsertCompetition($conn, $leagueApiId, $sportLocalId, $leagueName, $countryId, $sportApiId);
-            $statusId      = resolveStatusId($conn, $eventApiId, $isLive);
+            $statusText = (string)($m['liveStatus'] ?? $m['status'] ?? '');
+            $statusId = resolveStatusId($conn, $eventApiId, $isLive, $statusText, $startUtc);
 
             upsertEvent(
                 $conn, $eventApiId, $sportLocalId, $competitionId, $statusId,
