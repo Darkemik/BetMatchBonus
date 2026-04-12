@@ -3,7 +3,7 @@
   display: flex;
   flex: 1;
   overflow: hidden;
-  height: calc(100vh - 110px);
+  height: auto;
 }
 
 .left-sidebar {
@@ -23,6 +23,10 @@
 
 .right-sidebar {
   display: none;
+}
+
+body .simple-footer {
+  margin-top: 0;
 }
 
 /* Custom scrollbar — override global display:none from layout.css */
@@ -800,6 +804,12 @@
 /* ===== LIVE-LIKE BETSLIP PLACEMENT (MainMenu) ===== */
 .content-parent {
   width: 100%;
+}
+
+.content-parent::after {
+  content: "";
+  display: block;
+  clear: both;
 }
 
 /* MainMenu previously had a flex right-sidebar; hide it if any older markup remains */

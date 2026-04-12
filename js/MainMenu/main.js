@@ -11,6 +11,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const centerTitle = document.getElementById('centerTitle');
   const matchSearch = document.getElementById('matchSearch');
   const currentDateTimeSpan = document.getElementById('currentDateTime');
+    const contentParent = document.querySelector('.content-parent');
+    const mainContentWrap = contentParent ? contentParent.querySelector('.main_content') : null;
+    const rightColumnWrap = contentParent ? contentParent.querySelector('.right-container') : null;
 
   let sportsData = []; // sidebar adatok cache
   let currentSportId = 66; // 66 = Foci (alapértelmezett)
@@ -102,6 +105,26 @@ document.addEventListener('DOMContentLoaded', function () {
       });
   }
 
+  function syncColumnsToTipsBottom() {
+      if (!mainContentWrap || !rightColumnWrap) return;
+
+      if (window.innerWidth <= 1100) {
+          mainContentWrap.style.height = 'auto';
+          return;
+      }
+
+      const rightHeight = Math.ceil(rightColumnWrap.getBoundingClientRect().height);
+      if (rightHeight > 0) {
+          mainContentWrap.style.height = rightHeight + 'px';
+      }
+  }
+
+  function scheduleColumnsSync() {
+      requestAnimationFrame(function() {
+          requestAnimationFrame(syncColumnsToTipsBottom);
+      });
+  }
+
   // ========== SIDEBAR SPORTOK BETÖLTÉSE ==========
   function loadSidebarSports() {
       fetch('../../backend/ApiRequest/get_sidebar_sports.php')
@@ -109,6 +132,7 @@ document.addEventListener('DOMContentLoaded', function () {
           .then(data => {
               sportsData = data;
               renderSportsList(data);
+              scheduleColumnsSync();
           })
           .catch(err => {
               console.error('[MAIN] Sidebar betöltési hiba:', err);
@@ -378,11 +402,13 @@ document.addEventListener('DOMContentLoaded', function () {
               applyPagination();
               if (typeof window.applyI18n === 'function') window.applyI18n(matchesContainer);
               applyDynamicTranslations(matchesContainer);
+              scheduleColumnsSync();
 
           })
           .catch(err => {
               console.error('[MAIN] Meccsek betöltési hiba:', err);
               matchesContainer.innerHTML = '<div class="no-matches"><i class="fas fa-exclamation-triangle" style="font-size:40px;color:#e74c3c;margin-bottom:12px;display:block;"></i>' + t('mainMenu.errorLoading', 'Hiba a meccsek betöltésekor.') + '</div>';
+              scheduleColumnsSync();
           });
   }
 
@@ -945,6 +971,7 @@ document.addEventListener('DOMContentLoaded', function () {
               attachMatchClickHandlers();
               applyPagination();
               if (typeof window.applyI18n === 'function') window.applyI18n(matchesContainer);
+              scheduleColumnsSync();
 
               // Vissza gomb kezelése
               const backBtn = document.getElementById('back-to-today');
@@ -958,6 +985,7 @@ document.addEventListener('DOMContentLoaded', function () {
           .catch(err => {
               console.error('[MAIN] Lejátszott meccsek betöltési hiba:', err);
               matchesContainer.innerHTML = '<div class="no-matches"><i class="fas fa-exclamation-triangle" style="font-size:40px;color:#e74c3c;margin-bottom:12px;display:block;"></i>' + t('mainMenu.errorLoading', 'Hiba a meccsek betöltésekor.') + '</div>';
+              scheduleColumnsSync();
           });
   }
 
@@ -1063,6 +1091,7 @@ document.addEventListener('DOMContentLoaded', function () {
           .then(tips => {
               if (!Array.isArray(tips) || tips.length === 0) {
                   tipsList.innerHTML = '<div class="daily-tips-empty">' + t('mainMenu.noTips', 'Nincs elérhető tipp.') + '</div>';
+                  scheduleColumnsSync();
                   return;
               }
               let html = '';
@@ -1122,10 +1151,12 @@ document.addEventListener('DOMContentLoaded', function () {
               });
 
               syncTipButtonStates();
+              scheduleColumnsSync();
           })
           .catch(err => {
               console.error('[TIPS] Hiba:', err);
               tipsList.innerHTML = '<div class="daily-tips-empty">' + t('mainMenu.errorTips', 'Tippek betöltése sikertelen.') + '</div>';
+              scheduleColumnsSync();
           });
   }
 
@@ -1152,9 +1183,25 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       applyDynamicTranslations(matchesContainer);
+      scheduleColumnsSync();
   });
+
+  if (rightColumnWrap) {
+      const rightColumnObserver = new MutationObserver(function() {
+          scheduleColumnsSync();
+      });
+      rightColumnObserver.observe(rightColumnWrap, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          characterData: true
+      });
+  }
+
+  window.addEventListener('resize', scheduleColumnsSync);
 
   loadSidebarSports();
   loadMatches(66); // Alapértelmezett: Foci
   loadDailyTips();
+  scheduleColumnsSync();
 });
