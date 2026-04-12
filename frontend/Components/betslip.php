@@ -100,5 +100,11 @@
         <div class="elozmeny-items" id="elozmeny-items" style="display: none;">
             <!-- JS-ből jönnek az elemek -->
         </div>
+
+        <div class="elozmeny-pagination" id="elozmeny-pagination" style="display: none;">
+            <button type="button" class="elozmeny-page-btn" id="elozmeny-prev-btn">◀ <span data-i18n="betslip.historyPrev">Előző</span></button>
+            <span class="elozmeny-page-info" id="elozmeny-page-info">1 / 1</span>
+            <button type="button" class="elozmeny-page-btn" id="elozmeny-next-btn"><span data-i18n="betslip.historyNext">Következő</span> ▶</button>
+        </div>
     </div>
 </div>

@@ -133,7 +133,9 @@
     "winLabel": "Winnings:",
     "potentialLabel": "Potential:",
     "noHistory": "No previous bets yet",
-    "noHistorySubtitle": "Your first ticket will appear here"
+    "noHistorySubtitle": "Your first ticket will appear here",
+    "historyPrev": "Previous",
+    "historyNext": "Next"
   },
   "mainMenu": {
     "todayMatches": "Today's Matches",

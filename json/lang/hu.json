@@ -133,7 +133,9 @@
     "winLabel": "Nyeremény:",
     "potentialLabel": "Potenciális:",
     "noHistory": "Még nincs korábbi fogadás",
-    "noHistorySubtitle": "Az első szelvény itt jelenik meg"
+    "noHistorySubtitle": "Az első szelvény itt jelenik meg",
+    "historyPrev": "Előző",
+    "historyNext": "Következő"
   },
   "mainMenu": {
     "todayMatches": "Mai meccsek",

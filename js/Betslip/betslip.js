@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let ticketItems = [];
     let bettingHistory = [];
     let historyCheckTimer = null;
+    const HISTORY_PAGE_SIZE = 2;
+    let currentHistoryPage = 1;
     let isLoggedIn = false;
     let currentUserId = null;
     let userBalance = 0;
@@ -723,20 +725,31 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderHistory() {
         const container = document.getElementById('elozmeny-items');
         const empty = document.getElementById('elozmeny-empty');
+        const pagination = document.getElementById('elozmeny-pagination');
+        const prevBtn = document.getElementById('elozmeny-prev-btn');
+        const nextBtn = document.getElementById('elozmeny-next-btn');
+        const pageInfo = document.getElementById('elozmeny-page-info');
 
         if (!container || !empty) return;
 
         if (bettingHistory.length === 0) {
             empty.style.display = 'flex';
             container.style.display = 'none';
+            if (pagination) pagination.style.display = 'none';
             return;
         }
+
+        const totalPages = Math.max(1, Math.ceil(bettingHistory.length / HISTORY_PAGE_SIZE));
+        currentHistoryPage = Math.min(Math.max(currentHistoryPage, 1), totalPages);
+        const startIndex = (currentHistoryPage - 1) * HISTORY_PAGE_SIZE;
+        const visibleHistory = bettingHistory.slice(startIndex, startIndex + HISTORY_PAGE_SIZE);
 
         empty.style.display = 'none';
         container.style.display = 'flex';
         container.innerHTML = '';
+        container.scrollTop = 0;
 
-        bettingHistory.forEach(ticket => {
+        visibleHistory.forEach(ticket => {
             const isCashout = ticket.status === 'CASHOUT';
             const statusText = isCashout ? '💰 Cash Out' :
                               ticket.status === 'OPEN' ? '⏳ ' + t('betslip.pending', 'Függőben') : 
@@ -820,6 +833,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.BetslipCashout.loadPreview(ticket.id);
             }
         });
+
+        if (pagination && prevBtn && nextBtn && pageInfo) {
+            pagination.style.display = 'flex';
+            pageInfo.textContent = currentHistoryPage + ' / ' + totalPages;
+            prevBtn.disabled = currentHistoryPage === 1;
+            nextBtn.disabled = currentHistoryPage === totalPages;
+        }
     }
 
     // ===== CASHOUT LOGIKA =====
@@ -975,6 +995,28 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    const historyPrevBtn = document.getElementById('elozmeny-prev-btn');
+    const historyNextBtn = document.getElementById('elozmeny-next-btn');
+
+    if (historyPrevBtn) {
+        historyPrevBtn.addEventListener('click', () => {
+            if (currentHistoryPage > 1) {
+                currentHistoryPage -= 1;
+                renderHistory();
+            }
+        });
+    }
+
+    if (historyNextBtn) {
+        historyNextBtn.addEventListener('click', () => {
+            const totalPages = Math.max(1, Math.ceil(bettingHistory.length / HISTORY_PAGE_SIZE));
+            if (currentHistoryPage < totalPages) {
+                currentHistoryPage += 1;
+                renderHistory();
+            }
+        });
+    }
 
     // ===== UTILITY =====
     function escapeHtml(text) {
