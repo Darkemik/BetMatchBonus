@@ -1032,6 +1032,15 @@ document.addEventListener('DOMContentLoaded', function () {
       });
   }
 
+  // ========== ODDSŰRHAJÓ AUTO-OPEN (ha ?boosted=1 paraméterrel érkezünk) ==========
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('boosted') === '1' && boostedMatchBtn) {
+      boostedMatchBtn.click();
+      // Töröljük a paramétert az URL-ből, hogy frissítéskor ne nyíljon meg újra
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+  }
+
   // ========== HÁTTÉR SZINKRON (API → DB) ==========
   function syncFromApi() {
       fetch('../../backend/refresh_all.php', { method: 'GET' })
