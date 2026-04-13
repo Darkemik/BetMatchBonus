@@ -29,7 +29,7 @@
             },
             {
                 "word": "Belső egyenleg",
-                "definition": "A belső egyenleg a játékos Tippmixpro számláján nyilvántartott pénzeszközöket tartalmazza. A belső egyenleg három különálló részből áll. Ezek mindegyike más-más típusú egyenlegek, eltérő felhasználási és kifizetési szabályokkal, valamint különböző összegeket is tartalmazhatnak. – Fizetési egyenleg: Itt található a játékos által feltöltött pénz. Szabadon felhasználható fogadások megtételére, valamint bármikor kiutalható a játékos bankszámlájára. – Nyeremény egyenleg: Ide kerülnek a sikeres fogadásokból származó nyeremények, valamint a kifizethetővé vált bónuszösszegek. Felhasználható új fogadások megtételére, valamint bármikor kiutalható a játékos bankszámlájára. – Bónusz egyenleg: Ide kerülnek a promóciók vagy akciók keretein belül jóváírt összegek. Közvetlenül nem kifizethetőek, csak akkor, ha miután a játékos teljesítette az adott bónuszokhoz kapcsolódó feltételeket (pl.: forgatási követelmény, minimum szorzó). Fogadásokat lehet kötni az egyenleg terhére, de az ebből származó nyeremény csak a feltételek teljesítése után kerül át a nyeremény egyenlegre."
+                "definition": "A belső egyenleg a játékos BetMatchBonus számláján nyilvántartott pénzeszközöket tartalmazza. A belső egyenleg három különálló részből áll. Ezek mindegyike más-más típusú egyenlegek, eltérő felhasználási és kifizetési szabályokkal, valamint különböző összegeket is tartalmazhatnak. – Fizetési egyenleg: Itt található a játékos által feltöltött pénz. Szabadon felhasználható fogadások megtételére, valamint bármikor kiutalható a játékos bankszámlájára. – Nyeremény egyenleg: Ide kerülnek a sikeres fogadásokból származó nyeremények, valamint a kifizethetővé vált bónuszösszegek. Felhasználható új fogadások megtételére, valamint bármikor kiutalható a játékos bankszámlájára. – Bónusz egyenleg: Ide kerülnek a promóciók vagy akciók keretein belül jóváírt összegek. Közvetlenül nem kifizethetőek, csak akkor, ha miután a játékos teljesítette az adott bónuszokhoz kapcsolódó feltételeket (pl.: forgatási követelmény, minimum szorzó). Fogadásokat lehet kötni az egyenleg terhére, de az ebből származó nyeremény csak a feltételek teljesítése után kerül át a nyeremény egyenlegre."
             }
         ]
     },
@@ -72,7 +72,7 @@
         "terms": [
             {
                 "word": "Egyenleg",
-                "definition": "Az egyenleg a játékos Tippmixpro-fiókján található pénzügyi keret, amelyből fogadásokat tehet és amely tartalmazza az elérhető pénzeszközeit. Az egyenleg három részre oszlik: fizetési egyenleg, nyeremény egyenleg, bónusz egyenleg."
+                "definition": "Az egyenleg a játékos BetMatchBonus-fiókján található pénzügyi keret, amelyből fogadásokat tehet és amely tartalmazza az elérhető pénzeszközeit. Az egyenleg három részre oszlik: fizetési egyenleg, nyeremény egyenleg, bónusz egyenleg."
             },
             {
                 "word": "Eredmények",
@@ -125,7 +125,7 @@
             },
             {
                 "word": "Fogadási napló",
-                "definition": "A Tippmixpro fogadás felületén a játékos saját fogadási tevékenységének részletes, időrendben rögzített áttekintése."
+                "definition": "A BetMatchBonus fogadás felületén a játékos saját fogadási tevékenységének részletes, időrendben rögzített áttekintése."
             }
         ]
     },
@@ -256,7 +256,7 @@
             },
             {
                 "word": "Nyereményfelvétel – bankszámlaszám megadása",
-                "definition": "A tippmixpron elért nyeremény kifizetése kizárólag átutalással történik, az ügyfél által megadott, saját névre szóló bankszámlaszámra. A kifizetéshez a játékosnak hitelesített regisztrációval kell rendelkezni. A bankszámlaszámot a profilban lehet megadni vagy módosítani, utóbbi csak akkor fogadható el, ha megegyezik a felhasználó nevével. Nyereménykifizetés nem automatikus, a játékosnak külön kell kifizetési kérelmet indítania. A nyeremény csak a fizetési és nyeremény egyenlegről vehető ki, a bónusz egyenlegről nem. A tippmixpro nem utal ki pénzt harmadik fél számlájára, kizárólag saját névre szóló bankszámlaszám érvényes."
+                "definition": "A BetMatchBonuson elért nyeremény kifizetése kizárólag átutalással történik, az ügyfél által megadott, saját névre szóló bankszámlaszámra. A kifizetéshez a játékosnak hitelesített regisztrációval kell rendelkezni. A bankszámlaszámot a profilban lehet megadni vagy módosítani, utóbbi csak akkor fogadható el, ha megegyezik a felhasználó nevével. Nyereménykifizetés nem automatikus, a játékosnak külön kell kifizetési kérelmet indítania. A nyeremény csak a fizetési és nyeremény egyenlegről vehető ki, a bónusz egyenlegről nem. A BetMatchBonus nem utal ki pénzt harmadik fél számlájára, kizárólag saját névre szóló bankszámlaszám érvényes."
             }
         ]
     },
@@ -362,7 +362,7 @@
             },
             {
                 "word": "Szuperodds",
-                "definition": "A Tippmixpro által időszakosan kínált kiemelt nyereményszorzó."
+                "definition": "A BetMatchBonus által időszakosan kínált kiemelt nyereményszorzó."
             }
         ]
     },
