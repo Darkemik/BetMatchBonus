@@ -20,6 +20,8 @@ $activePage = 'notifications';
     <link rel="icon" href="../../img/logo.png" type="image/x-icon">
     <style>
         body { background: #1a1a2e; color: #eee; }
+        p { color: #e6e6e6 !important; }
+        .text-muted { color: #9aa6b2 !important; }
         .navbar-admin { background: #16213e; }
         .sidebar {
             background: #16213e; min-height: calc(100vh - 56px);
@@ -177,7 +179,7 @@ $activePage = 'notifications';
                     <div style="background:#1a1a2e;border-radius:8px;padding:12px;border:1px solid rgba(255,255,255,0.08);">
                         <div style="font-weight:700;font-size:0.95rem;" id="previewTitle"></div>
                         <div style="color:#bbb;font-size:0.85rem;margin-top:6px;white-space:pre-wrap;" id="previewMsg"></div>
-                        <div style="color:#666;font-size:0.75rem;margin-top:8px;"><i class="fas fa-clock"></i> Most</div>
+                        <div style="color:#9aa6b2;font-size:0.75rem;margin-top:8px;"><i class="fas fa-clock"></i> Most</div>
                     </div>
                 </div>
 

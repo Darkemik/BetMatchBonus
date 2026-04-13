@@ -21,6 +21,8 @@ $activePage = 'statistics';
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <style>
         body { background: #1a1a2e; color: #eee; }
+        p { color: #e6e6e6 !important; }
+        .text-muted { color: #9aa6b2 !important; }
         .navbar-admin { background: #16213e; }
         .sidebar {
             background: #16213e; min-height: calc(100vh - 56px);

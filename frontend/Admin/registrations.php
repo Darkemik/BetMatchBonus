@@ -45,6 +45,8 @@ $approvedCount = $conn->query("
     <link rel="icon" href="../../img/logo.png" type="image/x-icon">
     <style>
         body { background: #1a1a2e; color: #eee; }
+        p { color: #e6e6e6 !important; }
+        .text-muted { color: #9aa6b2 !important; }
         .navbar-admin { background: #16213e; }
         .sidebar {
             background: #16213e; min-height: calc(100vh - 56px);
@@ -101,7 +103,7 @@ $approvedCount = $conn->query("
         .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
 
         .empty-state {
-            text-align: center; padding: 60px 20px; color: #666;
+            text-align: center; padding: 60px 20px; color: #9aa6b2;
         }
         .empty-state i { font-size: 3rem; margin-bottom: 12px; display: block; }
 
