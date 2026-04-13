@@ -139,7 +139,7 @@ $role = $_SESSION['admin_role'];
         <?php if ($role === 'ADMIN' || $role === 'SUPERADMIN'): ?>
         <div class="nav-section">Pénzügy</div>
         <a href="bonuses.php" class="nav-link">🎁 Bónuszok</a>
-        <a href="withdrawals.php" class="nav-link">💸 Kifizetések</a>
+        <a href="../../frontend/UserProfile/withdrawal.php" class="nav-link">💸 Kifizetések</a>
         <?php endif; ?>
 
         <?php if ($role === 'SUPERADMIN'): ?>
