@@ -39,8 +39,8 @@
                 <!-- JOBB oszlop: Kapcsolat + social -->
                 <div class="footer-column footer-column-right">
                     <h3 class="footer-column-title" data-i18n="footer.contactTitle">Kapcsolat</h3>
-                    <a href="../Help/kapcsolat.php" class="footer-link" data-i18n="footer.customerService">
-                        <i class="fas fa-envelope"></i> ugyfelszolgalat@betmatchbonus.com
+                    <a href="mailto:bmbugyfelszolgalat@gmail.com" class="footer-link" data-i18n="footer.customerService">
+                        <i class="fas fa-envelope"></i> bmbugyfelszolgalat@gmail.com
                     </a>
                     <div class="footer-socials">
                         <a href="https://www.facebook.com/profile.php?id=100013192591475" class="footer-social-link" aria-label="Facebook" rel="noopener noreferrer" target="_blank"><i class="fab fa-facebook-f"></i></a>
