@@ -60,11 +60,17 @@ $activePage = 'statistics';
 </head>
 <body>
 
-<nav class="navbar navbar-admin navbar-dark px-3">
-    <span class="navbar-brand fw-bold"><img src="../../img/logo.png" alt="logo" style="height:28px;margin-right:8px;">Admin Panel</span>
+<nav class="navbar navbar-admin px-4 d-flex justify-content-between" style="height:56px;">
     <div class="d-flex align-items-center gap-3">
-        <span class="text-light small"><i class="fas fa-user-shield"></i> <?= htmlspecialchars($_SESSION['admin_username']) ?> (<?= $role ?>)</span>
-        <a href="../../backend/Auth/admin_logout.php" class="btn btn-outline-danger btn-sm">Kilépés</a>
+        <img src="../../img/logo.png" alt="logo" style="width:40px;">
+        <span class="text-white fw-bold fs-5">Admin Dashboard</span>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+        <span class="text-white fw-semibold d-inline-flex align-items-center gap-2">
+            <?= htmlspecialchars($_SESSION['admin_username']) ?>
+            <span class="badge rounded-pill bg-danger"><?= htmlspecialchars($role) ?></span>
+        </span>
+        <a href="/BetMatchBonus/backend/Auth/admin_logout.php" class="btn btn-outline-danger btn-sm">Kijelentkezés</a>
     </div>
 </nav>
 

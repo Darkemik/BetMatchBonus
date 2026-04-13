@@ -25,22 +25,25 @@ foreach ($sidebarPages as $p) {
 
     // Szekció fejléc
     if ($p['section'] !== $lastSection) {
-        echo '<div class="nav-section">' . htmlspecialchars($p['section']) . '</div>' . "\n";
+        echo '<div class="nav-section" style="font-size: 0.7rem; text-transform: uppercase; color: #e94560; padding: 14px 20px 4px; letter-spacing: 1px; font-weight: 700;">' . htmlspecialchars($p['section']) . '</div>' . "\n";
         $lastSection = $p['section'];
     }
 
-    $activeStyle = ($activePage === $p['key']) ? ' style="color: #fff; background: #0f3460;"' : '';
-    echo '<a href="' . $p['href'] . '" class="nav-link"' . $activeStyle . '>' . $p['icon'] . ' ' . $p['label'] . '</a>' . "\n";
+    $linkStyle = 'font-size: 1rem; line-height: 1.35;';
+    if ($activePage === $p['key']) {
+        $linkStyle .= ' color: #fff; background: #0f3460;';
+    }
+    echo '<a href="' . $p['href'] . '" class="nav-link" style="' . $linkStyle . '">' . $p['icon'] . ' ' . $p['label'] . '</a>' . "\n";
 }
 
 // Rendszer szekció — mindig SUPERADMIN only
 if ($role === 'SUPERADMIN') {
-    echo '<div class="nav-section">Rendszer</div>' . "\n";
-    $staffActive = ($activePage === 'staff') ? ' style="color: #fff; background: #0f3460;"' : '';
-    echo '<a href="staff.php" class="nav-link"' . $staffActive . '>🛡️ Staff (Adminok)</a>' . "\n";
-    $auditActive = ($activePage === 'audit_logs') ? ' style="color: #fff; background: #0f3460;"' : '';
-    echo '<a href="audit_logs.php" class="nav-link"' . $auditActive . '>📋 Audit Logs</a>' . "\n";
-    $settingsActive = ($activePage === 'settings') ? ' style="color: #fff; background: #0f3460;"' : '';
-    echo '<a href="settings.php" class="nav-link"' . $settingsActive . '>⚙️ Rendszerbeállítások</a>' . "\n";
+    echo '<div class="nav-section" style="font-size: 0.7rem; text-transform: uppercase; color: #e94560; padding: 14px 20px 4px; letter-spacing: 1px; font-weight: 700;">Rendszer</div>' . "\n";
+    $staffStyle = 'font-size: 1rem; line-height: 1.35;' . (($activePage === 'staff') ? ' color: #fff; background: #0f3460;' : '');
+    echo '<a href="staff.php" class="nav-link" style="' . $staffStyle . '">🛡️ Staff (Adminok)</a>' . "\n";
+    $auditStyle = 'font-size: 1rem; line-height: 1.35;' . (($activePage === 'audit_logs') ? ' color: #fff; background: #0f3460;' : '');
+    echo '<a href="audit_logs.php" class="nav-link" style="' . $auditStyle . '">📋 Audit Logs</a>' . "\n";
+    $settingsStyle = 'font-size: 1rem; line-height: 1.35;' . (($activePage === 'settings') ? ' color: #fff; background: #0f3460;' : '');
+    echo '<a href="settings.php" class="nav-link" style="' . $settingsStyle . '">⚙️ Rendszerbeállítások</a>' . "\n";
 }
 ?>

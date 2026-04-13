@@ -137,7 +137,7 @@ $bonuses = $conn->query("
         .sidebar .nav-section {
             font-size: 0.7rem;
             text-transform: uppercase;
-            color: #666;
+            color: #e94560;
             padding: 14px 20px 4px;
             letter-spacing: 1px;
         }
@@ -179,13 +179,13 @@ $bonuses = $conn->query("
 <!-- Navbar -->
 <nav class="navbar navbar-admin px-4 d-flex justify-content-between" style="height:56px;">
     <div class="d-flex align-items-center gap-3">
-                                    <span class="text-muted fst-italic fw-semibold">NINCS KÓD</span>
+        <img src="../../img/logo.png" alt="logo" style="width:40px;">
         <span class="text-white fw-bold fs-5">Admin Dashboard</span>
     </div>
     <div class="d-flex align-items-center gap-3">
-        <span class="text-muted">
-                                <div class="text-muted small" style="color: #ffffff !important; max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-            <span class="badge bg-danger"><?= htmlspecialchars($role) ?></span>
+        <span class="text-white fw-semibold d-inline-flex align-items-center gap-2">
+            <?= htmlspecialchars($_SESSION['admin_username']) ?>
+            <span class="badge rounded-pill bg-danger"><?= htmlspecialchars($role) ?></span>
         </span>
         <a href="/BetMatchBonus/backend/Auth/admin_logout.php" class="btn btn-outline-danger btn-sm">Kijelentkezés</a>
     </div>

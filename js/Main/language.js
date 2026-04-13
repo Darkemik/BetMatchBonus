@@ -143,9 +143,12 @@
     function getJsonBasePath() {
         const scripts = document.querySelectorAll('script[src*="language.js"]');
         if (scripts.length > 0) {
-            const src = scripts[0].getAttribute('src');
-            // pl. ../../js/Main/language.js → ../../json/lang/
-            return src.replace('js/Main/language.js', 'json/lang/');
+            const src = scripts[0].getAttribute('src') || '';
+            const cleanSrc = src.split('?')[0].split('#')[0];
+            // pl. ../../js/Main/language.js?v=123 -> ../../json/lang/
+            if (cleanSrc.indexOf('js/Main/language.js') !== -1) {
+                return cleanSrc.replace('js/Main/language.js', 'json/lang/');
+            }
         }
         return '../../json/lang/';
     }
