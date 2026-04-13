@@ -126,7 +126,7 @@ if (!is_dir($uploadDir)) {
 
 $savedFiles = [];
 $imageFields = ['id_image_first', 'id_image_second', 'address_image'];
-$allowedMime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+$allowedMime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif'];
 
 // Duplikált kép ellenőrzés (hash alapján, szerver oldalon)
 $uploadHashes = [];
@@ -154,6 +154,7 @@ foreach ($imageFields as $field) {
             'image/png'  => '.png',
             'image/gif'  => '.gif',
             'image/webp' => '.webp',
+            'image/avif' => '.avif',
             default       => '.jpg',
         };
         $safeFilename = $field . '_' . $userId . $ext;

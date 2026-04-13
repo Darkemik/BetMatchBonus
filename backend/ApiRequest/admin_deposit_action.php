@@ -68,7 +68,7 @@ if ($action === 'manual_deposit') {
     }
 
     // Felhasználó lekérdezése
-    $uStmt = $conn->prepare("SELECT id, username, email, balance FROM Users WHERE id = ?");
+    $uStmt = $conn->prepare("SELECT id, username, email, balance FROM Users WHERE id = ? AND is_active = 1 AND is_verified = 1");
     $uStmt->bind_param("i", $userId);
     $uStmt->execute();
     $user = $uStmt->get_result()->fetch_assoc();

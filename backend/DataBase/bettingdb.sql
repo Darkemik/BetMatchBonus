@@ -487,6 +487,9 @@ CREATE TABLE IF NOT EXISTS AdminUsers (
 CREATE TABLE IF NOT EXISTS AuditLogs (
   id             INT           AUTO_INCREMENT PRIMARY KEY,
   admin_id       INT           NOT NULL,
+  action_type    VARCHAR(50)   DEFAULT NULL,
+  target_type    VARCHAR(30)   DEFAULT NULL,
+  target_id      INT           DEFAULT NULL,
   bonus_codes_id INT           DEFAULT NULL,
   details        VARCHAR(255)  DEFAULT NULL,
   created_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -657,22 +660,33 @@ CREATE TABLE IF NOT EXISTS SystemSettings (
     setting_key VARCHAR(100) NOT NULL UNIQUE,
     setting_value TEXT,
     description VARCHAR(255) DEFAULT NULL,
+    category VARCHAR(50) DEFAULT 'general',
+    label VARCHAR(100) DEFAULT NULL,
+    input_type VARCHAR(20) DEFAULT 'number',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT IGNORE INTO SystemSettings (setting_key, setting_value, description) VALUES
-    ('min_deposit',             '3000',   'Minimum befizetés (Ft)'),
-    ('max_deposit',             '600000', 'Maximum befizetés (Ft)'),
-    ('min_withdrawal',          '6000',   'Minimum kifizetés (Ft)'),
-    ('max_withdrawal',          '50000',  'Maximum kifizetés (Ft)'),
-    ('min_bet_amount',          '100',    'Minimum tét összeg (Ft)'),
-    ('min_password_length',     '7',      'Minimum jelszóhossz'),
-    ('min_user_age',            '18',     'Minimum regisztrációs kor'),
-    ('min_phone_length',        '11',     'Minimum telefonszám hossz'),
-    ('session_timeout_minutes', '30',     'Session timeout (perc)'),
-    ('max_login_attempts',      '3',      'Maximum bejelentkezési próbálkozás'),
-    ('login_lockout_minutes',   '60',     'Zárolás időtartama (perc)'),
-    ('recaptcha_threshold',     '0.5',    'reCAPTCHA küszöbérték'),
-    ('daily_tip_multiplier',    '1.2',    'Napi tipp szorzó'),
-    ('odds_pyramid_multiplier', '1.3',    'Odds piramis szorzó'),
-    ('min_pyramid_selections',  '6',      'Minimum piramis választás');
+INSERT IGNORE INTO SystemSettings (setting_key, setting_value, description, category, label, input_type) VALUES
+    ('min_deposit',             '3000',   'Minimum befizetés (Ft)',                  'deposit',       'Minimum befizetés',              'number'),
+    ('max_deposit',             '600000', 'Maximum befizetés (Ft)',                  'deposit',       'Maximum befizetés',              'number'),
+    ('min_withdrawal',          '6000',   'Minimum kifizetés (Ft)',                  'withdrawal',    'Minimum kifizetés',              'number'),
+    ('max_withdrawal',          '50000',  'Maximum kifizetés (Ft)',                  'withdrawal',    'Maximum kifizetés',              'number'),
+    ('min_bet_amount',          '100',    'Minimum tét összeg (Ft)',                 'betting',       'Minimum tét',                    'number'),
+    ('min_password_length',     '7',      'Minimum jelszóhossz',                    'security',      'Minimum jelszóhossz',            'number'),
+    ('min_user_age',            '18',     'Minimum regisztrációs kor',              'registration',  'Minimum életkor',                'number'),
+    ('min_phone_length',        '11',     'Minimum telefonszám hossz',              'registration',  'Minimum telefonszám hossz',      'number'),
+    ('session_timeout_minutes', '30',     'Session timeout (perc)',                  'security',      'Session timeout (perc)',          'number'),
+    ('max_login_attempts',      '3',      'Maximum bejelentkezési próbálkozás',     'security',      'Max. bejelentkezési próbálkozás', 'number'),
+    ('login_lockout_minutes',   '60',     'Zárolás időtartama (perc)',              'security',      'Zárolás időtartama (perc)',       'number'),
+    ('recaptcha_threshold',     '0.5',    'reCAPTCHA küszöbérték',                  'security',      'reCAPTCHA küszöbérték',           'number'),
+    ('daily_tip_multiplier',    '1.2',    'Napi tipp szorzó',                       'betting',       'Napi tipp szorzó',               'number'),
+    ('odds_pyramid_multiplier', '1.3',    'Odds piramis szorzó',                    'betting',       'Odds piramis szorzó',            'number'),
+    ('min_pyramid_selections',  '6',      'Minimum piramis választás',              'betting',       'Min. piramis választás',         'number');
+
+-- ============================================================
+-- Hiányzó oszlopok biztosítása (meglévő DB frissítéshez)
+-- ============================================================
+ALTER TABLE AuditLogs
+  ADD COLUMN IF NOT EXISTS action_type VARCHAR(50) DEFAULT NULL AFTER admin_id,
+  ADD COLUMN IF NOT EXISTS target_type VARCHAR(30) DEFAULT NULL AFTER action_type,
+  ADD COLUMN IF NOT EXISTS target_id INT DEFAULT NULL AFTER target_type;

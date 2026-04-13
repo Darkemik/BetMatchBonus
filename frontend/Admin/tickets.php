@@ -15,6 +15,7 @@ $ticketUsers = $conn->query("
         (SELECT COUNT(*) FROM Tickets t WHERE t.user_id = u.id AND t.status = 'OPEN') AS open_count,
         (SELECT COUNT(*) FROM Tickets t WHERE t.user_id = u.id AND t.status != 'OPEN' AND t.created_at >= DATE_SUB(NOW(), INTERVAL 3 DAY)) AS recent_count
     FROM Users u
+    WHERE u.is_active = 1 AND u.is_verified = 1
     ORDER BY u.id DESC
 ");
 

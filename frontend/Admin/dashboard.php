@@ -8,16 +8,16 @@ page_permission_guard('dashboard');
 $perms = get_role_permissions();
 
 // Statistics
-$userCount  = $conn->query("SELECT COUNT(*) AS c FROM Users")->fetch_assoc()['c'];
+$userCount  = $conn->query("SELECT COUNT(*) AS c FROM Users WHERE is_active = 1 AND is_verified = 1")->fetch_assoc()['c'];
 $matchCount = $conn->query("SELECT COUNT(*) AS c FROM Events")->fetch_assoc()['c'];
 $champCount = $conn->query("SELECT COUNT(*) AS c FROM Competitions")->fetch_assoc()['c'];
 
 // Keresés
 $searchTerm = isset($_GET['search']) ? trim($_GET['search']) : '';
-$searchWhere = '';
+$searchWhere = ' WHERE is_active = 1 AND is_verified = 1';
 $searchParam = null;
 if ($searchTerm !== '') {
-    $searchWhere = " WHERE username LIKE ? OR email LIKE ? OR full_name LIKE ? OR CAST(id AS CHAR) = ?";
+    $searchWhere .= " AND (username LIKE ? OR email LIKE ? OR full_name LIKE ? OR CAST(id AS CHAR) = ?)";
     $searchParam = '%' . $searchTerm . '%';
 }
 

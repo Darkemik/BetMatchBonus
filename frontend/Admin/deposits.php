@@ -41,6 +41,7 @@ $depositUsers = $conn->query("
         (SELECT COUNT(*) FROM Transactions t WHERE t.user_id = u.id AND t.type = 'deposit' AND t.status = 'failed') AS refunded_count,
         (SELECT SUM(t.amount) FROM Transactions t WHERE t.user_id = u.id AND t.type = 'deposit' AND t.status = 'completed') AS total_deposited
     FROM Users u
+    WHERE u.is_active = 1 AND u.is_verified = 1
     ORDER BY total_deposited DESC, deposit_count DESC, u.id DESC
 ");
 

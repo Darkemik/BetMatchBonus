@@ -30,6 +30,7 @@ $withdrawalUsers = $conn->query("
         (SELECT COUNT(*) FROM Transactions t WHERE t.user_id = u.id AND t.type = 'withdrawal') AS total_count,
         (SELECT SUM(t.amount) FROM Transactions t WHERE t.user_id = u.id AND t.type = 'withdrawal' AND t.status = 'completed') AS total_paid
     FROM Users u
+    WHERE u.is_active = 1 AND u.is_verified = 1
     ORDER BY pending_count DESC, total_count DESC, u.id DESC
 ");
 

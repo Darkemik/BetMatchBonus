@@ -65,6 +65,5 @@ foreach ($admins as $a) {
 
 $checkStmt->close();
 $insertStmt->close();
-$conn->close();
 
 echo "\nDone. Inserted: $inserted, Skipped: $skipped\n";
