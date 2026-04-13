@@ -648,3 +648,31 @@ ALTER TABLE BonusCodes
   ADD COLUMN IF NOT EXISTS admin_force_active TINYINT(1) NOT NULL DEFAULT 0
   COMMENT 'admin kézi felülírás (hétvégén is aktív)'
   AFTER per_user_limit;
+
+-- ============================================================
+-- SystemSettings — Rendszerbeállítások (admin felületről módosítható)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS SystemSettings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    setting_key VARCHAR(100) NOT NULL UNIQUE,
+    setting_value TEXT,
+    description VARCHAR(255) DEFAULT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT IGNORE INTO SystemSettings (setting_key, setting_value, description) VALUES
+    ('min_deposit',             '3000',   'Minimum befizetés (Ft)'),
+    ('max_deposit',             '600000', 'Maximum befizetés (Ft)'),
+    ('min_withdrawal',          '6000',   'Minimum kifizetés (Ft)'),
+    ('max_withdrawal',          '50000',  'Maximum kifizetés (Ft)'),
+    ('min_bet_amount',          '100',    'Minimum tét összeg (Ft)'),
+    ('min_password_length',     '7',      'Minimum jelszóhossz'),
+    ('min_user_age',            '18',     'Minimum regisztrációs kor'),
+    ('min_phone_length',        '11',     'Minimum telefonszám hossz'),
+    ('session_timeout_minutes', '30',     'Session timeout (perc)'),
+    ('max_login_attempts',      '3',      'Maximum bejelentkezési próbálkozás'),
+    ('login_lockout_minutes',   '60',     'Zárolás időtartama (perc)'),
+    ('recaptcha_threshold',     '0.5',    'reCAPTCHA küszöbérték'),
+    ('daily_tip_multiplier',    '1.2',    'Napi tipp szorzó'),
+    ('odds_pyramid_multiplier', '1.3',    'Odds piramis szorzó'),
+    ('min_pyramid_selections',  '6',      'Minimum piramis választás');

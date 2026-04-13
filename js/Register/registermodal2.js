@@ -201,7 +201,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     populateYears();
     populateMonths();
-    populateDays(yearSelect.value, monthSelect.value);
+    if (yearSelect && monthSelect) {
+        populateDays(yearSelect.value, monthSelect.value);
+    }
 
     if (yearSelect && monthSelect && daySelect) {
         yearSelect.addEventListener('change', function () {

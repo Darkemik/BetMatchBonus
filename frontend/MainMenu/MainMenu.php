@@ -160,17 +160,17 @@ require_once "../../backend/connect.php";
   <?php include '../../frontend/Components/registermodal.php';?>
   <?php include '../../frontend/Components/registermodal2.php'; ?>
   <?php include '../../frontend/Components/forgotmypassword.php'; ?>
-  <script src="../../js/Main/auth_ui.js"></script>
+  <script src="../../js/Main/auth_ui.js?v=<?= time() ?>"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="../../js/Login/loginmodal.js"></script>
-  <script src="../../js/Register/registermodal.js"></script>
-  <script src="../../js/Register/registermodal2.js"></script>
-  <script src="../../js/Forgotmypassword/forgotmypassword.js"></script>
-  <script src="../../js/Main/language.js"></script>
-  <script src="../../js/Main/layout.js"></script>
-  <script src="../../js/Main/popup.js"></script>
-  <script src="../../js/Betslip/betslip.js"></script>
-  <script src="../../js/MainMenu/main.js"></script>
+  <script src="../../js/Login/loginmodal.js?v=<?= time() ?>"></script>
+  <script src="../../js/Register/registermodal.js?v=<?= time() ?>"></script>
+  <script src="../../js/Register/registermodal2.js?v=<?= time() ?>"></script>
+  <script src="../../js/Forgotmypassword/forgotmypassword.js?v=<?= time() ?>"></script>
+  <script src="../../js/Main/language.js?v=<?= time() ?>"></script>
+  <script src="../../js/Main/layout.js?v=<?= time() ?>"></script>
+  <script src="../../js/Main/popup.js?v=<?= time() ?>"></script>
+  <script src="../../js/Betslip/betslip.js?v=<?= time() ?>"></script>
+  <script src="../../js/MainMenu/main.js?v=<?= time() ?>"></script>
 
   <?php include '../../frontend/Components/chatbot.php'; ?>
 </body>

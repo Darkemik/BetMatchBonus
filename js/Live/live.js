@@ -769,13 +769,21 @@
     // ===== INICIALIZÁLÁS =====
     console.log('[LIVE.JS] Az oldal inicializálása...');
 
-    // Háttér szinkron (API → DB)
+    // Háttér szinkron (API → DB) — throttled
     function syncFromApi() {
         fetch('../../backend/refresh_all.php', { method: 'GET' })
             .catch(err => console.warn('[SYNC] Hálózati hiba:', err));
     }
-    syncFromApi();
-    setInterval(syncFromApi, 60000);
+    function throttledSync() {
+        var SYNC_INTERVAL_MS = 120000;
+        var lastSync = parseInt(localStorage.getItem('bmb_last_sync') || '0', 10);
+        var now = Date.now();
+        if (now - lastSync < SYNC_INTERVAL_MS) return;
+        localStorage.setItem('bmb_last_sync', String(now));
+        syncFromApi();
+    }
+    setTimeout(throttledSync, 5000);
+    setInterval(throttledSync, 120000);
 
     // First: fetch main menu sports list, then live sport counts
     fetch('../../backend/ApiRequest/get_sidebar_sports.php')

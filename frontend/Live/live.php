@@ -146,15 +146,15 @@ require_once "../../backend/connect.php";
 
     <?php include '../../frontend/Components/footer.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../../js/Login/loginmodal.js"></script>
-    <script src="../../js/Register/registermodal.js"></script>
-    <script src="../../js/Register/registermodal2.js"></script>
-    <script src="../../js/Main/language.js"></script>
-    <script src="../../js/Main/layout.js"></script>
-    <script src="../../js/Main/popup.js"></script>
-    <script src="../../js/Betslip/betslip.js"></script>
-    <script src="../../js/Main/auth_ui.js"></script>
-    <script src="../../js/Live/live.js"></script>
+    <script src="../../js/Login/loginmodal.js?v=<?= time() ?>"></script>
+    <script src="../../js/Register/registermodal.js?v=<?= time() ?>"></script>
+    <script src="../../js/Register/registermodal2.js?v=<?= time() ?>"></script>
+    <script src="../../js/Main/language.js?v=<?= time() ?>"></script>
+    <script src="../../js/Main/layout.js?v=<?= time() ?>"></script>
+    <script src="../../js/Main/popup.js?v=<?= time() ?>"></script>
+    <script src="../../js/Betslip/betslip.js?v=<?= time() ?>"></script>
+    <script src="../../js/Main/auth_ui.js?v=<?= time() ?>"></script>
+    <script src="../../js/Live/live.js?v=<?= time() ?>"></script>
     <?php include '../../frontend/Components/loginmodal.php'; ?>
     <?php include '../../frontend/Components/registermodal.php'; ?>
     <?php include '../../frontend/Components/registermodal2.php'; ?>

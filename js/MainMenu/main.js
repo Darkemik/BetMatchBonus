@@ -1082,10 +1082,18 @@ document.addEventListener('DOMContentLoaded', function () {
           .catch(err => console.warn('[SYNC] Hálózati hiba:', err));
   }
 
-  // Első betöltéskor azonnal szinkronizálunk
-  syncFromApi();
-  // Majd 60 másodpercenként
-  setInterval(syncFromApi, 60000);
+  // Első betöltéskor késleltetve szinkronizálunk (ne blokkolja a UI betöltést)
+  // + localStorage throttle: max 2 percenként egyszer
+  function throttledSync() {
+      var SYNC_INTERVAL_MS = 120000;
+      var lastSync = parseInt(localStorage.getItem('bmb_last_sync') || '0', 10);
+      var now = Date.now();
+      if (now - lastSync < SYNC_INTERVAL_MS) return;
+      localStorage.setItem('bmb_last_sync', String(now));
+      syncFromApi();
+  }
+  setTimeout(throttledSync, 5000);
+  setInterval(throttledSync, 120000);
 
   // ========== AUTO REFRESH (30 másodpercenként, DB → UI) ==========
   setInterval(() => {

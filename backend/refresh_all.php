@@ -49,6 +49,13 @@ try {
         require_once __DIR__ . '/DataBase/seed_admins.php';
         $results[] = ['step' => 'Seed: AdminUsers', 'status' => 'ok'];
     }
+
+    $needSettings = $conn->query("SHOW TABLES LIKE 'SystemSettings'")->num_rows === 0
+                    || $conn->query("SELECT 1 FROM SystemSettings LIMIT 1")->num_rows === 0;
+    if ($needSettings) {
+        require_once __DIR__ . '/DataBase/seed_system_settings.php';
+        $results[] = ['step' => 'Seed: SystemSettings', 'status' => 'ok'];
+    }
 } catch (Exception $e) {
     $results[] = ['step' => 'Seed check', 'status' => 'error', 'message' => $e->getMessage()];
 }

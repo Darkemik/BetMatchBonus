@@ -196,7 +196,7 @@ $stmt = $conn->prepare("
 
 if (!$stmt) {
     echo '<div class=\"no-matches\">Hiba az adatbázis lekérdezésnél.</div>';
-    exit;
+    return;
 }
 
 $stmt->bind_param($bindTypes, ...$bindParams);
@@ -257,7 +257,7 @@ $stmt->close();
 
 if (empty($leagues)) {
     echo '<div class="no-matches"><i class="fas fa-futbol" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i><span data-i18n="live.noMatchesForSport">Jelenleg nincs elo meccs ehhez a sporthoz.</span></div>';
-    exit;
+    return;
 }
 
 // Bajnokság csoportosítás minden sportnál

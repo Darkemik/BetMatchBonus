@@ -13,16 +13,31 @@ function get_setting(string $key, $default = null) {
     }
 
     static $cache = [];
+    static $tableExists = null;
 
     if (isset($cache[$key])) {
         return $cache[$key];
     }
 
-    $stmt = $conn->prepare("SELECT setting_value FROM SystemSettings WHERE setting_key = ?");
-    $stmt->bind_param("s", $key);
-    $stmt->execute();
-    $row = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
+    // Ellenőrizzük egyszer, hogy a tábla létezik-e
+    if ($tableExists === null) {
+        $check = $conn->query("SHOW TABLES LIKE 'SystemSettings'");
+        $tableExists = $check && $check->num_rows > 0;
+    }
+
+    if (!$tableExists) {
+        return $default;
+    }
+
+    try {
+        $stmt = $conn->prepare("SELECT setting_value FROM SystemSettings WHERE setting_key = ?");
+        $stmt->bind_param("s", $key);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+    } catch (Throwable $e) {
+        return $default;
+    }
 
     $val = $row ? $row['setting_value'] : $default;
     $cache[$key] = $val;
