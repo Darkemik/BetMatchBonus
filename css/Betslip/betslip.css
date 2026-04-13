@@ -391,13 +391,78 @@
     font-size: 12px;
     padding: 6px 10px;
     border-radius: 6px;
-    margin-top: 6px;
+    margin-bottom: 8px;
     text-align: center;
     font-weight: 600;
 }
 
 .daily-tip-boost-indicator i {
     margin-right: 4px;
+}
+
+.odds-pyramid-indicator {
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.odds-pyramid-indicator.pyramid-progress {
+    background: linear-gradient(135deg, rgba(156, 39, 176, 0.08), rgba(103, 58, 183, 0.08));
+    border: 1px solid rgba(156, 39, 176, 0.25);
+    color: #b39ddb;
+}
+
+.odds-pyramid-indicator.pyramid-active {
+    background: linear-gradient(135deg, rgba(156, 39, 176, 0.18), rgba(103, 58, 183, 0.18));
+    border: 1px solid rgba(156, 39, 176, 0.5);
+    color: #ce93d8;
+    animation: pyramidPulse 2s ease-in-out 1;
+}
+
+@keyframes pyramidPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(156, 39, 176, 0); }
+    50% { box-shadow: 0 0 12px 2px rgba(156, 39, 176, 0.35); }
+}
+
+.pyramid-info-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.pyramid-info-row i {
+    font-size: 14px;
+}
+
+.pyramid-progress-bar-wrap {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    height: 6px;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+.pyramid-progress-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+}
+
+.pyramid-progress .pyramid-progress-bar {
+    background: linear-gradient(90deg, #7e57c2, #ab47bc);
+}
+
+.pyramid-active .pyramid-progress-bar {
+    background: linear-gradient(90deg, #ab47bc, #ce93d8);
+}
+
+.pyramid-count {
+    text-align: right;
+    font-size: 11px;
+    opacity: 0.7;
 }
 
 /* ===== TICKET FOOTER ===== */
@@ -852,10 +917,46 @@
     font-size: 12px;
 }
 
+.elozmeny-bonus-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(124, 58, 237, 0.35));
+    border: 1px solid rgba(124, 58, 237, 0.5);
+    color: #b794f6;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    font-weight: 700;
+    vertical-align: middle;
+}
+
 .elozmeny-match {
     color: #ddd;
     font-weight: 500;
     margin-bottom: 2px;
+}
+
+.elozmeny-match.elozmeny-match-clickable {
+    cursor: pointer;
+    transition: color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.elozmeny-match.elozmeny-match-clickable:hover {
+    color: #e94560;
+}
+
+.elozmeny-match-link-icon {
+    font-size: 9px;
+    opacity: 0.4;
+    margin-left: auto;
+    transition: opacity 0.2s ease;
+}
+
+.elozmeny-match-clickable:hover .elozmeny-match-link-icon {
+    opacity: 1;
 }
 
 .elozmeny-market {

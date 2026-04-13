@@ -161,7 +161,7 @@ exit;
 function calculateCashout($conn, $ticketId, $userId) {
     // Ticket lekérése
     $stmtTicket = $conn->prepare("
-        SELECT id, stake, total_odds, potential_win, status, cashout_amount, cashout_at
+        SELECT id, stake, bonus_stake, total_odds, potential_win, status, cashout_amount, cashout_at
         FROM Tickets
         WHERE id = ? AND user_id = ?
     ");
@@ -172,6 +172,11 @@ function calculateCashout($conn, $ticketId, $userId) {
 
     if (!$ticket) {
         return ['status' => 'error', 'available' => false, 'message' => 'Szelvény nem található'];
+    }
+
+    // Bónusz pénzből tett fogadások nem cashoutolhatók
+    if ((float)($ticket['bonus_stake'] ?? 0) > 0) {
+        return ['status' => 'ok', 'available' => false, 'message' => 'Bónusz egyenlegből tett fogadás nem cashoutolható'];
     }
 
     // Már cash out-olt

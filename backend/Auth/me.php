@@ -61,7 +61,7 @@ if (isset($_SESSION['user_id'])) {
     exit;
   }
   
-  $stmt = $conn->prepare("SELECT id, username, email, full_name, balance FROM Users WHERE id = ? LIMIT 1");
+  $stmt = $conn->prepare("SELECT id, username, email, full_name, balance, bonus_balance FROM Users WHERE id = ? LIMIT 1");
   $stmt->bind_param("i", $userId);
   $stmt->execute();
   $res = $stmt->get_result();
@@ -88,7 +88,7 @@ if (isset($_COOKIE['remember_token'])) {
   $rememberToken = $_COOKIE['remember_token'];
   $tokenHash = hash('sha256', $rememberToken);
   
-  $stmt = $conn->prepare("SELECT id, username, email, full_name, balance, remember_expiry FROM Users 
+  $stmt = $conn->prepare("SELECT id, username, email, full_name, balance, bonus_balance, remember_expiry FROM Users 
                           WHERE remember_token = ? AND remember_expiry > NOW() AND is_active = 1 LIMIT 1");
   $stmt->bind_param("s", $tokenHash);
   $stmt->execute();
@@ -115,6 +115,7 @@ if (isset($_COOKIE['remember_token'])) {
       'email' => $user['email'],
       'full_name' => $user['full_name'],
       'balance' => $user['balance'],
+      'bonus_balance' => $user['bonus_balance'] ?? 0,
       'session_bet_total' => (float)($_SESSION['session_bet_total'] ?? 0.0),
       'login_started_at' => (int)($_SESSION['login_started_at'] ?? time()),
       'session_remaining' => $sessionRemaining,

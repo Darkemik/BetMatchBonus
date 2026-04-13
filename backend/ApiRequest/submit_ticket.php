@@ -30,8 +30,10 @@ $totalOdds = (float)$input['totalOdds'];
 $potentialWin = (float)$input['potentialWin'];
 $items = $input['items'] ?? [];
 $useFreeBet = !empty($input['useFreeBet']);
+$useBonusBet = !empty($input['useBonus']);
 $freeBetUserBonusId = isset($input['freeBetUserBonusId']) ? (int)$input['freeBetUserBonusId'] : 0;
 $hasDailyTipBoost = !empty($input['hasDailyTipBoost']);
+$hasOddsPyramidBoost = !empty($input['hasOddsPyramidBoost']);
 $selectionCount = count($items);
 $ticketMinOdds = null;
 $calculatedTotalOdds = 1.0;
@@ -40,6 +42,7 @@ $allSelectionsResolved = true;
 $hasBonusBalance = false;
 $hasWinningsBalance = false;
 $deductFromBalance = 0.0;
+$deductFromDeposited = 0.0;
 $deductFromWinnings = 0.0;
 $deductFromBonus = 0.0;
 $freeBetToConsume = 0.0;
@@ -101,6 +104,13 @@ if ($dailyTipBoostVerified) {
     $calculatedTotalOdds = round($calculatedTotalOdds * 1.2, 2);
 }
 
+// Oddspiramis: 1.3x szorzó ha 6+ fogadás van a szelvényen (szerver oldali ellenőrzés)
+$oddsPyramidBoostVerified = false;
+if ($hasOddsPyramidBoost && $selectionCount >= 6) {
+    $oddsPyramidBoostVerified = true;
+    $calculatedTotalOdds = round($calculatedTotalOdds * 1.3, 2);
+}
+
 $effectiveTotalOdds = max(round($totalOdds, 2), $calculatedTotalOdds);
 
 // Wallet ellenőrzése
@@ -140,7 +150,20 @@ $mainBalance = (float)($wallet['balance'] ?? 0);
 $bonusBalance = $hasBonusBalance ? (float)($wallet['bonus_balance'] ?? 0) : 0.0;
 $winningsBalance = $hasWinningsBalance ? (float)($wallet['winnings_balance'] ?? 0) : 0.0;
 $depositedPart = max(0.0, $mainBalance - max(0.0, $winningsBalance));
-$availableForBet = $mainBalance + $bonusBalance;
+
+// Bónusz és rendes pénz nem keverhető! A felhasználó választ.
+if ($useBonusBet) {
+    $availableForBet = $bonusBalance;
+} else {
+    $availableForBet = $mainBalance;
+}
+
+// Bónusz bet és free bet nem kombinálható
+if ($useBonusBet && $useFreeBet) {
+    http_response_code(400);
+    echo json_encode(['status' => 'error', 'message' => 'Bónusz egyenleg és ingyenes fogadás nem használható egyszerre.']);
+    exit;
+}
 
 if ($useFreeBet) {
     if ($freeBetUserBonusId <= 0) {
@@ -207,29 +230,59 @@ if ($isFreeBetTicket) {
     $potentialWin = round($stake * $effectiveTotalOdds, 2);
 }
 
+// Bónusz szelvénynél: max nyeremény cap (max_win_multiplier × granted_amount)
+if ($useBonusBet && !$isFreeBetTicket) {
+    $capStmt = $conn->prepare("
+        SELECT ub.granted_amount, bc.max_win_multiplier
+        FROM UserBonuses ub
+        INNER JOIN BonusCodes bc ON bc.id = ub.bonus_id
+        WHERE ub.user_id = ?
+          AND ub.status = 'ACTIVE'
+          AND ub.used = 0
+          AND COALESCE(ub.granted_amount, 0) > 0
+        ORDER BY ub.id DESC
+        LIMIT 1
+    ");
+    $capStmt->bind_param("i", $userId);
+    $capStmt->execute();
+    $capRow = $capStmt->get_result()->fetch_assoc();
+    $capStmt->close();
+
+    if ($capRow) {
+        $maxWinMultiplier = (float)($capRow['max_win_multiplier'] ?? 5.0);
+        $grantedAmount = (float)$capRow['granted_amount'];
+        $maxWin = $grantedAmount * $maxWinMultiplier; // pl. 5000 * 5 = 25000
+        if ($potentialWin > $maxWin) {
+            $potentialWin = $maxWin;
+        }
+    }
+}
+
 if (!$wallet || (!$isFreeBetTicket && $availableForBet < $stake)) {
     http_response_code(400);
-    echo json_encode(['status' => 'error', 'message' => 'Nincs elegendő egyenleg! Kérjük, töltse fel az accountot.']);
+    $msg = $useBonusBet
+        ? 'Nincs elegendő bónusz egyenleg!'
+        : 'Nincs elegendő egyenleg! Kérjük, töltse fel az accountot.';
+    echo json_encode(['status' => 'error', 'message' => $msg]);
     exit;
 }
 
-// Levonási prioritás:
-// 1) befizetett egyenleg (balance - winnings_balance),
-// 2) nyeremény egyenleg (winnings_balance),
-// 3) bónusz egyenleg (bonus_balance).
+// Levonás: bónusz VAGY rendes egyenleg (nem keverhető!)
 $remainingStake = $isFreeBetTicket ? 0.0 : $stake;
 
-$deductFromDeposited = min($remainingStake, $depositedPart);
-$remainingStake -= $deductFromDeposited;
+if ($useBonusBet) {
+    // Bónusz egyenlegből fogadás
+    $deductFromBonus = $remainingStake;
+    $remainingStake = 0.0;
+} else {
+    // Rendes egyenlegből fogadás (befizetett → nyeremény prioritás)
+    $deductFromDeposited = min($remainingStake, $depositedPart);
+    $remainingStake -= $deductFromDeposited;
 
-if ($hasWinningsBalance && $remainingStake > 0) {
-    $deductFromWinnings = min($remainingStake, max(0.0, $winningsBalance));
-    $remainingStake -= $deductFromWinnings;
-}
-
-if ($hasBonusBalance && $remainingStake > 0) {
-    $deductFromBonus = min($remainingStake, max(0.0, $bonusBalance));
-    $remainingStake -= $deductFromBonus;
+    if ($hasWinningsBalance && $remainingStake > 0) {
+        $deductFromWinnings = min($remainingStake, max(0.0, $winningsBalance));
+        $remainingStake -= $deductFromWinnings;
+    }
 }
 
 $deductFromBalance = $deductFromDeposited + $deductFromWinnings;
@@ -248,10 +301,10 @@ try {
 
     // 1. TICKET MENTÉSE
     $stmtTicket = $conn->prepare("
-        INSERT INTO Tickets (user_id, stake, total_odds, potential_win, status, created_at, updated_at)
-        VALUES (?, ?, ?, ?, 'OPEN', NOW(), NOW())
+        INSERT INTO Tickets (user_id, stake, bonus_stake, total_odds, potential_win, status, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, 'OPEN', NOW(), NOW())
     ");
-    $stmtTicket->bind_param("iddd", $userId, $stake, $totalOdds, $potentialWin);
+    $stmtTicket->bind_param("idddd", $userId, $stake, $deductFromBonus, $totalOdds, $potentialWin);
     $stmtTicket->execute();
     $ticketId = $stmtTicket->insert_id;
     $stmtTicket->close();
@@ -517,6 +570,8 @@ try {
     }
 
     // 7. AKTÍV BÓNUSZOK FORGATÁSI HALADÁSÁNAK FRISSÍTÉSE
+    // Csak bónusz egyenlegből tett fogadás számít bele a forgatási követelménybe!
+    if ($useBonusBet && $deductFromBonus > 0) {
     $stmtUpdateWagering = $conn->prepare(" 
         UPDATE UserBonuses ub
         INNER JOIN BonusCodes bc ON bc.id = ub.bonus_id
@@ -553,80 +608,61 @@ try {
     $stmtCompleteBonus->execute();
     $stmtCompleteBonus->close();
 
-    // Általános szabály minden BONUS_MONEY bónuszra:
-    // ha nincs több aktív, forgatást igénylő bónusz, akkor a megmaradt bónusz egyenleg
-    // átkerül a nyereményegyenlegbe (kiutalhatóvá válik).
-    $hasWinningsBalanceForTransfer = false;
-    $hasBonusBalanceForTransfer = false;
+    // Ha nincs több aktív, forgatást igénylő bónusz, a megmaradt bónusz egyenleg
+    // átkerül a rendes egyenlegbe (kiutalhatóvá válik).
+    $activeRolloverStmt = $conn->prepare(" 
+        SELECT 1
+        FROM UserBonuses ub
+        INNER JOIN BonusCodes bc ON bc.id = ub.bonus_id
+        WHERE ub.user_id = ?
+          AND ub.status = 'ACTIVE'
+          AND ub.used = 0
+          AND UPPER(COALESCE(bc.bet_reward_type, '')) = 'BONUS_MONEY'
+          AND COALESCE(ub.wagering_required, 0) > COALESCE(ub.wagering_progress, 0)
+          AND (ub.expires_at IS NULL OR ub.expires_at > NOW())
+        LIMIT 1
+    ");
+    $activeRolloverStmt->bind_param("i", $userId);
+    $activeRolloverStmt->execute();
+    $activeRolloverRes = $activeRolloverStmt->get_result();
+    $hasActiveRolloverBonus = $activeRolloverRes->num_rows > 0;
+    $activeRolloverStmt->close();
 
-    $winningsTransferColStmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Users' AND COLUMN_NAME = 'winnings_balance'");
-    $winningsTransferColStmt->execute();
-    $winningsTransferColRes = $winningsTransferColStmt->get_result()->fetch_assoc();
-    $winningsTransferColStmt->close();
-    if ($winningsTransferColRes && (int)$winningsTransferColRes['cnt'] > 0) {
-        $hasWinningsBalanceForTransfer = true;
-    }
+    if (!$hasActiveRolloverBonus) {
+        $userBonusBalStmt = $conn->prepare("SELECT COALESCE(bonus_balance, 0) AS bonus_balance FROM Users WHERE id = ? LIMIT 1");
+        $userBonusBalStmt->bind_param("i", $userId);
+        $userBonusBalStmt->execute();
+        $userBonusBalRes = $userBonusBalStmt->get_result()->fetch_assoc();
+        $userBonusBalStmt->close();
 
-    $bonusTransferColStmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Users' AND COLUMN_NAME = 'bonus_balance'");
-    $bonusTransferColStmt->execute();
-    $bonusTransferColRes = $bonusTransferColStmt->get_result()->fetch_assoc();
-    $bonusTransferColStmt->close();
-    if ($bonusTransferColRes && (int)$bonusTransferColRes['cnt'] > 0) {
-        $hasBonusBalanceForTransfer = true;
-    }
-
-    if ($hasWinningsBalanceForTransfer && $hasBonusBalanceForTransfer) {
-        $activeRolloverStmt = $conn->prepare(" 
-            SELECT 1
-            FROM UserBonuses ub
-            INNER JOIN BonusCodes bc ON bc.id = ub.bonus_id
-            WHERE ub.user_id = ?
-              AND ub.status = 'ACTIVE'
-              AND ub.used = 0
-              AND UPPER(COALESCE(bc.bet_reward_type, '')) = 'BONUS_MONEY'
-              AND COALESCE(ub.wagering_required, 0) > COALESCE(ub.wagering_progress, 0)
-              AND (ub.expires_at IS NULL OR ub.expires_at > NOW())
-            LIMIT 1
-        ");
-        $activeRolloverStmt->bind_param("i", $userId);
-        $activeRolloverStmt->execute();
-        $activeRolloverRes = $activeRolloverStmt->get_result();
-        $hasActiveRolloverBonus = $activeRolloverRes->num_rows > 0;
-        $activeRolloverStmt->close();
-
-        if (!$hasActiveRolloverBonus) {
-            $userBonusBalStmt = $conn->prepare("SELECT COALESCE(bonus_balance, 0) AS bonus_balance FROM Users WHERE id = ? LIMIT 1");
-            $userBonusBalStmt->bind_param("i", $userId);
-            $userBonusBalStmt->execute();
-            $userBonusBalRes = $userBonusBalStmt->get_result()->fetch_assoc();
-            $userBonusBalStmt->close();
-
-            $currentBonusBalance = (float)($userBonusBalRes['bonus_balance'] ?? 0);
-            if ($currentBonusBalance > 0) {
-                $moveToWinningsStmt = $conn->prepare(" 
-                    UPDATE Users
-                    SET bonus_balance = bonus_balance - ?,
-                        winnings_balance = winnings_balance + ?,
-                        balance = balance + ?
-                    WHERE id = ?
-                ");
-                $moveToWinningsStmt->bind_param("dddi", $currentBonusBalance, $currentBonusBalance, $currentBonusBalance, $userId);
-                $moveToWinningsStmt->execute();
-                $moveToWinningsStmt->close();
-            }
+        $currentBonusBalance = (float)($userBonusBalRes['bonus_balance'] ?? 0);
+        if ($currentBonusBalance > 0) {
+            $moveToWinningsStmt = $conn->prepare(" 
+                UPDATE Users
+                SET bonus_balance = bonus_balance - ?,
+                    winnings_balance = winnings_balance + ?,
+                    balance = balance + ?
+                WHERE id = ?
+            ");
+            $moveToWinningsStmt->bind_param("dddi", $currentBonusBalance, $currentBonusBalance, $currentBonusBalance, $userId);
+            $moveToWinningsStmt->execute();
+            $moveToWinningsStmt->close();
         }
     }
+    } // end if ($useBonusBet) — forgatás + transfer blokk
 
     // Aktuális egyenleg lekérdezése azonnali frontend frissítéshez
     $newBalance = null;
-    $stmtBalance = $conn->prepare("SELECT balance FROM Users WHERE id = ? LIMIT 1");
+    $newBonusBalance = null;
+    $stmtBalance = $conn->prepare("SELECT balance, bonus_balance FROM Users WHERE id = ? LIMIT 1");
     $stmtBalance->bind_param("i", $userId);
     $stmtBalance->execute();
     $balanceRes = $stmtBalance->get_result();
     $balanceRow = $balanceRes->fetch_assoc();
     $stmtBalance->close();
-    if ($balanceRow && isset($balanceRow['balance'])) {
-        $newBalance = (float)$balanceRow['balance'];
+    if ($balanceRow) {
+        $newBalance = (float)($balanceRow['balance'] ?? 0);
+        $newBonusBalance = (float)($balanceRow['bonus_balance'] ?? 0);
     }
 
     // TRANZAKCIÓ COMMIT
@@ -644,7 +680,9 @@ try {
         'stake' => $stake,
         'potential_win' => $potentialWin,
         'new_balance' => $newBalance,
-        'free_bet_used' => $isFreeBetTicket
+        'new_bonus_balance' => $newBonusBalance,
+        'free_bet_used' => $isFreeBetTicket,
+        'bonus_bet_used' => $useBonusBet
     ]);
 
 } catch (Exception $e) {

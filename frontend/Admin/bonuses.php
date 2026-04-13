@@ -7,18 +7,63 @@ date_default_timezone_set('Europe/Budapest');
 
 $role = $_SESSION['admin_role'];
 
-// Hétköznap-only bónuszok automatikus aktiválása hétfő 00:01 - péntek 23:59 között
-$isWeekday = ((int)date('N') <= 5);
-$isAfterDailyRefresh = (date('H:i') >= '00:01');
-$weekdayActive = ($isWeekday && $isAfterDailyRefresh) ? 1 : 0;
-$conn->query("UPDATE BonusCodes SET is_active = {$weekdayActive} WHERE valid_weekdays_only = 1 OR code = 'BONUSZHETKOZNAP5K'");
+// Hétköznap-only bónuszok automatikus aktiválása: daily_start_time figyelembevételével
+// admin_force_active = 1 esetén nem írjuk felül
+$isWeekday = ((int)date('N') <= 5) ? 1 : 0;
+if ($isWeekday) {
+    $conn->query("UPDATE BonusCodes SET admin_force_active = 0 WHERE valid_weekdays_only = 1 AND admin_force_active = 1 AND (daily_start_time IS NULL OR CURTIME() >= daily_start_time)");
+}
+$conn->query("
+    UPDATE BonusCodes
+    SET is_active = CASE
+        WHEN admin_force_active = 1 THEN 1
+        WHEN {$isWeekday} = 1 AND (daily_start_time IS NULL OR CURTIME() >= daily_start_time) THEN 1
+        ELSE 0
+    END
+    WHERE valid_weekdays_only = 1
+");
+
+// Bónusz adatok szerkesztése (mentés gombnyomásra)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_bonus_id'])) {
+    $edit_id = (int)$_POST['edit_bonus_id'];
+    $edit_code = isset($_POST['edit_code']) ? trim($_POST['edit_code']) : null;
+    $edit_name = isset($_POST['edit_name']) ? trim($_POST['edit_name']) : '';
+    $edit_desc = isset($_POST['edit_description']) ? trim($_POST['edit_description']) : '';
+    $edit_match_percent = isset($_POST['edit_match_percent']) ? (float)$_POST['edit_match_percent'] : 0;
+    $edit_max_bonus = isset($_POST['edit_max_bonus_amount']) ? (float)$_POST['edit_max_bonus_amount'] : 0;
+    $edit_min_deposit = isset($_POST['edit_min_deposit']) ? (float)$_POST['edit_min_deposit'] : 0;
+    $edit_wagering = isset($_POST['edit_wagering_multiplier']) ? (float)$_POST['edit_wagering_multiplier'] : 0;
+    $edit_max_win = isset($_POST['edit_max_win_multiplier']) ? (float)$_POST['edit_max_win_multiplier'] : 5;
+    $edit_daily_start = isset($_POST['edit_daily_start_time']) ? trim($_POST['edit_daily_start_time']) : null;
+
+    if ($edit_code === '') $edit_code = null;
+    if ($edit_daily_start === '') $edit_daily_start = null;
+
+    $editStmt = $conn->prepare("
+        UPDATE BonusCodes 
+        SET code = ?, name = ?, description = ?, match_percent = ?, max_bonus_amount = ?,
+            min_deposit = ?, wagering_multiplier = ?, max_win_multiplier = ?, daily_start_time = ?
+        WHERE id = ?
+    ");
+    $editStmt->bind_param("sssdddddsi",
+        $edit_code, $edit_name, $edit_desc, $edit_match_percent, $edit_max_bonus,
+        $edit_min_deposit, $edit_wagering, $edit_max_win, $edit_daily_start, $edit_id
+    );
+
+    if ($editStmt->execute()) {
+        $success_msg = "Bónusz (#$edit_id) sikeresen frissítve az adatbázisban!";
+    } else {
+        $error_msg = "Hiba történt a bónusz mentésekor: " . $editStmt->error;
+    }
+    $editStmt->close();
+}
 
 // Gombnyomásra bónusz státusz módosítása (Aktiválás / Inaktiválás)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_bonus_id'])) {
     $bonus_id = (int)$_POST['toggle_bonus_id'];
     
     // Lekérjük a jelenlegi státuszt
-    $stmt = $conn->prepare("SELECT is_active FROM BonusCodes WHERE id = ?");
+    $stmt = $conn->prepare("SELECT is_active, valid_weekdays_only, daily_start_time FROM BonusCodes WHERE id = ?");
     $stmt->bind_param("i", $bonus_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -28,9 +73,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_bonus_id'])) {
     if ($bonus) {
         // Ha 1, akkor 0 lesz, ha 0, akkor 1
         $new_status = (int)$bonus['is_active'] === 1 ? 0 : 1;
+
+        // Ha admin hétköznapi bónuszt aktivál az auto-toggle időablakon kívül → admin_force_active = 1
+        // Ez megakadályozza, hogy az auto-toggle visszakapcsolja inaktívra
+        $adminForce = 0;
+        if ($new_status === 1 && !empty($bonus['valid_weekdays_only'])) {
+            $dailyStart = $bonus['daily_start_time'] ?? null;
+            $isAfterDailyStart = ($dailyStart === null || date('H:i:s') >= $dailyStart);
+            $isInNormalWindow = ($isWeekday && $isAfterDailyStart);
+            if (!$isInNormalWindow) {
+                $adminForce = 1;
+            }
+        }
         
-        $updateStmt = $conn->prepare("UPDATE BonusCodes SET is_active = ? WHERE id = ?");
-        $updateStmt->bind_param("ii", $new_status, $bonus_id);
+        $updateStmt = $conn->prepare("UPDATE BonusCodes SET is_active = ?, admin_force_active = ? WHERE id = ?");
+        $updateStmt->bind_param("iii", $new_status, $adminForce, $bonus_id);
         
         if ($updateStmt->execute()) {
             $success_msg = "Bónusz státusza frissítve lett!";
@@ -91,7 +148,27 @@ $bonuses = $conn->query("
             color: #ffffff !important;
             opacity: 1 !important;
         }
-        .action-cell { text-align: right; width: 150px; } /* Művelet oszlop jobbra igazítása */
+        .action-cell { text-align: right; width: 200px; }
+        .bonus-edit-panel {
+            background: #16213e;
+            border-radius: 10px;
+            padding: 20px;
+            position: sticky;
+            top: 80px;
+            display: none;
+        }
+        .bonus-edit-panel.active { display: block; }
+        .bonus-edit-panel label { color: #aaa; font-size: 0.8rem; margin-bottom: 2px; }
+        .bonus-edit-panel .form-control,
+        .bonus-edit-panel .form-select {
+            background: #0f3460; border: 1px solid #333; color: #fff; font-size: 0.9rem;
+        }
+        .bonus-edit-panel .form-control:focus,
+        .bonus-edit-panel .form-select:focus {
+            background: #0f3460; border-color: #e94560; color: #fff; box-shadow: 0 0 0 0.2rem rgba(233,69,96,.25);
+        }
+        .bonus-edit-panel textarea { resize: vertical; min-height: 100px; }
+        .bonus-edit-panel h5 { color: #e94560; margin-bottom: 16px; }
     </style>
 </head>
 <body>
@@ -151,6 +228,9 @@ $bonuses = $conn->query("
             </div>
         <?php endif; ?>
 
+        <div class="d-flex gap-3">
+        <!-- Bal: Táblázat -->
+        <div style="flex: 1; min-width: 0;">
         <div class="table-responsive shadow-sm" style="border-radius: 8px; overflow: hidden;">
             <table class="table table-dark table-striped table-hover mb-0">
                 <thead>
@@ -186,7 +266,18 @@ $bonuses = $conn->query("
                             </td>
                             <td><span class="badge bg-secondary"><?= htmlspecialchars($b['type_name'] ?? 'N/A') ?></span></td>
                             <td>
-                                <span class="text-success fw-bold"><?= number_format($b['bonus_amount'], 0, ',', ' ') ?> Ft</span><br>
+                                <?php 
+                                    $mp = (float)($b['match_percent'] ?? 0);
+                                    $mb = (float)($b['max_bonus_amount'] ?? 0);
+                                    $ba = (float)($b['bonus_amount'] ?? 0);
+                                ?>
+                                <?php if($mp > 0 && $mb > 0): ?>
+                                    <span class="text-success fw-bold"><?= number_format($mp, 0, ',', ' ') ?>% max <?= number_format($mb, 0, ',', ' ') ?> Ft</span><br>
+                                <?php elseif($ba > 0): ?>
+                                    <span class="text-success fw-bold"><?= number_format($ba, 0, ',', ' ') ?> Ft</span><br>
+                                <?php else: ?>
+                                    <span class="text-muted">-</span><br>
+                                <?php endif; ?>
                                 <span class="text-muted small" style="color: #ffffff !important;">Min. bef: <?= number_format($b['min_deposit'], 0, ',', ' ') ?> Ft</span>
                             </td>
                             <td>
@@ -207,6 +298,7 @@ $bonuses = $conn->query("
                                 <?php endif; ?>
                             </td>
                             <td class="action-cell">
+                                <div class="d-flex flex-column gap-1">
                                 <form method="POST" style="display:inline;">
                                     <input type="hidden" name="toggle_bonus_id" value="<?= $b['id'] ?>">
                                     <?php if((int)$b['is_active'] === 1): ?>
@@ -215,6 +307,19 @@ $bonuses = $conn->query("
                                         <button type="submit" class="btn btn-sm btn-success w-100"><i class="fas fa-power-off"></i> Bekapcsolás</button>
                                     <?php endif; ?>
                                 </form>
+                                <button type="button" class="btn btn-sm btn-outline-warning w-100 btn-edit-bonus"
+                                    data-id="<?= (int)$b['id'] ?>"
+                                    data-code="<?= htmlspecialchars($b['code'] ?? '') ?>"
+                                    data-name="<?= htmlspecialchars($b['name']) ?>"
+                                    data-description="<?= htmlspecialchars($b['description'] ?? '') ?>"
+                                    data-match-percent="<?= (float)($b['match_percent'] ?? 0) ?>"
+                                    data-max-bonus="<?= (float)($b['max_bonus_amount'] ?? 0) ?>"
+                                    data-min-deposit="<?= (float)($b['min_deposit'] ?? 0) ?>"
+                                    data-wagering="<?= (float)($b['wagering_multiplier'] ?? 0) ?>"
+                                    data-max-win="<?= (float)($b['max_win_multiplier'] ?? 5) ?>"
+                                    data-daily-start="<?= htmlspecialchars($b['daily_start_time'] ?? '') ?>"
+                                ><i class="fas fa-edit"></i> Szerkesztés</button>
+                                </div>
                             </td>
                         </tr>
                         <?php endwhile; ?>
@@ -226,10 +331,166 @@ $bonuses = $conn->query("
                 </tbody>
             </table>
         </div>
+        </div><!-- /Bal: Táblázat -->
+
+        <!-- Jobb: Szerkesztő panel -->
+        <div id="editPanel" class="bonus-edit-panel" style="width: 380px; flex-shrink: 0;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="mb-0"><i class="fas fa-edit"></i> Bónusz szerkesztése</h5>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="closeEditPanel">&times;</button>
+            </div>
+            <form method="POST" id="editBonusForm">
+                <input type="hidden" name="edit_bonus_id" id="editBonusId">
+
+                <div class="mb-2">
+                    <label for="editCode">Aktiváló kód</label>
+                    <input type="text" class="form-control form-control-sm" id="editCode" name="edit_code" placeholder="pl. BONUSZHETKOZNAP5K">
+                </div>
+
+                <div class="mb-2">
+                    <label for="editName">Bónusz neve</label>
+                    <input type="text" class="form-control form-control-sm" id="editName" name="edit_name" required>
+                </div>
+
+                <div class="mb-2">
+                    <label for="editDescription">Leírás</label>
+                    <textarea class="form-control form-control-sm" id="editDescription" name="edit_description" rows="4"></textarea>
+                </div>
+
+                <div class="row mb-2">
+                    <div class="col-6">
+                        <label for="editMatchPercent">Bónusz % <small class="text-muted">(pl. 100)</small></label>
+                        <div class="input-group input-group-sm">
+                            <input type="number" step="1" min="0" class="form-control" id="editMatchPercent" name="edit_match_percent">
+                            <span class="input-group-text" style="background:#0f3460;color:#aaa;border-color:#333;">%</span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <label for="editMaxBonus">Max bónusz <small class="text-muted">(Ft)</small></label>
+                        <div class="input-group input-group-sm">
+                            <input type="number" step="100" min="0" class="form-control" id="editMaxBonus" name="edit_max_bonus_amount">
+                            <span class="input-group-text" style="background:#0f3460;color:#aaa;border-color:#333;">Ft</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-2">
+                    <div class="col-6">
+                        <label for="editMinDeposit">Min. befizetés <small class="text-muted">(Ft)</small></label>
+                        <div class="input-group input-group-sm">
+                            <input type="number" step="100" min="0" class="form-control" id="editMinDeposit" name="edit_min_deposit">
+                            <span class="input-group-text" style="background:#0f3460;color:#aaa;border-color:#333;">Ft</span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <label for="editWagering">Forgatás <small class="text-muted">(x-szeres)</small></label>
+                        <div class="input-group input-group-sm">
+                            <input type="number" step="0.5" min="0" class="form-control" id="editWagering" name="edit_wagering_multiplier">
+                            <span class="input-group-text" style="background:#0f3460;color:#aaa;border-color:#333;">x</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-2">
+                    <div class="col-6">
+                        <label for="editMaxWin">Max nyeremény <small class="text-muted">(x-szeres)</small></label>
+                        <div class="input-group input-group-sm">
+                            <input type="number" step="0.5" min="1" class="form-control" id="editMaxWin" name="edit_max_win_multiplier">
+                            <span class="input-group-text" style="background:#0f3460;color:#aaa;border-color:#333;">x</span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <label for="editDailyStart">Napi kezdés</label>
+                        <input type="time" class="form-control form-control-sm" id="editDailyStart" name="edit_daily_start_time">
+                    </div>
+                </div>
+
+                <!-- Előnézet -->
+                <div class="mt-3 p-2 rounded" style="background: #0a1628; font-size: 0.82rem;">
+                    <div class="text-muted mb-1"><i class="fas fa-calculator"></i> Előnézet (számított értékek):</div>
+                    <div id="previewCalc" style="color: #4fc3f7;"></div>
+                </div>
+
+                <button type="submit" class="btn btn-warning w-100 mt-3 fw-bold">
+                    <i class="fas fa-database"></i> Adatbázis frissítése
+                </button>
+            </form>
+        </div>
+        </div><!-- /d-flex gap-3 -->
     </main>
 </div>
 
 <!-- Bootstrap JS for dismissible alerts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('editPanel');
+    const form = document.getElementById('editBonusForm');
+    const fields = {
+        id: document.getElementById('editBonusId'),
+        code: document.getElementById('editCode'),
+        name: document.getElementById('editName'),
+        description: document.getElementById('editDescription'),
+        matchPercent: document.getElementById('editMatchPercent'),
+        maxBonus: document.getElementById('editMaxBonus'),
+        minDeposit: document.getElementById('editMinDeposit'),
+        wagering: document.getElementById('editWagering'),
+        maxWin: document.getElementById('editMaxWin'),
+        dailyStart: document.getElementById('editDailyStart')
+    };
+    const preview = document.getElementById('previewCalc');
+
+    function updatePreview() {
+        const pct = parseFloat(fields.matchPercent.value) || 0;
+        const maxB = parseFloat(fields.maxBonus.value) || 0;
+        const minD = parseFloat(fields.minDeposit.value) || 0;
+        const wag = parseFloat(fields.wagering.value) || 0;
+        const maxW = parseFloat(fields.maxWin.value) || 5;
+
+        let lines = [];
+        if (pct > 0 && maxB > 0) {
+            lines.push(`💰 ${minD.toLocaleString('hu')} Ft befizetés → ${Math.min(minD * pct / 100, maxB).toLocaleString('hu')} Ft bónusz`);
+            lines.push(`💰 Max bónusz: ${maxB.toLocaleString('hu')} Ft (${pct}%)`);
+        }
+        if (wag > 0 && maxB > 0) {
+            lines.push(`🔄 Forgatás: ${(maxB * wag).toLocaleString('hu')} Ft (${wag}x × ${maxB.toLocaleString('hu')})`);
+        }
+        if (maxW > 0 && maxB > 0) {
+            lines.push(`🏆 Max nyeremény: ${(maxB * maxW).toLocaleString('hu')} Ft (${maxW}x)`);
+        }
+        preview.innerHTML = lines.join('<br>') || 'Töltsd ki a mezőket...';
+    }
+
+    // Szerkesztés gomb kezelése
+    document.querySelectorAll('.btn-edit-bonus').forEach(btn => {
+        btn.addEventListener('click', function() {
+            fields.id.value = this.dataset.id;
+            fields.code.value = this.dataset.code;
+            fields.name.value = this.dataset.name;
+            fields.description.value = this.dataset.description;
+            fields.matchPercent.value = this.dataset.matchPercent;
+            fields.maxBonus.value = this.dataset.maxBonus;
+            fields.minDeposit.value = this.dataset.minDeposit;
+            fields.wagering.value = this.dataset.wagering;
+            fields.maxWin.value = this.dataset.maxWin;
+            fields.dailyStart.value = this.dataset.dailyStart || '';
+
+            panel.classList.add('active');
+            updatePreview();
+            panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+
+    // Bezárás
+    document.getElementById('closeEditPanel').addEventListener('click', function() {
+        panel.classList.remove('active');
+    });
+
+    // Előnézet frissítés inputoknál
+    [fields.matchPercent, fields.maxBonus, fields.minDeposit, fields.wagering, fields.maxWin].forEach(el => {
+        el.addEventListener('input', updatePreview);
+    });
+});
+</script>
 </body>
 </html>

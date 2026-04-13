@@ -11,8 +11,27 @@ $user_id = $_SESSION['user_id'];
 $amount = isset($_GET['amount']) ? floatval($_GET['amount']) : 0;
 $method = isset($_GET['method']) ? htmlspecialchars($_GET['method']) : 'visa';
 
+// Regisztrált teljes név lekérése
+$nameStmt = $conn->prepare("SELECT full_name FROM Users WHERE id = ?");
+$nameStmt->bind_param("i", $user_id);
+$nameStmt->execute();
+$nameRow = $nameStmt->get_result()->fetch_assoc();
+$nameStmt->close();
+$registered_full_name = $nameRow['full_name'] ?? '';
+
 if (!in_array($method, ['visa', 'mastercard', 'paypal'])) {
     $method = 'visa';
+}
+
+// Mentett fizetési adatok betöltése
+$savedPayment = null;
+$savedStmt = $conn->prepare("SELECT card_number, card_expiry, paypal_email FROM UserPaymentMethods WHERE user_id = ? AND payment_type = ? AND is_active = 1 ORDER BY updated_at DESC LIMIT 1");
+$savedStmt->bind_param("is", $user_id, $method);
+$savedStmt->execute();
+$savedRow = $savedStmt->get_result()->fetch_assoc();
+$savedStmt->close();
+if ($savedRow) {
+    $savedPayment = $savedRow;
 }
 
 // Validate amount
@@ -281,6 +300,60 @@ if ($amount < 3000 || $amount > 600000) {
             box-shadow: 0 0 0 3px rgba(0,48,135,0.1);
         }
 
+        .save-payment-bar {
+            background: #f0f7ff;
+            border: 1px solid #c2dbf5;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .save-payment-bar label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #333;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+        }
+        .save-payment-bar .form-check-input {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+        }
+        .saved-card-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .saved-card-badge:hover {
+            background: #c8e6c9;
+        }
+        .saved-card-badge .saved-card-delete {
+            color: #c62828;
+            margin-left: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .saved-card-badge .saved-card-delete:hover {
+            color: #b71c1c;
+        }
+
         @media (max-width: 576px) {
             .payment-wrapper { margin: 20px 12px 40px; }
             .credit-card { padding: 20px; }
@@ -359,6 +432,13 @@ if ($amount < 3000 || $amount > 600000) {
                         <i class="fab fa-paypal"></i>
                         <span>Jelentkezz be a PayPal fiókoddal</span>
                     </div>
+                    <?php if ($savedPayment && !empty($savedPayment['paypal_email'])): ?>
+                    <div class="saved-card-badge" id="savedPaypalBadge" title="Kattints a mentett adatok betöltéséhez">
+                        <i class="fab fa-paypal"></i>
+                        Mentett PayPal: <?php echo htmlspecialchars($savedPayment['paypal_email']); ?>
+                        <span class="saved-card-delete" id="deleteSavedPaypal" title="Mentett PayPal törlése"><i class="fas fa-times-circle"></i></span>
+                    </div>
+                    <?php endif; ?>
                     <form method="POST" action="../../backend/ApiRequest/stripe_payment_process.php" id="paypalForm">
                         <input type="hidden" name="amount" value="<?php echo htmlspecialchars($amount); ?>">
                         <input type="hidden" name="payment_method" value="paypal">
@@ -380,6 +460,13 @@ if ($amount < 3000 || $amount > 600000) {
                             </div>
                         </div>
 
+                        <div class="save-payment-bar">
+                            <label>
+                                <input type="checkbox" class="form-check-input" id="savePaypalCheck" <?php echo ($savedPayment && !empty($savedPayment['paypal_email'])) ? 'checked' : ''; ?>>
+                                <span><i class="fas fa-save"></i> PayPal email mentése</span>
+                            </label>
+                        </div>
+
                         <button type="submit" class="pay-btn paypal-btn">
                             <i class="fab fa-paypal"></i>&nbsp; Befizetés — <?php echo number_format($amount, 0, ',', ' '); ?> FT
                         </button>
@@ -388,6 +475,13 @@ if ($amount < 3000 || $amount > 600000) {
                 </div>
             <?php else: ?>
                 <!-- Kártya form (Visa / Mastercard) -->
+                <?php if ($savedPayment && !empty($savedPayment['card_number'])): ?>
+                <div class="saved-card-badge" id="savedCardBadge" title="Kattints a mentett adatok betöltéséhez">
+                    <i class="fas fa-credit-card"></i>
+                    Mentett kártya: •••• <?php echo htmlspecialchars(substr($savedPayment['card_number'], -4)); ?> (<?php echo htmlspecialchars($savedPayment['card_expiry']); ?>)
+                    <span class="saved-card-delete" id="deleteSavedCard" title="Mentett kártya törlése"><i class="fas fa-times-circle"></i></span>
+                </div>
+                <?php endif; ?>
                 <form method="POST" action="../../backend/ApiRequest/stripe_payment_process.php" id="cardForm">
                     <input type="hidden" name="amount" value="<?php echo htmlspecialchars($amount); ?>">
                     <input type="hidden" name="payment_method" value="<?php echo htmlspecialchars($method); ?>">
@@ -395,7 +489,10 @@ if ($amount < 3000 || $amount > 600000) {
                     <div class="mb-3">
                         <label for="cardholderName">Kártyatulajdonos neve</label>
                         <input type="text" class="form-control" id="cardholderName" name="cardholder_name"
-                            placeholder="pl. Kovács János" required maxlength="50">
+                            value="<?php echo htmlspecialchars($registered_full_name); ?>"
+                            readonly style="background:rgba(255,255,255,0.04);cursor:not-allowed;"
+                            required maxlength="50">
+                        <small style="color:#999;font-size:11px;">A regisztrációkor megadott név kerül felhasználásra.</small>
                     </div>
 
                     <div class="mb-3">
@@ -419,6 +516,13 @@ if ($amount < 3000 || $amount > 600000) {
                                     placeholder="•••" maxlength="4" inputmode="numeric" required>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="save-payment-bar">
+                        <label>
+                            <input type="checkbox" class="form-check-input" id="saveCardCheck" <?php echo $savedPayment ? 'checked' : ''; ?>>
+                            <span><i class="fas fa-save"></i> Fizetési adatok mentése</span>
+                        </label>
                     </div>
 
                     <button type="submit" class="pay-btn <?php echo $method; ?>-btn">
@@ -469,7 +573,27 @@ if ($amount < 3000 || $amount > 600000) {
             nameInput.addEventListener('input', function() {
                 nameDisplay.textContent = this.value.toUpperCase() || 'NÉV';
             });
+            // Trigger display update for readonly pre-filled name
+            if (nameInput.value) {
+                nameDisplay.textContent = nameInput.value.toUpperCase();
+            }
         }
+
+        // Auto-fill saved card data
+        <?php if ($savedPayment && !empty($savedPayment['card_number'])): ?>
+        if (numInput) {
+            var savedNum = <?php echo json_encode($savedPayment['card_number']); ?>;
+            var formatted = savedNum.replace(/(\d{4})(?=\d)/g, '$1 ');
+            numInput.value = formatted;
+            numInput.dispatchEvent(new Event('input'));
+        }
+        <?php endif; ?>
+        <?php if ($savedPayment && !empty($savedPayment['card_expiry'])): ?>
+        if (expInput) {
+            expInput.value = <?php echo json_encode($savedPayment['card_expiry']); ?>;
+            expInput.dispatchEvent(new Event('input'));
+        }
+        <?php endif; ?>
 
         // Lejárat formázás
         var expInput = document.getElementById('cardExpiry');
@@ -561,6 +685,12 @@ if ($amount < 3000 || $amount > 600000) {
                 var parts = this.value.split('@');
                 ppHolderDisplay.textContent = (parts[0] || 'PAYPAL FIÓK').toUpperCase();
             });
+
+            // Auto-fill saved PayPal email
+            <?php if ($savedPayment && !empty($savedPayment['paypal_email'])): ?>
+            ppEmail.value = <?php echo json_encode($savedPayment['paypal_email']); ?>;
+            ppEmail.dispatchEvent(new Event('input'));
+            <?php endif; ?>
         }
 
         // Szem gomb
@@ -578,6 +708,137 @@ if ($amount < 3000 || $amount > 600000) {
                     icon.classList.remove('fa-eye-slash');
                     icon.classList.add('fa-eye');
                 }
+            });
+        }
+    })();
+
+    // === Fizetési adatok mentése / törlése ===
+    (function() {
+        var paymentMethod = <?php echo json_encode($method); ?>;
+
+        // Kártya mentés
+        var cardForm = document.getElementById('cardForm');
+        var saveCardCheck = document.getElementById('saveCardCheck');
+        if (cardForm && saveCardCheck) {
+            cardForm.addEventListener('submit', function(e) {
+                if (saveCardCheck.checked) {
+                    var cardNum = (document.getElementById('cardNumber').value || '').replace(/\D/g, '');
+                    var cardExp = document.getElementById('cardExpiry').value || '';
+                    if (cardNum.length === 16 && /^\d{2}\/\d{2}$/.test(cardExp)) {
+                        var fd = new FormData();
+                        fd.append('payment_type', paymentMethod);
+                        fd.append('card_number', cardNum);
+                        fd.append('card_expiry', cardExp);
+                        navigator.sendBeacon('../../backend/ApiRequest/save_payment_method.php', fd);
+                    }
+                } else {
+                    // Ha nincs bepipálva, töröljük a mentett adatot
+                    var fd = new FormData();
+                    fd.append('payment_type', paymentMethod);
+                    navigator.sendBeacon('../../backend/ApiRequest/delete_payment_method.php', fd);
+                }
+            });
+        }
+
+        // PayPal mentés
+        var paypalForm = document.getElementById('paypalForm');
+        var savePaypalCheck = document.getElementById('savePaypalCheck');
+        if (paypalForm && savePaypalCheck) {
+            paypalForm.addEventListener('submit', function(e) {
+                if (savePaypalCheck.checked) {
+                    var ppEmail = (document.getElementById('paypalEmail').value || '').trim();
+                    if (ppEmail) {
+                        var fd = new FormData();
+                        fd.append('payment_type', 'paypal');
+                        fd.append('paypal_email', ppEmail);
+                        navigator.sendBeacon('../../backend/ApiRequest/save_payment_method.php', fd);
+                    }
+                } else {
+                    var fd = new FormData();
+                    fd.append('payment_type', 'paypal');
+                    navigator.sendBeacon('../../backend/ApiRequest/delete_payment_method.php', fd);
+                }
+            });
+        }
+
+        // Mentett kártya törlés gomb
+        var deleteSavedCard = document.getElementById('deleteSavedCard');
+        if (deleteSavedCard) {
+            deleteSavedCard.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (confirm('Biztosan törölni szeretnéd a mentett kártyaadatokat?')) {
+                    fetch('../../backend/ApiRequest/delete_payment_method.php', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: 'payment_type=' + paymentMethod
+                    }).then(function(r) { return r.json(); }).then(function() {
+                        document.getElementById('savedCardBadge').remove();
+                        if (saveCardCheck) saveCardCheck.checked = false;
+                        // Mezők ürítése
+                        var cn = document.getElementById('cardNumber');
+                        var ce = document.getElementById('cardExpiry');
+                        if (cn) { cn.value = ''; cn.dispatchEvent(new Event('input')); }
+                        if (ce) { ce.value = ''; ce.dispatchEvent(new Event('input')); }
+                    });
+                }
+            });
+        }
+
+        // Mentett PayPal törlés gomb
+        var deleteSavedPaypal = document.getElementById('deleteSavedPaypal');
+        if (deleteSavedPaypal) {
+            deleteSavedPaypal.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (confirm('Biztosan törölni szeretnéd a mentett PayPal adatokat?')) {
+                    fetch('../../backend/ApiRequest/delete_payment_method.php', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: 'payment_type=paypal'
+                    }).then(function(r) { return r.json(); }).then(function() {
+                        document.getElementById('savedPaypalBadge').remove();
+                        if (savePaypalCheck) savePaypalCheck.checked = false;
+                        var pe = document.getElementById('paypalEmail');
+                        if (pe) { pe.value = ''; pe.dispatchEvent(new Event('input')); }
+                    });
+                }
+            });
+        }
+
+        // Mentett kártya badge kattintás → adatok betöltése (ha mezők üresek)
+        var savedCardBadge = document.getElementById('savedCardBadge');
+        if (savedCardBadge) {
+            savedCardBadge.addEventListener('click', function(e) {
+                if (e.target.closest('.saved-card-delete')) return;
+                var cn = document.getElementById('cardNumber');
+                var ce = document.getElementById('cardExpiry');
+                <?php if ($savedPayment && !empty($savedPayment['card_number'])): ?>
+                if (cn) {
+                    var savedNum = <?php echo json_encode($savedPayment['card_number']); ?>;
+                    cn.value = savedNum.replace(/(\d{4})(?=\d)/g, '$1 ');
+                    cn.dispatchEvent(new Event('input'));
+                }
+                <?php endif; ?>
+                <?php if ($savedPayment && !empty($savedPayment['card_expiry'])): ?>
+                if (ce) {
+                    ce.value = <?php echo json_encode($savedPayment['card_expiry']); ?>;
+                    ce.dispatchEvent(new Event('input'));
+                }
+                <?php endif; ?>
+            });
+        }
+
+        // Mentett PayPal badge kattintás
+        var savedPaypalBadge = document.getElementById('savedPaypalBadge');
+        if (savedPaypalBadge) {
+            savedPaypalBadge.addEventListener('click', function(e) {
+                if (e.target.closest('.saved-card-delete')) return;
+                var pe = document.getElementById('paypalEmail');
+                <?php if ($savedPayment && !empty($savedPayment['paypal_email'])): ?>
+                if (pe) {
+                    pe.value = <?php echo json_encode($savedPayment['paypal_email']); ?>;
+                    pe.dispatchEvent(new Event('input'));
+                }
+                <?php endif; ?>
             });
         }
     })();

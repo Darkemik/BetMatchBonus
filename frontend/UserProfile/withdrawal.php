@@ -58,6 +58,17 @@ $registered_full_name = $user['full_name'] ?? '';
 $data_verified = (int)($user['data_verified'] ?? 0);
 $stmt->close();
 
+// Mentett banki adatok betöltése
+$savedBankPayment = null;
+$savedBankStmt = $conn->prepare("SELECT account_number FROM UserPaymentMethods WHERE user_id = ? AND payment_type = 'bank_transfer' AND is_active = 1 ORDER BY updated_at DESC LIMIT 1");
+$savedBankStmt->bind_param("i", $user_id);
+$savedBankStmt->execute();
+$savedBankRow = $savedBankStmt->get_result()->fetch_assoc();
+$savedBankStmt->close();
+if ($savedBankRow) {
+    $savedBankPayment = $savedBankRow;
+}
+
 // Függőben lévő kifizetési kérelmek lekérdezése
 $pendingStmt = $conn->prepare("SELECT id, transaction_id, amount, created_at FROM Transactions WHERE user_id = ? AND type = 'withdrawal' AND status = 'pending' ORDER BY created_at DESC");
 $pendingStmt->bind_param("i", $user_id);
@@ -546,16 +557,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                         <!-- Bankszámla adatok -->
                         <div class="withdrawal-section-title" data-i18n="userProfile.withdrawal.bankData">Bankszámla adatok</div>
 
+                        <?php if ($savedBankPayment && !empty($savedBankPayment['account_number'])): ?>
+                        <div class="d-flex align-items-center gap-2 mb-2" id="savedBankBadge" style="cursor:pointer;" title="Kattints a mentett adatok betöltéséhez">
+                            <span style="display:inline-flex;align-items:center;gap:6px;background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:6px;padding:6px 12px;font-size:0.8rem;font-weight:600;">
+                                <i class="fas fa-university"></i>
+                                Mentett bankszámla: <?php echo htmlspecialchars($savedBankPayment['account_number']); ?>
+                                <span id="deleteSavedBank" style="color:#c62828;margin-left:6px;cursor:pointer;font-size:0.9rem;" title="Mentett bankszámla törlése"><i class="fas fa-times-circle"></i></span>
+                            </span>
+                        </div>
+                        <?php endif; ?>
+
                         <div class="withdrawal-field mb-3">
                             <label for="account_holder"><i class="fas fa-user"></i> <span data-i18n="userProfile.withdrawal.accountHolder">Számlán szereplő név</span></label>
-                            <input type="text" class="form-control" id="account_holder" name="account_holder" required placeholder="pl. Kovács János" data-i18n-placeholder="userProfile.withdrawal.accountHolderPlaceholder">
-                            <div class="field-hint" data-i18n="userProfile.withdrawal.accountHolderHint">A névnek egyeznie kell a regisztrációkor megadott teljes névvel.</div>
+                            <input type="text" class="form-control" id="account_holder" name="account_holder" required value="<?php echo htmlspecialchars($registered_full_name); ?>" readonly style="background:#f0f0f0;cursor:not-allowed;">
+                            <div class="field-hint" style="color:#007bff;"><i class="fas fa-info-circle"></i> A regisztrációkor megadott név kerül felhasználásra.</div>
                         </div>
 
                         <div class="withdrawal-field mb-3">
                             <label for="account_number"><i class="fas fa-university"></i> <span data-i18n="userProfile.withdrawal.accountNumber">Bankszámlaszám</span></label>
-                            <input type="text" class="form-control" id="account_number" name="account_number" required placeholder="12345678-87654321" data-i18n-placeholder="userProfile.withdrawal.accountNumberPlaceholder">
+                            <input type="text" class="form-control" id="account_number" name="account_number" required placeholder="12345678-87654321" value="<?php echo $savedBankPayment ? htmlspecialchars($savedBankPayment['account_number']) : ''; ?>" data-i18n-placeholder="userProfile.withdrawal.accountNumberPlaceholder">
                             <div class="field-hint" data-i18n="userProfile.withdrawal.accountNumberHint">16 vagy 24 számjegy (pl: 12345678-87654321)</div>
+                        </div>
+
+                        <!-- Mentés checkbox -->
+                        <div style="background:#f0f7ff;border:1px solid #c2dbf5;border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+                            <label style="font-size:0.85rem;font-weight:600;color:#333;cursor:pointer;display:flex;align-items:center;gap:8px;margin:0;">
+                                <input type="checkbox" class="form-check-input" id="saveBankCheck" style="width:18px;height:18px;margin:0;" <?php echo $savedBankPayment ? 'checked' : ''; ?>>
+                                <span><i class="fas fa-save"></i> Bankszámla adatok mentése</span>
+                            </label>
                         </div>
 
                         <!-- Nyilatkozat -->
@@ -710,6 +739,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                     .catch(() => {});
             }
             setInterval(refreshPending, 15000);
+
+            // === Bankszámla mentés / törlés ===
+            var withdrawalForm = document.getElementById('withdrawalForm');
+            var saveBankCheck = document.getElementById('saveBankCheck');
+
+            if (withdrawalForm && saveBankCheck) {
+                withdrawalForm.addEventListener('submit', function() {
+                    var accNum = (document.getElementById('account_number').value || '').replace(/\s/g, '');
+                    if (saveBankCheck.checked && accNum.length >= 16) {
+                        var fd = new FormData();
+                        fd.append('payment_type', 'bank_transfer');
+                        fd.append('account_number', accNum);
+                        navigator.sendBeacon('../../backend/ApiRequest/save_payment_method.php', fd);
+                    } else if (!saveBankCheck.checked) {
+                        var fd = new FormData();
+                        fd.append('payment_type', 'bank_transfer');
+                        navigator.sendBeacon('../../backend/ApiRequest/delete_payment_method.php', fd);
+                    }
+                });
+            }
+
+            // Mentett bankszámla törlés gomb
+            var deleteSavedBank = document.getElementById('deleteSavedBank');
+            if (deleteSavedBank) {
+                deleteSavedBank.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (confirm('Biztosan törölni szeretnéd a mentett bankszámla adatokat?')) {
+                        fetch('../../backend/ApiRequest/delete_payment_method.php', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                            body: 'payment_type=bank_transfer'
+                        }).then(function(r) { return r.json(); }).then(function() {
+                            var badge = document.getElementById('savedBankBadge');
+                            if (badge) badge.remove();
+                            if (saveBankCheck) saveBankCheck.checked = false;
+                            document.getElementById('account_number').value = '';
+                        });
+                    }
+                });
+            }
         });
     </script>
     <?php include '../../frontend/Components/chatbot.php'; ?>

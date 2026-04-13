@@ -17,22 +17,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return;
                 }
 
+                const hasExistingBonus = bonuses.length > 0 && bonuses[0].hasExistingBonus;
+
                 bonuses.forEach((bonus) => {
                     const box = document.createElement("div");
                     box.classList.add("doboz");
 
-                    let claimButtonText = bonus.code ? `📋 IGÉNYLÉS KÓDDAL (${bonus.code})` : `🎫 IGÉNYLÉS (KÓD NÉLKÜL)`;
-
-                    const buttonHTML = isLoggedIn 
-                        ? `
-                            <button class="doboz-gomb claim-btn" data-code="${bonus.code || ''}">
-                                ${claimButtonText}
-                            </button>
-                            <button class="tobb-info-gomb">
-                                ℹ️ Több információ
-                            </button>
-                        `
-                        : `
+                    let buttonHTML = '';
+                    if (!isLoggedIn) {
+                        buttonHTML = `
                             <button class="doboz-gomb" data-bs-toggle="modal" data-bs-target="#loginModal">
                                 🔐 BEJELENTKEZÉS / REGISZTRÁCIÓ
                             </button>
@@ -40,6 +33,31 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 ℹ️ Több információ
                             </button>
                         `;
+                    } else if (hasExistingBonus) {
+                        buttonHTML = `
+                            <div class="bonus-already-active" style="color: #ffa726; font-size: 0.85rem; font-weight: bold; margin-bottom: 6px;">
+                                ⚠️ Már van aktív bónuszod!
+                            </div>
+                            <button class="tobb-info-gomb">
+                                ℹ️ Több információ
+                            </button>
+                        `;
+                    } else {
+                        const copyBtn = bonus.code 
+                            ? `<button class="doboz-gomb copy-code-btn" data-code="${bonus.code}" style="background: #1a1a2e; border: 1px solid #7c4dff;">
+                                📋 Kód másolása
+                              </button>` 
+                            : '';
+                        buttonHTML = `
+                            ${copyBtn}
+                            <button class="doboz-gomb claim-btn">
+                                ➡️ Igénylés
+                            </button>
+                            <button class="tobb-info-gomb">
+                                ℹ️ Több információ
+                            </button>
+                        `;
+                    }
 
                     box.innerHTML = `
                         <div class="doboz-inner">
@@ -57,8 +75,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     <div class="doboz-gombok">
                                         ${buttonHTML}
                                     </div>
-                                    <div class="claim-message mt-2" 
-                                    style="font-size: 0.8rem; font-weight: bold; display:none;"></div>
                                 </div>
                             </div>
                             <div class="doboz-back">
@@ -76,56 +92,27 @@ document.addEventListener('DOMContentLoaded', async () => {
                     `;
 
                     // Event listenerek hozzáadása
-                    if (isLoggedIn) 
-                    {
-                        const igenylesBtn = box.querySelector(".claim-btn");
-                        const msgDiv = box.querySelector(".claim-message");
-                        const buttonsWrap = box.querySelector(".doboz-gombok");
-
-                        igenylesBtn.addEventListener("click", async () => {
-                            const bCode = igenylesBtn.getAttribute("data-code");
-                            const bonusId = bonus.id;
-
-                            igenylesBtn.disabled = true;
-                            msgDiv.style.display = "block";
-                            msgDiv.style.color = "#ffffff";
-                            msgDiv.innerHTML = "Igénylés folyamatban...";
-
-                            const formData = new FormData();
-                            if (bCode) {
-                                formData.append("bonus_code", bCode);
-                            } else {
-                                formData.append("bonus_id", String(bonusId));
-                            }
-
-                            try {
-                                const claimRes = await fetch("../../backend/ApiRequest/claim_bonus.php", {
-                                    method: "POST",
-                                    body: formData
+                    if (isLoggedIn && !hasExistingBonus) {
+                        // "Kód másolása" gomb
+                        const copyBtn = box.querySelector(".copy-code-btn");
+                        if (copyBtn) {
+                            copyBtn.addEventListener("click", () => {
+                                const code = copyBtn.getAttribute("data-code");
+                                navigator.clipboard.writeText(code).then(() => {
+                                    const origText = copyBtn.innerHTML;
+                                    copyBtn.innerHTML = "✅ Kimásolva!";
+                                    setTimeout(() => { copyBtn.innerHTML = origText; }, 2000);
                                 });
-                                const claimData = await claimRes.json();
+                            });
+                        }
 
-                                msgDiv.style.display = "block";
-                                if (claimData.success) {
-                                    msgDiv.style.color = "#4caf50";
-                                    msgDiv.innerHTML = "Sikeres bónusz igénylés!";
-                                    if (igenylesBtn) {
-                                        igenylesBtn.remove();
-                                    }
-                                    if (buttonsWrap && !buttonsWrap.querySelector(".claim-btn")) {
-                                        buttonsWrap.style.justifyContent = "center";
-                                    }
-                                } else {
-                                    msgDiv.style.color = "#ff6b6b";
-                                    msgDiv.innerHTML = claimData.message || "A bónusz igénylése nem sikerült.";
-                                    igenylesBtn.disabled = false;
-                                }
-                            } catch (e) {
-                                msgDiv.style.color = "#ff6b6b";
-                                msgDiv.innerHTML = "Hálózati hiba történt, próbáld újra.";
-                                igenylesBtn.disabled = false;
-                            }
-                        });
+                        // "Igénylés" gomb → átirányítás a Bónuszaim oldalra
+                        const claimBtn = box.querySelector(".claim-btn");
+                        if (claimBtn) {
+                            claimBtn.addEventListener("click", () => {
+                                window.location.href = "../../frontend/UserProfile/my_bonuses.php";
+                            });
+                        }
                     }
 
                     // Mindkét esetben működik a kártya forgatása

@@ -124,6 +124,19 @@ $savedFiles = [];
 $imageFields = ['id_image_first', 'id_image_second', 'address_image'];
 $allowedMime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
+// Duplikált kép ellenőrzés (hash alapján, szerver oldalon)
+$uploadHashes = [];
+foreach ($imageFields as $field) {
+    if (isset($_FILES[$field]) && $_FILES[$field]['error'] === UPLOAD_ERR_OK) {
+        $fileHash = sha1_file($_FILES[$field]['tmp_name']);
+        if (in_array($fileHash, $uploadHashes, true)) {
+            echo json_encode(['success' => false, 'message' => 'Ugyanazt a képet nem töltheted fel több helyre!']);
+            exit;
+        }
+        $uploadHashes[] = $fileHash;
+    }
+}
+
 foreach ($imageFields as $field) {
     if (isset($_FILES[$field]) && $_FILES[$field]['error'] === UPLOAD_ERR_OK) {
         $finfo = new finfo(FILEINFO_MIME_TYPE);
@@ -203,10 +216,7 @@ $assignStmt = $conn->prepare("
     WHERE bc.is_active = 1
       AND (bc.valid_from IS NULL OR bc.valid_from <= NOW())
       AND (bc.valid_to IS NULL OR bc.valid_to >= NOW())
-      AND (
-          bc.auto_assign = 1
-          OR (bc.bonus_type_id = 1 AND bc.is_step_bonus = 1 AND bc.step_number = 1 AND bc.code IS NULL)
-      )
+      AND bc.auto_assign = 1
       AND NOT EXISTS (
           SELECT 1
           FROM UserBonuses ub

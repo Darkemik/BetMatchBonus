@@ -29,7 +29,7 @@ if ($login === '' || $password === '') {
   exit;
 }
 
-$stmt = $conn->prepare("SELECT id, username, email, password_hash, full_name, birth_date, is_active,
+$stmt = $conn->prepare("SELECT id, username, email, password_hash, full_name, birth_date, is_active, is_verified,
                                failed_login_attempts, login_locked_until
                         FROM Users
                         WHERE username = ? OR email = ?
@@ -95,7 +95,13 @@ if ((int)$user['failed_login_attempts'] > 0) {
 }
 
 if ((int)$user['is_active'] !== 1) {
-  echo json_encode(['success' => false, 'message' => 'A regisztrációd még jóváhagyásra vár. Kérjük, várd meg, amíg az adminisztrátorok ellenőrzik az adataidat!']);
+  if ((int)$user['is_verified'] === 1) {
+    // Korábban jóváhagyott, de admin letiltotta
+    echo json_encode(['success' => false, 'message' => 'A fiókod felfüggesztésre került. Ha kérdésed van, kérjük vedd fel velünk a kapcsolatot!']);
+  } else {
+    // Még nem hagyta jóvá az admin
+    echo json_encode(['success' => false, 'message' => 'A regisztrációd még jóváhagyásra vár. Kérjük, várd meg, amíg az adminisztrátorok ellenőrzik az adataidat!']);
+  }
   exit;
 }
 

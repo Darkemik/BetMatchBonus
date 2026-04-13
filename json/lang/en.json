@@ -133,7 +133,9 @@
     "winLabel": "Winnings:",
     "potentialLabel": "Potential:",
     "noHistory": "No previous bets yet",
-    "noHistorySubtitle": "Your first ticket will appear here"
+    "noHistorySubtitle": "Your first ticket will appear here",
+    "oddsPyramidBoost": "Odds Pyramid bonus: 1.3x multiplier active! (6+ bets)",
+    "oddsPyramidProgress": "Odds Pyramid: <strong>{n}</strong> more bets needed for 1.3x bonus!"
   },
   "mainMenu": {
     "todayMatches": "Today's Matches",

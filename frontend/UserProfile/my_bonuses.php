@@ -184,12 +184,24 @@ $expired_bonuses = count($archived_bonuses);
                                                     <?php echo htmlspecialchars($bonus['bonus_name'] ?? 'Ismeretlen Bónusz'); ?>
                                                 </h5>
                                                 <p class="card-text mb-1">
-                                                        <strong data-i18n="userProfile.myBonuses.value">Érték:</strong> <span class="text-success"><?php echo number_format($bonus['granted_amount'], 0, ',', ' '); ?> FT</span>
+                                                        <strong data-i18n="userProfile.myBonuses.value">Érték:</strong> 
+                                                        <?php if ($bonus['status'] === 'PENDING' && strtoupper($bonus['bonus_trigger'] ?? '') === 'DEPOSIT' && (float)$bonus['granted_amount'] == 0): ?>
+                                                            <span class="text-warning"><i class="fas fa-hourglass-half"></i> Befizetés után derül ki</span>
+                                                        <?php else: ?>
+                                                            <span class="text-success"><?php echo number_format($bonus['granted_amount'], 0, ',', ' '); ?> FT</span>
+                                                        <?php endif; ?>
                                                 </p>
                                                 <p class="card-text mb-1">
                                                     <strong data-i18n="userProfile.myBonuses.wageringRequired">Szükséges forgatás:</strong> 
                                                     <?php 
-                                                        if ($bonus['wagering_required'] > 0) {
+                                                        if ($bonus['status'] === 'PENDING' && strtoupper($bonus['bonus_trigger'] ?? '') === 'DEPOSIT' && (float)$bonus['wagering_required'] == 0) {
+                                                            $wagerMultiplier = (float)($bonus['wagering_multiplier'] ?? 0);
+                                                            if ($wagerMultiplier > 0) {
+                                                                echo '<span class="text-warning"><i class="fas fa-hourglass-half"></i> ' . number_format($wagerMultiplier, 0) . 'x forgatás (befizetés után számolódik)</span>';
+                                                            } else {
+                                                                echo '<span class="text-warning"><i class="fas fa-hourglass-half"></i> Befizetés után derül ki</span>';
+                                                            }
+                                                        } elseif ($bonus['wagering_required'] > 0) {
                                                             $progress = $bonus['wagering_progress'] ?? 0;
                                                             $percentage = min(100, ($progress / $bonus['wagering_required']) * 100);
                                                             echo number_format($progress, 0, ',', ' ') . ' / ' . number_format($bonus['wagering_required'], 0, ',', ' ') . ' FT (' . round($percentage, 1) . '%)';
@@ -198,6 +210,31 @@ $expired_bonuses = count($archived_bonuses);
                                                         }
                                                     ?>
                                                 </p>
+                                                <?php if ($bonus['wagering_required'] > 0): ?>
+                                                    <?php
+                                                        $progress = $bonus['wagering_progress'] ?? 0;
+                                                        $percentage = min(100, ($progress / $bonus['wagering_required']) * 100);
+                                                        $barColor = $percentage >= 100 ? '#4caf50' : ($percentage >= 50 ? '#ff9800' : '#e94560');
+                                                    ?>
+                                                    <div class="progress mt-2 mb-2" style="height: 22px; background: #0f3460; border-radius: 12px; overflow: hidden;">
+                                                        <div class="progress-bar" role="progressbar" 
+                                                             style="width: <?= round($percentage, 1) ?>%; background: <?= $barColor ?>; font-weight: 700; font-size: 0.75rem; transition: width 0.5s ease;"
+                                                             aria-valuenow="<?= round($percentage, 1) ?>" aria-valuemin="0" aria-valuemax="100">
+                                                            <?= round($percentage, 1) ?>%
+                                                        </div>
+                                                    </div>
+                                                    <p class="card-text mb-1" style="font-size: 0.82rem; color: #aaa;">
+                                                        <i class="fas fa-info-circle"></i> 
+                                                        <?php
+                                                            $remaining = max(0, $bonus['wagering_required'] - $progress);
+                                                            if ($remaining > 0) {
+                                                                echo 'Még ' . number_format($remaining, 0, ',', ' ') . ' FT bónusz tétet kell megtenned.';
+                                                            } else {
+                                                                echo '<span class="text-success">Forgatási követelmény teljesítve! A bónusz átkerül a rendes egyenlegbe.</span>';
+                                                            }
+                                                        ?>
+                                                    </p>
+                                                <?php endif; ?>
                                                 <p class="card-text mb-1">
                                                     <strong data-i18n="userProfile.myBonuses.expiry">Lejárat:</strong> 
                                                     <?php

@@ -133,7 +133,9 @@
     "winLabel": "Nyeremény:",
     "potentialLabel": "Potenciális:",
     "noHistory": "Még nincs korábbi fogadás",
-    "noHistorySubtitle": "Az első szelvény itt jelenik meg"
+    "noHistorySubtitle": "Az első szelvény itt jelenik meg",
+    "oddsPyramidBoost": "Oddspiramis bónusz: 1.3x szorzó aktív! (6+ fogadás)",
+    "oddsPyramidProgress": "Oddspiramis: még <strong>{n}</strong> fogadás kell az 1.3x bónuszhoz!"
   },
   "mainMenu": {
     "todayMatches": "Mai meccsek",

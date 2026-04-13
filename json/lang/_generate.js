@@ -108,7 +108,9 @@ const hu = {
     placeBet: "Ticket leadása",
     clearAll: "Összes törlése",
     noHistory: "Még nincs korábbi fogadás",
-    noHistorySubtitle: "Az első ticket itt jelenik meg"
+    noHistorySubtitle: "Az első ticket itt jelenik meg",
+    oddsPyramidBoost: "Oddspiramis bónusz: 1.3x szorzó aktív! (6+ fogadás)",
+    oddsPyramidProgress: "Oddspiramis: még <strong>{n}</strong> fogadás kell az 1.3x bónuszhoz!"
   },
   mainMenu: {
     todayMatches: "Mai meccsek",
@@ -304,7 +306,9 @@ const en = {
     placeBet: "Place Ticket",
     clearAll: "Clear All",
     noHistory: "No previous bets yet",
-    noHistorySubtitle: "Your first ticket will appear here"
+    noHistorySubtitle: "Your first ticket will appear here",
+    oddsPyramidBoost: "Odds Pyramid bonus: 1.3x multiplier active! (6+ bets)",
+    oddsPyramidProgress: "Odds Pyramid: <strong>{n}</strong> more bets needed for 1.3x bonus!"
   },
   mainMenu: {
     todayMatches: "Today's Matches",

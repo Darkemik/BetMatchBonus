@@ -577,6 +577,8 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
 
+    window.loadMatchDetails = loadMatchDetails;
+
     function renderMatchDetails(data) {
         var match = data.match;
         var markets = data.markets || [];

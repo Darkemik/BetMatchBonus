@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let isLoggedIn = false;
     let currentUserId = null;
     let userBalance = 0;
+    let userBonusBalance = 0;
     let availableFreeBetAmount = 0;
     let availableFreeBetId = 0;
     let availableFreeBetMinCombo = 0;
@@ -49,6 +50,12 @@ document.addEventListener('DOMContentLoaded', function() {
             totalOdds *= 1.2;
         }
 
+        // Oddspiramis: 1.3x szorzó ha 6+ fogadás van a szelvényen
+        const hasOddsPyramid = selectionCount >= 6;
+        if (hasOddsPyramid) {
+            totalOdds *= 1.3;
+        }
+
         if (minOddsPerEvent === null) {
             minOddsPerEvent = 0;
         }
@@ -57,7 +64,8 @@ document.addEventListener('DOMContentLoaded', function() {
             selectionCount,
             totalOdds,
             minOddsPerEvent,
-            hasDailyTip
+            hasDailyTip,
+            hasOddsPyramid
         };
     }
 
@@ -101,6 +109,10 @@ document.addEventListener('DOMContentLoaded', function() {
             stakeInput.value = String(Math.round(availableFreeBetAmount));
             stakeInput.readOnly = true;
             stakeInput.setAttribute('aria-disabled', 'true');
+            // Free bet esetén nem engedünk bónusz egyenleg választást
+            const realRadio = document.querySelector('input[name="balance-type"][value="real"]');
+            if (realRadio) realRadio.checked = true;
+            updateBalanceTypeVisuals();
         } else {
             stakeInput.readOnly = false;
             stakeInput.removeAttribute('aria-disabled');
@@ -112,6 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const metrics = getTicketMetrics();
         updatePotentialWin(metrics.totalOdds);
         updatePlaceBetButton();
+        updateBetslipBalanceDisplay();
     }
 
     // ===== BEJELENTKEZÉS ELLENŐRZÉSE =====
@@ -122,20 +135,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 isLoggedIn = data.loggedIn === true;
                 currentUserId = data.user?.id || null;
                 userBalance = parseFloat(data.user?.balance) || 0;
+                userBonusBalance = parseFloat(data.user?.bonus_balance) || 0;
                 availableFreeBetAmount = parseFloat(data.user?.available_free_bet_amount) || 0;
                 availableFreeBetId = parseInt(data.user?.available_free_bet_id, 10) || 0;
                 availableFreeBetMinCombo = parseInt(data.user?.available_free_bet_min_combo, 10) || 0;
                 availableFreeBetMinOdds = parseFloat(data.user?.available_free_bet_min_odds) || 0;
                 availableFreeBetMinOddsPerEvent = parseFloat(data.user?.available_free_bet_min_odds_per_event) || 0;
-                console.log('[BETSLIP] Login status:', isLoggedIn, 'User ID:', currentUserId, 'Balance:', userBalance);
+                console.log('[BETSLIP] Login status:', isLoggedIn, 'User ID:', currentUserId, 'Balance:', userBalance, 'Bonus:', userBonusBalance);
                 renderFreeBetOption();
                 applyFreeBetSelectionState();
                 updatePlaceBetButton();
+                updateBetslipBalanceDisplay();
             })
             .catch(e => {
                 console.error('[BETSLIP] Login check error:', e);
                 isLoggedIn = false;
                 userBalance = 0;
+                userBonusBalance = 0;
                 availableFreeBetAmount = 0;
                 availableFreeBetId = 0;
                 availableFreeBetMinCombo = 0;
@@ -338,6 +354,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Boost indicator eltávolítása
             const boostIndicator = document.getElementById('daily-tip-boost-indicator');
             if (boostIndicator) boostIndicator.style.display = 'none';
+            const pyramidIndicator = document.getElementById('odds-pyramid-boost-indicator');
+            if (pyramidIndicator) pyramidIndicator.style.display = 'none';
             renderFreeBetOption();
             updateTypeTabs();
             return;
@@ -385,21 +403,26 @@ document.addEventListener('DOMContentLoaded', function() {
         if (totalOddsEl) totalOddsEl.textContent = metrics.totalOdds.toFixed(3);
 
         // 1.2x napi tipp boost kijelző
+        const summaryEl = document.getElementById('betslip-summary');
         const boostIndicator = document.getElementById('daily-tip-boost-indicator');
         if (boostIndicator) {
             boostIndicator.style.display = metrics.hasDailyTip ? 'block' : 'none';
-        } else if (metrics.hasDailyTip && totalOddsEl) {
+        } else if (metrics.hasDailyTip && summaryEl) {
             const indicator = document.createElement('div');
             indicator.id = 'daily-tip-boost-indicator';
             indicator.className = 'daily-tip-boost-indicator';
             indicator.innerHTML = '<i class="fas fa-bolt"></i> Napi tipp bónusz: 1.2x szorzó aktív!';
-            totalOddsEl.parentNode.insertBefore(indicator, totalOddsEl.nextSibling);
+            summaryEl.parentNode.insertBefore(indicator, summaryEl);
         }
+
+        // Oddspiramis kijelző — mindig látszik ha van tétel, mutatja a haladást
+        renderOddsPyramidIndicator(metrics, summaryEl);
 
         updatePotentialWin(metrics.totalOdds);
         renderFreeBetOption();
         updatePlaceBetButton();
         updateTypeTabs();
+        updateBetslipBalanceDisplay();
         
         console.log('[BETSLIP] renderTicket() vége, totalOdds:', metrics.totalOdds, 'hasDailyTip:', metrics.hasDailyTip);
     }
@@ -423,6 +446,119 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('languageChanged', function() {
         renderTicket();
     });
+
+    // ===== ODDSPIRAMIS INDIKÁTOR =====
+    function renderOddsPyramidIndicator(metrics, summaryEl) {
+        let indicator = document.getElementById('odds-pyramid-boost-indicator');
+        const parentEl = summaryEl ? summaryEl.parentNode : null;
+        if (!parentEl) return;
+
+        if (!indicator) {
+            indicator = document.createElement('div');
+            indicator.id = 'odds-pyramid-boost-indicator';
+            parentEl.insertBefore(indicator, summaryEl);
+        }
+
+        const count = metrics.selectionCount;
+        const needed = 6;
+        const remaining = Math.max(0, needed - count);
+        const progress = Math.min(count / needed, 1);
+
+        if (count > 0 && count < needed) {
+            // Haladás — még nem 6
+            indicator.className = 'odds-pyramid-indicator pyramid-progress';
+            indicator.innerHTML = 
+                '<div class="pyramid-info-row">' +
+                    '<i class="fas fa-layer-group"></i> ' +
+                    '<span>' + t('betslip.oddsPyramidProgress', 'Oddspiramis: még <strong>{n}</strong> fogadás kell az 1.3x bónuszhoz!').replace('{n}', remaining) + '</span>' +
+                '</div>' +
+                '<div class="pyramid-progress-bar-wrap">' +
+                    '<div class="pyramid-progress-bar" style="width:' + Math.round(progress * 100) + '%"></div>' +
+                '</div>' +
+                '<div class="pyramid-count">' + count + ' / ' + needed + '</div>';
+            indicator.style.display = 'block';
+        } else if (metrics.hasOddsPyramid) {
+            // Aktív — 6+ fogadás
+            indicator.className = 'odds-pyramid-indicator pyramid-active';
+            indicator.innerHTML = 
+                '<div class="pyramid-info-row">' +
+                    '<i class="fas fa-layer-group"></i> ' +
+                    '<span>' + t('betslip.oddsPyramidBoost', 'Oddspiramis bónusz: 1.3x szorzó aktív! (6+ fogadás)') + '</span>' +
+                '</div>' +
+                '<div class="pyramid-progress-bar-wrap">' +
+                    '<div class="pyramid-progress-bar" style="width:100%"></div>' +
+                '</div>' +
+                '<div class="pyramid-count">' + count + ' / ' + needed + ' ✓</div>';
+            indicator.style.display = 'block';
+        } else {
+            indicator.style.display = 'none';
+        }
+    }
+
+    function updateBetslipBalanceDisplay() {
+        const row = document.getElementById('betslip-balance-row');
+        const display = document.getElementById('betslip-balance-display');
+        const typeRow = document.getElementById('balance-type-row');
+        const realAmountEl = document.getElementById('real-balance-amount');
+        const bonusAmountEl = document.getElementById('bonus-balance-amount');
+        const realLabel = document.getElementById('balance-type-real-label');
+        const bonusLabel = document.getElementById('balance-type-bonus-label');
+
+        if (!row || !display) return;
+        if (!isLoggedIn) {
+            row.style.display = 'none';
+            if (typeRow) typeRow.style.display = 'none';
+            return;
+        }
+
+        const total = userBalance + userBonusBalance;
+        row.style.display = 'flex';
+
+        if (userBonusBalance > 0) {
+            display.innerHTML = formatFt(userBalance) + ' <span style="color:#7c3aed;"> + ' + formatFt(userBonusBalance) + ' 🎁</span>';
+        } else {
+            display.textContent = formatFt(total);
+        }
+
+        // Egyenleg típus választó megjelenítése ha van bónusz
+        if (typeRow) {
+            const useFreeBet = !!document.getElementById('use-freebet-toggle')?.checked;
+            if (userBonusBalance > 0 && !useFreeBet) {
+                typeRow.style.display = 'flex';
+            } else {
+                typeRow.style.display = 'none';
+                // Ha nincs bónusz, mindig rendes egyenleg
+                const realRadio = document.querySelector('input[name="balance-type"][value="real"]');
+                if (realRadio) realRadio.checked = true;
+            }
+        }
+
+        if (realAmountEl) realAmountEl.textContent = formatFt(userBalance);
+        if (bonusAmountEl) bonusAmountEl.textContent = formatFt(userBonusBalance);
+
+        // Vizuális kijelölés frissítése
+        updateBalanceTypeVisuals();
+    }
+
+    function getSelectedBalanceType() {
+        const selected = document.querySelector('input[name="balance-type"]:checked');
+        return selected ? selected.value : 'real';
+    }
+
+    function updateBalanceTypeVisuals() {
+        const realLabel = document.getElementById('balance-type-real-label');
+        const bonusLabel = document.getElementById('balance-type-bonus-label');
+        const type = getSelectedBalanceType();
+
+        if (realLabel) {
+            realLabel.style.borderColor = type === 'real' ? '#4caf50' : '#555';
+            realLabel.style.background = type === 'real' ? 'rgba(76,175,80,0.12)' : 'transparent';
+        }
+        if (bonusLabel) {
+            bonusLabel.style.borderColor = type === 'bonus' ? '#7c3aed' : '#555';
+            bonusLabel.style.background = type === 'bonus' ? 'rgba(124,58,237,0.15)' : 'transparent';
+        }
+    }
 
     function updatePotentialWin(totalOdds) {
         const stakeInput = document.getElementById('stake-input');
@@ -453,9 +589,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const useFreeBet = !!document.getElementById('use-freebet-toggle')?.checked;
         const freeBetEligible = isFreeBetTicketEligible();
         const freeBetCoversStake = useFreeBet && freeBetEligible && availableFreeBetAmount >= stake && availableFreeBetId > 0;
+        const balanceType = getSelectedBalanceType();
+        const activeBalance = balanceType === 'bonus' ? userBonusBalance : userBalance;
         
         // Letiltás feltételei:
-        if (!isLoggedIn || ticketItems.length === 0 || (!freeBetCoversStake && (userBalance === 0 || userBalance < stake))) {
+        if (!isLoggedIn || ticketItems.length === 0 || (!freeBetCoversStake && (activeBalance === 0 || activeBalance < stake))) {
             submitBtn.disabled = true;
             if (!isLoggedIn) {
                 submitBtn.title = t('betslip.mustLogin', 'Be kell jelentkezned a fogadáshoz');
@@ -463,10 +601,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitBtn.title = t('betslip.minOneBet', 'Legalább egy fogadás szükséges');
             } else if (useFreeBet && !freeBetCoversStake) {
                 submitBtn.title = 'Az ingyenes fogadás feltételei vagy összege nem megfelelő ehhez a szelvényhez.';
-            } else if (userBalance === 0) {
-                submitBtn.title = t('betslip.noBalance', 'Nincs elegendő egyenleg! Kérjük, töltsd fel az accountot.');
-            } else if (userBalance < stake) {
-                submitBtn.title = t('betslip.insufficientStakeBalance', 'Nincs elegendő egyenleg az adott téthez!');
+            } else if (activeBalance === 0) {
+                submitBtn.title = balanceType === 'bonus'
+                    ? 'Nincs elegendő bónusz egyenleg!'
+                    : t('betslip.noBalance', 'Nincs elegendő egyenleg! Kérjük, töltsd fel az accountot.');
+            } else if (activeBalance < stake) {
+                submitBtn.title = balanceType === 'bonus'
+                    ? 'A bónusz egyenleg nem elég ehhez a téthez!'
+                    : t('betslip.insufficientStakeBalance', 'Nincs elegendő egyenleg az adott téthez!');
             }
         } else {
             submitBtn.disabled = false;
@@ -495,9 +637,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     BmbPopup.warning('Az ingyenes fogadás feltételei vagy összege nem megfelelő ehhez a szelvényhez.', 'Ingyenes fogadás hiba');
                     return;
                 }
-            } else if (userBalance === 0 || userBalance < stake) {
-                BmbPopup.warning(t('betslip.noBalance', 'Nincs elegendő egyenleg! Kérjük, töltsd fel az accountot.'), t('betslip.noMoneyTitle', 'Nincs elegendő pénz'));
-                return;
+            } else {
+                const balanceType = getSelectedBalanceType();
+                const activeBalance = balanceType === 'bonus' ? userBonusBalance : userBalance;
+                if (activeBalance === 0 || activeBalance < stake) {
+                    const msg = balanceType === 'bonus'
+                        ? 'Nincs elegendő bónusz egyenleg!'
+                        : t('betslip.noBalance', 'Nincs elegendő egyenleg! Kérjük, töltsd fel az accountot.');
+                    BmbPopup.warning(msg, t('betslip.noMoneyTitle', 'Nincs elegendő pénz'));
+                    return;
+                }
             }
 
             submitTicketToDB(stake);
@@ -515,6 +664,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const metrics = getTicketMetrics();
         const totalOdds = metrics.totalOdds;
         const useFreeBet = !!document.getElementById('use-freebet-toggle')?.checked;
+        const balanceType = getSelectedBalanceType();
+        const useBonus = (!useFreeBet && balanceType === 'bonus');
 
         const payload = {
             stake: stake,
@@ -522,8 +673,10 @@ document.addEventListener('DOMContentLoaded', function() {
             potentialWin: Math.round(useFreeBet ? (stake * Math.max(0, totalOdds - 1)) : (stake * totalOdds)),
             items: ticketItems,
             useFreeBet: useFreeBet,
+            useBonus: useBonus,
             freeBetUserBonusId: parseInt(useFreeBet ? availableFreeBetId : 0, 10) || 0,
-            hasDailyTipBoost: metrics.hasDailyTip
+            hasDailyTipBoost: metrics.hasDailyTip,
+            hasOddsPyramidBoost: metrics.hasOddsPyramid
         };
 
         fetch('../../backend/ApiRequest/submit_ticket.php', {
@@ -566,9 +719,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const bsSuccessModal = new bootstrap.Modal(successModal);
                 const possibleWin = Math.round(usedFreeBet ? (stake * Math.max(0, totalOdds - 1)) : (stake * totalOdds));
+                const usedBonusBet = !!payload.useBonus;
                 successModal.querySelector('.modal-body').innerHTML = `
                     <p><strong>${t('betslip.stakeLabel', 'Tét:')}</strong> ${stake.toLocaleString('hu-HU')} Ft</p>
                     ${usedFreeBet ? `<p><strong>Ingyenes fogadás:</strong> ${stake.toLocaleString('hu-HU')} Ft</p>` : ''}
+                    ${usedBonusBet ? `<p><strong style="color:#7c3aed;">🎁 Bónusz egyenlegből</strong></p>` : ''}
                     <p><strong>${t('betslip.potentialWinLabel', 'Lehetséges nyeremény:')}</strong> ${possibleWin.toLocaleString('hu-HU')} Ft</p>
                 `;
                 bsSuccessModal.show();
@@ -585,11 +740,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
 
+                // Reset balance type to real after submission
+                const realRadio = document.querySelector('input[name="balance-type"][value="real"]');
+                if (realRadio) realRadio.checked = true;
+
                 // Azonnali lokális egyenlegfrissítés (jobb felső sarok)
                 if (typeof data.new_balance === 'number' && !Number.isNaN(data.new_balance)) {
                     userBalance = data.new_balance;
                 } else {
                     userBalance = Math.max(0, (parseFloat(userBalance) || 0) - stake);
+                }
+                if (typeof data.new_bonus_balance === 'number' && !Number.isNaN(data.new_bonus_balance)) {
+                    userBonusBalance = data.new_bonus_balance;
                 }
 
                 const walletEl = document.getElementById('sessionBetDisplay');
@@ -600,7 +762,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     }) + ' FT';
                 }
 
+                // Bónusz egyenleg frissítése a fejlécben
+                const bonusBadge = document.getElementById('bonusBalanceBadge');
+                const bonusDisplay = document.getElementById('bonusBalanceDisplay');
+                if (bonusBadge && bonusDisplay) {
+                    if (userBonusBalance > 0) {
+                        bonusBadge.style.display = '';
+                        bonusDisplay.textContent = userBonusBalance.toLocaleString('hu-HU', { maximumFractionDigits: 0, minimumFractionDigits: 0 }) + ' FT';
+                    } else {
+                        bonusBadge.style.display = 'none';
+                    }
+                }
+
                 updatePlaceBetButton();
+                updateBetslipBalanceDisplay();
                 document.dispatchEvent(new CustomEvent('balance:changed'));
 
                 // Biztos frissítés szerverről cache nélkül, hogy ne maradjon beragadt érték
@@ -610,6 +785,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (me && me.loggedIn && me.user) {
                             const freshBalance = parseFloat(me.user.balance) || 0;
                             userBalance = freshBalance;
+                            userBonusBalance = parseFloat(me.user.bonus_balance) || 0;
 
                             const liveWalletEl = document.getElementById('sessionBetDisplay');
                             if (liveWalletEl) {
@@ -754,11 +930,15 @@ document.addEventListener('DOMContentLoaded', function() {
                                      itemStatus === 'CASHOUT' ? '💰' : '⏳';
                     const itemStatusClass = itemStatus.toLowerCase();
                     
+                    const isOpen = itemStatus === 'OPEN';
+                    const clickable = (item.event_id && isOpen) ? 'elozmeny-match-clickable' : '';
+                    const dataAttr = (item.event_id && isOpen) ? `data-event-id="${item.event_id}"` : '';
                     itemsHtml += `
                         <div class="elozmeny-item-entry ${itemStatusClass}">
-                            <div class="elozmeny-match">
+                            <div class="elozmeny-match ${clickable}" ${dataAttr}>
                                 <span class="item-status-icon">${itemIcon}</span>
                                 ${escapeHtml(item.homeTeam)} vs ${escapeHtml(item.awayTeam)}
+                                ${(item.event_id && isOpen) ? '<i class="fas fa-external-link-alt elozmeny-match-link-icon"></i>' : ''}
                             </div>
                             <div class="elozmeny-market">${escapeHtml(item.market)}</div>
                             <div class="elozmeny-pick">${t('betslip.tipLabel', 'Tipp:')} <strong>${escapeHtml(item.pick)}</strong> @ ${parseFloat(item.odds).toFixed(2)}</div>
@@ -799,9 +979,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const el = document.createElement('div');
             el.className = 'elozmeny-item' + wonClass + lostClass + cashoutClass;
+            const bonusBadge = ticket.bonus_bet ? '<span class="elozmeny-bonus-badge">🎁 Bónusz</span>' : '';
             el.innerHTML = `
                 <div class="elozmeny-header">
-                    <span class="elozmeny-date">${new Date(ticket.created_at).toLocaleString('hu-HU')}</span>
+                    <span class="elozmeny-date">${new Date(ticket.created_at).toLocaleString('hu-HU')}${bonusBadge}</span>
                     <span class="elozmeny-status ${statusClass}">${statusText}</span>
                 </div>
                 <div class="elozmeny-items-list">${itemsHtml}</div>
@@ -821,6 +1002,27 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // ===== ELŐZMÉNY MECCS KATTINTÁS =====
+    document.addEventListener('click', function(e) {
+        const matchEl = e.target.closest('.elozmeny-match-clickable');
+        if (!matchEl) return;
+        const eventId = parseInt(matchEl.getAttribute('data-event-id'));
+        if (!eventId) return;
+
+        // Mindig az élő oldalra navigálunk az eventId paraméterrel
+        const livePath = '../../frontend/Live/live.php?eventId=' + eventId;
+        if (window.location.pathname.includes('/Live/live.php')) {
+            // Már az élő oldalon vagyunk
+            if (typeof window.loadMatchDetails === 'function') {
+                window.loadMatchDetails(eventId);
+            } else {
+                window.location.href = livePath;
+            }
+        } else {
+            window.location.href = livePath;
+        }
+    });
 
     // ===== CASHOUT LOGIKA =====
     window.BetslipCashout = {
@@ -990,6 +1192,14 @@ document.addEventListener('DOMContentLoaded', function() {
     loadBettingHistory();
     refreshAllOddsButtons();
     updatePlaceBetButton();
+
+    // Egyenleg típus választó (bónusz / rendes) rádió gombok
+    document.querySelectorAll('input[name="balance-type"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            updateBalanceTypeVisuals();
+            updatePlaceBetButton();
+        });
+    });
 
     console.log('[BETSLIP] Kész!');
 });

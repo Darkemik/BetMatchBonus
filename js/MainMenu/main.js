@@ -546,7 +546,22 @@ document.addEventListener('DOMContentLoaded', function () {
       fetch('../../backend/ApiRequest/get_match_details.php?eventId=' + eventId)
           .then(res => res.json())
           .then(data => {
-              renderMatchDetails(data);
+              if (data && !data.error && data.markets && data.markets.length > 0) {
+                  renderMatchDetails(data);
+              } else {
+                  // Nincs piac → próbáljuk lejátszott meccsként
+                  fetch('../../backend/ApiRequest/get_finished_match_details.php?eventId=' + eventId)
+                      .then(res2 => res2.json())
+                      .then(data2 => {
+                          if (data2 && !data2.error) {
+                              renderFinishedMatchDetails(data2);
+                          } else {
+                              // Ha lejátszott sem talált, rendereljük a normál adatot odds nélkül
+                              renderMatchDetails(data);
+                          }
+                      })
+                      .catch(() => { renderMatchDetails(data); });
+              }
           })
           .catch(err => {
               console.error('[MAIN] Meccs részletek hiba:', err);
@@ -1040,6 +1055,20 @@ document.addEventListener('DOMContentLoaded', function () {
       const cleanUrl = window.location.pathname;
       window.history.replaceState({}, document.title, cleanUrl);
   }
+
+  // ========== MECCS MEGNYITÁSA URL-BŐL (ha ?eventId=123 paraméterrel érkezünk) ==========
+  const eventIdParam = urlParams.get('eventId');
+  if (eventIdParam) {
+      const eid = parseInt(eventIdParam);
+      if (eid) {
+          loadMatchDetails(eid);
+          const cleanUrl2 = window.location.pathname;
+          window.history.replaceState({}, document.title, cleanUrl2);
+      }
+  }
+
+  // Globálisan elérhető, pl. betslip előzményekből
+  window.loadMatchDetails = loadMatchDetails;
 
   // ========== HÁTTÉR SZINKRON (API → DB) ==========
   function syncFromApi() {

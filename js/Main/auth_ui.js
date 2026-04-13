@@ -85,6 +85,23 @@ async function refreshAuthUI() {
     if (dropdownAvatarEl) dropdownAvatarEl.textContent = initial;
 
     if (sessionBetEl) sessionBetEl.textContent = sessionBetFormatted;
+
+    // Bónusz egyenleg megjelenítése
+    const bonusBalance = parseFloat(u.bonus_balance) || 0;
+    const bonusBadge = document.getElementById('bonusBalanceBadge');
+    const bonusDisplay = document.getElementById('bonusBalanceDisplay');
+    if (bonusBadge && bonusDisplay) {
+      if (bonusBalance > 0) {
+        bonusBadge.style.display = '';
+        bonusDisplay.textContent = bonusBalance.toLocaleString('hu-HU', {
+          maximumFractionDigits: 0,
+          minimumFractionDigits: 0
+        }) + ' FT';
+      } else {
+        bonusBadge.style.display = 'none';
+      }
+    }
+
     if (sessionLoginDurationEl) {
       const updateCountdown = () => {
         const elapsedClient = Math.floor((Date.now() - countdownStartedAt) / 1000);

@@ -72,77 +72,28 @@ try {
         WHERE code = 'BONUSZHETKOZNAP5K'
     ");
 
-    $isWeekday = ((int)date('N') <= 5);
-    $isAfterDailyRefresh = (date('H:i') >= '00:01');
-    $weekdayActive = ($isWeekday && $isAfterDailyRefresh) ? 1 : 0;
+    $isWeekday = ((int)date('N') <= 5) ? 1 : 0;
 
-    // Minden hétköznap-only bónusz automatikus időablak szerint megy:
-    // hétfő 00:01 -> péntek 23:59
-    $conn->query("UPDATE BonusCodes SET is_active = {$weekdayActive} WHERE valid_weekdays_only = 1 OR code = 'BONUSZHETKOZNAP5K'");
-
-        // Üdvözlő 1. lépés mindig aktív legyen az új fiókok számára.
-        $conn->query(" 
-                UPDATE BonusCodes
-                SET is_active = 1,
-                bonus_trigger = 'DEPOSIT',
-                bet_reward_type = 'BONUS_MONEY',
-                min_deposit = 3000.00,
-                match_percent = 100.00,
-                max_bonus_amount = 20000.00,
-                min_combo = 2,
-                min_odds = 2.00,
-                wagering_multiplier = 3.00,
-                activation_expire_hours = 48
-                WHERE bonus_type_id = 1
-                    AND is_step_bonus = 1
-                    AND step_number = 1
-                    AND code IS NULL
-        ");
-
-                // Üdvözlő 2. lépés: minimum 10.000 Ft feltöltés esetén 5.000 Ft ingyenes fogadás.
-                $conn->query(" 
-                    UPDATE BonusCodes
-                    SET is_active = 1,
-                        bonus_trigger = 'DEPOSIT',
-                        bet_reward_type = 'FREE_BET',
-                        min_deposit = 10000.00,
-                        bonus_amount = 5000.00,
-                        max_bonus_amount = 5000.00,
-                        match_percent = 0.00,
-                        min_combo = 2,
-                        min_odds = 2.00,
-                        wagering_multiplier = 0.00,
-                        activation_expire_hours = 48
-                    WHERE bonus_type_id = 1
-                      AND is_step_bonus = 1
-                      AND step_number = 2
-                      AND code IS NULL
-                ");
-
-    // Darts bónusz alapbeállítás: aktív, 10.000 Ft kvalifikáló fogadás,
-    // 2-es kötés, minimum 2-es össz odds, jutalom 5.000 Ft.
-    $conn->query(" 
+    // Hétköznap-only bónuszok auto-toggle: daily_start_time figyelembevételével
+    // admin_force_active = 1 esetén nem írjuk felül (admin kézzel bekapcsolta)
+    // Csak akkor töröljük az override-ot, ha a normál időablakban vagyunk (hétköznap + daily_start_time után)
+    if ($isWeekday) {
+        $conn->query("UPDATE BonusCodes SET admin_force_active = 0 WHERE valid_weekdays_only = 1 AND admin_force_active = 1 AND (daily_start_time IS NULL OR CURTIME() >= daily_start_time)");
+    }
+    $conn->query("
         UPDATE BonusCodes
-        SET is_active = 1,
-            bonus_trigger = 'BET',
-            sport_restriction = 'DARTS',
-            min_deposit = 10000.00,
-            min_combo = 2,
-            min_odds = 2.00,
-            bonus_amount = 5000.00,
-            max_bonus_amount = 5000.00,
-            match_percent = 0.00,
-            activation_expire_hours = 48
-        WHERE code = 'DARTSBONUSZ5K'
+        SET is_active = CASE
+            WHEN admin_force_active = 1 THEN 1
+            WHEN {$isWeekday} = 1 AND (daily_start_time IS NULL OR CURTIME() >= daily_start_time) THEN 1
+            ELSE 0
+        END
+        WHERE valid_weekdays_only = 1
     ");
-
-    $weekendActive = $isWeekday ? 0 : 1;
-    $conn->query("UPDATE BonusCodes SET is_active = {$weekendActive} WHERE code = 'HETVEGI5K'");
 
     $results[] = [
         'step'    => 'Bónusz frissítés',
         'status'  => 'ok',
-        'message' => 'Hétköznapi (00:01-23:59): ' . ($weekdayActive ? 'AKTÍV' : 'INAKTÍV') . ' | Hétvégi: ' . (!$isWeekday ? 'AKTÍV' : 'INAKTÍV'),
+        'message' => 'Hétköznapi auto-toggle: ' . ($isWeekday ? 'hétköznap' : 'hétvége'),
         'ms'      => round((microtime(true) - $stepStart) * 1000),
     ];
 } catch (Throwable $e) {

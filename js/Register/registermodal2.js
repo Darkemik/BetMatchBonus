@@ -220,11 +220,45 @@ document.addEventListener('DOMContentLoaded', function () {
         var img = document.getElementById(imgId);
         fileInput.addEventListener('change', function () {
             if (this.files[0]) {
+                // Duplikált kép ellenőrzés: ugyanazt a fájlt ne lehessen több helyre feltölteni
+                var duplicate = checkDuplicateImage(inputId, this.files[0]);
+                if (duplicate) {
+                    this.value = '';
+                    img.style.display = 'none';
+                    if (result) {
+                        result.style.color = 'red';
+                        result.textContent = 'Ugyanazt a képet nem töltheted fel több helyre!';
+                    }
+                    return;
+                }
+                if (result && result.textContent === 'Ugyanazt a képet nem töltheted fel több helyre!') {
+                    result.textContent = '';
+                }
                 img.src = URL.createObjectURL(this.files[0]);
                 img.style.display = 'block';
             }
         });
     }
+
+    // Duplikált kép detektálás: név + méret + utolsó módosítás alapján
+    function checkDuplicateImage(currentInputId, currentFile) {
+        var imageInputIds = ['modal2-id_image_first', 'modal2-id_image_second', 'modal2-address_image'];
+        for (var i = 0; i < imageInputIds.length; i++) {
+            var otherId = imageInputIds[i];
+            if (otherId === currentInputId) continue;
+            var otherInput = document.getElementById(otherId);
+            if (otherInput && otherInput.files[0]) {
+                var other = otherInput.files[0];
+                if (other.name === currentFile.name &&
+                    other.size === currentFile.size &&
+                    other.lastModified === currentFile.lastModified) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     setupPreview('modal2-id_image_first', 'modal2-id_preview_first');
     setupPreview('modal2-id_image_second', 'modal2-id_preview_second');
     setupPreview('modal2-address_image', 'modal2-address_preview');
@@ -285,6 +319,29 @@ document.addEventListener('DOMContentLoaded', function () {
         var idFirst = document.getElementById('modal2-id_image_first');
         var idSecond = document.getElementById('modal2-id_image_second');
         var addressImg = document.getElementById('modal2-address_image');
+
+        // Duplikált kép ellenőrzés küldés előtt
+        var uploadedFiles = [];
+        var fileInputs = [
+            { el: idFirst, name: 'Személyi 1. oldal' },
+            { el: idSecond, name: 'Személyi 2. oldal' },
+            { el: addressImg, name: 'Lakcímkártya' }
+        ];
+        for (var fi = 0; fi < fileInputs.length; fi++) {
+            var f = fileInputs[fi].el;
+            if (f && f.files[0]) {
+                var fKey = f.files[0].name + '_' + f.files[0].size + '_' + f.files[0].lastModified;
+                for (var uj = 0; uj < uploadedFiles.length; uj++) {
+                    if (uploadedFiles[uj].key === fKey) {
+                        result.style.color = 'red';
+                        result.textContent = 'Ugyanazt a képet nem töltheted fel több helyre! (' + fileInputs[fi].name + ' és ' + uploadedFiles[uj].label + ')';
+                        return;
+                    }
+                }
+                uploadedFiles.push({ key: fKey, label: fileInputs[fi].name });
+            }
+        }
+
         if (idFirst.files[0]) formData.append('id_image_first', idFirst.files[0]);
         if (idSecond.files[0]) formData.append('id_image_second', idSecond.files[0]);
         if (addressImg.files[0]) formData.append('address_image', addressImg.files[0]);

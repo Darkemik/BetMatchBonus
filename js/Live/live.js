@@ -596,6 +596,8 @@
             .catch(error => console.error('[LIVE.JS] Hiba a meccs adatok lekérésekor:', error));
     }
 
+    window.loadMatchDetails = loadMatchDetails;
+
     // Meccs részletek frissítése
     function refreshMatchDetails() {
         if (!viewingMatchDetails || !currentDetailEventId) return;
@@ -792,6 +794,20 @@
         .then(() => fetchLiveSportCounts())
         .then(liveSports => {
             buildSportsNav(liveSports);
+
+            // ========== MECCS MEGNYITÁSA URL-BŐL (ha ?eventId=123 paraméterrel érkezünk) ==========
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventIdParam = urlParams.get('eventId');
+            if (eventIdParam) {
+                const eid = parseInt(eventIdParam);
+                if (eid) {
+                    loadMatchDetails(eid);
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    loadTickerAndUpcoming();
+                    return; // Ne írja felül a matchesContainer-t a refreshMatches
+                }
+            }
+
             if (currentSportId) {
                 refreshMatches();
             } else {

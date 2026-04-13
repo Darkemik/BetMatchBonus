@@ -20,7 +20,7 @@
                 <img src="../../img/oddspiramid.jpeg" alt="Odds piramis">
                 <h3 data-i18n="promo.oddsPyramidTitle">ODDSPIRAMIS</h3>
                 <p data-i18n="promo.oddsPyramidDesc">Növelnéd a nyereményed? Keress aktuális ajánlatunkat a promóciók között!</p>
-                <button class="tobb-info-gomb" onclick="location.href='../../frontend/Bonus/bonus.php'">
+                <button class="tobb-info-gomb" onclick="location.href='../../frontend/MainMenu/MainMenu.php'">
                     <span data-i18n="promo.details">RÉSZLETEK</span>
                 </button>
             </div>

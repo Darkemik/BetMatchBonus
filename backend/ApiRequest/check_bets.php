@@ -272,7 +272,7 @@ function updateTicketStatus($conn, $ticketId, $userId) {
     }
 
     // Csak akkor frissitunk ha valtozott
-    $stmtCheck = $conn->prepare("SELECT status, stake, potential_win FROM Tickets WHERE id = ?");
+    $stmtCheck = $conn->prepare("SELECT status, stake, potential_win, bonus_stake FROM Tickets WHERE id = ?");
     $stmtCheck->bind_param("i", $ticketId);
     $stmtCheck->execute();
     $ticketRow = $stmtCheck->get_result()->fetch_assoc();
@@ -288,32 +288,74 @@ function updateTicketStatus($conn, $ticketId, $userId) {
     $stmtUpd->execute();
     $stmtUpd->close();
 
-    // Ha NYERTES -> nyeremeny jovairasa a wallet-be
-        // Ha NYERTES -> nyeremeny jovairasa CSAK a Users.balance-be (egyetlen forras)
+    // Ha NYERTES -> nyeremeny jovairasa
     if ($newStatus === 'WON') {
         $potentialWin = (float)$ticketRow['potential_win'];
+        $bonusStake = (float)($ticketRow['bonus_stake'] ?? 0);
+        $isBonusTicket = ($bonusStake > 0);
 
-        $hasWinningsBalance = false;
-        $winningsColStmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Users' AND COLUMN_NAME = 'winnings_balance'");
-        $winningsColStmt->execute();
-        $winningsColRes = $winningsColStmt->get_result()->fetch_assoc();
-        $winningsColStmt->close();
-        if ($winningsColRes && (int)$winningsColRes['cnt'] > 0) {
-            $hasWinningsBalance = true;
-        }
+        // Bónusz szelvénynél: max nyeremény cap (max_win_multiplier × granted_amount)
+        if ($isBonusTicket) {
+            $capStmt = $conn->prepare("
+                SELECT ub.granted_amount, bc.max_win_multiplier
+                FROM UserBonuses ub
+                INNER JOIN BonusCodes bc ON bc.id = ub.bonus_id
+                WHERE ub.user_id = ?
+                  AND ub.status IN ('ACTIVE', 'COMPLETED')
+                  AND COALESCE(ub.granted_amount, 0) > 0
+                ORDER BY ub.id DESC
+                LIMIT 1
+            ");
+            $capStmt->bind_param("i", $userId);
+            $capStmt->execute();
+            $capRow = $capStmt->get_result()->fetch_assoc();
+            $capStmt->close();
 
-        // Users.balance jovairasa (egyetlen egyenleg-forras)
-        $stmtUserBal = $conn->prepare($hasWinningsBalance
-            ? "UPDATE Users SET balance = balance + ?, winnings_balance = winnings_balance + ? WHERE id = ?"
-            : "UPDATE Users SET balance = balance + ? WHERE id = ?"
-        );
-        if ($hasWinningsBalance) {
-            $stmtUserBal->bind_param("ddi", $potentialWin, $potentialWin, $userId);
+            if ($capRow) {
+                $maxWinMultiplier = (float)($capRow['max_win_multiplier'] ?? 5.0);
+                $grantedAmount = (float)$capRow['granted_amount'];
+                $maxWin = $grantedAmount * $maxWinMultiplier; // pl. 5000 * 5 = 25000
+                if ($potentialWin > $maxWin) {
+                    $potentialWin = $maxWin;
+                }
+            }
+
+            // Ellenőrizzük, hogy a forgatás teljesült-e EZEN szelvény leadásakor
+            $wagerDoneStmt = $conn->prepare("
+                SELECT 1 FROM UserBonuses
+                WHERE user_id = ?
+                  AND status = 'COMPLETED'
+                  AND used = 1
+                  AND COALESCE(wagering_required, 0) > 0
+                  AND COALESCE(wagering_progress, 0) >= wagering_required
+                ORDER BY used_at DESC
+                LIMIT 1
+            ");
+            $wagerDoneStmt->bind_param("i", $userId);
+            $wagerDoneStmt->execute();
+            $wageringCompleted = $wagerDoneStmt->get_result()->num_rows > 0;
+            $wagerDoneStmt->close();
+
+            if ($wageringCompleted) {
+                // Forgatás teljesítve → nyeremény a rendes egyenlegbe
+                $stmtCredit = $conn->prepare("UPDATE Users SET balance = balance + ?, winnings_balance = winnings_balance + ? WHERE id = ?");
+                $stmtCredit->bind_param("ddi", $potentialWin, $potentialWin, $userId);
+                $stmtCredit->execute();
+                $stmtCredit->close();
+            } else {
+                // Forgatás NINCS kész → nyeremény vissza a bonus_balance-ba
+                $stmtCredit = $conn->prepare("UPDATE Users SET bonus_balance = bonus_balance + ? WHERE id = ?");
+                $stmtCredit->bind_param("di", $potentialWin, $userId);
+                $stmtCredit->execute();
+                $stmtCredit->close();
+            }
         } else {
-            $stmtUserBal->bind_param("di", $potentialWin, $userId);
+            // Nem bónusz szelvény → normál kifizetés (balance + winnings_balance)
+            $stmtUserBal = $conn->prepare("UPDATE Users SET balance = balance + ?, winnings_balance = winnings_balance + ? WHERE id = ?");
+            $stmtUserBal->bind_param("ddi", $potentialWin, $potentialWin, $userId);
+            $stmtUserBal->execute();
+            $stmtUserBal->close();
         }
-        $stmtUserBal->execute();
-        $stmtUserBal->close();
 
         // Wallet tranzakcio rogzitese naplozas celjabol (type_id = 4 = WIN)
         $stmtTx = $conn->prepare("

@@ -9,6 +9,10 @@
         <span class="session-bet-icon" aria-hidden="true">💰</span>
         <span id="sessionBetDisplay">0 FT</span>
     </div>
+    <div class="session-bet-badge" id="bonusBalanceBadge" title="Bónusz egyenleg" style="display:none;background:linear-gradient(135deg,#7c3aed22,#a78bfa33);border-color:#7c3aed44;">
+        <span class="session-bet-icon" aria-hidden="true">🎁</span>
+        <span id="bonusBalanceDisplay">0 FT</span>
+    </div>
     <button class="profile-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
         <div class="profile-avatar" id="profileAvatar">
             <i class="fas fa-user"></i>

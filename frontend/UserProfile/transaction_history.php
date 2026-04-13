@@ -190,7 +190,12 @@ foreach ($transactions as $t) {
                                                 <?php echo date('Y-m-d H:i', strtotime($transaction['created_at'])); ?>
                                             </td>
                                             <td>
-                                                <?php if ($transaction['type'] === 'withdrawal' && $transaction['status'] === 'completed'): ?>
+                                                <?php if ($transaction['type'] === 'deposit' && $transaction['status'] === 'completed'): ?>
+                                                    <a href="../../backend/ApiRequest/deposit_receipt.php?id=<?php echo $transaction['id']; ?>" 
+                                                       class="btn btn-sm btn-outline-success" title="Befizetési igazolás letöltése" data-i18n-title="userProfile.transactionHistory.downloadDepositProofTitle">
+                                                        <i class="fas fa-file-pdf"></i>
+                                                    </a>
+                                                <?php elseif ($transaction['type'] === 'withdrawal' && $transaction['status'] === 'completed'): ?>
                                                     <a href="../../backend/ApiRequest/withdrawal_receipt.php?id=<?php echo $transaction['id']; ?>" 
                                                        class="btn btn-sm btn-outline-primary" title="Kifizetési igazolás letöltése" data-i18n-title="userProfile.transactionHistory.downloadProofTitle">
                                                         <i class="fas fa-file-pdf"></i>

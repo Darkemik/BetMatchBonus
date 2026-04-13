@@ -23,7 +23,7 @@ evaluateOpenTickets($conn, $userId);
 
 // Ticketek lekérése az utolsó 50-ből
 $stmtTickets = $conn->prepare("
-    SELECT id, stake, total_odds, potential_win, status, cashout_amount, cashout_at, created_at, updated_at
+    SELECT id, stake, total_odds, potential_win, status, cashout_amount, cashout_at, created_at, updated_at, bonus_stake
     FROM Tickets
     WHERE user_id = ?
     ORDER BY created_at DESC
@@ -41,6 +41,7 @@ while ($ticket = $ticketsResult->fetch_assoc()) {
     $stmtSelections = $conn->prepare("
         SELECT ts.id, ts.odds_at_pick, ts.status, 
                ts.home_team, ts.away_team, ts.pick_label, ts.market_name,
+               ts.event_id, ts.match_id, e.api_id AS event_api_id,
                o.label, e.home_team_name, e.away_team_name, 
                em.name as em_market_name
         FROM TicketSelections ts
@@ -61,7 +62,8 @@ while ($ticket = $ticketsResult->fetch_assoc()) {
             'pick' => $sel['pick_label'] ?: ($sel['label'] ?? ''),
             'market' => $sel['market_name'] ?: ($sel['em_market_name'] ?? ''),
             'odds' => (float)$sel['odds_at_pick'],
-            'status' => $sel['status']
+            'status' => $sel['status'],
+            'event_id' => $sel['event_api_id'] ? (int)$sel['event_api_id'] : null
         ];
     }
     $stmtSelections->close();
@@ -95,6 +97,7 @@ while ($ticket = $ticketsResult->fetch_assoc()) {
         'total_odds' => (float)$ticket['total_odds'],
         'potential_win' => (float)$ticket['potential_win'],
         'status' => $status,
+        'bonus_bet' => ((float)($ticket['bonus_stake'] ?? 0)) > 0,
         'cashout_amount' => $ticket['cashout_amount'] !== null ? (float)$ticket['cashout_amount'] : null,
         'cashout_at' => $ticket['cashout_at'],
         'created_at' => $ticket['created_at'],
