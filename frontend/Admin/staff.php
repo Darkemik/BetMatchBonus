@@ -48,6 +48,8 @@ $inactiveAdmins = $totalAdmins - $activeAdmins;
     <link rel="icon" href="../../img/logo.png" type="image/x-icon">
     <style>
         body { background: #1a1a2e; color: #eee; }
+        p { color: #e6e6e6 !important; }
+        .text-muted { color: #9aa6b2 !important; }
         .navbar-admin { background: #16213e; }
         .sidebar {
             background: #16213e; min-height: calc(100vh - 56px);
@@ -56,7 +58,7 @@ $inactiveAdmins = $totalAdmins - $activeAdmins;
         .sidebar .nav-link { color: #ccc; padding: 10px 20px; display: block; }
         .sidebar .nav-link:hover { color: #fff; background: #0f3460; }
         .sidebar .nav-section {
-            font-size: 0.7rem; text-transform: uppercase; color: #666;
+            font-size: 0.7rem; text-transform: uppercase; color: #e94560;
             padding: 14px 20px 4px; letter-spacing: 1px;
         }
         .stat-card {
@@ -136,9 +138,9 @@ $inactiveAdmins = $totalAdmins - $activeAdmins;
         <span class="text-white fw-bold fs-5">Admin Dashboard</span>
     </div>
     <div class="d-flex align-items-center gap-3">
-        <span class="text-muted">
+        <span class="text-white fw-semibold d-inline-flex align-items-center gap-2">
             <?= htmlspecialchars($_SESSION['admin_username']) ?>
-            <span class="badge bg-danger"><?= htmlspecialchars($role) ?></span>
+            <span class="badge rounded-pill bg-danger"><?= htmlspecialchars($role) ?></span>
         </span>
         <a href="/BetMatchBonus/backend/Auth/admin_logout.php" class="btn btn-outline-danger btn-sm">Kijelentkezés</a>
     </div>
