@@ -592,7 +592,7 @@ VALUES
 (
   'BONUSZHETKOZNAP5K',
   'BÓNUSZ HÉTKÖZNAP (5.000 Ft, 100%, 3x)',
-  'Hétfőtől péntekig minden nap elérhető feltöltési bónusz! Hogyan aktiválhatod? 1) Fizess be legalább 3.000 Ft-ot a számládra. 2) A befizetett összeg 100%-át kapod bónuszként, maximum 5.000 Ft-ig. Például: 3.000 Ft befizetés = 3.000 Ft bónusz, 5.000 Ft befizetés = 5.000 Ft bónusz, 10.000 Ft befizetés = 5.000 Ft bónusz (max). 3) A kapott bónusz összeget 3-szorosan kell megforgatnod, mielőtt kifizethetővé válik. Tehát ha 5.000 Ft bónuszt kaptál, 15.000 Ft értékben kell fogadásokat megtenned. 4) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: A bónusz kizárólag hétköznapokon (hétfőtől péntekig), reggel 8 órától aktiválható, hétvégén nem érhető el!',,
+  'Hétfőtől péntekig minden nap elérhető feltöltési bónusz! Hogyan aktiválhatod? 1) Fizess be legalább 3.000 Ft-ot a számládra. 2) A befizetett összeg 100%-át kapod bónuszként, maximum 5.000 Ft-ig. Például: 3.000 Ft befizetés = 3.000 Ft bónusz, 5.000 Ft befizetés = 5.000 Ft bónusz, 10.000 Ft befizetés = 5.000 Ft bónusz (max). 3) A kapott bónusz összeget 3-szorosan kell megforgatnod, mielőtt kifizethetővé válik. Tehát ha 5.000 Ft bónuszt kaptál, 15.000 Ft értékben kell fogadásokat megtenned. 4) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: A bónusz kizárólag hétköznapokon (hétfőtől péntekig), reggel 8 órától aktiválható, hétvégén nem érhető el!',
   2,                          -- WEEKDAYS
   0.00,
   3000.00,
