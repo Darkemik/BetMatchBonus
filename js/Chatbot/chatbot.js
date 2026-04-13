@@ -31,23 +31,29 @@
         },
         {
             keywords: ['befizet', 'deposit', 'feltölt', 'egyenleg', 'pénz', 'bankkártya', 'átutalás', 'hogyan fizet', 'fizethetek be', 'fizetek be', 'befizetés'],
-            answer: '💳 <b>Befizetés</b><br><br>' +
+            get answer() {
+                var minDep = (window.SITE_SETTINGS && window.SITE_SETTINGS.min_deposit) || 3000;
+                return '💳 <b>Befizetés</b><br><br>' +
                 'A befizetéshez navigálj a <a href="../../frontend/UserProfile/deposit.php">Befizetés</a> oldalra (Profil → Befizetés).<br><br>' +
                 '• <b>Bankkártya</b> (Visa, Mastercard) – azonnal jóváírásra kerül.<br>' +
                 '• <b>Banki átutalás</b> – szintén azonnal feldolgozzuk.<br>' +
-                '• Minimális befizetés: <b>3 000 Ft</b>.<br>' +
+                '• Minimális befizetés: <b>' + minDep.toLocaleString('hu-HU') + ' Ft</b>.<br>' +
                 '• Gyors összeg gombok: 5 000 / 7 500 / 10 000 / 20 000 Ft.<br><br>' +
-                'A befizetés azonnali – azonnal fogadhatsz utána! ⚡'
+                'A befizetés azonnali – azonnal fogadhatsz utána! ⚡';
+            }
         },
         {
             keywords: ['kifizet', 'withdrawal', 'kivét', 'nyeremény', 'pénzfelvét', 'kifizetés', 'kiutal', 'kérhetek kifizet', 'pénzt felvenni'],
-            answer: '💰 <b>Kifizetés</b><br><br>' +
+            get answer() {
+                var minW = (window.SITE_SETTINGS && window.SITE_SETTINGS.min_withdrawal) || 6000;
+                return '💰 <b>Kifizetés</b><br><br>' +
                 'A kifizetés a <a href="../../frontend/UserProfile/withdrawal.php">Kifizetés</a> oldalon (Profil → Kifizetés) kérhető.<br><br>' +
                 '• Kifizetési mód: <b>banki átutalás</b>.<br>' +
-                '• Minimális összeg: <b>6 000 Ft</b>.<br>' +
+                '• Minimális összeg: <b>' + minW.toLocaleString('hu-HU') + ' Ft</b>.<br>' +
                 '• Szükséges megadni a számlán szereplő nevet és bankszámlaszámot.<br>' +
                 '• Feldolgozási idő: <b>1–3 munkanap</b>.<br><br>' +
-                'A kifizetés a saját nevedre szóló bankszámlára történik. 🏦'
+                'A kifizetés a saját nevedre szóló bankszámlára történik. 🏦';
+            }
         },
         {
             keywords: ['élő', 'live', 'élo meccs', 'élő meccs', 'folyamatban', 'most játszik'],

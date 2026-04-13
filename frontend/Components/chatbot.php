@@ -60,5 +60,6 @@ if (strpos($chatbotPath, '/frontend/Help/') !== false ||
     $chatbotPrefix = '../';
 }
 ?>
+<?php include __DIR__ . '/site_settings.php'; ?>
 <link rel="stylesheet" href="<?php echo $chatbotPrefix; ?>css/Chatbot/chatbot.css">
 <script src="<?php echo $chatbotPrefix; ?>js/Chatbot/chatbot.js"></script>

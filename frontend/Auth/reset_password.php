@@ -1,5 +1,7 @@
 <?php
 require_once "../../backend/connect.php";
+require_once "../../backend/Auth/settings_helper.php";
+$_minPwLen = get_setting_int('min_password_length', 7);
 
 $token = $_GET['token'] ?? '';
 $error = '';
@@ -138,7 +140,7 @@ if ($token === '' || strlen($token) !== 64 || !ctype_xdigit($token)) {
 
                 <label class="form-label">Új jelszó</label>
                 <div class="input-group mb-3">
-                    <input type="password" id="newPassword" name="new_password" class="form-control" placeholder="Legalább 7 karakter" required minlength="7">
+                    <input type="password" id="newPassword" name="new_password" class="form-control" placeholder="Legalább <?php echo $_minPwLen; ?> karakter" required minlength="<?php echo $_minPwLen; ?>">
                     <button type="button" class="btn toggle-password" data-target="newPassword" tabindex="-1">
                         <i class="fas fa-eye"></i>
                     </button>
@@ -146,7 +148,7 @@ if ($token === '' || strlen($token) !== 64 || !ctype_xdigit($token)) {
 
                 <label class="form-label">Új jelszó újra</label>
                 <div class="input-group mb-3">
-                    <input type="password" id="newPassword2" class="form-control" placeholder="Jelszó megerősítése" required minlength="7">
+                    <input type="password" id="newPassword2" class="form-control" placeholder="Jelszó megerősítése" required minlength="<?php echo $_minPwLen; ?>">
                     <button type="button" class="btn toggle-password" data-target="newPassword2" tabindex="-1">
                         <i class="fas fa-eye"></i>
                     </button>

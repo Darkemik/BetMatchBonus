@@ -1,4 +1,10 @@
 <div class="modal fade" id="registerModal" tabindex="-1">
+<?php
+if (!function_exists('get_setting_int')) {
+    require_once dirname(dirname(__DIR__)) . '/backend/Auth/settings_helper.php';
+}
+$_minPhoneLen = get_setting_int('min_phone_length', 11);
+?>
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
 
@@ -25,7 +31,7 @@
                     <input type="email" id="modal-email2" class="form-control mb-3" placeholder="Email újra" data-i18n-placeholder="registerModal.emailAgainPlaceholder" required>
 
                     <label class="form-label" data-i18n="registerModal.phone">Telefonszám</label>
-                    <input type="tel" name="phone" id="modal-phone" class="form-control mb-3" placeholder="Pl.:06308469165" data-i18n-placeholder="registerModal.phonePlaceholder" inputmode="numeric" pattern="[0-9]+" minlength="11" required>
+                    <input type="tel" name="phone" id="modal-phone" class="form-control mb-3" placeholder="Pl.:06308469165" data-i18n-placeholder="registerModal.phonePlaceholder" inputmode="numeric" pattern="[0-9]+" minlength="<?php echo $_minPhoneLen; ?>" required>
 
                     <label class="form-label" data-i18n="registerModal.password">Jelszó</label>
                     <div class="input-group mb-1">

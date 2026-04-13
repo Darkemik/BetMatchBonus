@@ -96,9 +96,10 @@ function validatePasswordForm(event) {
     const newPassword = document.getElementById('new_password');
     const confirmPassword = document.getElementById('confirm_password');
 
-    if (newPassword.value.length < 8) {
+    var minPwLen = (window.SITE_SETTINGS && window.SITE_SETTINGS.min_password_length) || 7;
+    if (newPassword.value.length < minPwLen) {
         event.preventDefault();
-        alert('A jelszó legalább 8 karakter hosszú kell legyen!');
+        alert('A jelszó legalább ' + minPwLen + ' karakter hosszú kell legyen!');
         return false;
     }
 

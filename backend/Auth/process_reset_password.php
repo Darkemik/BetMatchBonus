@@ -3,6 +3,7 @@ session_start();
 header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../connect.php';
+require_once __DIR__ . '/settings_helper.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Érvénytelen kérés.']);
@@ -17,8 +18,9 @@ if ($token === '' || strlen($token) !== 64 || !ctype_xdigit($token)) {
     exit;
 }
 
-if (strlen($newPassword) < 7) {
-    echo json_encode(['success' => false, 'message' => 'A jelszó legalább 7 karakter legyen!']);
+$minPwLen = get_setting_int('min_password_length', 7);
+if (strlen($newPassword) < $minPwLen) {
+    echo json_encode(['success' => false, 'message' => 'A jelszó legalább ' . $minPwLen . ' karakter legyen!']);
     exit;
 }
 

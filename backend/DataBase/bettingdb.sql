@@ -19,6 +19,27 @@ INSERT INTO Roles (id, name, description) VALUES
 (3, 'SUPERADMIN', 'Szuperadmin – teljes hozzáférés, admin kezelés');
 
 -- ============================================================
+-- 1b) ROLE PERMISSIONS
+-- ============================================================
+CREATE TABLE IF NOT EXISTS RolePermissions (
+  id          INT           AUTO_INCREMENT PRIMARY KEY,
+  role_id     INT           NOT NULL,
+  page_key    VARCHAR(50)   NOT NULL,
+  can_access  TINYINT(1)    NOT NULL DEFAULT 0,
+  UNIQUE KEY uk_role_page (role_id, page_key),
+  FOREIGN KEY (role_id) REFERENCES Roles(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+
+-- Alapértelmezett jogosultságok
+INSERT INTO RolePermissions (role_id, page_key, can_access) VALUES
+-- MOD: csak felhasználók + szelvények
+(1, 'dashboard', 1), (1, 'tickets', 1), (1, 'bonuses', 0), (1, 'deposits', 0), (1, 'withdrawals', 0),
+-- ADMIN: minden kivéve staff
+(2, 'dashboard', 1), (2, 'tickets', 1), (2, 'bonuses', 1), (2, 'deposits', 1), (2, 'withdrawals', 1),
+-- SUPERADMIN: mindenhez hozzáfér (a staff oldal mindig elérhető)
+(3, 'dashboard', 1), (3, 'tickets', 1), (3, 'bonuses', 1), (3, 'deposits', 1), (3, 'withdrawals', 1);
+
+-- ============================================================
 -- 2) COUNTRIES
 -- ============================================================
 CREATE TABLE IF NOT EXISTS Countries (

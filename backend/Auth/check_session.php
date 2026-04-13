@@ -15,8 +15,10 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Session timeout ellenőrzése (30 perc)
-$timeout = 60 * 30; // 30 minutes
+require_once __DIR__ . '/../Auth/settings_helper.php';
+
+// Session timeout ellenőrzése
+$timeout = get_setting_int('session_timeout_minutes', 30) * 60;
 if (isset($_SESSION['last_activity'])) {
     if (time() - $_SESSION['last_activity'] > $timeout) {
         // Session lejárt

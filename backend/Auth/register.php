@@ -6,6 +6,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../connect.php';
 require_once __DIR__ . '/../recaptcha_verify.php';
+require_once __DIR__ . '/../Auth/settings_helper.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Érvénytelen kérés.']);
@@ -44,16 +45,18 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     echo json_encode(['success' => false, 'message' => 'Érvénytelen email cím!']);
     exit;
 }
-if (strlen($password) < 7) {
-    echo json_encode(['success' => false, 'message' => 'A jelszó legalább 7 karakter legyen!']);
+$minPwLen = get_setting_int('min_password_length', 7);
+if (strlen($password) < $minPwLen) {
+    echo json_encode(['success' => false, 'message' => 'A jelszó legalább ' . $minPwLen . ' karakter legyen!']);
     exit;
 }
 if ($birthdate === '' || $family_name === '' || $sure_name === '' || $phone === '' || $birthplace === '') {
     echo json_encode(['success' => false, 'message' => 'A személyes adatok kitöltése kötelező!']);
     exit;
 }
-if (strlen($phone) < 11) {
-    echo json_encode(['success' => false, 'message' => 'A telefonszám legalább 11 számjegy legyen!']);
+$minPhoneLen = get_setting_int('min_phone_length', 11);
+if (strlen($phone) < $minPhoneLen) {
+    echo json_encode(['success' => false, 'message' => 'A telefonszám legalább ' . $minPhoneLen . ' számjegy legyen!']);
     exit;
 }
 
@@ -61,8 +64,9 @@ if (strlen($phone) < 11) {
 $birth = new DateTime($birthdate);
 $now   = new DateTime();
 $age   = $now->diff($birth)->y;
-if ($age < 18) {
-    echo json_encode(['success' => false, 'message' => '18 éves kor alatt nem lehet regisztrálni!']);
+$minAge = get_setting_int('min_user_age', 18);
+if ($age < $minAge) {
+    echo json_encode(['success' => false, 'message' => $minAge . ' éves kor alatt nem lehet regisztrálni!']);
     exit;
 }
 

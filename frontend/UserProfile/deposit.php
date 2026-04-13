@@ -1,6 +1,7 @@
 <?php
 require_once "../../backend/Auth/check_session.php";
 require_once "../../backend/connect.php";
+require_once "../../backend/Auth/settings_helper.php";
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: /frontend/MainMenu/MainMenu.php");
@@ -327,16 +328,20 @@ $bonus_stmt->close();
                         </div>
                         <input type="hidden" id="payment_method" name="payment_method" value="visa">
 
+<?php
+                        $minDeposit = get_setting_int('min_deposit', 3000);
+                        $maxDeposit = get_setting_int('max_deposit', 600000);
+                        ?>
                         <!-- Összeg -->
                         <div class="deposit-section-title" data-i18n="userProfile.deposit.amount">Befizetési összeg</div>
                         <div class="deposit-input-wrapper">
-                            <input type="number" id="amount" name="amount" min="3000" max="600000" step="1" required value="3000">
+                            <input type="number" id="amount" name="amount" min="<?php echo $minDeposit; ?>" max="<?php echo $maxDeposit; ?>" step="1" required value="<?php echo $minDeposit; ?>">
                             <span class="currency-label">FT</span>
                         </div>
 
                         <!-- Gyors összegek -->
                         <div class="deposit-quick-btns">
-                            <button type="button" class="deposit-quick-btn" data-amount="3000">3 000</button>
+                            <button type="button" class="deposit-quick-btn" data-amount="<?php echo $minDeposit; ?>"><?php echo number_format($minDeposit, 0, ',', ' '); ?></button>
                             <button type="button" class="deposit-quick-btn" data-amount="5000">5 000</button>
                             <button type="button" class="deposit-quick-btn" data-amount="10000">10 000</button>
                             <button type="button" class="deposit-quick-btn" data-amount="20000">20 000</button>
@@ -345,7 +350,7 @@ $bonus_stmt->close();
 
                         <div class="deposit-info-bar">
                             <i class="fas fa-shield-alt"></i>
-                            <span data-i18n-html="userProfile.deposit.secureInfo">A befizetés biztonságosan, titkosított kapcsolaton keresztül kerül feldolgozásra. Minimális: <strong>3 000 FT</strong> | Maximális: <strong>600 000 FT</strong></span>
+                            <span>A befizetés biztonságosan, titkosított kapcsolaton keresztül kerül feldolgozásra. Minimális: <strong><?php echo number_format($minDeposit, 0, ',', ' '); ?> FT</strong> | Maximális: <strong><?php echo number_format($maxDeposit, 0, ',', ' '); ?> FT</strong></span>
                         </div>
 
                         <button type="submit" class="deposit-submit-btn">
@@ -390,8 +395,10 @@ $bonus_stmt->close();
             const amount = document.getElementById('amount').value;
             const method = document.getElementById('payment_method').value;
 
-            if (amount < 3000 || amount > 600000) {
-                alert(window.i18n ? window.i18n('userProfile.deposit.invalidAmount', 'Az összeg nem megfelelő! (3 000 - 600 000 FT)') : 'Az összeg nem megfelelő! (3 000 - 600 000 FT)');
+            var minDep = (window.SITE_SETTINGS && window.SITE_SETTINGS.min_deposit) || <?php echo $minDeposit; ?>;
+            var maxDep = (window.SITE_SETTINGS && window.SITE_SETTINGS.max_deposit) || <?php echo $maxDeposit; ?>;
+            if (amount < minDep || amount > maxDep) {
+                alert('Az összeg nem megfelelő! (' + minDep.toLocaleString('hu-HU') + ' - ' + maxDep.toLocaleString('hu-HU') + ' FT)');
                 return false;
             }
 

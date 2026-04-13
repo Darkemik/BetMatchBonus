@@ -335,15 +335,15 @@
       "pageTitle": "Befizetés | BetMatchBonus",
       "paymentMethod": "Fizetési mód választása",
       "amount": "Befizetési összeg",
-      "secureInfo": "A befizetés biztonságosan, titkosított kapcsolaton keresztül kerül feldolgozásra. Minimális: <strong>3 000 FT</strong> | Maximális: <strong>600 000 FT</strong>",
+      "secureInfo": "A befizetés biztonságosan, titkosított kapcsolaton keresztül kerül feldolgozásra. Minimális: <strong>{{MIN_DEPOSIT}} FT</strong> | Maximális: <strong>{{MAX_DEPOSIT}} FT</strong>",
       "submit": "Biztonságos Befizetés",
-      "invalidAmount": "Az összeg nem megfelelő! (3 000 - 600 000 FT)"
+      "invalidAmount": "Az összeg nem megfelelő! ({{MIN_DEPOSIT}} - {{MAX_DEPOSIT}} FT)"
     },
     "withdrawal": {
       "pageTitle": "Kifizetés | BetMatchBonus",
       "withdrawable": "Kiutalható összeg",
-      "minRequiredInfo": "A kifizetéshez legalább <strong>6 000 FT</strong> nyereményegyenleg szükséges.",
-      "winningsOnlyInfo": "Kifizetés csak a nyereményegyenlegből lehetséges. Minimum: <strong>6 000 FT</strong>",
+      "minRequiredInfo": "A kifizetéshez legalább <strong>{{MIN_WITHDRAWAL}} FT</strong> nyereményegyenleg szükséges.",
+      "winningsOnlyInfo": "Kifizetés csak a nyereményegyenlegből lehetséges. Minimum: <strong>{{MIN_WITHDRAWAL}} FT</strong>",
       "pendingRequests": "Függőben lévő kifizetési kérelmek",
       "confirmCancelRequest": "Biztosan visszavonod ezt a kifizetési kérelmet?",
       "cancelRequest": "Visszavonás",

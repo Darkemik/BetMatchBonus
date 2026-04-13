@@ -1,6 +1,7 @@
 <?php
 require_once "../../backend/Auth/check_session.php";
 require_once "../../backend/connect.php";
+require_once "../../backend/Auth/settings_helper.php";
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: /frontend/MainMenu/MainMenu.php");
@@ -35,7 +36,9 @@ if ($savedRow) {
 }
 
 // Validate amount
-if ($amount < 3000 || $amount > 600000) {
+$minDep = get_setting_int('min_deposit', 3000);
+$maxDep = get_setting_int('max_deposit', 600000);
+if ($amount < $minDep || $amount > $maxDep) {
     header("Location: deposit.php?error=invalid_amount");
     exit();
 }

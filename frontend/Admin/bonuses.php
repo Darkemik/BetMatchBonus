@@ -1,8 +1,11 @@
 <?php
 require_once __DIR__ . '/../../backend/Auth/admin_guard.php';
-admin_guard('ADMIN');
+admin_guard('MOD');
 
 require_once __DIR__ . '/../../backend/connect.php';
+require_once __DIR__ . '/../../backend/Auth/permission_helper.php';
+page_permission_guard('bonuses');
+$perms = get_role_permissions();
 date_default_timezone_set('Europe/Budapest');
 
 $role = $_SESSION['admin_role'];
@@ -191,21 +194,7 @@ $bonuses = $conn->query("
 <div class="d-flex">
     <!-- Sidebar -->
     <aside class="sidebar">
-        <div class="nav-section">Általános</div>
-        <a href="dashboard.php#users" class="nav-link">👥 Felhasználók</a>
-        <a href="dashboard.php#tickets" class="nav-link">🎫 Szelvények</a>
-
-        <?php if ($role === 'ADMIN' || $role === 'SUPERADMIN'): ?>
-        <div class="nav-section">Pénzügy</div>
-        <a href="bonuses.php" class="nav-link" style="color: #fff; background: #0f3460;">🎁 Bónuszok</a>
-        <a href="../../frontend/UserProfile/withdrawal.php" class="nav-link">💸 Kifizetések</a>
-        <?php endif; ?>
-
-        <?php if ($role === 'SUPERADMIN'): ?>
-        <div class="nav-section">Rendszer</div>
-        <a href="staff.php" class="nav-link">🛡️ Staff (Adminok)</a>
-        <a href="audit_logs.php" class="nav-link">📋 Audit Logs</a>
-        <?php endif; ?>
+        <?php $activePage = 'bonuses'; include __DIR__ . '/sidebar.php'; ?>
     </aside>
 
     <!-- Main content -->

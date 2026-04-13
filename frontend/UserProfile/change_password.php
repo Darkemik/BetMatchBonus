@@ -1,6 +1,7 @@
 <?php
 require_once "../../backend/Auth/check_session.php";
 require_once "../../backend/connect.php";
+require_once "../../backend/Auth/settings_helper.php";
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: /frontend/MainMenu/MainMenu.php");
@@ -22,8 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
         $error_message = "Összes mező kitöltése kötelező!";
     } elseif ($new_password !== $confirm_password) {
         $error_message = "Az új jelszavak nem egyeznek!";
-    } elseif (strlen($new_password) < 8) {
-        $error_message = "A jelszó legalább 8 karakter hosszú kell legyen!";
+    } elseif (strlen($new_password) < get_setting_int('min_password_length', 7)) {
+        $error_message = "A jelszó legalább " . get_setting_int('min_password_length', 7) . " karakter hosszú kell legyen!";
     } else {
         // Jelenlegi jelszó és heti limit ellenőrzése
         $query = "SELECT password_hash, password_changed_at FROM Users WHERE id = ?";
@@ -131,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
-                            <small class="form-text text-muted" data-i18n="userProfile.changePassword.minLengthHint">Legalább 8 karakter hosszú kell legyen</small>
+                            <small class="form-text text-muted">Legalább <?php echo get_setting_int('min_password_length', 7); ?> karakter hosszú kell legyen</small>
                         </div>
                         
                         <div class="form-group mb-3">

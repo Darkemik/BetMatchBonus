@@ -6,6 +6,7 @@
 
 session_start();
 require_once dirname(__DIR__) . "/connect.php";
+require_once dirname(__DIR__) . '/Auth/settings_helper.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -48,9 +49,10 @@ $deductFromBonus = 0.0;
 $freeBetToConsume = 0.0;
 $isFreeBetTicket = false;
 
-if ($stake < 100 || count($items) === 0) {
+$minBet = get_setting_int('min_bet_amount', 100);
+if ($stake < $minBet || count($items) === 0) {
     http_response_code(400);
-    echo json_encode(['status' => 'error', 'message' => 'Minimum tét: 100 Ft, legalább 1 tétel szükséges']);
+    echo json_encode(['status' => 'error', 'message' => 'Minimum tét: ' . number_format($minBet, 0, ',', ' ') . ' Ft, legalább 1 tétel szükséges']);
     exit;
 }
 
@@ -101,14 +103,17 @@ if ($hasDailyTipBoost) {
 }
 
 if ($dailyTipBoostVerified) {
-    $calculatedTotalOdds = round($calculatedTotalOdds * 1.2, 2);
+    $dailyTipMultiplier = get_setting_float('daily_tip_multiplier', 1.2);
+    $calculatedTotalOdds = round($calculatedTotalOdds * $dailyTipMultiplier, 2);
 }
 
-// Oddspiramis: 1.3x szorzó ha 6+ fogadás van a szelvényen (szerver oldali ellenőrzés)
+// Oddspiramis: szorzó ha 6+ fogadás van a szelvényen (szerver oldali ellenőrzés)
 $oddsPyramidBoostVerified = false;
-if ($hasOddsPyramidBoost && $selectionCount >= 6) {
+$minPyramidSelections = get_setting_int('min_pyramid_selections', 6);
+if ($hasOddsPyramidBoost && $selectionCount >= $minPyramidSelections) {
     $oddsPyramidBoostVerified = true;
-    $calculatedTotalOdds = round($calculatedTotalOdds * 1.3, 2);
+    $oddsPyramidMultiplier = get_setting_float('odds_pyramid_multiplier', 1.3);
+    $calculatedTotalOdds = round($calculatedTotalOdds * $oddsPyramidMultiplier, 2);
 }
 
 $effectiveTotalOdds = max(round($totalOdds, 2), $calculatedTotalOdds);

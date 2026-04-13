@@ -5,6 +5,7 @@ date_default_timezone_set('Europe/Budapest');
 // Check if user is logged in
 require_once '../Auth/check_session.php';
 require_once '../../backend/connect.php';
+require_once '../../backend/Auth/settings_helper.php';
 require_once '../../backend/mail_config.php';
 require_once '../../backend/PHPMailer/Exception.php';
 require_once '../../backend/PHPMailer/PHPMailer.php';
@@ -25,8 +26,10 @@ $amount = isset($_POST['amount']) ? (int) $_POST['amount'] : 0;
 $posted_method = isset($_POST['payment_method']) ? trim($_POST['payment_method']) : 'visa';
 
 // Validate amount
-if ($amount < 3000 || $amount > 600000) {
-    $_SESSION['error_message'] = '❌ Az összeg 3000-600000 FT között kell, hogy legyen';
+$minDeposit = get_setting_int('min_deposit', 3000);
+$maxDeposit = get_setting_int('max_deposit', 600000);
+if ($amount < $minDeposit || $amount > $maxDeposit) {
+    $_SESSION['error_message'] = '❌ Az összeg ' . number_format($minDeposit, 0, ',', ' ') . '-' . number_format($maxDeposit, 0, ',', ' ') . ' FT között kell, hogy legyen';
     header('Location: /BetMatchBonus/frontend/UserProfile/deposit.php');
     exit;
 }

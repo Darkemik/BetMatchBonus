@@ -1,5 +1,12 @@
 <!DOCTYPE html>
 <html lang="hu">
+<?php
+require_once dirname(dirname(__DIR__)) . '/backend/connect.php';
+require_once dirname(dirname(__DIR__)) . '/backend/Auth/settings_helper.php';
+$_minDep = get_setting_int('min_deposit', 3000);
+$_maxDep = get_setting_int('max_deposit', 600000);
+$_minWith = get_setting_int('min_withdrawal', 6000);
+?>
 
 <head>
     <meta charset="UTF-8">
@@ -34,15 +41,15 @@
             <h4>Befizetés</h4>
             <div class="additional-info">
                 <strong>Elérhető mód:</strong> bankkártyás fizetés (demo kártya-feldolgozás).<br>
-                <strong>Minimum összeg:</strong> 3 000 FT<br>
-                <strong>Maximum összeg:</strong> 600 000 FT<br>
+                <strong>Minimum összeg:</strong> <?php echo number_format($_minDep, 0, ',', ' '); ?> FT<br>
+                <strong>Maximum összeg:</strong> <?php echo number_format($_maxDep, 0, ',', ' '); ?> FT<br>
                 A sikeres befizetés után az egyenleg azonnal frissül.
             </div>
 
             <h4>Kifizetés</h4>
             <div class="additional-info">
                 <strong>Elérhető mód:</strong> banki átutalás.<br>
-                <strong>Minimum kifizetés:</strong> 6 000 FT<br>
+                <strong>Minimum kifizetés:</strong> <?php echo number_format($_minWith, 0, ',', ' '); ?> FT<br>
                 Kifizetés kizárólag a <strong>nyereményegyenlegből</strong> kezdeményezhető,
                 a bónusz egyenleg közvetlenül nem utalható ki.
             </div>

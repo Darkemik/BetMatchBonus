@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/Auth/settings_helper.php';
 
 /**
  * reCAPTCHA v3 token ellenőrzés.
@@ -51,7 +52,8 @@ function verifyRecaptcha(string $token, string $action = ''): array
 
     $score = $data['score'] ?? 0;
 
-    if ($score < RECAPTCHA_THRESHOLD) {
+    $threshold = get_setting_float('recaptcha_threshold', 0.5);
+    if ($score < $threshold) {
         return ['success' => false, 'score' => $score, 'error' => 'A rendszer botnak érzékelte a kérést.'];
     }
 

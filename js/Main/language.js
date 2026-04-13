@@ -169,6 +169,7 @@
     }
 
     // Kulcs feloldása: "nav.home" → translations.nav.home
+    // {{PLACEHOLDER}} tokenek cseréje SITE_SETTINGS értékekre
     function resolve(key) {
         if (!key || !translations) return null;
         const parts = key.split('.');
@@ -176,6 +177,12 @@
         for (const p of parts) {
             if (obj == null) return null;
             obj = obj[p];
+        }
+        if (typeof obj === 'string' && window.SITE_SETTINGS) {
+            obj = obj.replace(/\{\{(\w+)\}\}/g, function(_, token) {
+                var val = window.SITE_SETTINGS[token.toLowerCase()];
+                return val != null ? Number(val).toLocaleString(currentLang === 'en' ? 'en-US' : 'hu-HU') : '{{' + token + '}}';
+            });
         }
         return obj || null;
     }

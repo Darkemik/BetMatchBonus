@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let availableFreeBetMinCombo = 0;
     let availableFreeBetMinOdds = 0;
     let availableFreeBetMinOddsPerEvent = 0;
-    let manualStakeBeforeFreeBet = 100;
+    let manualStakeBeforeFreeBet = (window.SITE_SETTINGS && window.SITE_SETTINGS.min_bet_amount) || 100;
 
     function formatFt(value) {
         return (parseFloat(value) || 0).toLocaleString('hu-HU', {
@@ -49,13 +49,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // 1.2x szorzó ha van napi tipp a szelvényen
         if (hasDailyTip) {
-            totalOdds *= 1.2;
+            totalOdds *= (window.SITE_SETTINGS && window.SITE_SETTINGS.daily_tip_multiplier) || 1.2;
         }
 
         // Oddspiramis: 1.3x szorzó ha 6+ fogadás van a szelvényen
-        const hasOddsPyramid = selectionCount >= 6;
+        const minPyramidSel = (window.SITE_SETTINGS && window.SITE_SETTINGS.min_pyramid_selections) || 6;
+        const hasOddsPyramid = selectionCount >= minPyramidSel;
         if (hasOddsPyramid) {
-            totalOdds *= 1.3;
+            totalOdds *= (window.SITE_SETTINGS && window.SITE_SETTINGS.odds_pyramid_multiplier) || 1.3;
         }
 
         if (minOddsPerEvent === null) {
@@ -624,8 +625,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const stake = parseFloat(document.getElementById('stake-input').value) || 0;
             const useFreeBet = !!document.getElementById('use-freebet-toggle')?.checked;
-            if (stake < 100) {
-                BmbPopup.warning(t('betslip.minStakeMsg', 'Minimum tét: 100 Ft'), t('betslip.invalidStakeTitle', 'Érvénytelen tét'));
+            const minBet = (window.SITE_SETTINGS && window.SITE_SETTINGS.min_bet_amount) || 100;
+            if (stake < minBet) {
+                BmbPopup.warning(t('betslip.minStakeMsg', 'Minimum tét: ' + minBet + ' Ft'), t('betslip.invalidStakeTitle', 'Érvénytelen tét'));
                 return;
             }
 

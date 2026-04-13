@@ -3,6 +3,9 @@ require_once __DIR__ . '/../../backend/Auth/admin_guard.php';
 admin_guard('MOD');
 
 require_once __DIR__ . '/../../backend/connect.php';
+require_once __DIR__ . '/../../backend/Auth/permission_helper.php';
+page_permission_guard('tickets');
+$perms = get_role_permissions();
 
 $role = $_SESSION['admin_role'];
 
@@ -136,21 +139,7 @@ if ($ticketUsers && $ticketUsers->num_rows > 0) {
 <div class="d-flex">
     <!-- Sidebar -->
     <aside class="sidebar">
-        <div class="nav-section">Általános</div>
-        <a href="dashboard.php" class="nav-link">👥 Felhasználók</a>
-        <a href="tickets.php" class="nav-link" style="color: #fff; background: #0f3460;">🎫 Szelvények</a>
-
-        <?php if ($role === 'ADMIN' || $role === 'SUPERADMIN'): ?>
-        <div class="nav-section">Pénzügy</div>
-        <a href="bonuses.php" class="nav-link">🎁 Bónuszok</a>
-        <a href="withdrawals.php" class="nav-link">💸 Kifizetések</a>
-        <?php endif; ?>
-
-        <?php if ($role === 'SUPERADMIN'): ?>
-        <div class="nav-section">Rendszer</div>
-        <a href="staff.php" class="nav-link">🛡️ Staff (Adminok)</a>
-        <a href="audit_logs.php" class="nav-link">📋 Audit Logs</a>
-        <?php endif; ?>
+        <?php $activePage = 'tickets'; include __DIR__ . '/sidebar.php'; ?>
     </aside>
 
     <!-- Main content -->

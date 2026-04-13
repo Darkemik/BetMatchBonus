@@ -1,6 +1,7 @@
 <?php
 require_once "../../backend/Auth/check_session.php";
 require_once "../../backend/connect.php";
+require_once "../../backend/Auth/settings_helper.php";
 require_once "../../backend/mail_config.php";
 require_once "../../backend/PHPMailer/Exception.php";
 require_once "../../backend/PHPMailer/PHPMailer.php";
@@ -459,7 +460,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                     </div>
                     
                     <?php
-                        $can_withdraw = $winnings_balance >= 6000;
+                        $minWithdrawal = get_setting_int('min_withdrawal', 6000);
+                        $can_withdraw = $winnings_balance >= $minWithdrawal;
                         $withdrawable = $winnings_balance;
                     ?>
 
@@ -474,11 +476,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                         </div>
                         <?php if (!$can_withdraw): ?>
                             <div style="font-size:0.8rem; color:#dc3545; margin-top:6px;">
-                                <i class="fas fa-info-circle"></i> <span data-i18n-html="userProfile.withdrawal.minRequiredInfo">A kifizetéshez legalább <strong>6 000 FT</strong> nyereményegyenleg szükséges.</span>
+                                <i class="fas fa-info-circle"></i> A kifizetéshez legalább <strong><?php echo number_format($minWithdrawal, 0, ',', ' '); ?> FT</strong> nyereményegyenleg szükséges.
                             </div>
                         <?php else: ?>
                             <div style="font-size:0.8rem; color:#666; margin-top:6px;">
-                                <span data-i18n-html="userProfile.withdrawal.winningsOnlyInfo">Kifizetés csak a nyereményegyenlegből lehetséges. Minimum: <strong>6 000 FT</strong></span>
+                                Kifizetés csak a nyereményegyenlegből lehetséges. Minimum: <strong><?php echo number_format($minWithdrawal, 0, ',', ' '); ?> FT</strong>
                             </div>
                         <?php endif; ?>
                     </div>
@@ -539,11 +541,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                         <!-- Összeg -->
                         <div class="withdrawal-section-title" data-i18n="userProfile.withdrawal.amount">Kifizetési összeg</div>
                         <div class="withdrawal-input-wrapper">
-                            <input type="number" id="amount" name="amount" min="6000" step="1" max="<?php echo $winnings_balance; ?>" required value="6000">
+                            <input type="number" id="amount" name="amount" min="<?php echo $minWithdrawal; ?>" step="1" max="<?php echo $winnings_balance; ?>" required value="<?php echo $minWithdrawal; ?>">
                             <span class="currency-label">FT</span>
                         </div>
                         <div class="withdrawal-hint" id="withdrawalHint">
-                            <span data-i18n="userProfile.withdrawal.minLabel">Min</span>: <strong>6 000 FT</strong> &nbsp;|&nbsp; <span data-i18n="userProfile.withdrawal.maxWinningsLabel">Max (nyereményegyenleg)</span>: <strong><?php echo number_format($winnings_balance, 0, ',', ' '); ?> FT</strong>
+                            <span data-i18n="userProfile.withdrawal.minLabel">Min</span>: <strong><?php echo number_format($minWithdrawal, 0, ',', ' '); ?> FT</strong> &nbsp;|&nbsp; <span data-i18n="userProfile.withdrawal.maxWinningsLabel">Max (nyereményegyenleg)</span>: <strong><?php echo number_format($winnings_balance, 0, ',', ' '); ?> FT</strong>
                         </div>
 
                         <!-- Gyors összegek -->
@@ -673,7 +675,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
 
                         // Egyenleg frissítése
                         function fmt(n) { return Number(n).toLocaleString('hu-HU') + ' FT'; }
-                        var el, w = data.winnings_balance, canW = w >= 6000;
+                        var el, w = data.winnings_balance, canW = w >= <?php echo $minWithdrawal; ?>;
                         if ((el = document.getElementById('balDeposited'))) el.textContent = fmt(data.deposited_balance);
                         if ((el = document.getElementById('balWinnings'))) el.textContent = fmt(w);
                         if ((el = document.getElementById('balTotal'))) el.textContent = fmt(data.total_deposit_and_winnings);
@@ -702,7 +704,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                         if (hint) {
                             const minText = window.i18n ? window.i18n('userProfile.withdrawal.minLabel', 'Min') : 'Min';
                             const maxText = window.i18n ? window.i18n('userProfile.withdrawal.maxWinningsLabel', 'Max (nyereményegyenleg)') : 'Max (nyereményegyenleg)';
-                            hint.innerHTML = minText + ': <strong>6 000 FT</strong> &nbsp;|&nbsp; ' + maxText + ': <strong>' + fmt(w) + '</strong>';
+                            var minW = (window.SITE_SETTINGS && window.SITE_SETTINGS.min_withdrawal) ? window.SITE_SETTINGS.min_withdrawal : <?php echo $minWithdrawal; ?>;
+                            hint.innerHTML = minText + ': <strong>' + minW.toLocaleString('hu-HU') + ' FT</strong> &nbsp;|&nbsp; ' + maxText + ': <strong>' + fmt(w) + '</strong>';
                         }
 
                         // Form engedélyezése/letiltása

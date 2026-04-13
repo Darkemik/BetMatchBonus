@@ -3,6 +3,7 @@ session_start();
 require_once dirname(__DIR__) . '/Auth/admin_guard.php';
 admin_guard('ADMIN');
 
+require_once dirname(__DIR__) . '/Auth/audit_helper.php';
 require_once dirname(__DIR__) . '/connect.php';
 
 header('Content-Type: application/json; charset=utf-8');
@@ -89,6 +90,7 @@ if ($action === 'void') {
         $tx->close();
 
         $conn->commit();
+        log_audit('ticket_void', 'ticket', $ticketId, "Szelvény #$ticketId érvénytelenítve, tét visszaadva: " . number_format($totalRefund, 0, ',', ' ') . " Ft");
         echo json_encode(['success' => true, 'message' => "Szelvény #$ticketId érvénytelenítve! Tét visszaadva: " . number_format($totalRefund, 0, ',', ' ') . " Ft"]);
     } catch (Exception $e) {
         $conn->rollback();
@@ -197,8 +199,10 @@ if ($action === 'manual_close') {
         $conn->commit();
 
         if ($newStatus === 'WON') {
+            log_audit('ticket_close', 'ticket', $ticketId, "Szelvény #$ticketId → WON, nyeremény: " . number_format($potentialWin, 0, ',', ' ') . " Ft");
             echo json_encode(['success' => true, 'message' => "Szelvény #$ticketId → WON! Nyeremény jóváírva: " . number_format($potentialWin, 0, ',', ' ') . " Ft"]);
         } else {
+            log_audit('ticket_close', 'ticket', $ticketId, "Szelvény #$ticketId → LOST");
             echo json_encode(['success' => true, 'message' => "Szelvény #$ticketId → LOST. Nincs kifizetés."]);
         }
     } catch (Exception $e) {

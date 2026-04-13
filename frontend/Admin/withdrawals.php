@@ -1,8 +1,11 @@
 <?php
 require_once __DIR__ . '/../../backend/Auth/admin_guard.php';
-admin_guard('ADMIN');
+admin_guard('MOD');
 
 require_once __DIR__ . '/../../backend/connect.php';
+require_once __DIR__ . '/../../backend/Auth/permission_helper.php';
+page_permission_guard('withdrawals');
+$perms = get_role_permissions();
 
 $role = $_SESSION['admin_role'];
 
@@ -176,21 +179,7 @@ if ($withdrawalUsers && $withdrawalUsers->num_rows > 0) {
 <div class="d-flex">
     <!-- Sidebar -->
     <aside class="sidebar">
-        <div class="nav-section">Általános</div>
-        <a href="dashboard.php" class="nav-link">👥 Felhasználók</a>
-        <a href="tickets.php" class="nav-link">🎫 Szelvények</a>
-
-        <?php if ($role === 'ADMIN' || $role === 'SUPERADMIN'): ?>
-        <div class="nav-section">Pénzügy</div>
-        <a href="bonuses.php" class="nav-link">🎁 Bónuszok</a>
-        <a href="withdrawals.php" class="nav-link" style="color: #fff; background: #0f3460;">💸 Kifizetések</a>
-        <?php endif; ?>
-
-        <?php if ($role === 'SUPERADMIN'): ?>
-        <div class="nav-section">Rendszer</div>
-        <a href="staff.php" class="nav-link">🛡️ Staff (Adminok)</a>
-        <a href="audit_logs.php" class="nav-link">📋 Audit Logs</a>
-        <?php endif; ?>
+        <?php $activePage = 'withdrawals'; include __DIR__ . '/sidebar.php'; ?>
     </aside>
 
     <!-- Main content -->
@@ -257,9 +246,8 @@ if ($withdrawalUsers && $withdrawalUsers->num_rows > 0) {
                     $uid = (int)$wu['id'];
                     $hasPending = (int)$wu['pending_count'] > 0;
                 ?>
-                    <tr class="user-row <?= $hasPending ? 'table-warning' : '' ?>" 
-                        data-uid="<?= $uid ?>" onclick="toggleWdPanel(<?= $uid ?>)"
-                        style="<?= $hasPending ? 'background:#2a2400 !important;' : '' ?>">
+                    <tr class="user-row" 
+                        data-uid="<?= $uid ?>" onclick="toggleWdPanel(<?= $uid ?>)">
                         <td><i class="fas fa-chevron-right" id="chevron-<?= $uid ?>" style="transition:transform 0.2s;"></i></td>
                         <td>
                             <strong><?= htmlspecialchars($wu['username']) ?></strong>
@@ -425,7 +413,7 @@ if ($withdrawalUsers && $withdrawalUsers->num_rows > 0) {
                                         </button>
                                     </div>
                                     <small class="text-muted d-block mt-1">
-                                        Elérhető nyeremény egyenleg: <strong style="color:#f5c518;"><?= number_format((float)$wu['winnings_balance'], 0, ',', ' ') ?> Ft</strong>
+                                        Elérhető egyenleg: <strong style="color:#f5c518;"><?= number_format((float)$wu['balance'], 0, ',', ' ') ?> Ft</strong>
                                     </small>
                                 </div>
                             </div>
@@ -546,6 +534,7 @@ document.querySelectorAll('.btn-revoke-confirm').forEach(btn => {
 document.querySelectorAll('.admin-actions, .revoke-reason-box, .manual-wd-box').forEach(el => {
     el.addEventListener('click', e => e.stopPropagation());
 });
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -3,6 +3,7 @@ session_start();
 require_once dirname(__DIR__) . '/Auth/admin_guard.php';
 admin_guard('ADMIN');
 
+require_once dirname(__DIR__) . '/Auth/audit_helper.php';
 require_once dirname(__DIR__) . '/connect.php';
 require_once dirname(__DIR__) . '/mail_config.php';
 require_once dirname(__DIR__) . '/PHPMailer/Exception.php';
@@ -118,6 +119,7 @@ if ($action === 'update_user') {
         error_log('Admin user update email hiba: ' . $e->getMessage());
     }
 
+    log_audit('user_update', 'user', $userId, 'Felhasználó frissítve (' . count($changes) . ' módosítás): ' . implode(', ', $changes));
     echo json_encode(['success' => true, 'message' => 'Felhasználó frissítve! (' . count($changes) . ' módosítás) Email értesítés elküldve.']);
     exit;
 }
@@ -193,6 +195,7 @@ if ($action === 'toggle_active') {
         error_log('Toggle active email hiba: ' . $e->getMessage());
     }
 
+    log_audit('user_toggle', 'user', $userId, "Felhasználó {$statusText}");
     echo json_encode(['success' => true, 'message' => "Felhasználó {$statusText}! Email értesítés elküldve."]);
     exit;
 }
@@ -249,6 +252,7 @@ if ($action === 'send_message') {
             </div>";
 
         $mail->send();
+        log_audit('user_message', 'user', $userId, 'Üzenet küldve: ' . $user['email']);
         echo json_encode(['success' => true, 'message' => 'Üzenet sikeresen elküldve: ' . htmlspecialchars($user['email'])]);
     } catch (MailException $e) {
         echo json_encode(['success' => false, 'message' => 'Email küldési hiba: ' . $e->getMessage()]);

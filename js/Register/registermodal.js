@@ -71,9 +71,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            if (password.length < 7) {
+            var minPwLen = (window.SITE_SETTINGS && window.SITE_SETTINGS.min_password_length) || 7;
+            if (password.length < minPwLen) {
                 result.style.color = 'red';
-                result.textContent = 'A jelszó legalább 7 karakter hosszú kell legyen!';
+                result.textContent = 'A jelszó legalább ' + minPwLen + ' karakter hosszú kell legyen!';
                 return;
             }
 
@@ -83,9 +84,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            if (phone.length < 11) {
+            var minPhoneLen = (window.SITE_SETTINGS && window.SITE_SETTINGS.min_phone_length) || 11;
+            if (phone.length < minPhoneLen) {
                 result.style.color = 'red';
-                result.textContent = 'A telefonszám legalább 11 számjegy hosszú kell legyen!';
+                result.textContent = 'A telefonszám legalább ' + minPhoneLen + ' számjegy hosszú kell legyen!';
                 return;
             }
 

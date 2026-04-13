@@ -2,7 +2,11 @@
 /**
  * UserProfile Configuration File
  * Central configuration for all UserProfile features
+ * 
+ * FONTOS: A deposit/withdrawal/password/session értékek a SystemSettings táblából jönnek.
+ * Lásd: backend/Auth/settings_helper.php
  */
+require_once dirname(dirname(__DIR__)) . '/Auth/settings_helper.php';
 
 // ============================================================
 // GENERAL SETTINGS
@@ -11,27 +15,27 @@
 // Enable/Disable UserProfile Module
 const USERPROFILE_ENABLED = true;
 
-// User Session Timeout (in minutes)
-const SESSION_TIMEOUT = 30;
+// User Session Timeout (in minutes) — from SystemSettings
+define('SESSION_TIMEOUT_DYNAMIC', get_setting_int('session_timeout_minutes', 30));
 
 // ============================================================
 // PAYMENT SETTINGS
 // ============================================================
 
-// Minimum Deposit Amount
-const MIN_DEPOSIT_AMOUNT = 1;
+// Minimum Deposit Amount — from SystemSettings
+define('MIN_DEPOSIT_AMOUNT_DYNAMIC', get_setting_int('min_deposit', 3000));
 
-// Maximum Deposit Amount  
-const MAX_DEPOSIT_AMOUNT = 100000;
+// Maximum Deposit Amount — from SystemSettings
+define('MAX_DEPOSIT_AMOUNT_DYNAMIC', get_setting_int('max_deposit', 600000));
 
 // Deposit Processing Time (in hours)
 const DEPOSIT_PROCESSING_TIME = 24;
 
-// Minimum Withdrawal Amount
-const MIN_WITHDRAWAL_AMOUNT = 100;
+// Minimum Withdrawal Amount — from SystemSettings
+define('MIN_WITHDRAWAL_AMOUNT_DYNAMIC', get_setting_int('min_withdrawal', 6000));
 
-// Maximum Withdrawal Amount
-const MAX_WITHDRAWAL_AMOUNT = 50000;
+// Maximum Withdrawal Amount — from SystemSettings
+define('MAX_WITHDRAWAL_AMOUNT_DYNAMIC', get_setting_int('max_withdrawal', 50000));
 
 // Withdrawal Processing Time (in business days)
 const WITHDRAWAL_PROCESSING_TIME = 2;
@@ -56,8 +60,8 @@ const WITHDRAWAL_PAYMENT_METHODS = [
 // PASSWORD SETTINGS
 // ============================================================
 
-// Minimum Password Length
-const MIN_PASSWORD_LENGTH = 8;
+// Minimum Password Length — from SystemSettings
+define('MIN_PASSWORD_LENGTH_DYNAMIC', get_setting_int('min_password_length', 7));
 
 // Require Mixed Case (uppercase + lowercase)
 const REQUIRE_MIXED_CASE = true;
@@ -317,9 +321,9 @@ function validatePasswordStrength($password) {
     ];
 
     // Check minimum length
-    if (strlen($password) < MIN_PASSWORD_LENGTH) {
+    if (strlen($password) < MIN_PASSWORD_LENGTH_DYNAMIC) {
         $result['valid'] = false;
-        $result['errors'][] = 'A jelszó legalább ' . MIN_PASSWORD_LENGTH . ' karakter hosszú kell legyen';
+        $result['errors'][] = 'A jelszó legalább ' . MIN_PASSWORD_LENGTH_DYNAMIC . ' karakter hosszú kell legyen';
     }
 
     // Check mixed case

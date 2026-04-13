@@ -187,8 +187,9 @@ document.addEventListener('DOMContentLoaded', function () {
         calcAge.value = age;
         ageResult.textContent = 'Életkor: ' + age;
 
-        if (age < 18) {
-            result.textContent = '18 éves kor alatt nem lehet regisztrálni!';
+        var minAge = (window.SITE_SETTINGS && window.SITE_SETTINGS.min_user_age) || 18;
+        if (age < minAge) {
+            result.textContent = minAge + ' éves kor alatt nem lehet regisztrálni!';
             dateInput.setAttribute('aria-invalid', 'true');
             setBirthdateVisualState('invalid');
         } else {
@@ -280,8 +281,9 @@ document.addEventListener('DOMContentLoaded', function () {
         e.preventDefault();
 
         var age = parseInt(calcAge.value);
-        if (isNaN(age) || age < 18) {
-            result.textContent = '18 éves kor alatt nem lehet regisztrálni!';
+        var minAge = (window.SITE_SETTINGS && window.SITE_SETTINGS.min_user_age) || 18;
+        if (isNaN(age) || age < minAge) {
+            result.textContent = minAge + ' éves kor alatt nem lehet regisztrálni!';
             result.style.color = 'red';
             dateInput.setAttribute('aria-invalid', 'true');
             setBirthdateVisualState('invalid');

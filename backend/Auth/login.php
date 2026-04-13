@@ -6,6 +6,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../connect.php';
 require_once __DIR__ . '/../recaptcha_verify.php';
+require_once __DIR__ . '/../Auth/settings_helper.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
   echo json_encode(['success' => false, 'message' => 'Érvénytelen kérés.']);
@@ -57,20 +58,21 @@ if ($user && $user['login_locked_until'] !== null) {
   }
 }
 
-$maxAttempts = 3;
+$maxAttempts = get_setting_int('max_login_attempts', 3);
 
 if (!$user || !password_verify($password, $user['password_hash'])) {
   // Sikertelen bejelentkezés — számláló növelése
   if ($user) {
     $newAttempts = (int)$user['failed_login_attempts'] + 1;
     if ($newAttempts >= $maxAttempts) {
-      // Zárolás 1 órára
-      $lockUntil = date('Y-m-d H:i:s', time() + 3600);
+      // Zárolás
+      $lockoutMinutes = get_setting_int('login_lockout_minutes', 60);
+      $lockUntil = date('Y-m-d H:i:s', time() + $lockoutMinutes * 60);
       $stmtLock = $conn->prepare("UPDATE Users SET failed_login_attempts = ?, login_locked_until = ? WHERE id = ?");
       $stmtLock->bind_param("isi", $newAttempts, $lockUntil, $user['id']);
       $stmtLock->execute();
       $stmtLock->close();
-      echo json_encode(['success' => false, 'message' => 'Túl sok sikertelen próbálkozás! A fiókod 1 órára zárolva lett.']);
+      echo json_encode(['success' => false, 'message' => 'Túl sok sikertelen próbálkozás! A fiókod ' . $lockoutMinutes . ' percre zárolva lett.']);
       exit;
     } else {
       $stmtFail = $conn->prepare("UPDATE Users SET failed_login_attempts = ? WHERE id = ?");

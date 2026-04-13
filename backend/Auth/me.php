@@ -3,6 +3,7 @@ session_start();
 header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../connect.php';
+require_once __DIR__ . '/../Auth/settings_helper.php';
 
 function getAvailableFreeBet(mysqli $conn, int $userId): array {
   $stmt = $conn->prepare(" 
@@ -51,7 +52,7 @@ if (isset($_SESSION['user_id'])) {
   $_SESSION['last_activity'] = time();
 
   // 1 órás session limit ellenőrzés
-  $sessionMaxSeconds = 3600; // 1 óra
+  $sessionMaxSeconds = get_setting_int('session_timeout_minutes', 30) * 60;
   $elapsed = time() - (int)$_SESSION['login_started_at'];
   if ($elapsed >= $sessionMaxSeconds) {
     session_unset();

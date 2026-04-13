@@ -5,8 +5,17 @@
  */
 session_start();
 require_once __DIR__ . '/../Auth/admin_guard.php';
+
+// JSON API - ne redirect-eljen ha nincs session
+if (!isset($_SESSION['admin_id'])) {
+    header('Content-Type: application/json');
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Nincs admin bejelentkezés.']);
+    exit;
+}
 admin_guard('ADMIN');
 
+require_once __DIR__ . '/../Auth/audit_helper.php';
 require_once __DIR__ . '/../connect.php';
 require_once __DIR__ . '/../mail_config.php';
 require_once __DIR__ . '/../PHPMailer/Exception.php';
@@ -17,6 +26,21 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception as MailException;
 
 header('Content-Type: application/json');
+
+// Helper: konfigurált PHPMailer példány
+function getConfiguredMailer() {
+    $mail = new PHPMailer(true);
+    $mail->isSMTP();
+    $mail->Host       = MAIL_SMTP_HOST;
+    $mail->SMTPAuth   = true;
+    $mail->Username   = MAIL_SMTP_USERNAME;
+    $mail->Password   = MAIL_SMTP_PASSWORD;
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->Port       = MAIL_SMTP_PORT;
+    $mail->CharSet    = 'UTF-8';
+    $mail->setFrom(MAIL_FROM_EMAIL, MAIL_FROM_NAME);
+    return $mail;
+}
 
 $input = json_decode(file_get_contents('php://input'), true);
 $action = $input['action'] ?? '';
@@ -44,8 +68,8 @@ if ($action === 'manual_withdraw') {
         exit;
     }
 
-    if ($amount > (float)$user['winnings_balance']) {
-        echo json_encode(['success' => false, 'message' => 'Nincs elegendő nyeremény egyenleg! Elérhető: ' . number_format((float)$user['winnings_balance'], 0, ',', ' ') . ' Ft']);
+    if ($amount > (float)$user['balance']) {
+        echo json_encode(['success' => false, 'message' => 'Nincs elegendő egyenleg! Elérhető: ' . number_format((float)$user['balance'], 0, ',', ' ') . ' Ft']);
         exit;
     }
 
@@ -95,6 +119,7 @@ if ($action === 'manual_withdraw') {
         $mail->send();
     } catch (MailException $e) { /* silent */ }
 
+    log_audit('withdrawal_manual', 'user', $userId, 'Manuális kifizetés: ' . $amountFormatted . ' Ft (' . $user['username'] . ')');
     echo json_encode(['success' => true, 'message' => 'Manuális kifizetés létrehozva: ' . $amountFormatted . ' Ft (' . htmlspecialchars($user['username']) . ')']);
     exit;
 }
@@ -181,6 +206,7 @@ if ($action === 'revoke') {
         $mail->send();
     } catch (MailException $e) { /* silent */ }
 
+    log_audit('withdrawal_revoke', 'transaction', $txId, 'Kifizetés visszavonva: ' . $amountFormatted . ' Ft');
     echo json_encode(['success' => true, 'message' => 'Kifizetés visszavonva, egyenleg visszaállítva: ' . $amountFormatted . ' Ft']);
     exit;
 }
@@ -248,6 +274,7 @@ if ($action === 'approve') {
         // Email hiba nem akadályozza a jóváhagyást
     }
 
+    log_audit('withdrawal_approve', 'transaction', $txId, 'Kifizetés jóváhagyva: ' . $amountFormatted . ' Ft');
     echo json_encode(['success' => true, 'message' => 'Kifizetés jóváhagyva: ' . $amountFormatted . ' Ft']);
     exit;
 }
@@ -306,6 +333,7 @@ if ($action === 'reject') {
         // Email hiba nem akadályozza az elutasítást
     }
 
+    log_audit('withdrawal_reject', 'transaction', $txId, 'Kifizetés elutasítva: ' . $amountFormatted . ' Ft');
     echo json_encode(['success' => true, 'message' => 'Kifizetés elutasítva, egyenleg visszaállítva: ' . $amountFormatted . ' Ft']);
     exit;
 }

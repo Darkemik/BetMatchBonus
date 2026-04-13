@@ -1,6 +1,7 @@
 <?php
 header('Content-Type: application/json');
 require_once "../connect.php";
+require_once dirname(dirname(__DIR__)) . '/backend/Auth/settings_helper.php';
 
 session_start();
 
@@ -59,9 +60,10 @@ elseif ($action === 'change_password') {
         exit();
     }
 
-    if (strlen($new_password) < 8) {
+    $minPwLen = get_setting_int('min_password_length', 7);
+    if (strlen($new_password) < $minPwLen) {
         http_response_code(400);
-        echo json_encode(['error' => 'A jelszó legalább 8 karakter hosszú kell legyen']);
+        echo json_encode(['error' => 'A jelszó legalább ' . $minPwLen . ' karakter hosszú kell legyen']);
         exit();
     }
 

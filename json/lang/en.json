@@ -335,15 +335,15 @@
       "pageTitle": "Deposit | BetMatchBonus",
       "paymentMethod": "Choose payment method",
       "amount": "Deposit amount",
-      "secureInfo": "Your deposit is processed securely over an encrypted connection. Minimum: <strong>3,000 FT</strong> | Maximum: <strong>600,000 FT</strong>",
+      "secureInfo": "Your deposit is processed securely over an encrypted connection. Minimum: <strong>{{MIN_DEPOSIT}} FT</strong> | Maximum: <strong>{{MAX_DEPOSIT}} FT</strong>",
       "submit": "Secure Deposit",
-      "invalidAmount": "Invalid amount! (3,000 - 600,000 FT)"
+      "invalidAmount": "Invalid amount! ({{MIN_DEPOSIT}} - {{MAX_DEPOSIT}} FT)"
     },
     "withdrawal": {
       "pageTitle": "Withdrawal | BetMatchBonus",
       "withdrawable": "Withdrawable amount",
-      "minRequiredInfo": "At least <strong>6,000 FT</strong> winnings balance is required for withdrawal.",
-      "winningsOnlyInfo": "Withdrawals are available from winnings balance only. Minimum: <strong>6,000 FT</strong>",
+      "minRequiredInfo": "At least <strong>{{MIN_WITHDRAWAL}} FT</strong> winnings balance is required for withdrawal.",
+      "winningsOnlyInfo": "Withdrawals are available from winnings balance only. Minimum: <strong>{{MIN_WITHDRAWAL}} FT</strong>",
       "pendingRequests": "Pending withdrawal requests",
       "confirmCancelRequest": "Are you sure you want to cancel this withdrawal request?",
       "cancelRequest": "Cancel",
