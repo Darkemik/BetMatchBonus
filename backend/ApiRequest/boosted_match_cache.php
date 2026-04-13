@@ -28,7 +28,16 @@ function getDailyBoostedMatch(): ?array
         $cached = json_decode(file_get_contents($cacheFile), true);
         if (is_array($cached) && ($cached['date'] ?? '') === $today) {
             $cachedEventId = (int)($cached['eventId'] ?? 0);
-            if ($cachedEventId > 0) {
+            $hasBoostData =
+                !empty($cached['boostedMarket']) &&
+                !empty($cached['boostedSelection']) &&
+                isset($cached['originalOdd']) &&
+                isset($cached['boostedOdd']) &&
+                is_numeric($cached['originalOdd']) &&
+                is_numeric($cached['boostedOdd']) &&
+                (float)$cached['boostedOdd'] > 1;
+
+            if ($cachedEventId > 0 && $hasBoostData) {
                 $checkStmt = $conn->prepare("SELECT 1 FROM Events WHERE api_id = ? AND status_id != 3 LIMIT 1");
                 if ($checkStmt) {
                     $checkStmt->bind_param('i', $cachedEventId);
