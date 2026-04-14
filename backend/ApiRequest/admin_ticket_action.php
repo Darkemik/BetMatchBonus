@@ -23,7 +23,7 @@ if ($ticketId <= 0) {
 
 // Szelvény lekérése
 $stmt = $conn->prepare("
-    SELECT t.id, t.user_id, t.stake, t.bonus_stake, t.total_odds, t.potential_win, t.status
+    SELECT t.id, t.user_id, t.stake, t.bonus_stake, t.user_bonus_id, t.total_odds, t.potential_win, t.status
     FROM Tickets t
     WHERE t.id = ?
 ");
@@ -40,6 +40,7 @@ if (!$ticket) {
 $userId     = (int)$ticket['user_id'];
 $stake      = (float)$ticket['stake'];
 $bonusStake = (float)$ticket['bonus_stake'];
+$userBonusId = $ticket['user_bonus_id'] ? (int)$ticket['user_bonus_id'] : null;
 $potentialWin = (float)$ticket['potential_win'];
 
 // ── 1) VOID – Szelvény érvénytelenítése (csak OPEN) ──
@@ -89,6 +90,13 @@ if ($action === 'void') {
         $tx->execute();
         $tx->close();
 
+        // BalanceHistory bejegyzés (normál tét visszatérítés)
+        if ($stake > 0) {
+            $vdBal = $conn->query("SELECT balance FROM Users WHERE id = $userId")->fetch_assoc();
+            $vdNew = (float)($vdBal['balance'] ?? 0);
+            log_balance_change($userId, $vdNew - $stake, $vdNew, $stake, 'Void visszatérítés: szelvény #' . $ticketId);
+        }
+
         $conn->commit();
         log_audit('ticket_void', 'ticket', $ticketId, "Szelvény #$ticketId érvénytelenítve, tét visszaadva: " . number_format($totalRefund, 0, ',', ' ') . " Ft");
         echo json_encode(['success' => true, 'message' => "Szelvény #$ticketId érvénytelenítve! Tét visszaadva: " . number_format($totalRefund, 0, ',', ' ') . " Ft"]);
@@ -128,54 +136,52 @@ if ($action === 'manual_close') {
         $updSel->close();
 
         if ($newStatus === 'WON') {
-            $isBonusTicket = ($bonusStake > 0);
+            $isBonusTicket = ($bonusStake > 0 && $userBonusId);
 
             if ($isBonusTicket) {
-                // Bónusz szelvény: ellenőrizzük a wagering-et
-                $wagerStmt = $conn->prepare("
-                    SELECT 1 FROM UserBonuses
-                    WHERE user_id = ?
-                      AND status = 'COMPLETED'
-                      AND used = 1
-                      AND COALESCE(wagering_required, 0) > 0
-                      AND COALESCE(wagering_progress, 0) >= wagering_required
-                    ORDER BY used_at DESC
-                    LIMIT 1
-                ");
-                $wagerStmt->bind_param("i", $userId);
-                $wagerStmt->execute();
-                $wageringCompleted = $wagerStmt->get_result()->num_rows > 0;
-                $wagerStmt->close();
-
-                // Max win cap ellenőrzés
-                $capStmt = $conn->prepare("
-                    SELECT ub.granted_amount, bc.max_win_multiplier
+                // A szelvényhez tartozó konkrét UserBonuses rekord lekérése
+                $ubStmt = $conn->prepare("
+                    SELECT ub.id, ub.granted_amount, ub.wagering_required, ub.wagering_progress,
+                           ub.status AS ub_status, ub.used,
+                           COALESCE(bc.max_win_multiplier, 5.00) AS max_win_multiplier,
+                           COALESCE(bc.bet_reward_type, '') AS bet_reward_type
                     FROM UserBonuses ub
                     INNER JOIN BonusCodes bc ON bc.id = ub.bonus_id
-                    WHERE ub.user_id = ?
-                      AND ub.status IN ('ACTIVE', 'COMPLETED')
-                      AND COALESCE(ub.granted_amount, 0) > 0
-                    ORDER BY ub.id DESC
-                    LIMIT 1
+                    WHERE ub.id = ?
                 ");
-                $capStmt->bind_param("i", $userId);
-                $capStmt->execute();
-                $capRow = $capStmt->get_result()->fetch_assoc();
-                $capStmt->close();
+                $ubStmt->bind_param("i", $userBonusId);
+                $ubStmt->execute();
+                $ubRow = $ubStmt->get_result()->fetch_assoc();
+                $ubStmt->close();
 
-                if ($capRow) {
-                    $maxWin = (float)$capRow['granted_amount'] * (float)$capRow['max_win_multiplier'];
-                    if ($potentialWin > $maxWin) {
+                // Max win cap ellenőrzés
+                if ($ubRow) {
+                    $maxWin = (float)$ubRow['granted_amount'] * (float)$ubRow['max_win_multiplier'];
+                    if ($maxWin > 0 && $potentialWin > $maxWin) {
                         $potentialWin = $maxWin;
                     }
                 }
 
-                if ($wageringCompleted) {
+                // Free bet (wagering=0) vagy wagering teljesítve → egyenlegre
+                $wageringReq = (float)($ubRow['wagering_required'] ?? 0);
+                $wageringProg = (float)($ubRow['wagering_progress'] ?? 0);
+                $isFreeBet = (strtoupper($ubRow['bet_reward_type'] ?? '') === 'FREE_BET');
+                $wageringDone = ($wageringReq <= 0 || $wageringProg >= $wageringReq);
+
+                if ($isFreeBet || $wageringDone) {
+                    // Egyenlegre (balance + winnings_balance)
                     $credit = $conn->prepare("UPDATE Users SET balance = balance + ?, winnings_balance = winnings_balance + ? WHERE id = ?");
                     $credit->bind_param("ddi", $potentialWin, $potentialWin, $userId);
                 } else {
+                    // Forgatás nem teljesült → bónusz egyenlegre
                     $credit = $conn->prepare("UPDATE Users SET bonus_balance = bonus_balance + ? WHERE id = ?");
                     $credit->bind_param("di", $potentialWin, $userId);
+
+                    // Egyedi bónusz egyenleg is frissítés
+                    $ubCredit = $conn->prepare("UPDATE UserBonuses SET bonus_balance = bonus_balance + ? WHERE id = ?");
+                    $ubCredit->bind_param("di", $potentialWin, $userBonusId);
+                    $ubCredit->execute();
+                    $ubCredit->close();
                 }
             } else {
                 // Normál szelvény → balance + winnings_balance
@@ -194,6 +200,13 @@ if ($action === 'manual_close') {
             $tx->bind_param("dii", $potentialWin, $ticketId, $userId);
             $tx->execute();
             $tx->close();
+
+            // BalanceHistory bejegyzés (csak ha rendes egyenlegbe ment)
+            if (!$isBonusTicket || ($userBonusId > 0 && ($isFreeBet || $wageringDone))) {
+                $atBal = $conn->query("SELECT balance FROM Users WHERE id = $userId")->fetch_assoc();
+                $atNew = (float)($atBal['balance'] ?? 0);
+                log_balance_change($userId, $atNew - $potentialWin, $atNew, $potentialWin, 'Admin nyeremény: szelvény #' . $ticketId);
+            }
         }
 
         $conn->commit();

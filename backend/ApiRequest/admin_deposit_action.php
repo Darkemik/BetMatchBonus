@@ -90,10 +90,15 @@ if ($action === 'manual_deposit') {
         $ins->close();
 
         // Egyenleg növelése
+        $prevBal = (float)$user['balance'];
         $upd = $conn->prepare("UPDATE Users SET balance = balance + ? WHERE id = ?");
         $upd->bind_param("di", $amount, $userId);
         $upd->execute();
         $upd->close();
+
+        // BalanceHistory
+        require_once __DIR__ . '/../Auth/audit_helper.php';
+        log_balance_change($userId, $prevBal, $prevBal + $amount, $amount, 'Admin befizetés: ' . ($note !== '' ? $note : 'manuális jóváírás'));
 
         $conn->commit();
     } catch (\Exception $e) {

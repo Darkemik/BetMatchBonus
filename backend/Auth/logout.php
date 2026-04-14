@@ -6,7 +6,10 @@ require_once __DIR__ . '/../connect.php';
 
 // Először olvassuk ki a user ID-t, MIELŐTT törölnénk a session-t
 $userId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
-
+if ($userId > 0) {
+    require_once __DIR__ . '/audit_helper.php';
+    log_activity($userId, 'logout', 'Kijelentkezés.');
+}
 // Session törlése
 session_unset();
 session_destroy();

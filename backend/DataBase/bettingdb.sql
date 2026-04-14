@@ -33,11 +33,11 @@ CREATE TABLE IF NOT EXISTS RolePermissions (
 -- Alapértelmezett jogosultságok
 INSERT INTO RolePermissions (role_id, page_key, can_access) VALUES
 -- MOD: csak felhasználók + regisztrációk + adatellenőrzés + szelvények
-(1, 'dashboard', 1), (1, 'registrations', 1), (1, 'data_verification', 1), (1, 'tickets', 1), (1, 'bonuses', 0), (1, 'deposits', 0), (1, 'withdrawals', 0), (1, 'statistics', 0), (1, 'notifications', 0),
+(1, 'dashboard', 1), (1, 'registrations', 1), (1, 'data_verification', 1), (1, 'tickets', 1), (1, 'bonuses', 0), (1, 'freebet', 0), (1, 'deposits', 0), (1, 'withdrawals', 0), (1, 'statistics', 0), (1, 'notifications', 0),
 -- ADMIN: minden kivéve staff
-(2, 'dashboard', 1), (2, 'registrations', 1), (2, 'data_verification', 1), (2, 'tickets', 1), (2, 'bonuses', 1), (2, 'deposits', 1), (2, 'withdrawals', 1), (2, 'statistics', 1), (2, 'notifications', 1),
+(2, 'dashboard', 1), (2, 'registrations', 1), (2, 'data_verification', 1), (2, 'tickets', 1), (2, 'bonuses', 1), (2, 'freebet', 1), (2, 'deposits', 1), (2, 'withdrawals', 1), (2, 'statistics', 1), (2, 'notifications', 1),
 -- SUPERADMIN: mindenhez hozzáfér (a staff oldal mindig elérhető)
-(3, 'dashboard', 1), (3, 'registrations', 1), (3, 'data_verification', 1), (3, 'tickets', 1), (3, 'bonuses', 1), (3, 'deposits', 1), (3, 'withdrawals', 1), (3, 'statistics', 1), (3, 'notifications', 1);
+(3, 'dashboard', 1), (3, 'registrations', 1), (3, 'data_verification', 1), (3, 'tickets', 1), (3, 'bonuses', 1), (3, 'freebet', 1), (3, 'deposits', 1), (3, 'withdrawals', 1), (3, 'statistics', 1), (3, 'notifications', 1);
 
 -- ============================================================
 -- 2) COUNTRIES
@@ -670,6 +670,51 @@ VALUES
   0,
   NULL,
   1,
+  '2026-01-01 00:00:00',
+  NULL,
+  1                           -- Aktív
+);
+
+-- 3. VESZTES FOGADÁS CASHBACK (30% Free Bet)
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  'CASHBACK30',
+  'Vesztes fogadás cashback (30% Free Bet)',
+  'Ha egy legalább 5.000 Ft-os fogadásod veszít (min. odds: 1.80), visszakapsz 30%-ot Free Bet formájában. Naponta egyszer aktiválódik automatikusan a vesztes szelvény lezárásakor. A kapott Free Bet-et bármilyen fogadásra felhasználhatod.',
+  4,                          -- EVENT_SPECIFIC
+  0.00,                       -- bonus_amount: 0 (match_percent-ből számolódik)
+  5000.00,                    -- min_deposit: minimum tét összeg
+  NULL,                       -- max_bonus_amount: nincs cap
+  30.00,                      -- match_percent: 30% cashback
+  'FREE_BET',
+  'LOSS',                     -- LOSS trigger: vesztes fogadáskor aktiválódik
+  'ANY',
+  0,
+  1.80,                       -- min_odds: minimum össz odds
+  NULL,
+  NULL,
+  NULL,                       -- nincs forgatási követelmény free betnél
+  NULL,                       -- nincs max win multiplier (free bet nyeremény = tét × (odds-1))
+  0,
+  0,
+  NULL,
+  NULL,
+  0,                          -- valid_weekdays_only: 0 (egész héten elérhető)
+  NULL,
+  48,                         -- activation_expire_hours: 48 óra a free bet felhasználására
+  NULL,
+  NULL,
+  0,
+  0,
+  NULL,
+  1,                          -- per_user_limit: 1 (egyszer kell aktiválni, utána naponta automatikus)
   '2026-01-01 00:00:00',
   NULL,
   1                           -- Aktív

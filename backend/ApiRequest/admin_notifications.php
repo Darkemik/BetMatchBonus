@@ -1,10 +1,11 @@
 <?php
 /**
- * Admin Notifications API
- * POST action=send        — tömeges értesítés küldése
- * POST action=delete      — értesítés törlése
- * GET  action=list        — küldött értesítések listája
- * GET  action=stats       — statisztikák
+ * Admin Notifications API (RESTful)
+ * GET                     — küldött értesítések listája / statisztikák
+ * POST                    — tömeges értesítés küldése
+ * PUT                     — értesítés szerkesztése (cím/üzenet módosítás)
+ * PATCH                   — értesítés részleges frissítése
+ * DELETE                  — értesítés törlése
  */
 if (session_status() === PHP_SESSION_NONE) session_start();
 header('Content-Type: application/json; charset=utf-8');
@@ -98,21 +99,12 @@ if ($method === 'GET') {
     exit;
 }
 
-// ─── POST ───
-if ($method !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['error' => 'Method not allowed']);
-    exit;
-}
-
-$input = json_decode(file_get_contents('php://input'), true);
-$action = $input['action'] ?? '';
-
-// ─── Tömeges küldés ───
-if ($action === 'send') {
+// ─── POST — Új értesítés küldése ───
+if ($method === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true);
     $title   = trim($input['title'] ?? '');
     $message = trim($input['message'] ?? '');
-    $target  = $input['target'] ?? 'all'; // 'all' | 'active' | 'verified'
+    $target  = $input['target'] ?? 'all';
 
     if ($title === '' || $message === '') {
         http_response_code(400);
@@ -126,12 +118,11 @@ if ($action === 'send') {
         exit;
     }
 
-    // Target users
     $where = '';
     switch ($target) {
         case 'active':   $where = ' WHERE is_active = 1'; break;
         case 'verified': $where = ' WHERE is_active = 1 AND is_verified = 1 AND data_verified = 1'; break;
-        default:         $where = ''; break; // all
+        default:         $where = ''; break;
     }
 
     $users = $conn->query("SELECT id FROM Users" . $where);
@@ -154,18 +145,105 @@ if ($action === 'send') {
     log_audit('notification_send', 'notification', null,
         "Tömeges értesítés: \"$title\" — $count címzett (" . ($targetLabels[$target] ?? $target) . ")");
 
+    http_response_code(201);
     echo json_encode(['success' => true, 'sent' => $count, 'message' => "$count felhasználónak elküldve"]);
     exit;
 }
 
-// ─── Törlés ───
-if ($action === 'delete') {
+// ─── PUT — Értesítés szerkesztése (cím + üzenet módosítás) ───
+if ($method === 'PUT') {
+    $input      = json_decode(file_get_contents('php://input'), true);
+    $oldTitle   = trim($input['old_title'] ?? '');
+    $sentAt     = trim($input['sent_at'] ?? '');
+    $newTitle   = trim($input['title'] ?? '');
+    $newMessage = trim($input['message'] ?? '');
+
+    if ($oldTitle === '' || $sentAt === '' || $newTitle === '' || $newMessage === '') {
+        http_response_code(400);
+        echo json_encode(['error' => 'Minden mező megadása kötelező (old_title, sent_at, title, message)']);
+        exit;
+    }
+
+    $stmt = $conn->prepare("
+        UPDATE Notifications SET title = ?, message = ?
+        WHERE type = 'ANNOUNCEMENT' AND title = ?
+        AND created_at >= ? AND created_at < DATE_ADD(?, INTERVAL 1 MINUTE)
+    ");
+    $stmt->bind_param("sssss", $newTitle, $newMessage, $oldTitle, $sentAt, $sentAt);
+    $stmt->execute();
+    $updated = $stmt->affected_rows;
+    $stmt->close();
+
+    log_audit('notification_update', 'notification', null,
+        "Értesítés módosítva: \"$oldTitle\" → \"$newTitle\" — $updated db");
+
+    echo json_encode(['success' => true, 'updated' => $updated]);
+    exit;
+}
+
+// ─── PATCH — Részleges frissítés (pl. csak cím vagy csak üzenet) ───
+if ($method === 'PATCH') {
+    $input    = json_decode(file_get_contents('php://input'), true);
+    $oldTitle = trim($input['old_title'] ?? '');
+    $sentAt   = trim($input['sent_at'] ?? '');
+
+    if ($oldTitle === '' || $sentAt === '') {
+        http_response_code(400);
+        echo json_encode(['error' => 'old_title és sent_at megadása kötelező']);
+        exit;
+    }
+
+    $fields = [];
+    $params = [];
+    $types  = '';
+
+    if (isset($input['title']) && trim($input['title']) !== '') {
+        $fields[] = 'title = ?';
+        $params[] = trim($input['title']);
+        $types   .= 's';
+    }
+    if (isset($input['message']) && trim($input['message']) !== '') {
+        $fields[] = 'message = ?';
+        $params[] = trim($input['message']);
+        $types   .= 's';
+    }
+
+    if (empty($fields)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Legalább egy módosítandó mezőt adj meg (title vagy message)']);
+        exit;
+    }
+
+    $params[] = $oldTitle;
+    $params[] = $sentAt;
+    $params[] = $sentAt;
+    $types   .= 'sss';
+
+    $sql = "UPDATE Notifications SET " . implode(', ', $fields) . "
+            WHERE type = 'ANNOUNCEMENT' AND title = ?
+            AND created_at >= ? AND created_at < DATE_ADD(?, INTERVAL 1 MINUTE)";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+    $updated = $stmt->affected_rows;
+    $stmt->close();
+
+    log_audit('notification_patch', 'notification', null,
+        "Értesítés részlegesen módosítva: \"$oldTitle\" — $updated db");
+
+    echo json_encode(['success' => true, 'updated' => $updated]);
+    exit;
+}
+
+// ─── DELETE — Értesítés törlése ───
+if ($method === 'DELETE') {
+    $input  = json_decode(file_get_contents('php://input'), true);
     $title  = trim($input['title'] ?? '');
     $sentAt = trim($input['sent_at'] ?? '');
 
     if ($title === '' || $sentAt === '') {
         http_response_code(400);
-        echo json_encode(['error' => 'Hiányzó paraméterek']);
+        echo json_encode(['error' => 'Hiányzó paraméterek (title, sent_at)']);
         exit;
     }
 
@@ -186,5 +264,5 @@ if ($action === 'delete') {
     exit;
 }
 
-http_response_code(400);
-echo json_encode(['error' => 'Ismeretlen művelet']);
+http_response_code(405);
+echo json_encode(['error' => 'Method not allowed. Használható: GET, POST, PUT, PATCH, DELETE']);

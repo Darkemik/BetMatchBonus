@@ -288,6 +288,68 @@ function updateTicketStatus($conn, $ticketId, $userId) {
     $stmtUpd->execute();
     $stmtUpd->close();
 
+    // evaluate_on_settle: BET-triggeres bónuszok aktiválása, amik erre a ticketre vártak
+    if ($newStatus === 'WON' || $newStatus === 'LOST') {
+        $evalSettleStmt = $conn->prepare("
+            SELECT ub.id AS user_bonus_id, bc.bonus_amount, bc.wagering_multiplier,
+                   bc.activation_expire_hours, bc.bet_reward_type
+            FROM UserBonuses ub
+            INNER JOIN BonusCodes bc ON bc.id = ub.bonus_id
+            WHERE ub.ticket_id = ?
+              AND ub.user_id = ?
+              AND ub.status = 'PENDING'
+              AND bc.evaluate_on_settle = 1
+              AND bc.bonus_trigger = 'BET'
+        ");
+        $evalSettleStmt->bind_param("ii", $ticketId, $userId);
+        $evalSettleStmt->execute();
+        $evalSettleBonuses = $evalSettleStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $evalSettleStmt->close();
+
+        foreach ($evalSettleBonuses as $esBonus) {
+            $esGranted = (float)($esBonus['bonus_amount'] ?? 0);
+            if ($esGranted <= 0) continue;
+
+            $isFreeBetReward = (strtoupper((string)($esBonus['bet_reward_type'] ?? '')) === 'FREE_BET');
+            $esBonusMoney = $isFreeBetReward ? 0.00 : $esGranted;
+            $esFreeBet = $isFreeBetReward ? $esGranted : 0.00;
+            $esIndividualBal = $isFreeBetReward ? 0.00 : $esGranted;
+
+            $esWageringReq = 0.00;
+            if (!empty($esBonus['wagering_multiplier']) && (float)$esBonus['wagering_multiplier'] > 0) {
+                $esWageringReq = $esGranted * (float)$esBonus['wagering_multiplier'];
+            }
+
+            $esExpiresAt = null;
+            if (!empty($esBonus['activation_expire_hours']) && (int)$esBonus['activation_expire_hours'] > 0) {
+                $esExpiresAt = date('Y-m-d H:i:s', strtotime('+' . (int)$esBonus['activation_expire_hours'] . ' hours'));
+            }
+
+            $activateEsStmt = $conn->prepare("
+                UPDATE UserBonuses
+                SET status = 'ACTIVE',
+                    granted_amount = ?,
+                    bonus_money_amount = ?,
+                    free_bet_amount = ?,
+                    bonus_balance = ?,
+                    wagering_required = ?,
+                    expires_at = ?
+                WHERE id = ?
+            ");
+            $activateEsStmt->bind_param("dddddsi", $esGranted, $esBonusMoney, $esFreeBet, $esIndividualBal, $esWageringReq, $esExpiresAt, $esBonus['user_bonus_id']);
+            $activateEsStmt->execute();
+            $activateEsStmt->close();
+
+            // Users bonus_balance frissítése
+            if (!$isFreeBetReward) {
+                $esBonusBalStmt = $conn->prepare("UPDATE Users SET bonus_balance = bonus_balance + ? WHERE id = ?");
+                $esBonusBalStmt->bind_param("di", $esIndividualBal, $userId);
+                $esBonusBalStmt->execute();
+                $esBonusBalStmt->close();
+            }
+        }
+    }
+
     // Ha NYERTES -> nyeremeny jovairasa
     if ($newStatus === 'WON') {
         $potentialWin = (float)$ticketRow['potential_win'];
@@ -322,19 +384,23 @@ function updateTicketStatus($conn, $ticketId, $userId) {
 
             // Ellenőrizzük, hogy a forgatás teljesült-e EZEN bónusznál
             $wagerDoneStmt = $conn->prepare("
-                SELECT 1 FROM UserBonuses
-                WHERE id = ?
-                  AND user_id = ?
-                  AND status = 'COMPLETED'
-                  AND used = 1
-                  AND COALESCE(wagering_required, 0) > 0
-                  AND COALESCE(wagering_progress, 0) >= wagering_required
+                SELECT ub.wagering_required, ub.wagering_progress, ub.status AS ub_status, ub.used,
+                       COALESCE(bc.bet_reward_type, '') AS bet_reward_type
+                FROM UserBonuses ub
+                INNER JOIN BonusCodes bc ON bc.id = ub.bonus_id
+                WHERE ub.id = ?
+                  AND ub.user_id = ?
                 LIMIT 1
             ");
             $wagerDoneStmt->bind_param("ii", $ticketUserBonusId, $userId);
             $wagerDoneStmt->execute();
-            $wageringCompleted = $wagerDoneStmt->get_result()->num_rows > 0;
+            $wagerRow = $wagerDoneStmt->get_result()->fetch_assoc();
             $wagerDoneStmt->close();
+
+            $isFreeBetType = (strtoupper($wagerRow['bet_reward_type'] ?? '') === 'FREE_BET');
+            $wagerReq = (float)($wagerRow['wagering_required'] ?? 0);
+            $wagerProg = (float)($wagerRow['wagering_progress'] ?? 0);
+            $wageringCompleted = $isFreeBetType || ($wagerReq <= 0) || ($wagerProg >= $wagerReq);
 
             if ($wageringCompleted) {
                 // Forgatás teljesítve → nyeremény a rendes egyenlegbe
@@ -376,6 +442,116 @@ function updateTicketStatus($conn, $ticketId, $userId) {
         $stmtTx->bind_param("dii", $potentialWin, $ticketId, $userId);
         $stmtTx->execute();
         $stmtTx->close();
+
+        // BalanceHistory bejegyzés
+        if (!$isBonusTicket || $wageringCompleted) {
+            require_once __DIR__ . '/../Auth/audit_helper.php';
+            $bhBal = $conn->query("SELECT balance FROM Users WHERE id = $userId")->fetch_assoc();
+            $bhNew = (float)($bhBal['balance'] ?? 0);
+            log_balance_change($userId, $bhNew - $potentialWin, $bhNew, $potentialWin, 'Nyeremény: #' . $ticketId . ' (' . number_format($potentialWin, 0, ',', ' ') . ' Ft)');
+        }
+    }
+
+    // LOSS trigger: vesztes fogadásnál cashback free bet bónusz
+    if ($newStatus === 'LOST') {
+        $lossStake = (float)$ticketRow['stake'];
+        $lossBonusStake = (float)($ticketRow['bonus_stake'] ?? 0);
+
+        // Csak rendes tétes szelvényeknél (bónusz szelvénynél NEM jár cashback)
+        if ($lossBonusStake <= 0 && $lossStake > 0) {
+            // Ticket odds lekérdezése
+            $lossOddsStmt = $conn->prepare("SELECT total_odds FROM Tickets WHERE id = ? LIMIT 1");
+            $lossOddsStmt->bind_param("i", $ticketId);
+            $lossOddsStmt->execute();
+            $lossOddsRow = $lossOddsStmt->get_result()->fetch_assoc();
+            $lossOddsStmt->close();
+            $lossTicketOdds = (float)($lossOddsRow['total_odds'] ?? 0);
+
+            // LOSS triggeres bónuszok keresése (a felhasználó "subscription" sorai)
+            $lossBonusStmt = $conn->prepare("
+                SELECT ub.id AS user_bonus_id, bc.id AS bonus_code_id,
+                       bc.match_percent, bc.min_deposit, bc.min_odds,
+                       bc.max_bonus_amount, bc.activation_expire_hours
+                FROM UserBonuses ub
+                INNER JOIN BonusCodes bc ON bc.id = ub.bonus_id
+                WHERE ub.user_id = ?
+                  AND ub.status = 'ACTIVE'
+                  AND ub.used = 0
+                  AND COALESCE(ub.free_bet_amount, 0) = 0
+                  AND COALESCE(ub.bonus_balance, 0) = 0
+                  AND bc.bonus_trigger = 'LOSS'
+                  AND bc.is_active = 1
+                  AND (bc.valid_to IS NULL OR bc.valid_to >= NOW())
+                  AND (ub.expires_at IS NULL OR ub.expires_at > NOW())
+            ");
+            $lossBonusStmt->bind_param("i", $userId);
+            $lossBonusStmt->execute();
+            $lossBonuses = $lossBonusStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+            $lossBonusStmt->close();
+
+            foreach ($lossBonuses as $lossBonus) {
+                $lbMinStake = (float)($lossBonus['min_deposit'] ?? 0);
+                $lbMinOdds = (float)($lossBonus['min_odds'] ?? 0);
+                $lbMatchPercent = (float)($lossBonus['match_percent'] ?? 0);
+                $lbMaxAmount = (float)($lossBonus['max_bonus_amount'] ?? 0);
+                $lbExpireHours = (int)($lossBonus['activation_expire_hours'] ?? 0);
+
+                // Minimum tét ellenőrzése
+                if ($lbMinStake > 0 && $lossStake < $lbMinStake) continue;
+                // Minimum odds ellenőrzése
+                if ($lbMinOdds > 0 && $lossTicketOdds < $lbMinOdds) continue;
+
+                // Napi limit: már kapott-e ma cashback free betet ebből a bónuszból?
+                $dailyCheckStmt = $conn->prepare("
+                    SELECT COUNT(*) AS cnt FROM UserBonuses
+                    WHERE user_id = ? AND bonus_id = ?
+                      AND COALESCE(free_bet_amount, 0) > 0
+                      AND DATE(created_at) = CURDATE()
+                ");
+                $dailyCheckStmt->bind_param("ii", $userId, $lossBonus['bonus_code_id']);
+                $dailyCheckStmt->execute();
+                $dailyCheckRow = $dailyCheckStmt->get_result()->fetch_assoc();
+                $dailyCheckStmt->close();
+
+                if ((int)($dailyCheckRow['cnt'] ?? 0) >= 1) continue;
+
+                // Cashback összeg számítása
+                $cashbackAmount = round($lossStake * ($lbMatchPercent / 100), 2);
+                if ($cashbackAmount <= 0) continue;
+                if ($lbMaxAmount > 0 && $cashbackAmount > $lbMaxAmount) {
+                    $cashbackAmount = $lbMaxAmount;
+                }
+
+                // Lejárati dátum
+                $cbExpiresAt = null;
+                if ($lbExpireHours > 0) {
+                    $cbExpiresAt = date('Y-m-d H:i:s', strtotime('+' . $lbExpireHours . ' hours'));
+                }
+
+                // Új UserBonuses sor létrehozása az ingyenes fogadással
+                $createFreeBetStmt = $conn->prepare("
+                    INSERT INTO UserBonuses (user_id, bonus_id, ticket_id, status, granted_amount,
+                        free_bet_amount, bonus_money_amount, bonus_balance, wagering_required, expires_at, created_at)
+                    VALUES (?, ?, ?, 'ACTIVE', ?, ?, 0, 0, 0, ?, NOW())
+                ");
+                $createFreeBetStmt->bind_param("iiidds",
+                    $userId, $lossBonus['bonus_code_id'], $ticketId,
+                    $cashbackAmount, $cashbackAmount, $cbExpiresAt
+                );
+                $createFreeBetStmt->execute();
+                $createFreeBetStmt->close();
+
+                // Értesítés a felhasználónak
+                $notifMsg = 'Vesztes fogadásod után ' . number_format($cashbackAmount, 0, ',', ' ') . ' Ft Free Bet jóváírva!';
+                $notifStmt = $conn->prepare("
+                    INSERT INTO Notifications (user_id, title, message, type, related_type, related_id, created_at)
+                    VALUES (?, 'Free Bet jóváírás', ?, 'bonus', 'Ticket', ?, NOW())
+                ");
+                $notifStmt->bind_param("isi", $userId, $notifMsg, $ticketId);
+                $notifStmt->execute();
+                $notifStmt->close();
+            }
+        }
     }
 }
 

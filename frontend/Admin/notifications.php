@@ -321,9 +321,9 @@ async function deleteNotif(title, sentAt) {
     if (!confirm('Biztosan törlöd ezt a hirdetményt minden felhasználónál?')) return;
     try {
         const res = await fetch('../../backend/ApiRequest/admin_notifications.php', {
-            method: 'POST',
+            method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'delete', title, sent_at: sentAt })
+            body: JSON.stringify({ title, sent_at: sentAt })
         });
         const data = await res.json();
         if (data.success) {

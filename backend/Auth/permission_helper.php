@@ -52,8 +52,8 @@ function get_role_permissions($roleName = null) {
     if ($roleName === 'SUPERADMIN') {
         return [
             'dashboard' => true, 'registrations' => true, 'data_verification' => true,
-            'tickets' => true, 'bonuses' => true, 'deposits' => true, 'withdrawals' => true,
-            'statistics' => true, 'notifications' => true
+            'tickets' => true, 'bonuses' => true, 'freebet' => true, 'deposits' => true, 'withdrawals' => true,
+            'balances' => true, 'statistics' => true, 'notifications' => true
         ];
     }
 

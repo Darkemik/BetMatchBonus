@@ -13,8 +13,10 @@ $sidebarPages = [
     ['key' => 'data_verification', 'href' => 'data_verification.php', 'icon' => '🔍', 'label' => 'Adatellenőrzés',         'section' => 'Általános'],
     ['key' => 'tickets',           'href' => 'tickets.php',           'icon' => '🎫', 'label' => 'Szelvények',             'section' => 'Általános'],
     ['key' => 'bonuses',       'href' => 'bonuses.php',       'icon' => '🎁', 'label' => 'Bónuszok',        'section' => 'Pénzügy'],
+    ['key' => 'freebet',       'href' => 'freebet.php',       'icon' => '🎟️', 'label' => 'Free Bet',        'section' => 'Pénzügy'],
     ['key' => 'deposits',      'href' => 'deposits.php',      'icon' => '💰', 'label' => 'Befizetések',      'section' => 'Pénzügy'],
     ['key' => 'withdrawals',   'href' => 'withdrawals.php',   'icon' => '💸', 'label' => 'Kifizetések',      'section' => 'Pénzügy'],
+    ['key' => 'balances',      'href' => 'balances.php',      'icon' => '💳', 'label' => 'Egyenlegek',       'section' => 'Pénzügy'],
     ['key' => 'statistics',    'href' => 'statistics.php',    'icon' => '📊', 'label' => 'Statisztikák',    'section' => 'Riportok'],
     ['key' => 'notifications', 'href' => 'notifications.php', 'icon' => '🔔', 'label' => 'Értesítések',      'section' => 'Kommunikáció'],
 ];

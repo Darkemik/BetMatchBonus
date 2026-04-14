@@ -147,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
                         </div>
                         
                         <button type="submit" name="change_password" class="btn btn-primary"><i class="fas fa-save"></i> <span data-i18n="userProfile.changePassword.submit">Jelszó Módosítása</span></button>
-                        <a href="personal_data.php" class="btn btn-secondary"><i class="fas fa-undo"></i> <span data-i18n="userProfile.changePassword.cancel">Mégse</span></a>
+                        <button type="button" class="btn btn-secondary" onclick="document.getElementById('current_password').value='';document.getElementById('new_password').value='';document.getElementById('confirm_password').value='';"><i class="fas fa-undo"></i> <span data-i18n="userProfile.changePassword.cancel">Mégse</span></button>
                     </form>
                 </div>
             </div>

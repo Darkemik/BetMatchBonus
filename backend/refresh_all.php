@@ -153,6 +153,50 @@ try {
     $results[] = ['step' => 'Szelvény kiértékelés', 'status' => 'hiba', 'message' => $e->getMessage()];
 }
 
+// ── 4. NAPI TOP JUTALMAK (23:00 után egyszer) ───
+$stepStart = microtime(true);
+try {
+    $currentHour = (int)date('H');
+    if ($currentHour >= 23) {
+        require_once __DIR__ . '/ApiRequest/daily_top_rewards.php';
+        $topResult = awardDailyTopRewards($conn);
+
+        if (!empty($topResult['skipped'])) {
+            $results[] = [
+                'step'    => 'Napi top jutalmak',
+                'status'  => 'ok',
+                'message' => $topResult['message'] ?? 'Kihagyva',
+                'ms'      => round((microtime(true) - $stepStart) * 1000),
+            ];
+        } else {
+            $awardedCount = 0;
+            $names = [];
+            foreach ($topResult['awarded'] ?? [] as $a) {
+                if ($a['status'] === 'awarded') {
+                    $awardedCount++;
+                    $names[] = $a['user'];
+                }
+            }
+            $results[] = [
+                'step'    => 'Napi top jutalmak',
+                'status'  => 'ok',
+                'message' => "{$awardedCount} jutalom kiosztva" . ($names ? ': ' . implode(', ', $names) : ''),
+                'ms'      => round((microtime(true) - $stepStart) * 1000),
+            ];
+        }
+    } else {
+        $results[] = [
+            'step'    => 'Napi top jutalmak',
+            'status'  => 'ok',
+            'message' => 'Csak 23:00 után fut (most: ' . date('H:i') . ')',
+            'ms'      => 0,
+        ];
+    }
+} catch (Throwable $e) {
+    $hasError = true;
+    $results[] = ['step' => 'Napi top jutalmak', 'status' => 'hiba', 'message' => $e->getMessage()];
+}
+
 // ── EREDMÉNY ─────────────────────────────────────
 $totalMs = round((microtime(true) - $startTime) * 1000);
 

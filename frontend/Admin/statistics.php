@@ -44,6 +44,10 @@ $activePage = 'statistics';
             border: 1px solid rgba(255,255,255,0.06); margin-bottom: 24px;
         }
         .chart-card h5 { color: #e94560; font-weight: 700; margin-bottom: 16px; font-size: 1rem; }
+        .chart-summary { display: flex; gap: 16px; margin-top: 16px; flex-wrap: wrap; }
+        .chart-summary-item { background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px 16px; flex: 1; min-width: 120px; text-align: center; border: 1px solid rgba(255,255,255,0.06); }
+        .chart-summary-item .summary-value { font-size: 1.1rem; font-weight: 800; margin: 0; }
+        .chart-summary-item .summary-label { font-size: 0.7rem; color: #888; margin: 2px 0 0; text-transform: uppercase; letter-spacing: 0.5px; }
         .range-btn { background: #0f3460; border: none; color: #aaa; padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
         .range-btn.active { background: #e94560; color: #fff; }
         .range-btn:hover { color: #fff; }
@@ -52,6 +56,10 @@ $activePage = 'statistics';
         .top-table td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
         .top-table tr:hover td { background: rgba(255,255,255,0.03); }
         .badge-rank { background: #e94560; color: #fff; border-radius: 50%; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; }
+        .badge-rank.gold { background: linear-gradient(135deg, #f5c518, #e6a817); box-shadow: 0 0 8px rgba(245,197,24,0.5); }
+        .reward-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #f5c518 0%, #e6a817 100%); color: #1a1a2e; font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-left: 6px; white-space: nowrap; }
+        .reward-badge i { font-size: 0.65rem; }
+        .top-table tr.reward-winner td { background: rgba(245,197,24,0.06); }
         .loading-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(26,26,46,0.85); display: flex; align-items: center;
@@ -103,6 +111,7 @@ $activePage = 'statistics';
                 <div class="chart-card">
                     <h5><i class="fas fa-money-bill-wave"></i> Napi bevétel (befizetés vs kifizetés)</h5>
                     <div style="position:relative;height:300px;"><canvas id="revenueChart"></canvas></div>
+                    <div class="chart-summary" id="revenueSummary"></div>
                 </div>
             </div>
             <div class="col-lg-4">
@@ -124,6 +133,7 @@ $activePage = 'statistics';
                 <div class="chart-card">
                     <h5><i class="fas fa-futbol"></i> Napi fogadási forgalom</h5>
                     <div style="position:relative;height:260px;"><canvas id="betsChart"></canvas></div>
+                    <div class="chart-summary" id="betsSummary"></div>
                 </div>
             </div>
         </div>
@@ -215,14 +225,38 @@ function renderCharts(data) {
     const depMap = {}; data.daily_deposits.forEach(d => depMap[d.date] = d.total);
     const withMap = {}; data.daily_withdrawals.forEach(d => withMap[d.date] = d.total);
 
+    const depValues = allDates.map(d => depMap[d]||0);
+    const withValues = allDates.map(d => withMap[d]||0);
+
+    // Gradient for deposits
+    const revCtx = document.getElementById('revenueChart').getContext('2d');
+    const depGrad = revCtx.createLinearGradient(0, 0, 0, 300);
+    depGrad.addColorStop(0, 'rgba(82,183,136,0.9)');
+    depGrad.addColorStop(1, 'rgba(82,183,136,0.3)');
+    const withGrad = revCtx.createLinearGradient(0, 0, 0, 300);
+    withGrad.addColorStop(0, 'rgba(233,69,96,0.9)');
+    withGrad.addColorStop(1, 'rgba(233,69,96,0.3)');
+
     if (revenueChart) revenueChart.destroy();
     revenueChart = makeChart(
-        document.getElementById('revenueChart'), 'bar', allDates,
+        revCtx, 'bar', allDates,
         [
-            { label: 'Befizetések', data: allDates.map(d => depMap[d]||0), backgroundColor: 'rgba(40,167,69,0.7)', borderRadius: 4 },
-            { label: 'Kifizetések', data: allDates.map(d => withMap[d]||0), backgroundColor: 'rgba(220,53,69,0.7)', borderRadius: 4 }
+            { label: 'Befizetések', data: depValues, backgroundColor: depGrad, borderRadius: 6, borderSkipped: false },
+            { label: 'Kifizetések', data: withValues, backgroundColor: withGrad, borderRadius: 6, borderSkipped: false }
         ]
     );
+
+    // Revenue summary
+    const totalDep = depValues.reduce((a,b) => a+b, 0);
+    const totalWith = withValues.reduce((a,b) => a+b, 0);
+    const netRev = totalDep - totalWith;
+    const avgDep = allDates.length ? Math.round(totalDep / allDates.length) : 0;
+    document.getElementById('revenueSummary').innerHTML = `
+        <div class="chart-summary-item"><p class="summary-value" style="color:#52b788;">${fmt(totalDep)} Ft</p><p class="summary-label">Össz befizetés</p></div>
+        <div class="chart-summary-item"><p class="summary-value" style="color:#e94560;">${fmt(totalWith)} Ft</p><p class="summary-label">Össz kifizetés</p></div>
+        <div class="chart-summary-item"><p class="summary-value" style="color:${netRev >= 0 ? '#52b788':'#e94560'};">${fmt(netRev)} Ft</p><p class="summary-label">Nettó bevétel</p></div>
+        <div class="chart-summary-item"><p class="summary-value" style="color:#4cc9f0;">${fmt(avgDep)} Ft</p><p class="summary-label">Napi átlag befiz.</p></div>
+    `;
 
     // Ticket pie
     const ov = data.overview;
@@ -251,15 +285,34 @@ function renderCharts(data) {
     );
 
     // Bets chart
+    const betValues = data.daily_bets.map(d=>d.total);
+    const betCounts = data.daily_bets.map(d=>d.count);
+    const betsCtx = document.getElementById('betsChart').getContext('2d');
+    const betsGrad = betsCtx.createLinearGradient(0, 0, 0, 260);
+    betsGrad.addColorStop(0, 'rgba(245,197,24,0.9)');
+    betsGrad.addColorStop(1, 'rgba(245,197,24,0.2)');
+
     if (betsChart) betsChart.destroy();
     betsChart = makeChart(
-        document.getElementById('betsChart'), 'bar',
+        betsCtx, 'bar',
         data.daily_bets.map(d=>d.date),
         [{
-            label: 'Napi tét (Ft)', data: data.daily_bets.map(d=>d.total),
-            backgroundColor: 'rgba(245,197,24,0.7)', borderRadius: 4
+            label: 'Napi tét (Ft)', data: betValues,
+            backgroundColor: betsGrad, borderRadius: 6, borderSkipped: false
         }]
     );
+
+    // Bets summary
+    const totalBets = betValues.reduce((a,b) => a+b, 0);
+    const totalBetCount = betCounts.reduce((a,b) => a+b, 0);
+    const avgBet = totalBetCount ? Math.round(totalBets / totalBetCount) : 0;
+    const maxBetDay = betValues.length ? Math.max(...betValues) : 0;
+    document.getElementById('betsSummary').innerHTML = `
+        <div class="chart-summary-item"><p class="summary-value" style="color:#f5c518;">${fmt(totalBets)} Ft</p><p class="summary-label">Össz forgalom</p></div>
+        <div class="chart-summary-item"><p class="summary-value" style="color:#4cc9f0;">${fmt(totalBetCount)} db</p><p class="summary-label">Szelvények</p></div>
+        <div class="chart-summary-item"><p class="summary-value" style="color:#52b788;">${fmt(avgBet)} Ft</p><p class="summary-label">Átlag tét</p></div>
+        <div class="chart-summary-item"><p class="summary-value" style="color:#e94560;">${fmt(maxBetDay)} Ft</p><p class="summary-label">Csúcsnap</p></div>
+    `;
 }
 
 // ─── Top listák ───
@@ -270,9 +323,13 @@ function renderTopTable(containerId, items, unit) {
     }
     let html = '<table class="top-table"><thead><tr><th>#</th><th>Felhasználó</th><th>Összeg</th><th>Db</th></tr></thead><tbody>';
     items.forEach((it, i) => {
-        html += `<tr>
-            <td><span class="badge-rank">${i+1}</span></td>
-            <td>${it.username}</td>
+        const isWinner = i === 0;
+        const rankClass = isWinner ? 'badge-rank gold' : 'badge-rank';
+        const rowClass = isWinner ? ' class="reward-winner"' : '';
+        const rewardTag = isWinner ? '<span class="reward-badge"><i class="fas fa-gift"></i> 1.000 Ft Free Bet</span>' : '';
+        html += `<tr${rowClass}>
+            <td><span class="${rankClass}">${i+1}</span></td>
+            <td>${it.username}${rewardTag}</td>
             <td style="font-weight:700;">${fmt(it.total)} ${unit}</td>
             <td style="color:#aaa;">${it.count}</td>
         </tr>`;

@@ -116,6 +116,25 @@ $already_claimed = ($claimCount >= $perUserLimit);
 $existing_claim = $claimCount > 0 ? $check_result->fetch_assoc() : null;
 $check_stmt->close();
 
+// Aktív/Pending példány ellenőrzése: nem lehet újat aktiválni, amíg a régi fut
+$activeCheckStmt = $conn->prepare("
+    SELECT id FROM UserBonuses
+    WHERE user_id = ? AND bonus_id = ?
+      AND status IN ('ACTIVE', 'PENDING')
+      AND used = 0
+      AND (expires_at IS NULL OR expires_at > NOW())
+    LIMIT 1
+");
+$activeCheckStmt->bind_param("ii", $user_id, $bonus['id']);
+$activeCheckStmt->execute();
+$hasActiveInstance = $activeCheckStmt->get_result()->num_rows > 0;
+$activeCheckStmt->close();
+
+if ($hasActiveInstance) {
+    echo json_encode(['success' => false, 'message' => 'Ebből a bónuszból már van aktív vagy várakozó példányod. Várd meg, amíg lejár vagy teljesíted!']);
+    exit();
+}
+
 if ($already_claimed) {
     if ($bonusId > 0 && empty($code)) {
         $isDepositTriggered = (strtoupper((string)($bonus['bonus_trigger'] ?? '')) === 'DEPOSIT');
@@ -144,11 +163,12 @@ if ($already_claimed) {
 $bonusTrigger = strtoupper((string)($bonus['bonus_trigger'] ?? ''));
 $isDepositTriggered = ($bonusTrigger === 'DEPOSIT');
 $isBetTriggered = ($bonusTrigger === 'BET');
+$isLossTriggered = ($bonusTrigger === 'LOSS');
 $status = ($isDepositTriggered || $isBetTriggered) ? 'PENDING' : 'ACTIVE';
 
 // Granted amount kiszámítása
 $granted_amount = 0.00;
-if (!$isDepositTriggered) {
+if (!$isDepositTriggered && !$isLossTriggered) {
     if ($bonus['max_bonus_amount'] > 0) {
         $granted_amount = $bonus['max_bonus_amount'];
     } elseif ($bonus['bonus_amount'] > 0) {
@@ -215,6 +235,17 @@ if ($insert_stmt->execute()) {
         if ($minCombo > 0 || $minOdds > 0) {
             $msg .= ' Követelmény: legalább ' . max(1, $minCombo) . '-es kötés, min. ' . number_format($minOdds, 0, ',', ' ') . '-es össz odds.';
         }
+    } elseif ($isLossTriggered) {
+        $cbPercent = (float)($bonus['match_percent'] ?? 0);
+        $cbMinStake = (float)($bonus['min_deposit'] ?? 0);
+        $cbMinOdds = (float)($bonus['min_odds'] ?? 0);
+        $msg = 'Cashback bónusz aktiválva! Ha egy vesztes fogadásod megfelel a feltételeknek, ' . number_format($cbPercent, 0) . '% Free Bet-et kapsz. Naponta egyszer.';
+        if ($cbMinStake > 0) {
+            $msg .= ' Min. tét: ' . number_format($cbMinStake, 0, ',', ' ') . ' Ft.';
+        }
+        if ($cbMinOdds > 0) {
+            $msg .= ' Min. odds: ' . number_format($cbMinOdds, 2, ',', '') . '.';
+        }
     } else {
         $msg = 'Bónusz sikeresen beváltva! ' . number_format($granted_amount, 0, ',', ' ') . ' FT jóváírva a fiókodban.';
         if ($wagering_required > 0) {
@@ -222,6 +253,9 @@ if ($insert_stmt->execute()) {
         }
     }
         
+    require_once dirname(__DIR__) . '/Auth/audit_helper.php';
+    log_activity($user_id, 'bonus', 'Bónusz aktiválva: ' . ($bonus['name'] ?? 'Ismeretlen') . '. Összeg: ' . number_format($granted_amount, 0, ',', '.') . ' Ft.');
+
     echo json_encode(['success' => true, 'message' => $msg]);
 } else {
     echo json_encode(['success' => false, 'message' => 'Hiba történt a bónusz mentésekor.']);

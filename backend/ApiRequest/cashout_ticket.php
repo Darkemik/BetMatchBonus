@@ -124,6 +124,12 @@ if ($method === 'POST') {
         $stmtTx->execute();
         $stmtTx->close();
 
+        // BalanceHistory bejegyzés
+        require_once __DIR__ . '/../Auth/audit_helper.php';
+        $coBal = $conn->query("SELECT balance FROM Users WHERE id = $userId")->fetch_assoc();
+        $coNew = (float)($coBal['balance'] ?? 0);
+        log_balance_change($userId, $coNew - $cashoutAmount, $coNew, $cashoutAmount, 'Cashout: #' . $ticketId . ' (' . number_format($cashoutAmount, 0, ',', ' ') . ' Ft)');
+
         // 5. Cashout már rögzítve a WalletTransactions-ben (fentebb)
         // A Transactions tábla csak valódi be/kifizetésekhez használatos.
 

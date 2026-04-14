@@ -101,11 +101,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_bonus_id'])) {
     }
 }
 
-// Bónuszok lekérése (Duplikáció megelőzése GROUP BY-al)
+// Bónuszok lekérése (Duplikáció megelőzése GROUP BY-al, admin freebet rejtett)
 $bonuses = $conn->query("
     SELECT bc.*, bt.name AS type_name 
     FROM BonusCodes bc 
     LEFT JOIN BonusTypes bt ON bc.bonus_type_id = bt.id 
+    WHERE (bc.code IS NULL OR bc.code NOT LIKE '%ADMIN_FREEBET%')
     GROUP BY bc.id
     ORDER BY bc.id DESC
 ");

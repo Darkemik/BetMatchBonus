@@ -38,11 +38,13 @@ $query = "SELECT ub.id, ub.bonus_id, bc.name as bonus_name, bc.description as bo
                  bc.wagering_multiplier, bc.min_combo, bc.min_odds, bc.min_odds_per_event,
                  bc.activation_expire_hours, bc.bonus_type_id, bc.is_step_bonus, bc.step_number,
                  bc.bonus_trigger, bc.bet_reward_type, ub.granted_amount, ub.bonus_balance AS individual_balance,
+                 COALESCE(ub.free_bet_amount, 0) AS free_bet_amount, COALESCE(bc.match_percent, 0) AS match_percent,
+                 COALESCE(bc.min_deposit, 0) AS min_deposit_val, COALESCE(bc.min_odds, 0) AS min_odds_val,
                  ub.status, ub.expires_at, ub.wagering_progress,
                  ub.wagering_required, ub.used, ub.created_at 
           FROM UserBonuses ub
           LEFT JOIN BonusCodes bc ON ub.bonus_id = bc.id
-          WHERE ub.user_id = ? 
+          WHERE ub.user_id = ? AND (bc.code IS NULL OR bc.code NOT LIKE '%ADMIN_FREEBET%')
           ORDER BY ub.created_at DESC";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $user_id);
@@ -81,6 +83,44 @@ foreach ($bonuses as $bonus) {
 }
 
 $expired_bonuses = count($archived_bonuses);
+
+// LOSS trigger bónuszokhoz: mai cashback free betek lekérdezése
+$lossCashbackStats = [];
+foreach ($current_bonuses as $cb) {
+    if (strtoupper($cb['bonus_trigger'] ?? '') !== 'LOSS') continue;
+    $cbBonusId = (int)$cb['bonus_id'];
+    // Ma kapott free betek száma és összege
+    $cbStatsStmt = $conn->prepare("
+        SELECT COUNT(*) AS cnt, COALESCE(SUM(free_bet_amount), 0) AS total_amount
+        FROM UserBonuses
+        WHERE user_id = ? AND bonus_id = ?
+          AND COALESCE(free_bet_amount, 0) > 0
+          AND DATE(created_at) = CURDATE()
+          AND id != ?
+    ");
+    $cbStatsStmt->bind_param("iii", $user_id, $cbBonusId, $cb['id']);
+    $cbStatsStmt->execute();
+    $cbStatsRow = $cbStatsStmt->get_result()->fetch_assoc();
+    $cbStatsStmt->close();
+    // Utolsó kapott free bet
+    $cbLastStmt = $conn->prepare("
+        SELECT free_bet_amount, created_at FROM UserBonuses
+        WHERE user_id = ? AND bonus_id = ?
+          AND COALESCE(free_bet_amount, 0) > 0
+          AND id != ?
+        ORDER BY created_at DESC LIMIT 1
+    ");
+    $cbLastStmt->bind_param("iii", $user_id, $cbBonusId, $cb['id']);
+    $cbLastStmt->execute();
+    $cbLastRow = $cbLastStmt->get_result()->fetch_assoc();
+    $cbLastStmt->close();
+    $lossCashbackStats[$cb['id']] = [
+        'today_count' => (int)($cbStatsRow['cnt'] ?? 0),
+        'today_total' => (float)($cbStatsRow['total_amount'] ?? 0),
+        'last_amount' => $cbLastRow ? (float)$cbLastRow['free_bet_amount'] : 0,
+        'last_date' => $cbLastRow ? $cbLastRow['created_at'] : null,
+    ];
+}
 ?>
 <!DOCTYPE html>
 <html lang="hu">
@@ -187,7 +227,9 @@ $expired_bonuses = count($archived_bonuses);
                                                 </h5>
                                                 <p class="card-text mb-1">
                                                         <strong data-i18n="userProfile.myBonuses.value">Érték:</strong> 
-                                                        <?php if ($bonus['status'] === 'PENDING' && strtoupper($bonus['bonus_trigger'] ?? '') === 'DEPOSIT' && (float)$bonus['granted_amount'] == 0): ?>
+                                                        <?php if (strtoupper($bonus['bonus_trigger'] ?? '') === 'LOSS'): ?>
+                                                            <span class="text-info"><i class="fas fa-sync-alt"></i> Vesztes fogadásból <?php echo number_format((float)($bonus['match_percent'] ?? 0), 0); ?>% Free Bet</span>
+                                                        <?php elseif ($bonus['status'] === 'PENDING' && strtoupper($bonus['bonus_trigger'] ?? '') === 'DEPOSIT' && (float)$bonus['granted_amount'] == 0): ?>
                                                             <span class="text-warning"><i class="fas fa-hourglass-half"></i> Befizetés után derül ki</span>
                                                         <?php else: ?>
                                                             <span class="text-success"><?php echo number_format($bonus['granted_amount'], 0, ',', ' '); ?> FT</span>
@@ -203,6 +245,38 @@ $expired_bonuses = count($archived_bonuses);
                                                     <span style="color:#7c3aed;font-weight:700;"><?php echo number_format($indivBal, 0, ',', ' '); ?> FT</span>
                                                 </p>
                                                 <?php endif; ?>
+
+                                                <?php
+                                                // LOSS trigger (cashback) bónusz speciális megjelenítés
+                                                $isLossTrigger = strtoupper($bonus['bonus_trigger'] ?? '') === 'LOSS';
+                                                if ($isLossTrigger && $bonus['status'] === 'ACTIVE'):
+                                                    $cbStats = $lossCashbackStats[$bonus['id']] ?? ['today_count' => 0, 'today_total' => 0, 'last_amount' => 0, 'last_date' => null];
+                                                    $cbPercent = (float)($bonus['match_percent'] ?? 0);
+                                                    $cbMinStake = (float)($bonus['min_deposit_val'] ?? 0);
+                                                    $cbMinOdds = (float)($bonus['min_odds_val'] ?? 0);
+                                                ?>
+                                                <div class="mt-2 mb-2 p-3" style="background: #0f3460; border-radius: 10px; border: 1px solid rgba(233,69,96,0.3);">
+                                                    <p class="mb-2" style="font-size:0.9rem;"><i class="fas fa-shield-alt" style="color:#e94560;"></i> <strong>Cashback feltételek:</strong></p>
+                                                    <ul class="mb-2" style="font-size:0.85rem; padding-left: 1.2rem; margin-bottom: 0;">
+                                                        <li>Min. tét: <strong><?php echo number_format($cbMinStake, 0, ',', ' '); ?> Ft</strong></li>
+                                                        <li>Min. odds: <strong><?php echo number_format($cbMinOdds, 2, ',', ''); ?></strong></li>
+                                                        <li>Visszatérítés: <strong><?php echo number_format($cbPercent, 0); ?>%</strong> Free Bet formájában</li>
+                                                        <li>Napi limit: <strong>1 alkalom</strong></li>
+                                                    </ul>
+                                                    <hr style="border-color: rgba(255,255,255,0.15); margin: 8px 0;">
+                                                    <?php if ($cbStats['today_count'] > 0): ?>
+                                                        <p class="mb-1" style="font-size:0.85rem;"><i class="fas fa-check-circle text-success"></i> <strong>Mai cashback:</strong> <?php echo number_format($cbStats['today_total'], 0, ',', ' '); ?> Ft Free Bet jóváírva</p>
+                                                        <p class="mb-0" style="font-size:0.8rem; color: #aaa;"><i class="fas fa-info-circle"></i> Ma már kaptál cashback-et. Holnap újra elérhető.</p>
+                                                    <?php else: ?>
+                                                        <p class="mb-1" style="font-size:0.85rem;"><i class="fas fa-hourglass-half text-warning"></i> <strong>Mai cashback:</strong> Még nem aktiválódott</p>
+                                                        <p class="mb-0" style="font-size:0.8rem; color: #aaa;"><i class="fas fa-info-circle"></i> Fogadj legalább <?php echo number_format($cbMinStake, 0, ',', ' '); ?> Ft-ot (min. <?php echo number_format($cbMinOdds, 2, ',', ''); ?> odds). Ha veszít, megkapod a <?php echo number_format($cbPercent, 0); ?>%-ot Free Bet-ként.</p>
+                                                    <?php endif; ?>
+                                                    <?php if ($cbStats['last_amount'] > 0): ?>
+                                                        <p class="mb-0 mt-1" style="font-size:0.8rem; color: #bbb;"><i class="fas fa-history"></i> Utolsó cashback: <?php echo number_format($cbStats['last_amount'], 0, ',', ' '); ?> Ft (<?php echo date('Y-m-d H:i', strtotime($cbStats['last_date'])); ?>)</p>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <?php endif; ?>
+                                                <?php if (strtoupper($bonus['bonus_trigger'] ?? '') !== 'LOSS'): ?>
                                                 <p class="card-text mb-1">
                                                     <strong data-i18n="userProfile.myBonuses.wageringRequired">Szükséges forgatás:</strong> 
                                                     <?php 
@@ -247,6 +321,7 @@ $expired_bonuses = count($archived_bonuses);
                                                         ?>
                                                     </p>
                                                 <?php endif; ?>
+                                                <?php endif; /* end if not LOSS trigger */ ?>
                                                 <p class="card-text mb-1">
                                                     <strong data-i18n="userProfile.myBonuses.expiry">Lejárat:</strong> 
                                                     <?php
@@ -301,6 +376,8 @@ $expired_bonuses = count($archived_bonuses);
                                                     
                                                     if ($bonus['status'] === 'PENDING') {
                                                         echo '<span class="badge bg-warning text-dark"><i class="fas fa-clock"></i> Várakozik (Feltételre)</span>';
+                                                    } elseif ($bonus['status'] === 'ACTIVE' && $is_valid && strtoupper($bonus['bonus_trigger'] ?? '') === 'LOSS') {
+                                                        echo '<span class="badge" style="background:#7c3aed;"><i class="fas fa-shield-alt"></i> Cashback aktív</span>';
                                                     } elseif ($bonus['status'] === 'ACTIVE' && $is_valid) {
                                                         echo '<span class="badge bg-success"><i class="fas fa-check-circle"></i> Aktív</span>';
                                                     } elseif ($bonus['status'] === 'COMPLETED') {

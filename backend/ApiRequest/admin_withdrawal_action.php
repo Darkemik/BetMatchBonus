@@ -85,10 +85,14 @@ if ($action === 'manual_withdraw') {
         $ins->close();
 
         // Egyenleg levonás
+        $prevBal = (float)$user['balance'];
         $balUpd = $conn->prepare("UPDATE Users SET balance = balance - ?, winnings_balance = winnings_balance - ? WHERE id = ?");
         $balUpd->bind_param("ddi", $amount, $amount, $userId);
         $balUpd->execute();
         $balUpd->close();
+
+        // BalanceHistory
+        log_balance_change($userId, $prevBal, $prevBal - $amount, -$amount, 'Admin kifizetés: ' . ($note !== '' ? $note : 'manuális'));
 
         $conn->commit();
     } catch (Exception $e) {
@@ -173,6 +177,12 @@ if ($action === 'revoke') {
         $balUpd->bind_param("ddi", $tx['amount'], $tx['amount'], $tx['user_id']);
         $balUpd->execute();
         $balUpd->close();
+
+        // BalanceHistory
+        $txUserBal = $conn->query("SELECT balance FROM Users WHERE id = " . (int)$tx['user_id'])->fetch_assoc();
+        $newBal = (float)($txUserBal['balance'] ?? 0);
+        $txAmt = (float)$tx['amount'];
+        log_balance_change((int)$tx['user_id'], $newBal - $txAmt, $newBal, $txAmt, 'Kifizetés visszavonva: ' . $tx['transaction_id']);
 
         $conn->commit();
     } catch (Exception $e) {

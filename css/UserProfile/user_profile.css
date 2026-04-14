@@ -355,78 +355,10 @@
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Activity Timeline */
-.activity-timeline {
-    position: relative;
-    padding: 20px 0;
-}
-
-.activity-timeline::before {
-    content: '';
-    position: absolute;
-    left: 30px;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background-color: #ddd;
-}
-
-.activity-item {
-    display: flex;
-    margin-bottom: 30px;
-    position: relative;
-}
-
-.activity-marker {
-    min-width: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
-    background: white;
-    padding: 0 10px;
-}
-
-.activity-marker i {
-    font-size: 20px;
-    background-color: white;
-    padding: 8px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-}
-
-.activity-content {
-    padding-left: 20px;
-    flex: 1;
-}
-
-.activity-content h6 {
-    margin: 0;
-    font-weight: bold;
-    color: #333;
-    text-transform: capitalize;
-}
-
-.activity-description {
-    color: #666;
-    margin: 5px 0;
-    font-size: 14px;
-}
-
-.activity-time {
-    color: #999;
-    display: block;
-    font-size: 12px;
-    margin-top: 5px;
-}
-
-.activity-ip {
-    color: #999;
-    font-size: 12px;
+/* Activity Log - Dark Theme */
+.profile-content h1 .log-count-badge {
+    font-size: 0.55em;
+    vertical-align: middle;
 }
 
 /* Alert Badges */

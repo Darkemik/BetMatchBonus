@@ -155,5 +155,8 @@ if ($rememberMe) {
   setcookie('remember_token', '', time() - 3600, '/', '', false, true);
 }
 
+require_once __DIR__ . '/audit_helper.php';
+log_activity((int)$user['id'], 'login', 'Sikeres bejelentkezés.');
+
 echo json_encode(['success' => true, 'message' => 'Sikeres bejelentkezés!']);
 ?>

@@ -195,6 +195,11 @@ if (!$update_stmt->execute()) {
 
 $update_stmt->close();
 
+// BalanceHistory bejegyzés
+require_once __DIR__ . '/../Auth/audit_helper.php';
+$prevBal = (float)($conn->query("SELECT balance - $amount AS pb FROM Users WHERE id = $user_id")->fetch_assoc()['pb'] ?? 0);
+log_balance_change($user_id, $prevBal, $prevBal + (float)$amount, (float)$amount, 'Befizetés: ' . $payment_method_label . ' (' . $transaction_id . ')');
+
 // Függőben lévő (PENDING) befizetési bónuszok aktiválása
 // Megkeressük az összes PENDING bónuszt, amelyek DEPOSIT triggerrel rendelkeznek és teljesül a min. befizetési feltétel
 $pending_stmt = $conn->prepare("

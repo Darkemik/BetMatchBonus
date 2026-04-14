@@ -166,7 +166,12 @@ if ($useBonusBet) {
         exit;
     }
     $bonusCheckStmt = $conn->prepare("
-        SELECT ub.id, ub.bonus_balance, ub.granted_amount, bc.max_win_multiplier
+        SELECT ub.id, ub.bonus_balance, ub.granted_amount, bc.max_win_multiplier,
+               COALESCE(bc.min_combo, 0) AS min_combo,
+               COALESCE(bc.min_odds, 0) AS min_odds,
+               COALESCE(bc.min_odds_per_event, 0) AS min_odds_per_event,
+               COALESCE(bc.sport_restriction, 'ANY') AS sport_restriction,
+               COALESCE(bc.live_only, 0) AS live_only
         FROM UserBonuses ub
         INNER JOIN BonusCodes bc ON bc.id = ub.bonus_id
         WHERE ub.id = ? AND ub.user_id = ? AND ub.status = 'ACTIVE' AND ub.used = 0
@@ -299,6 +304,74 @@ if ($useBonusBet) {
 
 $deductFromBalance = $deductFromDeposited + $deductFromWinnings;
 
+// PRE-CHECK: Bónusz korlátozások ellenőrzése fogadás előtt (sport, live, combo, odds)
+$preCheckSportNames = [];
+$preCheckLiveFlags = [];
+foreach ($items as $preItem) {
+    $preMatchId = (int)$preItem['matchId'];
+    $stmtPrecheck = $conn->prepare("
+        SELECT e.sport_id, e.is_live, UPPER(s.name) AS sport_name
+        FROM Events e
+        INNER JOIN Sports s ON s.id = e.sport_id
+        WHERE e.api_id = ? LIMIT 1
+    ");
+    $stmtPrecheck->bind_param("i", $preMatchId);
+    $stmtPrecheck->execute();
+    $precheckRow = $stmtPrecheck->get_result()->fetch_assoc();
+    $stmtPrecheck->close();
+    if ($precheckRow) {
+        $preCheckSportNames[] = $precheckRow['sport_name'];
+        $preCheckLiveFlags[] = (int)$precheckRow['is_live'];
+    } else {
+        $preCheckSportNames[] = null;
+        $preCheckLiveFlags[] = 0;
+    }
+}
+$isAllLiveTicket = !empty($preCheckLiveFlags) && !in_array(0, $preCheckLiveFlags, true);
+
+if ($useBonusBet && isset($selectedBonus)) {
+    $bonusSR = strtoupper($selectedBonus['sport_restriction'] ?? 'ANY');
+    $bonusLO = (int)($selectedBonus['live_only'] ?? 0);
+    $bonusMC = (int)($selectedBonus['min_combo'] ?? 0);
+    $bonusMO = (float)($selectedBonus['min_odds'] ?? 0);
+    $bonusMOPE = (float)($selectedBonus['min_odds_per_event'] ?? 0);
+
+    if ($bonusMC > 0 && $selectionCount < $bonusMC) {
+        http_response_code(400);
+        echo json_encode(['status' => 'error', 'message' => "A bónusz feltétele: minimum {$bonusMC} esemény szükséges."]);
+        exit;
+    }
+    if ($bonusMO > 0 && $effectiveTotalOdds < $bonusMO) {
+        http_response_code(400);
+        echo json_encode(['status' => 'error', 'message' => "A bónusz feltétele: minimum {$bonusMO} össz odds szükséges."]);
+        exit;
+    }
+    if ($bonusMOPE > 0 && $ticketMinOdds < $bonusMOPE) {
+        http_response_code(400);
+        echo json_encode(['status' => 'error', 'message' => "A bónusz feltétele: minimum {$bonusMOPE} odds szükséges eseményenként."]);
+        exit;
+    }
+    if ($bonusSR !== 'ANY' && $bonusSR !== '') {
+        $allMatchSport = true;
+        foreach ($preCheckSportNames as $sn) {
+            if ($sn === null || $sn !== $bonusSR) {
+                $allMatchSport = false;
+                break;
+            }
+        }
+        if (!$allMatchSport || empty($preCheckSportNames)) {
+            http_response_code(400);
+            echo json_encode(['status' => 'error', 'message' => "Ez a bónusz csak {$bonusSR} fogadásokra használható."]);
+            exit;
+        }
+    }
+    if ($bonusLO && !$isAllLiveTicket) {
+        http_response_code(400);
+        echo json_encode(['status' => 'error', 'message' => 'Ez a bónusz csak élő mérkőzésekre használható.']);
+        exit;
+    }
+}
+
 // TRANZAKCIÓ KEZDÉSE
 $conn->begin_transaction();
 
@@ -427,6 +500,13 @@ try {
         }
         $stmtUpdateUserBalance->execute();
         $stmtUpdateUserBalance->close();
+
+        // BalanceHistory bejegyzés
+        $totalDeducted = $deductFromBalance + $deductFromBonus;
+        if ($totalDeducted > 0) {
+            require_once dirname(__DIR__) . '/Auth/audit_helper.php';
+            log_balance_change($userId, $mainBalance, $mainBalance - $deductFromBalance, -$deductFromBalance, 'Fogadás: #' . $ticketId . ' (' . number_format($stake, 0, ',', ' ') . ' Ft tét)');
+        }
     }
 
     // 5b. KONKRÉT BÓNUSZ EGYENLEG CSÖKKENTÉSE (multi-bonus rendszer)
@@ -497,7 +577,8 @@ try {
             bc.wagering_multiplier,
             bc.activation_expire_hours,
             bc.sport_restriction,
-            bc.bet_reward_type
+            bc.bet_reward_type,
+            bc.evaluate_on_settle
         FROM UserBonuses ub
         INNER JOIN BonusCodes bc ON bc.id = ub.bonus_id
         WHERE ub.user_id = ?
@@ -540,6 +621,16 @@ try {
 
         $grantedBetBonus = (float)($betBonus['bonus_amount'] ?? 0);
         if ($grantedBetBonus <= 0) {
+            continue;
+        }
+
+        // evaluate_on_settle: nem azonnal aktiválódik, hanem a kvalifikáló fogadás lezárásakor
+        $evaluateOnSettle = (int)($betBonus['evaluate_on_settle'] ?? 0);
+        if ($evaluateOnSettle) {
+            $storeTicketStmt = $conn->prepare("UPDATE UserBonuses SET ticket_id = ? WHERE id = ?");
+            $storeTicketStmt->bind_param("ii", $ticketId, $betBonus['user_bonus_id']);
+            $storeTicketStmt->execute();
+            $storeTicketStmt->close();
             continue;
         }
 
@@ -598,6 +689,20 @@ try {
     // Csak bónusz egyenlegből tett fogadás számít bele a forgatási követelménybe!
     // Multi-bonus: csak a kiválasztott bónuszé frissül!
     if ($useBonusBet && $deductFromBonus > 0 && $userBonusId > 0) {
+    // Forgatási haladás: sport és live_only korlátozás ellenőrzése
+    $wageringAllowed = true;
+    if (isset($selectedBonus)) {
+        $wSR = strtoupper($selectedBonus['sport_restriction'] ?? 'ANY');
+        $wLO = (int)($selectedBonus['live_only'] ?? 0);
+        if ($wSR !== 'ANY' && $wSR !== '') {
+            foreach ($preCheckSportNames as $sn) {
+                if ($sn === null || $sn !== $wSR) { $wageringAllowed = false; break; }
+            }
+        }
+        if ($wLO && !$isAllLiveTicket) $wageringAllowed = false;
+    }
+
+    if ($wageringAllowed) {
     $stmtUpdateWagering = $conn->prepare(" 
         UPDATE UserBonuses ub
         INNER JOIN BonusCodes bc ON bc.id = ub.bonus_id
@@ -618,6 +723,7 @@ try {
         $stmtUpdateWagering->bind_param("ddiiidd", $stake, $stake, $userBonusId, $userId, $selectionCount, $effectiveTotalOdds, $ticketMinOdds);
     $stmtUpdateWagering->execute();
     $stmtUpdateWagering->close();
+    } // end if ($wageringAllowed)
 
     // Ha teljesítve lett a forgatási követelmény, lezárjuk a bónuszt (csak a kiválasztott)
     $stmtCompleteBonus = $conn->prepare(" 
@@ -683,6 +789,10 @@ try {
         $_SESSION['session_bet_total'] = 0.0;
     }
     $_SESSION['session_bet_total'] = (float)$_SESSION['session_bet_total'] + (float)$stake;
+
+    require_once dirname(__DIR__) . '/Auth/audit_helper.php';
+    $betType = $isFreeBetTicket ? 'Free Bet' : ($useBonusBet ? 'Bónusz' : 'Normál');
+    log_activity($userId, 'bet', 'Fogadás leadva (#' . $ticketId . '). Tét: ' . number_format($stake, 0, ',', '.') . ' Ft, odds: ' . number_format($effectiveTotalOdds, 2, ',', '.') . ', típus: ' . $betType . '.');
 
     echo json_encode([
         'status' => 'ok',
