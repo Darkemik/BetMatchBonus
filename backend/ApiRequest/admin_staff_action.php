@@ -97,6 +97,7 @@ if ($action === 'create') {
     $ins = $conn->prepare("INSERT INTO AdminUsers (username, email, password_hash, role_id, is_active, created_at) VALUES (?, ?, ?, ?, 1, NOW())");
     $ins->bind_param("sssi", $username, $email, $hash, $roleId);
     $ins->execute();
+    $newId = $conn->insert_id;
     $ins->close();
 
     // Szerepkör neve
@@ -228,7 +229,7 @@ if ($action === 'toggle_active') {
     }
 
     $msg = $newStatus ? 'Admin fiók aktiválva' : 'Admin fiók letiltva';
-    log_audit('staff_toggle', 'admin', $adminId, $msg . ': ' . $adminRow['username']);
+    log_audit('staff_toggle', 'admin', $adminId, $msg . ': ' . $row['username']);
     echo json_encode(['success' => true, 'message' => $msg]);
     exit;
 }

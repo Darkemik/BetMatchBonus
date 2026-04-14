@@ -200,7 +200,116 @@ if ($action === 'toggle_active') {
     exit;
 }
 
-// ── 3) Üzenet küldése felhasználónak ──
+// ── 3) Felhasználó végleges törlése ──
+if ($action === 'delete_user') {
+    $userId = (int)($_POST['user_id'] ?? 0);
+    $reason = trim($_POST['reason'] ?? '');
+
+    if ($userId <= 0) {
+        echo json_encode(['success' => false, 'message' => 'Érvénytelen felhasználó ID.']);
+        exit;
+    }
+    if ($reason === '') {
+        echo json_encode(['success' => false, 'message' => 'Kérjük, add meg a törlés okát!']);
+        exit;
+    }
+
+    $stmt = $conn->prepare("SELECT id, username, email, full_name FROM Users WHERE id = ?");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $user = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    if (!$user) {
+        echo json_encode(['success' => false, 'message' => 'Felhasználó nem található.']);
+        exit;
+    }
+
+    $userEmail = $user['email'];
+    $userName  = $user['username'];
+    $targetName = $user['full_name'] ?: $userName;
+
+    // Email küldés ELŐTT, mert utána már nem lesz adat
+    try {
+        $mail = new PHPMailer(true);
+        $mail->isSMTP();
+        $mail->Host       = MAIL_SMTP_HOST;
+        $mail->SMTPAuth   = true;
+        $mail->Username   = MAIL_SMTP_USERNAME;
+        $mail->Password   = MAIL_SMTP_PASSWORD;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = MAIL_SMTP_PORT;
+        $mail->CharSet    = 'UTF-8';
+        $mail->setFrom(MAIL_FROM_EMAIL, MAIL_FROM_NAME);
+        $mail->addAddress($userEmail, $targetName);
+        $mail->isHTML(true);
+        $mail->Subject = 'BetMatchBonus – Fiókod törölve';
+        $mail->Body = "
+            <div style='font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#1a1a2e;color:#eee;padding:30px;border-radius:10px;'>
+                <h2 style='color:#e94560;'>Kedves " . htmlspecialchars($targetName) . "!</h2>
+                <p>Értesítünk, hogy fiókod az adminisztrátor által <strong style='color:#e94560;'>véglegesen törlésre került</strong>.</p>
+                <div style='background:#16213e;padding:15px;border-radius:8px;margin:15px 0;border-left:4px solid #e94560;'>
+                    <strong>Törlés oka:</strong><br>" . nl2br(htmlspecialchars($reason)) . "
+                </div>
+                <p>Ha kérdésed van, vedd fel velünk a kapcsolatot.</p>
+                <br>
+                <p style='color:#888;font-size:12px;'>Üdvözlettel,<br>BetMatchBonus csapata</p>
+            </div>";
+        $mail->send();
+    } catch (MailException $e) {
+        error_log('User delete email hiba: ' . $e->getMessage());
+    }
+
+    // Törlés tranzakcióban
+    $conn->begin_transaction();
+    try {
+        // Nem CASCADE-elő táblák törlése
+        $tables = ['UserBonuses', 'BalanceHistory', 'Transactions'];
+        foreach ($tables as $table) {
+            $del = $conn->prepare("DELETE FROM {$table} WHERE user_id = ?");
+            $del->bind_param("i", $userId);
+            $del->execute();
+            $del->close();
+        }
+
+        // Felhasználó törlése (Wallets, WalletTransactions, Notifications, Tickets, TicketSelections CASCADE-del törlődnek)
+        $del = $conn->prepare("DELETE FROM Users WHERE id = ?");
+        $del->bind_param("i", $userId);
+        $del->execute();
+        $del->close();
+
+        $conn->commit();
+    } catch (\Exception $e) {
+        $conn->rollback();
+        echo json_encode(['success' => false, 'message' => 'Hiba a törlés során: ' . $e->getMessage()]);
+        exit;
+    }
+
+    // Feltöltött fájlok törlése
+    $uploadDirs = [
+        __DIR__ . '/../uploads/registrations/' . $userId . '/',
+        __DIR__ . '/../uploads/bank_statements/',
+    ];
+
+    // Regisztrációs fájlok törlése
+    $regDir = $uploadDirs[0];
+    if (is_dir($regDir)) {
+        $files = glob($regDir . '*');
+        if ($files) foreach ($files as $f) { if (is_file($f)) unlink($f); }
+        @rmdir($regDir);
+    }
+
+    // Bankszámlakivonat törlése
+    $bankDir = $uploadDirs[1];
+    $bankFiles = glob($bankDir . 'bank_' . $userId . '_*');
+    if ($bankFiles) foreach ($bankFiles as $f) { if (is_file($f)) unlink($f); }
+
+    log_audit('user_delete', 'user', $userId, 'Felhasználó törölve: ' . $userName . ' (' . $userEmail . ') | Ok: ' . $reason);
+    echo json_encode(['success' => true, 'message' => 'Felhasználó törölve: ' . $userName . '. Email értesítés elküldve.']);
+    exit;
+}
+
+// ── 4) Üzenet küldése felhasználónak ──
 if ($action === 'send_message') {
     $userId = (int)($_POST['user_id'] ?? 0);
     $messageText = trim($_POST['message'] ?? '');

@@ -124,7 +124,35 @@ $role = $_SESSION['admin_role'];
                 </button>
             </div>
         </div>
+
+        <div class="text-center mt-4 mb-3">
+            <button class="btn btn-outline-danger" onclick="confirmResetDefaults()">
+                <i class="fas fa-rotate-left me-2"></i>Összes visszaállítása alapértékre
+            </button>
+        </div>
     </main>
+</div>
+
+<!-- Reset defaults modal -->
+<div class="modal fade" id="resetDefaultsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: #16213e; color: #eee; border: 1px solid #e94560;">
+            <div class="modal-header border-bottom border-secondary">
+                <h5 class="modal-title"><i class="fas fa-rotate-left text-danger me-2"></i>Visszaállítás alapértékre</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Biztosan visszaállítod az <strong>összes beállítást</strong> az eredeti alapértékekre?</p>
+                <p class="text-warning mb-0"><i class="fas fa-exclamation-triangle me-1"></i>Ez a művelet nem vonható vissza!</p>
+            </div>
+            <div class="modal-footer border-top border-secondary">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Mégse</button>
+                <button type="button" class="btn btn-danger" onclick="resetToDefaults()">
+                    <i class="fas fa-rotate-left me-1"></i>Visszaállítás
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
@@ -278,6 +306,28 @@ function escHtml(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+}
+
+function confirmResetDefaults() {
+    new bootstrap.Modal(document.getElementById('resetDefaultsModal')).show();
+}
+
+async function resetToDefaults() {
+    try {
+        const res = await fetch(API + '?action=reset_defaults');
+        const data = await res.json();
+
+        bootstrap.Modal.getInstance(document.getElementById('resetDefaultsModal')).hide();
+
+        if (data.success) {
+            showToast(data.message, 'success');
+            loadSettings(); // reload values
+        } else {
+            showToast(data.message, 'danger');
+        }
+    } catch (e) {
+        showToast('Hálózati hiba.', 'danger');
+    }
 }
 
 loadSettings();

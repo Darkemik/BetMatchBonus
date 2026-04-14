@@ -174,20 +174,28 @@ if ($granted_amount > 0 && isset($bonus['wagering_multiplier']) && $bonus['wager
 
 // 4. Bónusz hozzárendelése a felhasználóhoz
 
+// Azonnali bónuszok egyedi egyenlege
+$individualBalance = (!$isDepositTriggered && !$isBetTriggered && $granted_amount > 0) ? $granted_amount : 0.00;
+
 $insert_stmt = $conn->prepare("
-    INSERT INTO UserBonuses (user_id, bonus_id, status, granted_amount, wagering_required, expires_at) 
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO UserBonuses (user_id, bonus_id, status, granted_amount, bonus_balance, wagering_required, expires_at) 
+    VALUES (?, ?, ?, ?, ?, ?, ?)
 ");
-$insert_stmt->bind_param("iisdds", $user_id, $bonus['id'], $status, $granted_amount, $wagering_required, $expires_at);
+$insert_stmt->bind_param("iisddds", $user_id, $bonus['id'], $status, $granted_amount, $individualBalance, $wagering_required, $expires_at);
 
 if ($insert_stmt->execute()) {
-    // Csak az azonnal aktiválódó bónusz kerül jóváírásra itt.
-    // DEPOSIT trigger esetén a jóváírás a stripe_payment_process.php-ban történik.
-    if (!$isDepositTriggered && !$isBetTriggered && $granted_amount > 0) {
-        $wallet_stmt = $conn->prepare("UPDATE Users SET bonus_balance = bonus_balance + ? WHERE id = ?");
-        $wallet_stmt->bind_param("di", $granted_amount, $user_id);
-        $wallet_stmt->execute();
-        $wallet_stmt->close();
+    // Users.bonus_balance szinkronizálása (összes aktív bónusz egyenlegek összege)
+    if ($individualBalance > 0) {
+        $syncStmt = $conn->prepare("
+            UPDATE Users SET bonus_balance = (
+                SELECT COALESCE(SUM(ub.bonus_balance), 0) FROM UserBonuses ub
+                WHERE ub.user_id = ? AND ub.status = 'ACTIVE' AND ub.used = 0
+                  AND (ub.expires_at IS NULL OR ub.expires_at > NOW())
+            ) WHERE id = ?
+        ");
+        $syncStmt->bind_param("ii", $user_id, $user_id);
+        $syncStmt->execute();
+        $syncStmt->close();
     }
 
     if ($isDepositTriggered) {

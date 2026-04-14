@@ -59,6 +59,7 @@ if (empty($activities)) {
                     <a href="transaction_history.php" class="profile-nav-item"><i class="fas fa-history"></i> <span data-i18n="auth.transactionHistory">Tranzakciótörténet</span></a>
                     <a href="my_bonuses.php" class="profile-nav-item"><i class="fas fa-gift"></i> <span data-i18n="auth.myBonuses">Bónuszaim</span></a>
                     <a href="activity_log.php" class="profile-nav-item active"><i class="fas fa-list"></i> <span data-i18n="auth.activityLog">Napló</span></a>
+                    <a href="notifications.php" class="profile-nav-item"><i class="fas fa-bell"></i> <span>Értesítések</span></a>
                     <a href="#" class="profile-nav-item logout profile-logout-btn" onclick="event.preventDefault();fetch('/BetMatchBonus/backend/Auth/logout.php',{method:'POST'}).then(function(){window.location.href='/BetMatchBonus/frontend/MainMenu/MainMenu.php';});"><i class="fas fa-sign-out-alt"></i> <span data-i18n="auth.logout">Kijelentkezés</span></a>
                 </nav>
             </div>

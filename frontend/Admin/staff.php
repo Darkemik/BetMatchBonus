@@ -586,14 +586,15 @@ async function confirmDelete() {
 const PERM_API = '../../backend/ApiRequest/admin_permissions.php';
 
 const PAGE_META = {
-    dashboard:     { icon: '👥', label: 'Felhasználók' },
-    registrations: { icon: '📋', label: 'Regisztrációk' },
-    tickets:       { icon: '🎫', label: 'Szelvények' },
-    bonuses:       { icon: '🎁', label: 'Bónuszok' },
-    deposits:      { icon: '💰', label: 'Befizetések' },
-    withdrawals:   { icon: '💸', label: 'Kifizetések' },
-    statistics:    { icon: '📊', label: 'Statisztikák' },
-    notifications: { icon: '🔔', label: 'Értesítések' }
+    dashboard:          { icon: '👥', label: 'Felhasználók' },
+    registrations:      { icon: '📋', label: 'Regisztrációk' },
+    data_verification:  { icon: '🔍', label: 'Adatellenőrzés' },
+    tickets:            { icon: '🎫', label: 'Szelvények' },
+    bonuses:            { icon: '🎁', label: 'Bónuszok' },
+    deposits:           { icon: '💰', label: 'Befizetések' },
+    withdrawals:        { icon: '💸', label: 'Kifizetések' },
+    statistics:         { icon: '📊', label: 'Statisztikák' },
+    notifications:      { icon: '🔔', label: 'Értesítések' }
 };
 
 const ROLE_COLORS = { 1: '#52b788', 2: '#f5c518' };

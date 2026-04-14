@@ -38,6 +38,41 @@ function getAvailableFreeBet(mysqli $conn, int $userId): array {
   ];
 }
 
+function getActiveBonusList(mysqli $conn, int $userId): array {
+  $stmt = $conn->prepare("
+    SELECT ub.id, bc.name AS bonus_name, ub.bonus_balance, ub.granted_amount,
+           ub.wagering_progress, ub.wagering_required, ub.expires_at,
+           bc.max_win_multiplier, bc.min_combo, bc.min_odds, bc.min_odds_per_event,
+           bc.bet_reward_type
+    FROM UserBonuses ub
+    INNER JOIN BonusCodes bc ON bc.id = ub.bonus_id
+    WHERE ub.user_id = ?
+      AND ub.status = 'ACTIVE'
+      AND ub.used = 0
+      AND COALESCE(ub.bonus_balance, 0) > 0
+      AND UPPER(COALESCE(bc.bet_reward_type, '')) != 'FREE_BET'
+      AND (ub.expires_at IS NULL OR ub.expires_at > NOW())
+    ORDER BY ub.id ASC
+  ");
+  $stmt->bind_param("i", $userId);
+  $stmt->execute();
+  $res = $stmt->get_result();
+  $list = [];
+  while ($row = $res->fetch_assoc()) {
+    $list[] = [
+      'id' => (int)$row['id'],
+      'name' => $row['bonus_name'] ?? 'Bónusz',
+      'balance' => (float)$row['bonus_balance'],
+      'granted_amount' => (float)$row['granted_amount'],
+      'wagering_progress' => (float)$row['wagering_progress'],
+      'wagering_required' => (float)$row['wagering_required'],
+      'max_win_multiplier' => (float)($row['max_win_multiplier'] ?? 5.0)
+    ];
+  }
+  $stmt->close();
+  return $list;
+}
+
 // Először ellenőrizze a session-t
 if (isset($_SESSION['user_id'])) {
   $userId = (int)$_SESSION['user_id'];
@@ -51,8 +86,8 @@ if (isset($_SESSION['user_id'])) {
   // Inaktivitás frissítése (check_session.php 30 perces timeout-ot néz ezen)
   $_SESSION['last_activity'] = time();
 
-  // 1 órás session limit ellenőrzés
-  $sessionMaxSeconds = get_setting_int('session_timeout_minutes', 30) * 60;
+  // Teljes munkamenet időkorlát ellenőrzés (alapértelmezetten 60 perc)
+  $sessionMaxSeconds = get_setting_int('session_max_duration_minutes', 60) * 60;
   $elapsed = time() - (int)$_SESSION['login_started_at'];
   if ($elapsed >= $sessionMaxSeconds) {
     session_unset();
@@ -71,6 +106,7 @@ if (isset($_SESSION['user_id'])) {
   
   if ($user) {
     $freeBet = getAvailableFreeBet($conn, $userId);
+    $activeBonuses = getActiveBonusList($conn, $userId);
     $user['session_bet_total'] = (float)($_SESSION['session_bet_total'] ?? 0.0);
     $user['login_started_at'] = (int)($_SESSION['login_started_at'] ?? time());
     $user['session_remaining'] = $sessionMaxSeconds - $elapsed;
@@ -79,6 +115,7 @@ if (isset($_SESSION['user_id'])) {
     $user['available_free_bet_min_combo'] = $freeBet['min_combo'];
     $user['available_free_bet_min_odds'] = $freeBet['min_odds'];
     $user['available_free_bet_min_odds_per_event'] = $freeBet['min_odds_per_event'];
+    $user['active_bonuses'] = $activeBonuses;
     echo json_encode(['loggedIn' => true, 'user' => $user]);
     exit;
   }
@@ -109,6 +146,7 @@ if (isset($_COOKIE['remember_token'])) {
     }
     
     $freeBet = getAvailableFreeBet($conn, (int)$user['id']);
+    $activeBonuses = getActiveBonusList($conn, (int)$user['id']);
     $sessionRemaining = 3600 - (time() - (int)$_SESSION['login_started_at']);
     echo json_encode(['loggedIn' => true, 'user' => [
       'id' => $user['id'],
@@ -124,7 +162,8 @@ if (isset($_COOKIE['remember_token'])) {
       'available_free_bet_amount' => $freeBet['amount'],
       'available_free_bet_min_combo' => $freeBet['min_combo'],
       'available_free_bet_min_odds' => $freeBet['min_odds'],
-      'available_free_bet_min_odds_per_event' => $freeBet['min_odds_per_event']
+      'available_free_bet_min_odds_per_event' => $freeBet['min_odds_per_event'],
+      'active_bonuses' => $activeBonuses
     ]]);
     exit;
   } else {

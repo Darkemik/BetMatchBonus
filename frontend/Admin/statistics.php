@@ -102,13 +102,13 @@ $activePage = 'statistics';
             <div class="col-lg-8">
                 <div class="chart-card">
                     <h5><i class="fas fa-money-bill-wave"></i> Napi bevétel (befizetés vs kifizetés)</h5>
-                    <canvas id="revenueChart" height="100"></canvas>
+                    <div style="position:relative;height:300px;"><canvas id="revenueChart"></canvas></div>
                 </div>
             </div>
             <div class="col-lg-4">
                 <div class="chart-card">
                     <h5><i class="fas fa-ticket-alt"></i> Szelvény státuszok</h5>
-                    <canvas id="ticketPieChart" height="160"></canvas>
+                    <div style="position:relative;height:300px;"><canvas id="ticketPieChart"></canvas></div>
                 </div>
             </div>
         </div>
@@ -117,13 +117,13 @@ $activePage = 'statistics';
             <div class="col-lg-6">
                 <div class="chart-card">
                     <h5><i class="fas fa-user-plus"></i> Napi regisztrációk</h5>
-                    <canvas id="regChart" height="110"></canvas>
+                    <div style="position:relative;height:260px;"><canvas id="regChart"></canvas></div>
                 </div>
             </div>
             <div class="col-lg-6">
                 <div class="chart-card">
                     <h5><i class="fas fa-futbol"></i> Napi fogadási forgalom</h5>
-                    <canvas id="betsChart" height="110"></canvas>
+                    <div style="position:relative;height:260px;"><canvas id="betsChart"></canvas></div>
                 </div>
             </div>
         </div>

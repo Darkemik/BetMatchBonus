@@ -8,13 +8,13 @@ page_permission_guard('dashboard');
 $perms = get_role_permissions();
 
 // Statistics
-$userCount  = $conn->query("SELECT COUNT(*) AS c FROM Users WHERE is_active = 1 AND is_verified = 1")->fetch_assoc()['c'];
+$userCount  = $conn->query("SELECT COUNT(*) AS c FROM Users WHERE is_verified = 1")->fetch_assoc()['c'];
 $matchCount = $conn->query("SELECT COUNT(*) AS c FROM Events")->fetch_assoc()['c'];
 $champCount = $conn->query("SELECT COUNT(*) AS c FROM Competitions")->fetch_assoc()['c'];
 
 // Keresés
 $searchTerm = isset($_GET['search']) ? trim($_GET['search']) : '';
-$searchWhere = ' WHERE is_active = 1 AND is_verified = 1';
+$searchWhere = ' WHERE is_verified = 1';
 $searchParam = null;
 if ($searchTerm !== '') {
     $searchWhere .= " AND (username LIKE ? OR email LIKE ? OR full_name LIKE ? OR CAST(id AS CHAR) = ?)";
@@ -286,6 +286,9 @@ $role = $_SESSION['admin_role'];
                                                     <i class="fas fa-user-check"></i> Fiók aktiválása
                                                 </button>
                                             <?php endif; ?>
+                                            <button type="button" class="btn btn-danger btn-sm btn-delete-user" data-uid="<?= $u['id'] ?>" data-username="<?= htmlspecialchars($u['username'], ENT_QUOTES) ?>">
+                                                <i class="fas fa-trash"></i> Felhasználó törlése
+                                            </button>
                                         </div>
                                     </div>
 
@@ -323,6 +326,38 @@ $role = $_SESSION['admin_role'];
         </div>
 
     </main>
+</div>
+
+<!-- Delete User Modal -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background:#16213e;color:#eee;">
+            <div class="modal-header" style="border-bottom-color:#e94560;">
+                <h5 class="modal-title"><i class="fas fa-trash me-2 text-danger"></i>Felhasználó törlése</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="deleteUserId">
+                <p class="text-muted">Felhasználó: <strong id="deleteUsername" class="text-white"></strong></p>
+                <div class="alert alert-danger" style="background:#2a1a1a;border-color:#e94560;color:#eee;">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    <strong>Figyelem!</strong> Ez a művelet végleges és nem visszavonható. A felhasználó összes adata, tranzakciói és bónuszai törlésre kerülnek.
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Törlés oka <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="deleteReason" rows="4" placeholder="Írd le a törlés okát..."
+                        style="background:#0f3460;border-color:#333;color:#fff;"></textarea>
+                </div>
+                <small class="text-muted">Az ok emailben kiküldésre kerül a felhasználónak.</small>
+            </div>
+            <div class="modal-footer" style="border-top-color:#333;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash me-1"></i>Végleges törlés
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
@@ -463,6 +498,66 @@ document.addEventListener('DOMContentLoaded', function() {
                 .finally(() => { btn.disabled = false; });
         });
     });
+
+    // Felhasználó törlése – modal megnyitása
+    document.querySelectorAll('.btn-delete-user').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('deleteUserId').value = this.dataset.uid;
+            document.getElementById('deleteUsername').textContent = this.dataset.username;
+            document.getElementById('deleteReason').value = '';
+            new bootstrap.Modal(document.getElementById('deleteUserModal')).show();
+        });
+    });
+
+    // Felhasználó törlése – megerősítés
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+        const userId = document.getElementById('deleteUserId').value;
+        const reason = document.getElementById('deleteReason').value.trim();
+
+        if (!reason) {
+            showToast('Add meg a törlés okát!', 'warning');
+            return;
+        }
+
+        const confirmBtn = this;
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Törlés...';
+
+        const formData = new FormData();
+        formData.append('action', 'delete_user');
+        formData.append('user_id', userId);
+        formData.append('reason', reason);
+
+        fetch(API_URL, { method: 'POST', body: formData })
+            .then(r => r.json())
+            .then(data => {
+                showToast(data.message, data.success ? 'success' : 'danger');
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('deleteUserModal')).hide();
+                    const row = document.querySelector('.user-row[data-uid="' + userId + '"]');
+                    const panel = document.getElementById('detail-' + userId);
+                    if (row) { row.style.opacity = '0.4'; row.style.pointerEvents = 'none'; }
+                    if (panel) { panel.style.opacity = '0.4'; panel.style.pointerEvents = 'none'; }
+                    setTimeout(() => { if (row) row.remove(); if (panel) panel.remove(); }, 1500);
+                }
+            })
+            .catch(() => showToast('Hálózati hiba!', 'danger'))
+            .finally(() => {
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = '<i class="fas fa-trash me-1"></i>Végleges törlés';
+            });
+    });
+
+    // Auto-refresh: 3 mp-enként, ha nincs nyitva panel, modal vagy aktív input
+    setInterval(() => {
+        const hasOpenPanel = document.querySelector('.user-detail-panel.show');
+        const hasOpenModal = document.querySelector('.modal.show');
+        const activeEl = document.activeElement;
+        const isTyping = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
+        if (!hasOpenPanel && !hasOpenModal && !isTyping) {
+            location.reload();
+        }
+    }, 3000);
 
 });
 </script>

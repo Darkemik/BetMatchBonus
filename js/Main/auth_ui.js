@@ -143,13 +143,52 @@ async function refreshAuthUI() {
     }
     if (fullNameEl) fullNameEl.textContent = u.full_name || u.username || '-';
     if (emailEl) emailEl.textContent = u.email || '-';
+
+    // Notification badge update
+    updateNotifBadge();
   } catch (e) {
     console.error('refreshAuthUI error:', e);
   }
 }
 
+async function updateNotifBadge() {
+  try {
+    const res = await fetch('/BetMatchBonus/backend/ApiRequest/UserProfile/get_notifications.php?count=1', { cache: 'no-store' });
+    const data = await res.json();
+    if (!data.success) return;
+    const count = data.unread_count || 0;
+
+    // Bell icon in header
+    const bellLink = document.getElementById('notifBellLink');
+    const bellBadge = document.getElementById('notifBellBadge');
+    if (bellLink) bellLink.style.display = '';
+    if (bellBadge) {
+      if (count > 0) {
+        bellBadge.textContent = count > 99 ? '99+' : count;
+        bellBadge.style.display = 'inline-flex';
+      } else {
+        bellBadge.style.display = 'none';
+      }
+    }
+
+    // Dropdown menu badge
+    const dropdownBadge = document.getElementById('notifDropdownBadge');
+    if (dropdownBadge) {
+      if (count > 0) {
+        dropdownBadge.textContent = count;
+        dropdownBadge.style.display = 'inline-flex';
+      } else {
+        dropdownBadge.style.display = 'none';
+      }
+    }
+  } catch {}
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   refreshAuthUI();
+
+  // Értesítés badge frissítés percenként
+  setInterval(updateNotifBadge, 60000);
 
   // Csak egyenleg-frissítéshez (pl. szelvény leadás után), oldal újratöltés nélkül
   document.addEventListener('balance:changed', () => {

@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let availableFreeBetMinOdds = 0;
     let availableFreeBetMinOddsPerEvent = 0;
     let manualStakeBeforeFreeBet = (window.SITE_SETTINGS && window.SITE_SETTINGS.min_bet_amount) || 100;
+    let activeBonusList = [];
 
     function formatFt(value) {
         return (parseFloat(value) || 0).toLocaleString('hu-HU', {
@@ -113,9 +114,9 @@ document.addEventListener('DOMContentLoaded', function() {
             stakeInput.readOnly = true;
             stakeInput.setAttribute('aria-disabled', 'true');
             // Free bet esetén nem engedünk bónusz egyenleg választást
-            const realRadio = document.querySelector('input[name="balance-type"][value="real"]');
-            if (realRadio) realRadio.checked = true;
-            updateBalanceTypeVisuals();
+            const selectEl = document.getElementById('balance-type-select');
+            if (selectEl) selectEl.value = 'real';
+            updateSelectBorderColor();
         } else {
             stakeInput.readOnly = false;
             stakeInput.removeAttribute('aria-disabled');
@@ -144,7 +145,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 availableFreeBetMinCombo = parseInt(data.user?.available_free_bet_min_combo, 10) || 0;
                 availableFreeBetMinOdds = parseFloat(data.user?.available_free_bet_min_odds) || 0;
                 availableFreeBetMinOddsPerEvent = parseFloat(data.user?.available_free_bet_min_odds_per_event) || 0;
-                console.log('[BETSLIP] Login status:', isLoggedIn, 'User ID:', currentUserId, 'Balance:', userBalance, 'Bonus:', userBonusBalance);
+                activeBonusList = Array.isArray(data.user?.active_bonuses) ? data.user.active_bonuses : [];
+                console.log('[BETSLIP] Login status:', isLoggedIn, 'User ID:', currentUserId, 'Balance:', userBalance, 'Bonus:', userBonusBalance, 'Active bonuses:', activeBonusList.length);
                 renderFreeBetOption();
                 applyFreeBetSelectionState();
                 updatePlaceBetButton();
@@ -160,6 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 availableFreeBetMinCombo = 0;
                 availableFreeBetMinOdds = 0;
                 availableFreeBetMinOddsPerEvent = 0;
+                activeBonusList = [];
                 renderFreeBetOption();
                 updatePlaceBetButton();
             });
@@ -502,10 +505,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const row = document.getElementById('betslip-balance-row');
         const display = document.getElementById('betslip-balance-display');
         const typeRow = document.getElementById('balance-type-row');
-        const realAmountEl = document.getElementById('real-balance-amount');
-        const bonusAmountEl = document.getElementById('bonus-balance-amount');
-        const realLabel = document.getElementById('balance-type-real-label');
-        const bonusLabel = document.getElementById('balance-type-bonus-label');
+        const selectEl = document.getElementById('balance-type-select');
 
         if (!row || !display) return;
         if (!isLoggedIn) {
@@ -523,44 +523,84 @@ document.addEventListener('DOMContentLoaded', function() {
             display.textContent = formatFt(total);
         }
 
-        // Egyenleg típus választó megjelenítése ha van bónusz
-        if (typeRow) {
+        // Bónusz selector dropdown frissítése
+        if (typeRow && selectEl) {
             const useFreeBet = !!document.getElementById('use-freebet-toggle')?.checked;
-            if (userBonusBalance > 0 && !useFreeBet) {
+            const hasBonusOptions = activeBonusList.length > 0;
+
+            if (hasBonusOptions && !useFreeBet) {
                 typeRow.style.display = 'flex';
+
+                // Jelenlegi kiválasztás megjegyzése
+                const currentValue = selectEl.value;
+
+                // Dropdown opciók újragenerálása
+                selectEl.innerHTML = '';
+
+                // Rendes egyenleg opció
+                const realOpt = document.createElement('option');
+                realOpt.value = 'real';
+                realOpt.textContent = '💰 Rendes egyenleg — ' + formatFt(userBalance);
+                realOpt.style.color = '#4caf50';
+                selectEl.appendChild(realOpt);
+
+                // Bónusz opciók (minden aktív bónuszhoz külön)
+                activeBonusList.forEach(function(bonus) {
+                    const opt = document.createElement('option');
+                    opt.value = 'bonus_' + bonus.id;
+                    opt.textContent = '🎁 ' + bonus.name + ' — ' + formatFt(bonus.balance);
+                    opt.style.color = '#7c3aed';
+                    selectEl.appendChild(opt);
+                });
+
+                // Visszaállítás a korábbi kiválasztásra, ha még létezik
+                if (currentValue && selectEl.querySelector('option[value="' + currentValue + '"]')) {
+                    selectEl.value = currentValue;
+                } else {
+                    selectEl.value = 'real';
+                }
+
+                // Border szín frissítése a kiválasztás alapján
+                updateSelectBorderColor();
             } else {
                 typeRow.style.display = 'none';
-                // Ha nincs bónusz, mindig rendes egyenleg
-                const realRadio = document.querySelector('input[name="balance-type"][value="real"]');
-                if (realRadio) realRadio.checked = true;
+                if (selectEl) selectEl.value = 'real';
             }
         }
+    }
 
-        if (realAmountEl) realAmountEl.textContent = formatFt(userBalance);
-        if (bonusAmountEl) bonusAmountEl.textContent = formatFt(userBonusBalance);
-
-        // Vizuális kijelölés frissítése
-        updateBalanceTypeVisuals();
+    function updateSelectBorderColor() {
+        const selectEl = document.getElementById('balance-type-select');
+        if (!selectEl) return;
+        const val = selectEl.value;
+        if (val === 'real') {
+            selectEl.style.borderColor = '#4caf50';
+        } else {
+            selectEl.style.borderColor = '#7c3aed';
+        }
     }
 
     function getSelectedBalanceType() {
-        const selected = document.querySelector('input[name="balance-type"]:checked');
-        return selected ? selected.value : 'real';
+        const selectEl = document.getElementById('balance-type-select');
+        if (!selectEl) return 'real';
+        return selectEl.value.startsWith('bonus_') ? 'bonus' : 'real';
     }
 
-    function updateBalanceTypeVisuals() {
-        const realLabel = document.getElementById('balance-type-real-label');
-        const bonusLabel = document.getElementById('balance-type-bonus-label');
-        const type = getSelectedBalanceType();
+    function getSelectedUserBonusId() {
+        const selectEl = document.getElementById('balance-type-select');
+        if (!selectEl) return 0;
+        const val = selectEl.value;
+        if (val.startsWith('bonus_')) {
+            return parseInt(val.replace('bonus_', ''), 10) || 0;
+        }
+        return 0;
+    }
 
-        if (realLabel) {
-            realLabel.style.borderColor = type === 'real' ? '#4caf50' : '#555';
-            realLabel.style.background = type === 'real' ? 'rgba(76,175,80,0.12)' : 'transparent';
-        }
-        if (bonusLabel) {
-            bonusLabel.style.borderColor = type === 'bonus' ? '#7c3aed' : '#555';
-            bonusLabel.style.background = type === 'bonus' ? 'rgba(124,58,237,0.15)' : 'transparent';
-        }
+    function getSelectedBonusBalance() {
+        const bonusId = getSelectedUserBonusId();
+        if (bonusId <= 0) return 0;
+        const bonus = activeBonusList.find(b => b.id === bonusId);
+        return bonus ? bonus.balance : 0;
     }
 
     function updatePotentialWin(totalOdds) {
@@ -593,7 +633,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const freeBetEligible = isFreeBetTicketEligible();
         const freeBetCoversStake = useFreeBet && freeBetEligible && availableFreeBetAmount >= stake && availableFreeBetId > 0;
         const balanceType = getSelectedBalanceType();
-        const activeBalance = balanceType === 'bonus' ? userBonusBalance : userBalance;
+        const activeBalance = balanceType === 'bonus' ? getSelectedBonusBalance() : userBalance;
         
         // Letiltás feltételei:
         if (!isLoggedIn || ticketItems.length === 0 || (!freeBetCoversStake && (activeBalance === 0 || activeBalance < stake))) {
@@ -643,7 +683,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } else {
                 const balanceType = getSelectedBalanceType();
-                const activeBalance = balanceType === 'bonus' ? userBonusBalance : userBalance;
+                const activeBalance = balanceType === 'bonus' ? getSelectedBonusBalance() : userBalance;
                 if (activeBalance === 0 || activeBalance < stake) {
                     const msg = balanceType === 'bonus'
                         ? 'Nincs elegendő bónusz egyenleg!'
@@ -670,6 +710,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const useFreeBet = !!document.getElementById('use-freebet-toggle')?.checked;
         const balanceType = getSelectedBalanceType();
         const useBonus = (!useFreeBet && balanceType === 'bonus');
+        const userBonusId = useBonus ? getSelectedUserBonusId() : 0;
 
         const payload = {
             stake: stake,
@@ -678,6 +719,7 @@ document.addEventListener('DOMContentLoaded', function() {
             items: ticketItems,
             useFreeBet: useFreeBet,
             useBonus: useBonus,
+            userBonusId: userBonusId,
             freeBetUserBonusId: parseInt(useFreeBet ? availableFreeBetId : 0, 10) || 0,
             hasDailyTipBoost: metrics.hasDailyTip,
             hasOddsPyramidBoost: metrics.hasOddsPyramid
@@ -745,8 +787,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 // Reset balance type to real after submission
-                const realRadio = document.querySelector('input[name="balance-type"][value="real"]');
-                if (realRadio) realRadio.checked = true;
+                const selectEl = document.getElementById('balance-type-select');
+                if (selectEl) selectEl.value = 'real';
 
                 // Azonnali lokális egyenlegfrissítés (jobb felső sarok)
                 if (typeof data.new_balance === 'number' && !Number.isNaN(data.new_balance)) {
@@ -820,6 +862,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('change', (e) => {
         if (e.target && e.target.id === 'use-freebet-toggle') {
             applyFreeBetSelectionState();
+        }
+        if (e.target && e.target.id === 'balance-type-select') {
+            updateSelectBorderColor();
+            updatePlaceBetButton();
         }
     });
 
@@ -1236,14 +1282,6 @@ document.addEventListener('DOMContentLoaded', function() {
     loadBettingHistory();
     refreshAllOddsButtons();
     updatePlaceBetButton();
-
-    // Egyenleg típus választó (bónusz / rendes) rádió gombok
-    document.querySelectorAll('input[name="balance-type"]').forEach(radio => {
-        radio.addEventListener('change', () => {
-            updateBalanceTypeVisuals();
-            updatePlaceBetButton();
-        });
-    });
 
     console.log('[BETSLIP] Kész!');
 });

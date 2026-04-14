@@ -61,7 +61,7 @@ if ($roleId <= 0 || $roleId > 2) {
     exit;
 }
 
-$validPages = ['dashboard', 'registrations', 'tickets', 'bonuses', 'deposits', 'withdrawals', 'statistics', 'notifications'];
+$validPages = ['dashboard', 'registrations', 'data_verification', 'tickets', 'bonuses', 'deposits', 'withdrawals', 'statistics', 'notifications'];
 
 $conn->begin_transaction();
 try {

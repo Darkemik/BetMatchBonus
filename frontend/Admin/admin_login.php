@@ -70,7 +70,7 @@
         <button type="submit" class="btn btn-admin w-100">Bejelentkezés</button>
     </form>
 
-    <a href="../../frontend/MainMenu/MainMenu.php" class="d-block mt-3 text-muted small">← Vissza a főoldalra</a>
+    <a href="../../frontend/MainMenu/MainMenu.php" class="d-block mt-3 small" style="color:#fff;">← Vissza a főoldalra</a>
 </div>
 
 <script>

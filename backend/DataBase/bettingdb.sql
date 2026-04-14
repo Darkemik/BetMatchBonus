@@ -32,12 +32,12 @@ CREATE TABLE IF NOT EXISTS RolePermissions (
 
 -- Alapértelmezett jogosultságok
 INSERT INTO RolePermissions (role_id, page_key, can_access) VALUES
--- MOD: csak felhasználók + szelvények
-(1, 'dashboard', 1), (1, 'tickets', 1), (1, 'bonuses', 0), (1, 'deposits', 0), (1, 'withdrawals', 0),
+-- MOD: csak felhasználók + regisztrációk + adatellenőrzés + szelvények
+(1, 'dashboard', 1), (1, 'registrations', 1), (1, 'data_verification', 1), (1, 'tickets', 1), (1, 'bonuses', 0), (1, 'deposits', 0), (1, 'withdrawals', 0), (1, 'statistics', 0), (1, 'notifications', 0),
 -- ADMIN: minden kivéve staff
-(2, 'dashboard', 1), (2, 'tickets', 1), (2, 'bonuses', 1), (2, 'deposits', 1), (2, 'withdrawals', 1),
+(2, 'dashboard', 1), (2, 'registrations', 1), (2, 'data_verification', 1), (2, 'tickets', 1), (2, 'bonuses', 1), (2, 'deposits', 1), (2, 'withdrawals', 1), (2, 'statistics', 1), (2, 'notifications', 1),
 -- SUPERADMIN: mindenhez hozzáfér (a staff oldal mindig elérhető)
-(3, 'dashboard', 1), (3, 'tickets', 1), (3, 'bonuses', 1), (3, 'deposits', 1), (3, 'withdrawals', 1);
+(3, 'dashboard', 1), (3, 'registrations', 1), (3, 'data_verification', 1), (3, 'tickets', 1), (3, 'bonuses', 1), (3, 'deposits', 1), (3, 'withdrawals', 1), (3, 'statistics', 1), (3, 'notifications', 1);
 
 -- ============================================================
 -- 2) COUNTRIES
@@ -363,6 +363,7 @@ CREATE TABLE IF NOT EXISTS Tickets (
   user_id         INT           NOT NULL,
   stake           DECIMAL(10,2) NOT NULL,
   bonus_stake     DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  user_bonus_id   INT           DEFAULT NULL COMMENT 'multi-bonus: melyik UserBonuses-ból fogadtak',
   total_odds      DECIMAL(10,3) NOT NULL,
   potential_win   DECIMAL(12,2) NOT NULL,
   status          VARCHAR(20)   NOT NULL DEFAULT 'OPEN',
@@ -455,6 +456,7 @@ CREATE TABLE IF NOT EXISTS UserBonuses (
   max_win_amount      DECIMAL(10,2) DEFAULT NULL     COMMENT 'max nyerhetó összeg (5x cap)',
   wagering_required   DECIMAL(10,2) DEFAULT NULL     COMMENT 'szükséges forgatás (snapshot)',
   wagering_progress   DECIMAL(10,2) DEFAULT 0.00     COMMENT 'eddig megforgatott összeg',
+  bonus_balance       DECIMAL(12,2) NOT NULL DEFAULT 0.00 COMMENT 'egyedi bónusz egyenleg (multi-bonus)',
   source_deposit_id   INT           DEFAULT NULL,
   used                TINYINT(1)    NOT NULL DEFAULT 0,
   used_at             DATETIME      DEFAULT NULL,
@@ -628,6 +630,51 @@ VALUES
   1                           -- Aktív
 );
 
+-- 2. DARTS BÓNUSZ (VAN KÓDJA)
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  'DARTSBONUSZ5K',
+  'DARTS BÓNUSZ (10.000 Ft fogadás, 5.000 Ft bónusz)',
+  'Darts rajongóknak szóló exkluzív bónusz! Hogyan szerezheted meg? 1) Tégy meg egy legalább 10.000 Ft értékű fogadást kizárólag darts mérkőzésekre. 2) A fogadásnak legalább 2 eseményt (2-es kötést) kell tartalmaznia, minimum 2.00-es össz odds-szal. 3) A fogadásod lezárása és kiértékelése után 5.000 Ft bónusz pénzt kapsz a bónusz egyenlegedre. 4) A kapott 5.000 Ft bónuszt 2-szeresen kell megforgatnod (10.000 Ft értékű fogadás), mielőtt kifizethetővé válik. 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: Az aktiválás után 48 órád van a bónusz felhasználására!',
+  4,                          -- EVENT_SPECIFIC
+  5000.00,
+  10000.00,
+  5000.00,
+  0.00,
+  'BONUS_MONEY',
+  'BET',
+  'DARTS',
+  0,
+  2.0,
+  2,
+  NULL,
+  2.0,
+  5.0,
+  1,
+  0,
+  NULL,
+  NULL,
+  0,
+  NULL,
+  48,
+  NULL,
+  NULL,
+  0,
+  0,
+  NULL,
+  1,
+  '2026-01-01 00:00:00',
+  NULL,
+  1                           -- Aktív
+);
+
 -- ============================================================
 -- 30) Hiányzó oszlopok hozzáadása
 -- ============================================================
@@ -675,7 +722,8 @@ INSERT IGNORE INTO SystemSettings (setting_key, setting_value, description, cate
     ('min_password_length',     '7',      'Minimum jelszóhossz',                    'security',      'Minimum jelszóhossz',            'number'),
     ('min_user_age',            '18',     'Minimum regisztrációs kor',              'registration',  'Minimum életkor',                'number'),
     ('min_phone_length',        '11',     'Minimum telefonszám hossz',              'registration',  'Minimum telefonszám hossz',      'number'),
-    ('session_timeout_minutes', '30',     'Session timeout (perc)',                  'security',      'Session timeout (perc)',          'number'),
+    ('session_timeout_minutes', '30',     'Inaktivitási időkorlát (perc)',           'security',      'Inaktivitási időkorlát (perc)',   'number'),
+    ('session_max_duration_minutes', '60', 'Munkamenet időkorlát (perc)',             'security',      'Munkamenet időkorlát (perc)',     'number'),
     ('max_login_attempts',      '3',      'Maximum bejelentkezési próbálkozás',     'security',      'Max. bejelentkezési próbálkozás', 'number'),
     ('login_lockout_minutes',   '60',     'Zárolás időtartama (perc)',              'security',      'Zárolás időtartama (perc)',       'number'),
     ('recaptcha_threshold',     '0.5',    'reCAPTCHA küszöbérték',                  'security',      'reCAPTCHA küszöbérték',           'number'),

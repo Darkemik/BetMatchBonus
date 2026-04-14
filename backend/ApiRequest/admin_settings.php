@@ -15,6 +15,25 @@ header('Content-Type: application/json');
 
 /* ━━━━━ GET ━━━━━ */
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+
+    // Reset to defaults
+    if (isset($_GET['action']) && $_GET['action'] === 'reset_defaults') {
+        $result = $conn->query("SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'SystemSettings' AND COLUMN_NAME = 'default_value'");
+        $row = $result->fetch_assoc();
+        if ((int)$row['cnt'] === 0) {
+            echo json_encode(['success' => false, 'message' => 'Nincsenek alapértékek mentve.']);
+            exit;
+        }
+
+        $conn->query("UPDATE SystemSettings SET setting_value = default_value WHERE default_value IS NOT NULL");
+        $affected = $conn->affected_rows;
+
+        log_audit('settings_reset', 'system', null, "Összes beállítás visszaállítva alapértékre ($affected módosítás)");
+
+        echo json_encode(['success' => true, 'message' => 'Összes beállítás visszaállítva alapértékre!']);
+        exit;
+    }
+
     $result = $conn->query("SELECT setting_key, setting_value, category, label, description, input_type, updated_at FROM SystemSettings ORDER BY FIELD(category, 'deposit', 'withdrawal', 'betting', 'security', 'registration'), setting_key");
 
     $settings = [];

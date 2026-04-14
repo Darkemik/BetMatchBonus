@@ -9,8 +9,9 @@ if (!isset($perms)) $perms = [];
 
 $sidebarPages = [
     ['key' => 'dashboard',     'href' => 'dashboard.php',     'icon' => '👥', 'label' => 'Felhasználók',    'section' => 'Általános'],
-    ['key' => 'registrations', 'href' => 'registrations.php', 'icon' => '📋', 'label' => 'Regisztrációk',   'section' => 'Általános'],
-    ['key' => 'tickets',       'href' => 'tickets.php',       'icon' => '🎫', 'label' => 'Szelvények',      'section' => 'Általános'],
+    ['key' => 'registrations',     'href' => 'registrations.php',     'icon' => '📋', 'label' => 'Regisztrációk',           'section' => 'Általános'],
+    ['key' => 'data_verification', 'href' => 'data_verification.php', 'icon' => '🔍', 'label' => 'Adatellenőrzés',         'section' => 'Általános'],
+    ['key' => 'tickets',           'href' => 'tickets.php',           'icon' => '🎫', 'label' => 'Szelvények',             'section' => 'Általános'],
     ['key' => 'bonuses',       'href' => 'bonuses.php',       'icon' => '🎁', 'label' => 'Bónuszok',        'section' => 'Pénzügy'],
     ['key' => 'deposits',      'href' => 'deposits.php',      'icon' => '💰', 'label' => 'Befizetések',      'section' => 'Pénzügy'],
     ['key' => 'withdrawals',   'href' => 'withdrawals.php',   'icon' => '💸', 'label' => 'Kifizetések',      'section' => 'Pénzügy'],

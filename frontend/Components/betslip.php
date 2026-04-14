@@ -54,17 +54,10 @@
                 <span id="betslip-balance-display" style="font-weight:600;">0 Ft</span>
             </div>
             <div class="summary-row" id="balance-type-row" style="display:none;">
-                <div class="balance-type-toggle" style="display:flex;gap:6px;width:100%;">
-                    <label class="balance-type-option" id="balance-type-real-label" style="flex:1;display:flex;align-items:center;gap:6px;padding:8px 10px;border-radius:8px;cursor:pointer;border:2px solid #4caf50;background:rgba(76,175,80,0.12);transition:all .2s;">
-                        <input type="radio" name="balance-type" value="real" checked style="accent-color:#4caf50;">
-                        <span style="font-size:0.82rem;font-weight:600;color:#4caf50;">💰 Rendes</span>
-                        <span id="real-balance-amount" style="margin-left:auto;font-size:0.78rem;font-weight:700;color:#4caf50;">0 Ft</span>
-                    </label>
-                    <label class="balance-type-option" id="balance-type-bonus-label" style="flex:1;display:flex;align-items:center;gap:6px;padding:8px 10px;border-radius:8px;cursor:pointer;border:2px solid #555;background:rgba(124,58,237,0.06);transition:all .2s;">
-                        <input type="radio" name="balance-type" value="bonus" style="accent-color:#7c3aed;">
-                        <span style="font-size:0.82rem;font-weight:600;color:#7c3aed;">🎁 Bónusz</span>
-                        <span id="bonus-balance-amount" style="margin-left:auto;font-size:0.78rem;font-weight:700;color:#7c3aed;">0 Ft</span>
-                    </label>
+                <div class="balance-type-toggle" style="width:100%;">
+                    <select id="balance-type-select" style="width:100%;padding:10px 12px;border-radius:8px;border:2px solid #4caf50;background:#1a1a2e;color:#fff;font-size:0.85rem;font-weight:600;cursor:pointer;outline:none;transition:all .2s;">
+                        <option value="real" style="color:#4caf50;">💰 Rendes egyenleg — 0 Ft</option>
+                    </select>
                 </div>
             </div>
             <div class="summary-row" id="freebet-option-row" style="display:none;">

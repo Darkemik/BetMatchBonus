@@ -13,6 +13,10 @@
         <span class="session-bet-icon" aria-hidden="true">🎁</span>
         <span id="bonusBalanceDisplay">0 FT</span>
     </div>
+    <a href="../../frontend/UserProfile/notifications.php" class="notif-bell-link" id="notifBellLink" title="Értesítések" style="position:relative;color:#ccc;font-size:1.2rem;text-decoration:none;display:none;margin-right:8px;">
+        <i class="fas fa-bell"></i>
+        <span id="notifBellBadge" style="display:none;position:absolute;top:-5px;right:-8px;background:#dc3545;color:#fff;border-radius:50%;font-size:0.6rem;min-width:16px;height:16px;align-items:center;justify-content:center;font-weight:700;padding:0 4px;"></span>
+    </a>
     <button class="profile-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
         <div class="profile-avatar" id="profileAvatar">
             <i class="fas fa-user"></i>
@@ -40,6 +44,7 @@
         <li><a class="dropdown-item" href="../../frontend/UserProfile/transaction_history.php"><i class="fas fa-history"></i> <span data-i18n="auth.transactionHistory">Tranzakciótörténet</span></a></li>
         <li><a class="dropdown-item" href="../../frontend/UserProfile/my_bonuses.php"><i class="fas fa-gift"></i> <span data-i18n="auth.myBonuses">Bónuszaim</span></a></li>
         <li><a class="dropdown-item" href="../../frontend/UserProfile/activity_log.php"><i class="fas fa-list"></i> <span data-i18n="auth.activityLog">Napló</span></a></li>
+        <li><a class="dropdown-item" href="../../frontend/UserProfile/notifications.php" id="notifDropdownItem"><i class="fas fa-bell"></i> <span>Értesítések</span> <span class="notif-header-badge" id="notifDropdownBadge" style="display:none;background:#dc3545;color:#fff;border-radius:50%;font-size:0.65rem;min-width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;padding:0 5px;margin-left:6px;"></span></a></li>
         <li>
             <hr class="dropdown-divider">
         </li>

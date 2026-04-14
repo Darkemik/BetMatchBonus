@@ -280,6 +280,7 @@ foreach ($pending_bonuses as $pb) {
     $isFreeBetReward = (strtoupper((string)($pb['bet_reward_type'] ?? '')) === 'FREE_BET');
     $bonusMoneyAmount = $isFreeBetReward ? 0.00 : $granted;
     $freeBetAmount = $isFreeBetReward ? $granted : 0.00;
+    $individualBonusBal = $isFreeBetReward ? 0.00 : $granted;
 
     $activate_stmt = $conn->prepare(" 
         UPDATE UserBonuses
@@ -287,11 +288,12 @@ foreach ($pending_bonuses as $pb) {
             granted_amount = ?,
             bonus_money_amount = ?,
             free_bet_amount = ?,
+            bonus_balance = ?,
             wagering_required = ?,
             expires_at = ?
         WHERE id = ?
     ");
-    $activate_stmt->bind_param("ddddsi", $granted, $bonusMoneyAmount, $freeBetAmount, $wagering, $expires_at, $pb['user_bonus_id']);
+    $activate_stmt->bind_param("dddddsi", $granted, $bonusMoneyAmount, $freeBetAmount, $individualBonusBal, $wagering, $expires_at, $pb['user_bonus_id']);
     $activate_stmt->execute();
     $activate_stmt->close();
 

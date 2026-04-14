@@ -37,7 +37,8 @@ $query = "SELECT ub.id, ub.bonus_id, bc.name as bonus_name, bc.description as bo
                  bc.valid_weekdays_only, bc.min_deposit, bc.match_percent, bc.max_bonus_amount,
                  bc.wagering_multiplier, bc.min_combo, bc.min_odds, bc.min_odds_per_event,
                  bc.activation_expire_hours, bc.bonus_type_id, bc.is_step_bonus, bc.step_number,
-                 bc.bonus_trigger, bc.bet_reward_type, ub.granted_amount, ub.status, ub.expires_at, ub.wagering_progress,
+                 bc.bonus_trigger, bc.bet_reward_type, ub.granted_amount, ub.bonus_balance AS individual_balance,
+                 ub.status, ub.expires_at, ub.wagering_progress,
                  ub.wagering_required, ub.used, ub.created_at 
           FROM UserBonuses ub
           LEFT JOIN BonusCodes bc ON ub.bonus_id = bc.id
@@ -108,6 +109,7 @@ $expired_bonuses = count($archived_bonuses);
                     <a href="transaction_history.php" class="profile-nav-item"><i class="fas fa-history"></i> <span data-i18n="auth.transactionHistory">Tranzakciótörténet</span></a>
                     <a href="my_bonuses.php" class="profile-nav-item active"><i class="fas fa-gift"></i> <span data-i18n="auth.myBonuses">Bónuszaim</span></a>
                     <a href="activity_log.php" class="profile-nav-item"><i class="fas fa-list"></i> <span data-i18n="auth.activityLog">Napló</span></a>
+                    <a href="notifications.php" class="profile-nav-item"><i class="fas fa-bell"></i> <span>Értesítések</span></a>
                     <a href="#" class="profile-nav-item logout profile-logout-btn" onclick="event.preventDefault();fetch('/BetMatchBonus/backend/Auth/logout.php',{method:'POST'}).then(function(){window.location.href='/BetMatchBonus/frontend/MainMenu/MainMenu.php';});"><i class="fas fa-sign-out-alt"></i> <span data-i18n="auth.logout">Kijelentkezés</span></a>
                 </nav>
             </div>
@@ -191,6 +193,16 @@ $expired_bonuses = count($archived_bonuses);
                                                             <span class="text-success"><?php echo number_format($bonus['granted_amount'], 0, ',', ' '); ?> FT</span>
                                                         <?php endif; ?>
                                                 </p>
+                                                <?php
+                                                    $indivBal = (float)($bonus['individual_balance'] ?? 0);
+                                                    $isActiveBonusMoney = ($bonus['status'] === 'ACTIVE') && strtoupper($bonus['bet_reward_type'] ?? '') !== 'FREE_BET';
+                                                    if ($isActiveBonusMoney && $indivBal > 0):
+                                                ?>
+                                                <p class="card-text mb-1">
+                                                    <strong style="color:#7c3aed;">🎁 Bónusz egyenleg:</strong>
+                                                    <span style="color:#7c3aed;font-weight:700;"><?php echo number_format($indivBal, 0, ',', ' '); ?> FT</span>
+                                                </p>
+                                                <?php endif; ?>
                                                 <p class="card-text mb-1">
                                                     <strong data-i18n="userProfile.myBonuses.wageringRequired">Szükséges forgatás:</strong> 
                                                     <?php 

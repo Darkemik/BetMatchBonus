@@ -14,7 +14,7 @@ $tomorrowFrom = date('Y-m-d 00:01:00', strtotime('+1 day'));
 // Lekérdezés: csak aktív bónuszok
 $query = "SELECT id, code, name, description, bonus_amount, min_deposit, max_bonus_amount, match_percent, 
                  is_step_bonus, step_number, bonus_type_id, valid_weekdays_only, is_active,
-                 daily_start_time, admin_force_active
+                 daily_start_time, admin_force_active, sport_restriction, bonus_trigger
           FROM BonusCodes 
           WHERE is_active = 1
             AND birthday_bonus = 0
@@ -23,22 +23,30 @@ $query = "SELECT id, code, name, description, bonus_amount, min_deposit, max_bon
 $result = $conn->query($query);
 $bonuses = [];
 
-// Egyszerre csak egy bónusz lehet igényelve (PENDING vagy ACTIVE, nem lejárt)
-$hasExistingBonus = false;
-if ($userId > 0) {
-    $existingBonusStmt = $conn->prepare("
-        SELECT 1 FROM UserBonuses
-        WHERE user_id = ?
-          AND status IN ('PENDING', 'ACTIVE')
-          AND used = 0
-          AND (expires_at IS NULL OR expires_at > NOW())
-        LIMIT 1
-    ");
-    $existingBonusStmt->bind_param("i", $userId);
-    $existingBonusStmt->execute();
-    $hasExistingBonus = $existingBonusStmt->get_result()->num_rows > 0;
-    $existingBonusStmt->close();
+// Cache: live sportok ellenőrzése (sport_restriction-ös bónuszokhoz)
+$liveSportsCache = null;
+function hasLiveSport($conn, $sportName, &$cache) {
+    if ($cache === null) {
+        $cache = [];
+        $r = $conn->query("
+            SELECT UPPER(s.name) AS sport_name, COUNT(*) AS cnt
+            FROM Events e
+            JOIN Sports s ON e.sport_id = s.id
+            WHERE e.is_live = 1
+            GROUP BY s.id
+        ");
+        if ($r) {
+            while ($row = $r->fetch_assoc()) {
+                $cache[$row['sport_name']] = (int)$row['cnt'];
+            }
+        }
+    }
+    return ($cache[strtoupper($sportName)] ?? 0) > 0;
 }
+
+// Többszörös bónusz rendszer: nincs egyszerre-egy-bónusz korlátozás.
+// Minden bónusznak saját egyenlege van (UserBonuses.bonus_balance).
+$hasExistingBonus = false; // Kompatibilitás megtartása a frontend felé
 
 if ($result) {
     while ($row = $result->fetch_assoc()) {
@@ -79,6 +87,14 @@ if ($result) {
             }
         }
 
+        // Sport-specifikus bónusz: csak akkor jelenik meg, ha van élő meccs az adott sportból
+        $sportRestriction = $row['sport_restriction'] ?? null;
+        if ($sportRestriction && $sportRestriction !== 'ANY') {
+            if (!hasLiveSport($conn, $sportRestriction, $liveSportsCache)) {
+                continue; // Nincs élő meccs ebből a sportból → ne jelenjen meg
+            }
+        }
+
         $isStepBonus = ((int)($row['is_step_bonus'] ?? 0) === 1);
         $matchPercent = (float)($row['match_percent'] ?? 0);
         $maxBonusAmount = (float)($row['max_bonus_amount'] ?? 0);
@@ -92,7 +108,13 @@ if ($result) {
             $amountText = number_format($bonusAmount, 0, '', ' ') . ' FT';
         }
 
-        $conditionText = 'Min. befizetés: ' . number_format($minDeposit, 0, '', ' ') . ' FT';
+        $conditionText = '';
+        $bonusTrigger = $row['bonus_trigger'] ?? 'DEPOSIT';
+        if ($bonusTrigger === 'BET') {
+            $conditionText = 'Min. tét: ' . number_format($minDeposit, 0, '', ' ') . ' FT';
+        } else {
+            $conditionText = 'Min. befizetés: ' . number_format($minDeposit, 0, '', ' ') . ' FT';
+        }
         if ($isStepBonus) {
             $conditionText .= ' | Több lépcsős bónusz';
         }
@@ -107,7 +129,9 @@ if ($result) {
             'status' => $isGuest ? null : 'AKTÍV',
             'longDescription' => $row['description'],
             'image' => '../../img/logo.png',
-            'hasExistingBonus' => $hasExistingBonus
+            'hasExistingBonus' => $hasExistingBonus,
+            'sportRestriction' => ($sportRestriction && $sportRestriction !== 'ANY') ? $sportRestriction : null,
+            'bonusTrigger' => $bonusTrigger
         ];
     }
 }
