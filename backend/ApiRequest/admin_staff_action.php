@@ -1,7 +1,7 @@
 <?php
 /**
  * Admin staff műveletek: create / update / toggle_active / delete / reset_password
- * POST JSON
+ * POST JSON / PATCH JSON (szerepkör gyorsváltás)
  */
 session_start();
 require_once __DIR__ . '/../Auth/admin_guard.php';
@@ -57,6 +57,53 @@ function sendStaffEmail($toEmail, $toName, $subject, $bodyHtml) {
 $input = json_decode(file_get_contents('php://input'), true);
 $action = $input['action'] ?? '';
 $currentAdminId = (int)$_SESSION['admin_id'];
+
+/* ━━━━━ PATCH — Szerepkör gyorsváltás ━━━━━━━━━━━━━━━━━━━━━━━━ */
+if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
+    $adminId = (int)($input['admin_id'] ?? 0);
+    $roleId  = (int)($input['role_id'] ?? 0);
+
+    if ($adminId <= 0 || !in_array($roleId, [1, 2, 3])) {
+        echo json_encode(['success' => false, 'message' => 'Érvénytelen adatok!']);
+        exit;
+    }
+    if ($adminId === $currentAdminId) {
+        echo json_encode(['success' => false, 'message' => 'Saját szerepkörödet nem változtathatod meg!']);
+        exit;
+    }
+
+    // SUPERADMIN nem degradálható
+    $chk = $conn->prepare("SELECT role_id, username FROM AdminUsers WHERE id = ?");
+    $chk->bind_param("i", $adminId);
+    $chk->execute();
+    $row = $chk->get_result()->fetch_assoc();
+    $chk->close();
+
+    if (!$row) {
+        echo json_encode(['success' => false, 'message' => 'Admin nem található!']);
+        exit;
+    }
+    if ((int)$row['role_id'] === 3) {
+        echo json_encode(['success' => false, 'message' => 'SUPERADMIN szerepköre nem módosítható!']);
+        exit;
+    }
+
+    $upd = $conn->prepare("UPDATE AdminUsers SET role_id = ? WHERE id = ?");
+    $upd->bind_param("ii", $roleId, $adminId);
+    $upd->execute();
+    $upd->close();
+
+    $rStmt = $conn->prepare("SELECT name FROM Roles WHERE id = ?");
+    $rStmt->bind_param("i", $roleId);
+    $rStmt->execute();
+    $roleName = $rStmt->get_result()->fetch_assoc()['name'] ?? 'N/A';
+    $rStmt->close();
+
+    log_audit('staff_role_patch', 'admin', $adminId,
+        'Szerepkör módosítva: ' . $row['username'] . ' → ' . $roleName);
+    echo json_encode(['success' => true, 'message' => $row['username'] . ' szerepköre: ' . $roleName]);
+    exit;
+}
 
 /* ━━━━━ CREATE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 if ($action === 'create') {

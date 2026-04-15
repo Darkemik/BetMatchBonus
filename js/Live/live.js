@@ -1118,6 +1118,20 @@
     }
     setInterval(updateElapsedTimers, 1000);
 
+    // Élő meccsidők gyorsfrissítése 30 mp-ként (könnyű API hívás → DB → UI)
+    setInterval(() => {
+        if (currentSportId) {
+            fetch('../../backend/ApiRequest/refresh_live_times.php?sport_id=' + currentSportId)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.updated > 0) {
+                        console.log('[LIVE.JS] Live time frissítve:', data.updated, 'meccs (' + data.elapsed_ms + 'ms)');
+                    }
+                })
+                .catch(err => console.warn('[LIVE.JS] Live time refresh hiba:', err));
+        }
+    }, 30000);
+
     // Auto-frissítés 5 másodpercenként (feed + meccsek + sportok)
     autoRefreshInterval = setInterval(() => {
         if (viewingMatchDetails) {

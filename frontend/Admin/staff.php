@@ -79,6 +79,29 @@ $inactiveAdmins = $totalAdmins - $activeAdmins;
         .role-admin      { background: #2a2e0a; color: #f5c518; }
         .role-superadmin  { background: #3a1a2a; color: #e94560; }
 
+        .role-quick-select {
+            appearance: none; -webkit-appearance: none;
+            border-radius: 12px !important; font-size: 0.78rem !important;
+            font-weight: 700 !important; text-transform: uppercase; letter-spacing: 0.5px;
+            padding: 4px 30px 4px 12px !important; border: none !important;
+            cursor: pointer; transition: all 0.2s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23ffffff80'/%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 10px center !important;
+            background-size: 10px 6px !important;
+        }
+        .role-quick-select:focus {
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.15) !important;
+            outline: none;
+        }
+        .role-quick-select:hover { filter: brightness(1.2); }
+        .role-quick-select.role-select-mod {
+            background-color: #1a3a2a !important; color: #52b788 !important;
+        }
+        .role-quick-select.role-select-admin {
+            background-color: #2a2e0a !important; color: #f5c518 !important;
+        }
+
         /* Status badges */
         .status-active   { color: #52b788; }
         .status-inactive { color: #e94560; }
@@ -238,7 +261,23 @@ $inactiveAdmins = $totalAdmins - $activeAdmins;
                             <?php endif; ?>
                         </td>
                         <td><?= htmlspecialchars($admin['email']) ?></td>
-                        <td><span class="role-badge <?= $roleCls ?>"><?= htmlspecialchars($admin['role_name']) ?></span></td>
+                        <td>
+                            <?php if (!$isSelf && $admin['role_name'] !== 'SUPERADMIN'): ?>
+                                <?php $selectCls = (int)$admin['role_id'] === 2 ? 'role-select-admin' : 'role-select-mod'; ?>
+                                <select class="role-quick-select <?= $selectCls ?>"
+                                        data-admin-id="<?= $admin['id'] ?>">
+                                    <?php foreach ($roleList as $rl): ?>
+                                        <?php if ($rl['role_name'] !== 'SUPERADMIN'): ?>
+                                        <option value="<?= $rl['id'] ?>" <?= (int)$rl['id'] === (int)$admin['role_id'] ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($rl['role_name']) ?>
+                                        </option>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </select>
+                            <?php else: ?>
+                                <span class="role-badge <?= $roleCls ?>"><?= htmlspecialchars($admin['role_name']) ?></span>
+                            <?php endif; ?>
+                        </td>
                         <td>
                             <?php if ($admin['is_active']): ?>
                                 <i class="fas fa-circle status-active me-1" style="font-size:0.6rem;"></i> Aktív
@@ -422,6 +461,46 @@ $inactiveAdmins = $totalAdmins - $activeAdmins;
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 const API_URL = '../../backend/ApiRequest/admin_staff_action.php';
+
+/* ━━━ Szerepkör gyorsváltás (PATCH) ━━━ */
+document.querySelectorAll('.role-quick-select').forEach(select => {
+    function updateSelectColor(sel) {
+        sel.classList.remove('role-select-mod', 'role-select-admin');
+        sel.classList.add(parseInt(sel.value) === 2 ? 'role-select-admin' : 'role-select-mod');
+    }
+    select.addEventListener('change', async function() {
+        const adminId = parseInt(this.dataset.adminId);
+        const roleId = parseInt(this.value);
+        const roleName = this.options[this.selectedIndex].text;
+        updateSelectColor(this);
+
+        if (!confirm(`Biztosan módosítod a szerepkört: ${roleName}?`)) {
+            // Visszaállítás az eredeti értékre
+            this.value = this.dataset.originalValue || this.querySelector('[selected]')?.value;
+            return;
+        }
+
+        try {
+            const res = await fetch(API_URL, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ admin_id: adminId, role_id: roleId })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(data.message, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast(data.message, 'danger');
+                this.value = this.dataset.originalValue || this.querySelector('[selected]')?.value;
+            }
+        } catch (e) {
+            showToast('Hálózati hiba', 'danger');
+        }
+    });
+    // Eredeti érték mentése
+    select.dataset.originalValue = select.value;
+});
 
 function showToast(msg, type = 'success') {
     const el = document.createElement('div');
