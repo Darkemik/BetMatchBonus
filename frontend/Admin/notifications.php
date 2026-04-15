@@ -87,6 +87,41 @@ $activePage = 'notifications';
             cursor: pointer; opacity: 0.6; padding: 4px 8px;
         }
         .btn-delete-notif:hover { opacity: 1; }
+        .btn-edit-notif {
+            background: none; border: none; color: #4cc9f0; font-size: 0.85rem;
+            cursor: pointer; opacity: 0.6; padding: 4px 8px;
+        }
+        .btn-edit-notif:hover { opacity: 1; }
+        .edit-modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+            z-index: 9999; justify-content: center; align-items: center;
+        }
+        .edit-modal-overlay.active { display: flex; }
+        .edit-modal {
+            background: #16213e; border-radius: 12px; padding: 28px; width: 100%;
+            max-width: 520px; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .edit-modal h5 { color: #e94560; font-weight: 700; margin-bottom: 20px; }
+        .edit-modal label { font-weight: 600; font-size: 0.85rem; color: #ccc; margin-bottom: 6px; }
+        .edit-modal .form-control {
+            background: #1a1a2e; border: 1px solid rgba(255,255,255,0.12);
+            color: #eee; border-radius: 8px;
+        }
+        .edit-modal .form-control:focus {
+            border-color: #e94560; box-shadow: 0 0 0 2px rgba(233,69,96,0.2);
+        }
+        .edit-modal textarea { min-height: 100px; resize: vertical; }
+        .btn-save-edit {
+            background: #e94560; border: none; color: #fff; padding: 10px 28px;
+            border-radius: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer;
+        }
+        .btn-save-edit:hover { background: #d63853; }
+        .btn-save-edit:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-cancel-edit {
+            background: transparent; border: 1px solid rgba(255,255,255,0.15); color: #aaa;
+            padding: 10px 24px; border-radius: 8px; font-size: 0.9rem; cursor: pointer;
+        }
+        .btn-cancel-edit:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
         .preview-box {
             background: rgba(233,69,96,0.08); border: 1px dashed rgba(233,69,96,0.3);
             border-radius: 10px; padding: 16px; margin-top: 16px; display: none;
@@ -204,6 +239,30 @@ $activePage = 'notifications';
     </div>
 </div>
 
+<!-- Szerkesztés modal -->
+<div class="edit-modal-overlay" id="editModal">
+    <div class="edit-modal">
+        <h5><i class="fas fa-edit"></i> Hirdetmény szerkesztése</h5>
+        <input type="hidden" id="editOldTitle">
+        <input type="hidden" id="editSentAt">
+        <div class="mb-3">
+            <label for="editTitle">Cím</label>
+            <input type="text" class="form-control" id="editTitle" maxlength="100">
+        </div>
+        <div class="mb-3">
+            <label for="editMessage">Üzenet</label>
+            <textarea class="form-control" id="editMessage" maxlength="255"></textarea>
+        </div>
+        <div class="d-flex gap-2 justify-content-end" id="editResult" style="font-size:0.85rem;"></div>
+        <div class="d-flex gap-2 justify-content-end mt-3">
+            <button class="btn-cancel-edit" onclick="closeEditModal()">Mégse</button>
+            <button class="btn-save-edit" id="saveEditBtn" onclick="saveEditNotif()">
+                <i class="fas fa-save"></i> Mentés
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
 const fmt = n => Number(n).toLocaleString('hu-HU');
 let currentPage = 1;
@@ -251,9 +310,14 @@ async function loadHistory(page) {
                                 <i class="fas fa-eye"></i> ${item.read_count} olvasva (${readPct}%)
                             </div>
                         </div>
-                        <button class="btn-delete-notif" onclick="deleteNotif('${escAttr(item.title)}','${item.sent_at}')" title="Törlés">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
+                        <div class="d-flex gap-1">
+                            <button class="btn-edit-notif" onclick="editNotif('${escAttr(item.title)}','${escAttr(item.message)}','${item.sent_at}')" title="Szerkesztés">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-delete-notif" onclick="deleteNotif('${escAttr(item.title)}','${item.sent_at}')" title="Törlés">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="notif-msg">${escHtml(item.message)}</div>
                     <div class="read-bar"><div class="read-bar-fill" style="width:${readPct}%"></div></div>
@@ -334,6 +398,62 @@ async function deleteNotif(title, sentAt) {
         }
     } catch (e) { alert('Hálózati hiba'); }
 }
+
+// ─── Szerkesztés ───
+function editNotif(title, message, sentAt) {
+    document.getElementById('editOldTitle').value = title;
+    document.getElementById('editSentAt').value = sentAt;
+    document.getElementById('editTitle').value = title;
+    document.getElementById('editMessage').value = message;
+    document.getElementById('editResult').innerHTML = '';
+    document.getElementById('editModal').classList.add('active');
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').classList.remove('active');
+}
+
+async function saveEditNotif() {
+    const oldTitle = document.getElementById('editOldTitle').value;
+    const sentAt = document.getElementById('editSentAt').value;
+    const newTitle = document.getElementById('editTitle').value.trim();
+    const newMessage = document.getElementById('editMessage').value.trim();
+    const btn = document.getElementById('saveEditBtn');
+    const result = document.getElementById('editResult');
+
+    if (!newTitle || !newMessage) {
+        result.innerHTML = '<span style="color:#dc3545;">Cím és üzenet megadása kötelező</span>';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mentés...';
+    result.innerHTML = '';
+
+    try {
+        const res = await fetch('../../backend/ApiRequest/admin_notifications.php', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ old_title: oldTitle, sent_at: sentAt, title: newTitle, message: newMessage })
+        });
+        const data = await res.json();
+        if (data.success) {
+            closeEditModal();
+            loadStats();
+            loadHistory(currentPage);
+        } else {
+            result.innerHTML = '<span style="color:#dc3545;">' + (data.error || 'Hiba') + '</span>';
+        }
+    } catch (e) {
+        result.innerHTML = '<span style="color:#dc3545;">Hálózati hiba</span>';
+    }
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-save"></i> Mentés';
+}
+
+document.getElementById('editModal').addEventListener('click', function(e) {
+    if (e.target === this) closeEditModal();
+});
 
 // ─── Karakter számlálók ───
 document.getElementById('notifTitle').addEventListener('input', function() {
