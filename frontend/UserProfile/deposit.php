@@ -72,6 +72,7 @@ $bonus_stmt->close();
     <link rel="stylesheet" href="../../css/UserProfile/user_profile.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="icon" href="../../img/logo.png" type="image/x-icon">
     <style>
         .payment-methods-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
         .payment-method-card {

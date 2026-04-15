@@ -385,7 +385,7 @@ try {
     }
 
     // 1. TICKET MENTÉSE
-    $ticketUserBonusId = $useBonusBet ? $userBonusId : null;
+    $ticketUserBonusId = $useBonusBet ? $userBonusId : ($isFreeBetTicket ? $freeBetUserBonusId : null);
     $stmtTicket = $conn->prepare("
         INSERT INTO Tickets (user_id, stake, bonus_stake, user_bonus_id, total_odds, potential_win, status, created_at, updated_at)
         VALUES (?, ?, ?, ?, ?, ?, 'OPEN', NOW(), NOW())
@@ -523,12 +523,13 @@ try {
         $consumeFreeBetStmt = $conn->prepare(" 
             UPDATE UserBonuses
             SET free_bet_amount = GREATEST(0, COALESCE(free_bet_amount, 0) - ?),
+                ticket_id = ?,
                 used = CASE WHEN COALESCE(free_bet_amount, 0) - ? <= 0 THEN 1 ELSE used END,
                 status = CASE WHEN COALESCE(free_bet_amount, 0) - ? <= 0 THEN 'COMPLETED' ELSE status END,
                 used_at = CASE WHEN COALESCE(free_bet_amount, 0) - ? <= 0 THEN NOW() ELSE used_at END
             WHERE id = ? AND user_id = ?
         ");
-        $consumeFreeBetStmt->bind_param("ddddii", $freeBetToConsume, $freeBetToConsume, $freeBetToConsume, $freeBetToConsume, $freeBetUserBonusId, $userId);
+        $consumeFreeBetStmt->bind_param("didddii", $freeBetToConsume, $ticketId, $freeBetToConsume, $freeBetToConsume, $freeBetToConsume, $freeBetUserBonusId, $userId);
         $consumeFreeBetStmt->execute();
         $consumeFreeBetStmt->close();
     }

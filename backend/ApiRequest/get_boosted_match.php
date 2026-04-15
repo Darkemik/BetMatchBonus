@@ -53,6 +53,7 @@ echo json_encode([
     'country'          => $cached['country'] ?? 'Nemzetközi',
     'championship'     => $cached['championship'] ?? '',
     'startTime'        => $startFormatted,
+    'isLive'           => (int)($cached['isLive'] ?? 0),
     'sportApiId'       => $cached['sportApiId'] ?? 0,
     'boostedMarket'    => $cached['boostedMarket'],
     'boostedSelection' => $cached['boostedSelection'],

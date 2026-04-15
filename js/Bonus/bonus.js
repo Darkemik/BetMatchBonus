@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="doboz-tartalom">
                             ${sportBadge}
                             <p class="doboz-cim">${bonus.title}</p>
-                            ${bonus.status ? `<div class="bonus-meta-line bonus-meta-active">● ${bonus.status}</div>` : ''}
+                            ${(!isLoggedIn && bonus.status) ? `<div class="bonus-meta-line bonus-meta-active">● ${bonus.status}</div>` : ''}
                             <div class="bonus-feltetel">${bonus.condition}</div>
                             <div class="doboz-gombok">
                                 ${buttonHTML}

@@ -44,7 +44,7 @@ $query = "SELECT ub.id, ub.bonus_id, bc.name as bonus_name, bc.description as bo
                  ub.wagering_required, ub.used, ub.created_at 
           FROM UserBonuses ub
           LEFT JOIN BonusCodes bc ON ub.bonus_id = bc.id
-          WHERE ub.user_id = ? AND (bc.code IS NULL OR bc.code NOT LIKE '%ADMIN_FREEBET%')
+          WHERE ub.user_id = ?
           ORDER BY ub.created_at DESC";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $user_id);
@@ -77,7 +77,7 @@ foreach ($bonuses as $bonus) {
     if ($isActiveAndValid) {
         $active_bonuses++;
         if (strtoupper((string)($bonus['bet_reward_type'] ?? '')) === 'FREE_BET') {
-            $total_free_bet_amount += (float)$bonus['granted_amount'];
+            $total_free_bet_amount += (float)($bonus['free_bet_amount'] ?? $bonus['granted_amount'] ?? 0);
         }
     }
 }
@@ -133,6 +133,7 @@ foreach ($current_bonuses as $cb) {
     <link rel="stylesheet" href="../../css/UserProfile/user_profile.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="icon" href="../../img/logo.png" type="image/x-icon">
 </head>
 <body>
     <?php include '../../frontend/Components/cookie_consent.php'; ?>

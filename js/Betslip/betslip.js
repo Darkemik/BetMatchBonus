@@ -84,40 +84,68 @@ document.addEventListener('DOMContentLoaded', function() {
         return true;
     }
 
+    function isUsingFreeBet() {
+        const toggle = document.getElementById('use-freebet-toggle');
+        const selectEl = document.getElementById('balance-type-select');
+        return !!(toggle && toggle.checked) || !!(selectEl && selectEl.value === 'freebet');
+    }
+
     function renderFreeBetOption() {
         const row = document.getElementById('freebet-option-row');
         const amountEl = document.getElementById('freebet-amount-display');
         const toggle = document.getElementById('use-freebet-toggle');
         const stakeInput = document.getElementById('stake-input');
-        if (!row || !amountEl || !toggle || !stakeInput) return;
+        const selectEl = document.getElementById('balance-type-select');
+        if (!stakeInput || !selectEl) return;
 
         const eligibleForCurrentTicket = isFreeBetTicketEligible();
-        if (isLoggedIn && availableFreeBetAmount > 0 && availableFreeBetId > 0 && eligibleForCurrentTicket) {
-            row.style.display = 'flex';
-            amountEl.textContent = formatFt(availableFreeBetAmount);
-        } else {
+        const freeBetAvailable = isLoggedIn && availableFreeBetAmount > 0 && availableFreeBetId > 0 && eligibleForCurrentTicket;
+
+        if (row) {
             row.style.display = 'none';
-            toggle.checked = false;
+        }
+        if (amountEl) {
+            amountEl.textContent = formatFt(availableFreeBetAmount);
+        }
+
+        if (!freeBetAvailable) {
+            if (toggle) toggle.checked = false;
+            if (selectEl.value === 'freebet') {
+                selectEl.value = 'real';
+            }
             stakeInput.readOnly = false;
             stakeInput.removeAttribute('aria-disabled');
+        } else {
+            if (toggle) {
+                toggle.checked = (selectEl.value === 'freebet');
+            }
         }
     }
 
     function applyFreeBetSelectionState() {
         const toggle = document.getElementById('use-freebet-toggle');
         const stakeInput = document.getElementById('stake-input');
-        if (!toggle || !stakeInput) return;
+        const selectEl = document.getElementById('balance-type-select');
+        if (!stakeInput) return;
 
-        if (toggle.checked && availableFreeBetAmount > 0) {
+        const freeBetCanBeUsed = availableFreeBetAmount > 0 && availableFreeBetId > 0;
+        const toggleChecked = !!(toggle && toggle.checked);
+        const selectedFreeBet = !!(selectEl && selectEl.value === 'freebet');
+        const shouldUseFreeBet = freeBetCanBeUsed && (toggleChecked || selectedFreeBet);
+
+        if (shouldUseFreeBet) {
+            if (toggle) toggle.checked = true;
+            if (selectEl) selectEl.value = 'freebet';
             manualStakeBeforeFreeBet = parseFloat(stakeInput.value) || manualStakeBeforeFreeBet || 100;
             stakeInput.value = String(Math.round(availableFreeBetAmount));
             stakeInput.readOnly = true;
             stakeInput.setAttribute('aria-disabled', 'true');
-            // Free bet esetén nem engedünk bónusz egyenleg választást
-            const selectEl = document.getElementById('balance-type-select');
-            if (selectEl) selectEl.value = 'real';
             updateSelectBorderColor();
         } else {
+            if (toggle) toggle.checked = false;
+            if (selectEl && selectEl.value === 'freebet') {
+                selectEl.value = 'real';
+            }
             stakeInput.readOnly = false;
             stakeInput.removeAttribute('aria-disabled');
             if ((parseFloat(stakeInput.value) || 0) === Math.round(availableFreeBetAmount) && manualStakeBeforeFreeBet > 0) {
@@ -525,10 +553,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Bónusz selector dropdown frissítése
         if (typeRow && selectEl) {
-            const useFreeBet = !!document.getElementById('use-freebet-toggle')?.checked;
             const hasBonusOptions = activeBonusList.length > 0;
+            const hasFreeBetOption = isLoggedIn && availableFreeBetAmount > 0 && availableFreeBetId > 0 && isFreeBetTicketEligible();
+            const hasAnySourceOption = hasBonusOptions || hasFreeBetOption;
 
-            if (hasBonusOptions && !useFreeBet) {
+            if (hasAnySourceOption) {
                 typeRow.style.display = 'flex';
 
                 // Jelenlegi kiválasztás megjegyzése
@@ -553,6 +582,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     selectEl.appendChild(opt);
                 });
 
+                // Ingyenes fogadás opció
+                if (hasFreeBetOption) {
+                    const freeBetOpt = document.createElement('option');
+                    freeBetOpt.value = 'freebet';
+                    freeBetOpt.textContent = '🎟 Ingyenes fogadás — ' + formatFt(availableFreeBetAmount);
+                    freeBetOpt.style.color = '#4fc3f7';
+                    selectEl.appendChild(freeBetOpt);
+                }
+
                 // Visszaállítás a korábbi kiválasztásra, ha még létezik
                 if (currentValue && selectEl.querySelector('option[value="' + currentValue + '"]')) {
                     selectEl.value = currentValue;
@@ -575,6 +613,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const val = selectEl.value;
         if (val === 'real') {
             selectEl.style.borderColor = '#4caf50';
+        } else if (val === 'freebet') {
+            selectEl.style.borderColor = '#4fc3f7';
         } else {
             selectEl.style.borderColor = '#7c3aed';
         }
@@ -583,6 +623,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function getSelectedBalanceType() {
         const selectEl = document.getElementById('balance-type-select');
         if (!selectEl) return 'real';
+        if (selectEl.value === 'freebet') return 'freebet';
         return selectEl.value.startsWith('bonus_') ? 'bonus' : 'real';
     }
 
@@ -606,7 +647,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updatePotentialWin(totalOdds) {
         const stakeInput = document.getElementById('stake-input');
         const stake = parseFloat(stakeInput.value) || 0;
-        const useFreeBet = !!document.getElementById('use-freebet-toggle')?.checked;
+        const useFreeBet = isUsingFreeBet();
         const grossWin = stake * totalOdds;
         const netFreeBetWin = stake * Math.max(0, totalOdds - 1);
         const win = Math.round(useFreeBet ? netFreeBetWin : grossWin);
@@ -629,7 +670,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!submitBtn) return;
         
         const stake = parseFloat(document.getElementById('stake-input')?.value) || 0;
-        const useFreeBet = !!document.getElementById('use-freebet-toggle')?.checked;
+        const useFreeBet = isUsingFreeBet();
         const freeBetEligible = isFreeBetTicketEligible();
         const freeBetCoversStake = useFreeBet && freeBetEligible && availableFreeBetAmount >= stake && availableFreeBetId > 0;
         const balanceType = getSelectedBalanceType();
@@ -664,7 +705,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (ticketItems.length === 0) return;
             
             const stake = parseFloat(document.getElementById('stake-input').value) || 0;
-            const useFreeBet = !!document.getElementById('use-freebet-toggle')?.checked;
+            const useFreeBet = isUsingFreeBet();
             const minBet = (window.SITE_SETTINGS && window.SITE_SETTINGS.min_bet_amount) || 100;
             if (stake < minBet) {
                 BmbPopup.warning(t('betslip.minStakeMsg', 'Minimum tét: ' + minBet + ' Ft'), t('betslip.invalidStakeTitle', 'Érvénytelen tét'));
@@ -707,7 +748,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function submitTicketToDB(stake) {
         const metrics = getTicketMetrics();
         const totalOdds = metrics.totalOdds;
-        const useFreeBet = !!document.getElementById('use-freebet-toggle')?.checked;
+        const useFreeBet = isUsingFreeBet();
         const balanceType = getSelectedBalanceType();
         const useBonus = (!useFreeBet && balanceType === 'bonus');
         const userBonusId = useBonus ? getSelectedUserBonusId() : 0;
@@ -864,6 +905,11 @@ document.addEventListener('DOMContentLoaded', function() {
             applyFreeBetSelectionState();
         }
         if (e.target && e.target.id === 'balance-type-select') {
+            const toggle = document.getElementById('use-freebet-toggle');
+            if (toggle) {
+                toggle.checked = e.target.value === 'freebet';
+            }
+            applyFreeBetSelectionState();
             updateSelectBorderColor();
             updatePlaceBetButton();
         }
@@ -1041,6 +1087,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const el = document.createElement('div');
             el.className = 'elozmeny-item' + wonClass + lostClass + cashoutClass;
             const bonusBadge = ticket.bonus_bet ? '<span class="elozmeny-bonus-badge">🎁 Bónusz</span>' : '';
+            const stakeLabel = ticket.free_bet_used
+                ? 'Tét, ingyenes fogadás:'
+                : t('betslip.stakeLabel', 'Tét:');
             el.innerHTML = `
                 <div class="elozmeny-header">
                     <span class="elozmeny-date">${new Date(ticket.created_at).toLocaleString('hu-HU')}${bonusBadge}</span>
@@ -1050,7 +1099,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 ${cashoutBadgeHtml}
                 ${cashoutHtml}
                 <div class="elozmeny-summary">
-                    <span><strong>${t('betslip.stakeLabel', 'Tét:')}</strong> ${parseFloat(ticket.stake).toLocaleString('hu-HU')} Ft</span>
+                    <span><strong>${stakeLabel}</strong> ${parseFloat(ticket.stake).toLocaleString('hu-HU')} Ft</span>
                     <span><strong>${t('betslip.oddsLabel', 'Odds:')}</strong> ${parseFloat(ticket.total_odds).toFixed(3)}</span>
                     <span class="${ticket.status === 'WON' ? 'won-amount' : ''}"><strong>${ticket.status === 'WON' ? t('betslip.winLabel', 'Nyeremény:') : t('betslip.potentialLabel', 'Potenciális:')}</strong> ${parseFloat(ticket.potential_win).toLocaleString('hu-HU')} Ft</span>
                 </div>

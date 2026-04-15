@@ -144,6 +144,10 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!sportsList) return;
 
       const filterLower = (filter || '').toLowerCase();
+      const isEsportSport = (sport) => {
+          const name = ((sport && sport.sport_name) ? String(sport.sport_name) : '').trim().toLowerCase();
+          return name === 'e-sportok' || name === 'e-sport' || name === 'esport' || name === 'esports';
+      };
 
       let filtered = sports;
       if (filterLower) {
@@ -181,6 +185,9 @@ document.addEventListener('DOMContentLoaded', function () {
               return null;
           }).filter(Boolean);
       }
+
+      // Főoldali bal sáv: az E-sportok sportág ne jelenjen meg külön blokkban.
+      filtered = filtered.filter(sport => !isEsportSport(sport));
 
       if (filtered.length === 0) {
           sportsList.innerHTML = '<div class="sidebar-loading" style="color:#888;">' + t('mainMenu.noSearchResult', 'Nincs találat a keresésre.') + '</div>';
@@ -1037,6 +1044,12 @@ document.addEventListener('DOMContentLoaded', function () {
                       matchesContainer.innerHTML = '<div class="no-matches"><i class="fas fa-rocket" style="font-size:40px;color:#f5c518;margin-bottom:12px;display:block;"></i>' + escapeHtml(data.error) + '</div>';
                       return;
                   }
+
+                  if (parseInt(data.isLive, 10) === 1) {
+                      matchesContainer.innerHTML = '<div class="no-matches"><i class="fas fa-info-circle" style="font-size:40px;color:#f5c518;margin-bottom:12px;display:block;"></i>Jelenleg élőben megy ez a meccs, az oddsűrhajó jelenleg nem aktív!</div>';
+                      return;
+                  }
+
                   // Egyből a meccs részleteihez ugrunk
                   loadMatchDetails(data.eventId);
               })

@@ -185,6 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     <link rel="stylesheet" href="../../css/UserProfile/user_profile.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="icon" href="../../img/logo.png" type="image/x-icon">
 </head>
 <body>
     <?php include '../../frontend/Components/cookie_consent.php'; ?>
@@ -517,3 +518,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     <?php include '../../frontend/Components/chatbot.php'; ?>
 </body>
 </html>
+

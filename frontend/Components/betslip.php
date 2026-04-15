@@ -60,21 +60,6 @@
                     </select>
                 </div>
             </div>
-            <div class="summary-row" id="freebet-option-row" style="display:none;">
-                <label class="freebet-toggle-label" for="use-freebet-toggle">
-                    <span class="freebet-toggle-main">
-                        <span class="freebet-toggle-switch-wrap">
-                            <input type="checkbox" id="use-freebet-toggle">
-                            <span class="freebet-toggle-switch" aria-hidden="true"></span>
-                        </span>
-                        <span class="freebet-toggle-text-wrap">
-                            <span class="freebet-title"><i class="fas fa-ticket-alt"></i> Ingyenes fogadás</span>
-                            <span class="freebet-subtitle">Aktiváld, ha ezzel szeretnéd leadni a szelvényt</span>
-                        </span>
-                    </span>
-                    <span class="summary-value freebet-amount-pill" id="freebet-amount-display">0 Ft</span>
-                </label>
-            </div>
             <div class="summary-row highlight">
                 <span id="payout-label" data-i18n="betslip.potentialPayout">Lehetséges nyeremény:</span>
                 <span class="summary-value highlight-value" id="potential-payout">100 Ft</span>

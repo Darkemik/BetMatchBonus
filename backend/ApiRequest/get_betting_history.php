@@ -23,10 +23,13 @@ evaluateOpenTickets($conn, $userId);
 
 // Ticketek lekérése az utolsó 50-ből
 $stmtTickets = $conn->prepare("
-    SELECT id, stake, total_odds, potential_win, status, cashout_amount, cashout_at, created_at, updated_at, bonus_stake
-    FROM Tickets
-    WHERE user_id = ?
-    ORDER BY created_at DESC
+    SELECT t.id, t.stake, t.total_odds, t.potential_win, t.status, t.cashout_amount, t.cashout_at, t.created_at, t.updated_at,
+           t.bonus_stake, COALESCE(bc.bet_reward_type, '') AS ticket_bet_reward_type
+    FROM Tickets t
+    LEFT JOIN UserBonuses ub ON ub.id = t.user_bonus_id
+    LEFT JOIN BonusCodes bc ON bc.id = ub.bonus_id
+    WHERE t.user_id = ?
+    ORDER BY t.created_at DESC
     LIMIT 50
 ");
 $stmtTickets->bind_param("i", $userId);
@@ -98,6 +101,7 @@ while ($ticket = $ticketsResult->fetch_assoc()) {
         'potential_win' => (float)$ticket['potential_win'],
         'status' => $status,
         'bonus_bet' => ((float)($ticket['bonus_stake'] ?? 0)) > 0,
+        'free_bet_used' => strtoupper((string)($ticket['ticket_bet_reward_type'] ?? '')) === 'FREE_BET',
         'cashout_amount' => $ticket['cashout_amount'] !== null ? (float)$ticket['cashout_amount'] : null,
         'cashout_at' => $ticket['cashout_at'],
         'created_at' => $ticket['created_at'],

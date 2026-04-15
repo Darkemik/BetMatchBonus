@@ -157,6 +157,7 @@ function getDailyBoostedMatch(): ?array
         'eventId'           => $eventId,
         'matchName'         => $selected['match_name'],
         'startUtc'          => $selected['start_utc'],
+        'isLive'            => (int)($selected['is_live'] ?? 0),
         'country'           => $selected['country_name'] ?: 'Nemzetközi',
         'championship'      => $selected['championship_name'],
         'sportApiId'        => (int)$selected['sport_api_id'],

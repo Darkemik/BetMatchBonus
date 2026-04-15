@@ -166,11 +166,7 @@ exit;
 // ════════════════════════════════════════════════════
 function calculateCashout($conn, $ticketId, $userId) {
     // Ticket lekérése
-    $stmtTicket = $conn->prepare("
-        SELECT id, stake, bonus_stake, total_odds, potential_win, status, cashout_amount, cashout_at
-        FROM Tickets
-        WHERE id = ? AND user_id = ?
-    ");
+    $stmtTicket = $conn->prepare("\n        SELECT id, stake, bonus_stake, user_bonus_id, total_odds, potential_win, status, cashout_amount, cashout_at\n        FROM Tickets\n        WHERE id = ? AND user_id = ?\n    ");
     $stmtTicket->bind_param("ii", $ticketId, $userId);
     $stmtTicket->execute();
     $ticket = $stmtTicket->get_result()->fetch_assoc();
@@ -183,6 +179,20 @@ function calculateCashout($conn, $ticketId, $userId) {
     // Bónusz pénzből tett fogadások nem cashoutolhatók
     if ((float)($ticket['bonus_stake'] ?? 0) > 0) {
         return ['status' => 'ok', 'available' => false, 'message' => 'Bónusz egyenlegből tett fogadás nem cashoutolható'];
+    }
+
+    // Ingyenes fogadásból tett szelvények nem cashoutolhatók
+    $ticketUserBonusId = (int)($ticket['user_bonus_id'] ?? 0);
+    if ($ticketUserBonusId > 0) {
+        $freeBetCheckStmt = $conn->prepare("\n            SELECT COALESCE(bc.bet_reward_type, '') AS bet_reward_type\n            FROM UserBonuses ub\n            INNER JOIN BonusCodes bc ON bc.id = ub.bonus_id\n            WHERE ub.id = ? AND ub.user_id = ?\n            LIMIT 1\n        ");
+        $freeBetCheckStmt->bind_param("ii", $ticketUserBonusId, $userId);
+        $freeBetCheckStmt->execute();
+        $freeBetCheckRow = $freeBetCheckStmt->get_result()->fetch_assoc();
+        $freeBetCheckStmt->close();
+
+        if (strtoupper((string)($freeBetCheckRow['bet_reward_type'] ?? '')) === 'FREE_BET') {
+            return ['status' => 'ok', 'available' => false, 'message' => 'Ingyenes fogadásból tett szelvény nem cashoutolható'];
+        }
     }
 
     // Már cash out-olt
