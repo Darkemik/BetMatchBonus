@@ -261,6 +261,7 @@
     var chatHistory = [];
     var isTyping = false;
     var STORAGE_KEY = 'bmb_chat_history';
+    var startupPopupHideTimer = null;
 
     // ===== LOCAL STORAGE =====
     function saveChat() {
@@ -328,6 +329,45 @@
         var typingEl = getEl('typingMsg');
         if (typingEl) typingEl.remove();
         isTyping = false;
+    }
+
+    // ===== INDULÓ POPUP ÜZENET =====
+    function hideStartupPopup() {
+        var popup = getEl('chatbotStartupPopup');
+        if (!popup) return;
+        popup.classList.remove('show');
+        setTimeout(function () {
+            if (popup && popup.parentNode) popup.parentNode.removeChild(popup);
+        }, 180);
+    }
+
+    function showStartupPopup() {
+        if (isOpen || getEl('chatbotStartupPopup')) return;
+
+        var popup = document.createElement('button');
+        popup.type = 'button';
+        popup.id = 'chatbotStartupPopup';
+        popup.className = 'chatbot-startup-popup';
+        popup.innerHTML = 'Szia! BMB Asszisztens vagyok, valamiben segíthetek?';
+        popup.setAttribute('aria-label', 'BMB Asszisztens üzenet');
+
+        popup.addEventListener('click', function () {
+            if (startupPopupHideTimer) {
+                clearTimeout(startupPopupHideTimer);
+                startupPopupHideTimer = null;
+            }
+            hideStartupPopup();
+            openChat();
+        });
+
+        document.body.appendChild(popup);
+        requestAnimationFrame(function () {
+            popup.classList.add('show');
+        });
+
+        startupPopupHideTimer = setTimeout(function () {
+            hideStartupPopup();
+        }, 7000);
     }
 
     // ===== VÁLASZ KERESÉSE =====
@@ -425,6 +465,12 @@
         var toggle = getEl('chatbotToggle');
         var notif = getEl('chatbotNotification');
         if (!win || !toggle) return;
+
+        if (startupPopupHideTimer) {
+            clearTimeout(startupPopupHideTimer);
+            startupPopupHideTimer = null;
+        }
+        hideStartupPopup();
 
         win.classList.remove('closing');
         win.classList.add('open');
@@ -571,6 +617,8 @@
                 }
             });
         }
+
+        setTimeout(showStartupPopup, 900);
     }
 
     // DOM betöltés után indítás

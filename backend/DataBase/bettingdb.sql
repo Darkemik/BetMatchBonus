@@ -340,6 +340,44 @@ CREATE TABLE IF NOT EXISTS Wallets (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 -- ============================================================
+-- 18b) BALANCE CAP TRIGGERS (MAX 100 000 000)
+-- ============================================================
+DROP TRIGGER IF EXISTS users_balance_cap_before_insert;
+DROP TRIGGER IF EXISTS users_balance_cap_before_update;
+DROP TRIGGER IF EXISTS wallets_balance_cap_before_insert;
+DROP TRIGGER IF EXISTS wallets_balance_cap_before_update;
+
+DELIMITER $$
+CREATE TRIGGER users_balance_cap_before_insert
+BEFORE INSERT ON Users
+FOR EACH ROW
+BEGIN
+  SET NEW.balance = LEAST(COALESCE(NEW.balance, 0), 100000000.00);
+END$$
+
+CREATE TRIGGER users_balance_cap_before_update
+BEFORE UPDATE ON Users
+FOR EACH ROW
+BEGIN
+  SET NEW.balance = LEAST(COALESCE(NEW.balance, 0), 100000000.00);
+END$$
+
+CREATE TRIGGER wallets_balance_cap_before_insert
+BEFORE INSERT ON Wallets
+FOR EACH ROW
+BEGIN
+  SET NEW.balance = LEAST(COALESCE(NEW.balance, 0), 100000000.00);
+END$$
+
+CREATE TRIGGER wallets_balance_cap_before_update
+BEFORE UPDATE ON Wallets
+FOR EACH ROW
+BEGIN
+  SET NEW.balance = LEAST(COALESCE(NEW.balance, 0), 100000000.00);
+END$$
+DELIMITER ;
+
+-- ============================================================
 -- 19) WALLET TRANSACTIONS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS WalletTransactions (
@@ -783,3 +821,14 @@ ALTER TABLE AuditLogs
   ADD COLUMN IF NOT EXISTS action_type VARCHAR(50) DEFAULT NULL AFTER admin_id,
   ADD COLUMN IF NOT EXISTS target_type VARCHAR(30) DEFAULT NULL AFTER action_type,
   ADD COLUMN IF NOT EXISTS target_id INT DEFAULT NULL AFTER target_type;
+
+-- ============================================================
+-- BALANCE CAP MIGRATION (existing data cleanup)
+-- ============================================================
+UPDATE Users
+SET balance = 100000000.00
+WHERE balance > 100000000.00;
+
+UPDATE Wallets
+SET balance = 100000000.00
+WHERE balance > 100000000.00;

@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let refreshTimer = null;
     let currentMatchId = null;
     let activeTab = 'today';
+    let esportSearchTerm = '';
 
     // All eSport sport IDs
     const ESPORT_SPORT_IDS = [145, 146, 147, 148];
@@ -104,18 +105,23 @@ document.addEventListener("DOMContentLoaded", () => {
             html += '<div class="market-selections">';
             market.selections.forEach(function(sel) {
                 const oddsValue = parseFloat(sel.odds) || 0;
+                const isLockedByOdds = oddsValue <= 1;
                 const state = window.BetslipLogic ? window.BetslipLogic.getButtonState(homeTeam, awayTeam, sel.name, marketFullName) : null;
                 const stateClass = state ? ' ' + state : '';
-                const isDisabled = state === 'disabled' ? ' disabled' : '';
+                const lockClass = isLockedByOdds ? ' disabled market-locked' : '';
+                const isDisabled = (state === 'disabled' || isLockedByOdds) ? ' disabled' : '';
+                const oddsContent = isLockedByOdds
+                    ? '<span class="selection-lock" title="Nem fogadható"><i class="fas fa-lock"></i></span>'
+                    : '<span class="selection-odd">' + oddsValue.toFixed(2) + '</span>';
                 
-                html += '<button class="selection-btn' + stateClass + '"' + isDisabled + ' ' +
+                html += '<button class="selection-btn' + stateClass + lockClass + '"' + isDisabled + ' ' +
                     'data-home="' + escapeHtml(homeTeam) + '" ' +
                     'data-away="' + escapeHtml(awayTeam) + '" ' +
                     'data-pick="' + escapeHtml(sel.name) + '" ' +
                     'data-odd="' + oddsValue + '" ' +
                     'data-market="' + escapeHtml(marketFullName) + '">' +
                     '<span class="selection-name">' + escapeHtml(td(sel.name)) + '</span>' +
-                    '<span class="selection-odd">' + oddsValue.toFixed(2) + '</span>' +
+                    oddsContent +
                 '</button>';
             });
             html += '</div></div>';
@@ -302,6 +308,87 @@ document.addEventListener("DOMContentLoaded", () => {
         return todayContainer;
     }
 
+    function applyEsportSearchFilter() {
+        const container = getActiveContainer();
+        if (!container) return;
+
+        const groups = container.querySelectorAll('.league-group');
+        const existingNoResult = container.querySelector('.esport-search-no-result');
+        if (existingNoResult) existingNoResult.remove();
+        if (groups.length === 0) return;
+
+        const term = (esportSearchTerm || '').trim().toLowerCase();
+        const loadMoreBtn = container.querySelector('.load-more-leagues-btn');
+
+        if (term === '') {
+            groups.forEach(function(group) {
+                group.style.display = '';
+                group.querySelectorAll('.match-row').forEach(function(row) {
+                    row.style.display = '';
+                });
+            });
+
+            if (loadMoreBtn) loadMoreBtn.style.display = '';
+            applyLeagueLimitEsport(container);
+            return;
+        }
+
+        let visibleRows = 0;
+        groups.forEach(function(group) {
+            const leagueTitle = (group.querySelector('.league-title')?.textContent || '').toLowerCase();
+            const leagueCountry = (group.querySelector('.league-country')?.textContent || '').toLowerCase();
+            const leagueMatch = leagueTitle.includes(term) || leagueCountry.includes(term);
+
+            let groupVisibleRows = 0;
+            group.querySelectorAll('.match-row').forEach(function(row) {
+                const rowText = (row.textContent || '').toLowerCase();
+                const rowVisible = leagueMatch || rowText.includes(term);
+                row.style.display = rowVisible ? '' : 'none';
+                if (rowVisible) {
+                    groupVisibleRows++;
+                    visibleRows++;
+                }
+            });
+
+            group.style.display = groupVisibleRows > 0 ? '' : 'none';
+        });
+
+        if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+
+        if (visibleRows === 0) {
+            const noResult = document.createElement('div');
+            noResult.className = 'esport-search-no-result no-matches';
+            noResult.textContent = t('mainMenu.noSearchResult', 'Nincs találat a keresésre.');
+            container.appendChild(noResult);
+        }
+    }
+
+    function initEsportSearch() {
+        const input = document.getElementById('esportSearchInput');
+        const clearBtn = document.getElementById('esportSearchClear');
+        if (!input) return;
+
+        input.placeholder = 'Keresés csapat vagy bajnokság neve alapján...';
+        if (clearBtn) {
+            clearBtn.setAttribute('aria-label', t('live.clearSearch', 'Keresés törlése'));
+        }
+
+        input.addEventListener('input', function() {
+            esportSearchTerm = this.value || '';
+            if (clearBtn) clearBtn.style.display = esportSearchTerm.trim() ? 'flex' : 'none';
+            applyEsportSearchFilter();
+        });
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function() {
+                input.value = '';
+                esportSearchTerm = '';
+                clearBtn.style.display = 'none';
+                applyEsportSearchFilter();
+            });
+        }
+    }
+
     // ===== GET SPORT IDS TO FETCH =====
     function getSportIdsToFetch() {
         if (currentEsportId !== null) {
@@ -384,6 +471,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (typeof window.refreshAllOddsButtons === 'function') {
                     window.refreshAllOddsButtons();
                 }
+                applyEsportSearchFilter();
             })
             .catch(function(err) {
                 console.error("Hiba az eSport élő meccsek frissítésekor:", err);
@@ -473,6 +561,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (typeof window.refreshAllOddsButtons === 'function') {
                 window.refreshAllOddsButtons();
             }
+            applyEsportSearchFilter();
         })
         .catch(function(err) {
             console.error("Hiba a mai eSport meccsek frissítésekor:", err);
@@ -748,6 +837,7 @@ document.addEventListener("DOMContentLoaded", () => {
             })
             .catch(function() {});
     }).then(function() {
+        initEsportSearch();
         refreshTodayMatches();
         startAutoRefresh();
     });

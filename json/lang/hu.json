@@ -141,7 +141,7 @@
   },
   "mainMenu": {
     "todayMatches": "Mai meccsek",
-    "searchPlaceholder": "Meccs keresése...",
+    "searchPlaceholder": "Keresés csapat vagy bajnokság neve alapján...",
     "loading": "Betöltés...",
     "loadingMatches": "Meccsek betöltése...",
     "allSports": "Összes sport",

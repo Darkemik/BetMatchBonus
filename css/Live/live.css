@@ -1195,11 +1195,6 @@
     color: #666;
 }
 
-.selection-btn.disabled .lock-icon {
-    color: #555;
-    font-size: 14px;
-}
-
 /* ===== MARKET LOCKED GOMB (piacon belül csak 1 választható) ===== */
 .selection-btn.market-locked {
     opacity: 0.35;
@@ -1209,9 +1204,31 @@
     border-color: rgba(255,255,255,0.08);
 }
 
-.selection-btn.market-locked .lock-icon {
-    color: #555;
-    font-size: 14px;
+.selection-btn.market-locked .selection-odds {
+    display: none;
+}
+
+.selection-lock {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 1.4rem;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* Csak az odds helyén lévő lakat maradjon látható */
+.selection-btn.market-locked .lock-icon,
+.selection-btn.market-locked > i.fas.fa-lock,
+.selection-btn.market-locked > i.fa-lock,
+.selection-btn.market-locked .selection-name i.fas.fa-lock,
+.selection-btn.market-locked .selection-name i.fa-lock {
+    display: none !important;
+}
+
+.selection-btn.market-locked .selection-lock i.fas.fa-lock,
+.selection-btn.market-locked .selection-lock i.fa-lock {
+    display: inline-block !important;
 }
 
 .no-markets {

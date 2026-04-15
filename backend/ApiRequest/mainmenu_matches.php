@@ -213,14 +213,16 @@ $stmt->close();
 <?php if (empty($leagues)): ?>
     <div class="no-matches"><i class="fas fa-calendar-times" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i>Jelenleg nincs megjeleníthető meccs.</div>
 <?php else: ?>
+    <?php $leagueRenderIndex = 0; ?>
     <?php foreach ($leagues as $leagueName => $leagueData):
+        $isInitiallyExpanded = $leagueRenderIndex < 3;
         $matches = $leagueData['matches'];
         $matchCount = count($matches);
         $countryDisplay = htmlspecialchars($leagueData['country']);
         $leagueDisplay = htmlspecialchars($leagueName);
         $leagueId = 'league-' . md5($leagueName);
     ?>
-    <div class="league-group" data-league-id="<?php echo $leagueId; ?>">
+    <div class="league-group<?php echo $isInitiallyExpanded ? ' expanded' : ''; ?>" data-league-id="<?php echo $leagueId; ?>">
         <div class="league-header" onclick="this.parentElement.classList.toggle('expanded')">
             <div class="league-header-left">
                 <i class="fas fa-globe-europe league-country-icon"></i>
@@ -270,5 +272,6 @@ $stmt->close();
             </table>
         </div>
     </div>
+    <?php $leagueRenderIndex++; ?>
     <?php endforeach; ?>
 <?php endif; ?>

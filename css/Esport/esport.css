@@ -47,6 +47,69 @@
     margin-right: 10px;
 }
 
+/* ===== ESPORT KERESŐ ===== */
+.esport-search-wrapper {
+    margin-bottom: 14px;
+}
+
+.esport-search-box {
+    display: flex;
+    align-items: center;
+    background: #1a2233;
+    border: 1px solid rgba(186, 104, 200, 0.25);
+    border-radius: 10px;
+    padding: 0 14px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.esport-search-box:focus-within {
+    border-color: #BA68C8;
+    box-shadow: 0 0 0 3px rgba(186, 104, 200, 0.16);
+}
+
+.esport-search-icon {
+    color: #8d6e98;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.esport-search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #ecf0f1;
+    font-size: 14px;
+    padding: 10px 12px;
+    font-family: inherit;
+}
+
+.esport-search-input::placeholder {
+    color: #8d6e98;
+    font-size: 13px;
+}
+
+.esport-search-clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    border-radius: 50%;
+    color: #c5b3cc;
+    font-size: 11px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s, color 0.2s;
+}
+
+.esport-search-clear:hover {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+}
+
 /* ===== CONTENT PARENT LAYOUT ===== */
 .content-parent {
     width: 100%;
@@ -562,11 +625,6 @@
     background: rgba(255,255,255,0.03);
     border-color: rgba(255,255,255,0.08);
 }
-.selection-btn.disabled .lock-icon {
-    color: #555;
-    font-size: 14px;
-}
-
 /* ===== MARKET LOCKED ===== */
 .selection-btn.market-locked {
     opacity: 0.35;
@@ -575,9 +633,32 @@
     background: rgba(255,255,255,0.03);
     border-color: rgba(255,255,255,0.08);
 }
-.selection-btn.market-locked .lock-icon {
-    color: #555;
-    font-size: 14px;
+
+.selection-btn.market-locked .selection-odd {
+    display: none;
+}
+
+.selection-lock {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 1.4rem;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* Csak az odds helyén lévő lakat maradjon látható */
+.selection-btn.market-locked .lock-icon,
+.selection-btn.market-locked > i.fas.fa-lock,
+.selection-btn.market-locked > i.fa-lock,
+.selection-btn.market-locked .selection-name i.fas.fa-lock,
+.selection-btn.market-locked .selection-name i.fa-lock {
+    display: none !important;
+}
+
+.selection-btn.market-locked .selection-lock i.fas.fa-lock,
+.selection-btn.market-locked .selection-lock i.fa-lock {
+    display: inline-block !important;
 }
 
 .no-markets {

@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let availableFreeBetMinOddsPerEvent = 0;
     let manualStakeBeforeFreeBet = (window.SITE_SETTINGS && window.SITE_SETTINGS.min_bet_amount) || 100;
     let activeBonusList = [];
+    let isTicketSubmitting = false;
 
     function formatFt(value) {
         return (parseFloat(value) || 0).toLocaleString('hu-HU', {
@@ -304,6 +305,12 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('[BETSLIP] Eltávolítás indexről:', existingIndex);
             ticketItems.splice(existingIndex, 1);
         } else {
+            const normalizedOdds = parseFloat(odds) || 0;
+            if (normalizedOdds <= 1) {
+                BmbPopup.warning('Erre a piacra jelenleg nem lehet fogadni (1.00 odds).', 'Piac lezárva');
+                return;
+            }
+
             // MÓDOSÍTÁS: Csak akkor blokkoljuk, ha ugyanarról a piacról már van kiválasztás
             // De KÜLÖNBÖZŐ piacokról lehet több fogadás ugyanarról a meccsről
             if (window.BetslipLogic.hasSelectionInMarket(homeTeam, awayTeam, market)) {
@@ -668,6 +675,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function updatePlaceBetButton() {
         if (!submitBtn) return;
+
+        if (isTicketSubmitting) {
+            submitBtn.disabled = true;
+            submitBtn.title = 'Szelvény leadása folyamatban...';
+            return;
+        }
         
         const stake = parseFloat(document.getElementById('stake-input')?.value) || 0;
         const useFreeBet = isUsingFreeBet();
@@ -702,6 +715,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (submitBtn) {
         submitBtn.addEventListener('click', () => {
+            if (isTicketSubmitting) return;
             if (ticketItems.length === 0) return;
             
             const stake = parseFloat(document.getElementById('stake-input').value) || 0;
@@ -746,6 +760,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== SUBMIT TICKET TO DB =====
     function submitTicketToDB(stake) {
+        if (isTicketSubmitting) return;
+        isTicketSubmitting = true;
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.title = 'Szelvény leadása folyamatban...';
+        }
+
         const metrics = getTicketMetrics();
         const totalOdds = metrics.totalOdds;
         const useFreeBet = isUsingFreeBet();
@@ -897,6 +918,10 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(e => {
             console.error('Hiba:', e);
             BmbPopup.error(t('betslip.serverErrorMsg', 'Szerverhiba! Kérjük próbáld újra később.'), t('live.serverError', 'Szerverhiba'));
+        })
+        .finally(() => {
+            isTicketSubmitting = false;
+            updatePlaceBetButton();
         });
     }
 
@@ -1243,6 +1268,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const away = btn.getAttribute('data-away');
                 const pick = btn.getAttribute('data-pick');
                 const market = btn.getAttribute('data-market');
+                const odds = parseFloat(btn.getAttribute('data-odd')) || 0;
 
                 if (!home || !away || !pick || !market) {
                     console.warn('[BETSLIP] Hiányzó adat egy gombnál:', {home, away, pick, market});
@@ -1250,9 +1276,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 const state = window.BetslipLogic.getButtonState(home, away, pick, market);
+                const isLockedByOdds = odds <= 1;
                 
-                btn.classList.remove('active', 'disabled');
+                btn.classList.remove('active', 'disabled', 'market-locked');
                 btn.removeAttribute('disabled');
+
+                if (isLockedByOdds) {
+                    btn.classList.add('disabled', 'market-locked');
+                    btn.setAttribute('disabled', 'disabled');
+                    return;
+                }
 
                 if (state === 'active') {
                     btn.classList.add('active');

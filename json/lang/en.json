@@ -141,7 +141,7 @@
   },
   "mainMenu": {
     "todayMatches": "Today's Matches",
-    "searchPlaceholder": "Search match...",
+    "searchPlaceholder": "Search by team or league name...",
     "loading": "Loading...",
     "loadingMatches": "Loading matches...",
     "allSports": "All Sports",

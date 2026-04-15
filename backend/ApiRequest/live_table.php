@@ -272,8 +272,9 @@ $leagueIndex = 0;
     $leagueDisplay = htmlspecialchars($leagueName);
     $leagueId = 'league-' . md5($leagueName);
     $leagueIndex++;
+    $isInitiallyExpanded = $leagueIndex <= 3;
 ?>
-<div class="league-group <?php echo $leagueIndex > 5 ? 'league-hidden-extra' : ''; ?>" data-league-id="<?php echo $leagueId; ?>" <?php echo $leagueIndex > 5 ? 'style="display:none;"' : ''; ?>>
+<div class="league-group <?php echo $leagueIndex > 5 ? 'league-hidden-extra ' : ''; ?><?php echo $isInitiallyExpanded ? 'expanded' : ''; ?>" data-league-id="<?php echo $leagueId; ?>" <?php echo $leagueIndex > 5 ? 'style="display:none;"' : ''; ?>>
     <div class="league-header" onclick="this.parentElement.classList.toggle('expanded')">
         <div class="league-header-left">
             <i class="fas fa-globe-europe league-country-icon"></i>

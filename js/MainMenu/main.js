@@ -507,7 +507,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const selectionBtns = target.querySelectorAll('.selection-btn');
       selectionBtns.forEach(btn => {
           btn.addEventListener('click', function (e) {
-              if (this.classList.contains('disabled')) return;
+              if (this.classList.contains('disabled') || this.classList.contains('market-locked')) return;
 
               e.preventDefault();
               e.stopPropagation();
@@ -641,12 +641,23 @@ document.addEventListener('DOMContentLoaded', function () {
                       const state = window.BetslipLogic
                           ? window.BetslipLogic.getButtonState(match.homeTeam, match.awayTeam, selection.name, marketFullName)
                           : null;
+                      const isLockedByOdds = oddsValue <= 1;
                       const stateClass = state ? ' ' + state : '';
+                      const lockClass = isLockedByOdds ? ' disabled market-locked' : '';
                       const boostedClass = isBoosted ? ' boosted-selection' : '';
-                      const isDisabled = state === 'disabled' ? ' disabled' : '';
+                      const isDisabled = (state === 'disabled' || isLockedByOdds) ? ' disabled' : '';
+                      const oddsContent = isLockedByOdds
+                          ? `<span class="selection-lock" title="Nem fogadható"><i class="fas fa-lock"></i></span>`
+                          : (isBoosted
+                              ? `<span class="selection-odd boosted-odd-display">
+                                    <span class="original-odd-crossed">${originalOdds.toFixed(2)}</span>
+                                    <i class="fas fa-rocket boosted-icon-small"></i>
+                                    ${oddsValue.toFixed(2)}
+                                 </span>`
+                              : `<span class="selection-odd">${oddsValue.toFixed(2)}</span>`);
 
                       html += `
-                          <button class="selection-btn${stateClass}${boostedClass}"${isDisabled}
+                          <button class="selection-btn${stateClass}${lockClass}${boostedClass}"${isDisabled}
                               data-match-id="${match.id}"
                               data-home="${escapeHtml(match.homeTeam || '')}"
                               data-away="${escapeHtml(match.awayTeam || '')}"
@@ -654,13 +665,7 @@ document.addEventListener('DOMContentLoaded', function () {
                               data-market="${escapeHtml(marketFullName)}"
                               data-odd="${oddsValue}">
                               <span class="selection-name">${escapeHtml(td(selection.name))}</span>
-                              ${isBoosted
-                                  ? `<span class="selection-odd boosted-odd-display">
-                                        <span class="original-odd-crossed">${originalOdds.toFixed(2)}</span>
-                                        <i class="fas fa-rocket boosted-icon-small"></i>
-                                        ${oddsValue.toFixed(2)}
-                                     </span>`
-                                  : `<span class="selection-odd">${oddsValue.toFixed(2)}</span>`}
+                              ${oddsContent}
                           </button>`;
                   });
               }

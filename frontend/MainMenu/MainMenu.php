@@ -140,7 +140,7 @@ require_once "../../backend/connect.php";
         <div class="center-header">
           <h2 class="section-title" id="centerTitle"><i class="fas fa-calendar-day"></i> <span data-i18n="mainMenu.upcomingMatches">Közelgő meccsek</span></h2>
           <div class="center-search">
-            <input type="search" id="matchSearch" class="match-search-input" placeholder="Meccs keresése..." data-i18n-placeholder="mainMenu.searchPlaceholder">
+            <input type="search" id="matchSearch" class="match-search-input" placeholder="Keresés csapat vagy bajnokság neve alapján..." data-i18n-placeholder="mainMenu.searchPlaceholder">
           </div>
         </div>
 

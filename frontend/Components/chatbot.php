@@ -36,13 +36,6 @@
         <button class="chatbot-suggestion" data-question="Hol találom az élő meccseket?" data-i18n="chatbot.liveMatchesQ">⚽ Élő meccsek</button>
         <button class="chatbot-suggestion" data-question="Mi az az eSport?" data-i18n="chatbot.esportQ">🎮 eSport</button>
     </div>
-
-    <div class="chatbot-input-area">
-        <input type="text" class="chatbot-input" id="chatbotInput" placeholder="Írj egy kérdést..." data-i18n-placeholder="chatbot.inputPlaceholder" autocomplete="off" maxlength="500">
-        <button class="chatbot-send" id="chatbotSend" title="Küldés" data-i18n-title="chatbot.send">
-            <i class="fas fa-paper-plane"></i>
-        </button>
-    </div>
 </div>
 
 <?php

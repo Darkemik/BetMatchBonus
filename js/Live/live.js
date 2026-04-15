@@ -530,14 +530,19 @@
                 if (market.selections && Array.isArray(market.selections)) {
                     market.selections.forEach(selection => {
                         const oddsValue = parseFloat(selection.odds) || 0;
+                        const isLockedByOdds = oddsValue <= 1;
                         const state = window.BetslipLogic ? window.BetslipLogic.getButtonState(match.homeTeam, match.awayTeam, selection.name, marketFullName) : null;
                         const stateClass = state ? ' ' + state : '';
-                        const isDisabled = state === 'disabled' ? ' disabled' : '';
+                        const lockClass = isLockedByOdds ? ' disabled market-locked' : '';
+                        const isDisabled = (state === 'disabled' || isLockedByOdds) ? ' disabled' : '';
+                        const oddsMarkup = isLockedByOdds
+                            ? '<div class="selection-lock" title="Nem fogadható"><i class="fas fa-lock"></i></div>'
+                            : `<div class="selection-odds">${oddsValue.toFixed(2)}</div>`;
                         
                         modalHTML += `
-                            <button class="selection-btn${stateClass}"${isDisabled} data-match-id="${match.id}" data-home="${escapeHtml(match.homeTeam || '')}" data-away="${escapeHtml(match.awayTeam || '')}" data-pick="${escapeHtml(selection.name)}" data-market="${escapeHtml(marketFullName)}" data-odd="${oddsValue}">
+                            <button class="selection-btn${stateClass}${lockClass}"${isDisabled} data-match-id="${match.id}" data-home="${escapeHtml(match.homeTeam || '')}" data-away="${escapeHtml(match.awayTeam || '')}" data-pick="${escapeHtml(selection.name)}" data-market="${escapeHtml(marketFullName)}" data-odd="${oddsValue}">
                                 <div class="selection-name">${escapeHtml(td(selection.name))}</div>
-                                <div class="selection-odds">${oddsValue.toFixed(2)}</div>
+                                ${oddsMarkup}
                             </button>`;
                     });
                 }
@@ -626,10 +631,37 @@
                                 const newOdds = parseFloat(selection.odds) || 0;
                                 const btns = matchesContainer.querySelectorAll(`.selection-btn[data-market="${CSS.escape(marketFullName)}"][data-pick="${CSS.escape(selection.name)}"]`);
                                 btns.forEach(btn => {
-                                    const oddsEl = btn.querySelector('.selection-odds');
-                                    if (oddsEl) {
-                                        const oldOdds = parseFloat(btn.getAttribute('data-odd')) || 0;
-                                        if (oldOdds !== newOdds) {
+                                    const oldOdds = parseFloat(btn.getAttribute('data-odd')) || 0;
+                                    const isLockedByOdds = newOdds <= 1;
+                                    const hasLock = !!btn.querySelector('.selection-lock');
+                                    const shouldSwapLockState = hasLock !== isLockedByOdds;
+                                    if (oldOdds !== newOdds || shouldSwapLockState) {
+                                        const oddsEl = btn.querySelector('.selection-odds');
+                                        const lockEl = btn.querySelector('.selection-lock');
+                                        if (isLockedByOdds) {
+                                            if (!lockEl) {
+                                                const lockDiv = document.createElement('div');
+                                                lockDiv.className = 'selection-lock';
+                                                lockDiv.title = 'Nem fogadható';
+                                                lockDiv.innerHTML = '<i class="fas fa-lock"></i>';
+                                                if (oddsEl) {
+                                                    oddsEl.replaceWith(lockDiv);
+                                                } else {
+                                                    btn.appendChild(lockDiv);
+                                                }
+                                            }
+                                        } else {
+                                            let targetOddsEl = oddsEl;
+                                            if (!targetOddsEl) {
+                                                targetOddsEl = document.createElement('div');
+                                                targetOddsEl.className = 'selection-odds';
+                                                if (lockEl) {
+                                                    lockEl.replaceWith(targetOddsEl);
+                                                } else {
+                                                    btn.appendChild(targetOddsEl);
+                                                }
+                                            }
+
                                             const arrowClass = newOdds > oldOdds ? 'odds-arrow-up' : 'odds-arrow-down';
                                             const arrowIcon = newOdds > oldOdds ? '▲' : '▼';
                                             
@@ -639,10 +671,19 @@
                                             const arrowSpan = document.createElement('span');
                                             arrowSpan.className = 'odds-arrow ' + arrowClass;
                                             arrowSpan.textContent = arrowIcon;
-                                            oddsEl.appendChild(arrowSpan);
+                                            targetOddsEl.appendChild(arrowSpan);
                                             
-                                            oddsEl.firstChild.textContent = newOdds.toFixed(2);
-                                            btn.setAttribute('data-odd', newOdds);
+                                            targetOddsEl.firstChild.textContent = newOdds.toFixed(2);
+                                        }
+
+                                        btn.setAttribute('data-odd', newOdds);
+                                            btn.classList.toggle('disabled', isLockedByOdds);
+                                            btn.classList.toggle('market-locked', isLockedByOdds);
+                                            if (isLockedByOdds) {
+                                                btn.setAttribute('disabled', 'disabled');
+                                            } else {
+                                                btn.removeAttribute('disabled');
+                                            }
                                             
                                             btn.classList.add('odds-changed');
                                             setTimeout(() => {
@@ -650,7 +691,6 @@
                                                 const arrow = btn.querySelector('.odds-arrow');
                                                 if (arrow) arrow.remove();
                                             }, 3000);
-                                        }
                                     }
                                 });
                             });
@@ -724,14 +764,19 @@
                 if (market.selections && Array.isArray(market.selections)) {
                     market.selections.forEach(selection => {
                         const oddsValue = parseFloat(selection.odds) || 0;
+                        const isLockedByOdds = oddsValue <= 1;
                         const state = window.BetslipLogic ? window.BetslipLogic.getButtonState(match.homeTeam, match.awayTeam, selection.name, marketFullName) : null;
                         const stateClass = state ? ' ' + state : '';
-                        const isDisabled = state === 'disabled' ? ' disabled' : '';
+                        const lockClass = isLockedByOdds ? ' disabled market-locked' : '';
+                        const isDisabled = (state === 'disabled' || isLockedByOdds) ? ' disabled' : '';
+                        const oddsMarkup = isLockedByOdds
+                            ? '<div class="selection-lock" title="Nem fogadható"><i class="fas fa-lock"></i></div>'
+                            : `<div class="selection-odds">${oddsValue.toFixed(2)}</div>`;
                         
                         html += `
-                            <button class="selection-btn${stateClass}"${isDisabled} data-match-id="${match.id}" data-home="${escapeHtml(match.homeTeam || '')}" data-away="${escapeHtml(match.awayTeam || '')}" data-pick="${escapeHtml(selection.name)}" data-market="${escapeHtml(marketFullName)}" data-odd="${oddsValue}">
+                            <button class="selection-btn${stateClass}${lockClass}"${isDisabled} data-match-id="${match.id}" data-home="${escapeHtml(match.homeTeam || '')}" data-away="${escapeHtml(match.awayTeam || '')}" data-pick="${escapeHtml(selection.name)}" data-market="${escapeHtml(marketFullName)}" data-odd="${oddsValue}">
                                 <div class="selection-name">${escapeHtml(td(selection.name))}</div>
-                                <div class="selection-odds">${oddsValue.toFixed(2)}</div>
+                                ${oddsMarkup}
                             </button>`;
                     });
                 }
