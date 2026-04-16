@@ -1,4 +1,13 @@
-<!-- AI Chatbot -->
+<!-- AI Chatbot v2.0 -->
+<?php
+// Chatbot ki/bekapcsolás ellenőrzése
+if (!function_exists('get_setting_int')) {
+    require_once dirname(dirname(__DIR__)) . '/backend/connect.php';
+    require_once dirname(dirname(__DIR__)) . '/backend/Auth/settings_helper.php';
+}
+if (get_setting_int('chatbot_enabled', 1) === 0): ?>
+<!-- Chatbot kikapcsolva -->
+<?php else: ?>
 <div class="chatbot-toggle" id="chatbotToggle" title="BMB Asszisztens">
     <i class="fas fa-robot"></i>
     <span class="chatbot-notification" id="chatbotNotification">1</span>
@@ -32,9 +41,14 @@
         <button class="chatbot-suggestion" data-question="Milyen sportokra fogadhatok?" data-i18n="chatbot.sports">🏆 Sportágak</button>
         <button class="chatbot-suggestion" data-question="Milyen bónuszok vannak?" data-i18n="chatbot.bonuses">🎁 Bónuszok</button>
         <button class="chatbot-suggestion" data-question="Hogyan fizethetek be?" data-i18n="chatbot.depositQ">💳 Befizetés</button>
-        <button class="chatbot-suggestion" data-question="Hogyan kérhetek kifizetést?" data-i18n="chatbot.withdrawalQ">💰 Kifizetés</button>
-        <button class="chatbot-suggestion" data-question="Hol találom az élő meccseket?" data-i18n="chatbot.liveMatchesQ">⚽ Élő meccsek</button>
-        <button class="chatbot-suggestion" data-question="Mi az az eSport?" data-i18n="chatbot.esportQ">🎮 eSport</button>
+        <button class="chatbot-suggestion" data-question="#parancsok" data-i18n="chatbot.cmds">⌨️ Parancsok</button>
+        <button class="chatbot-suggestion" data-question="#összegzés" data-i18n="chatbot.summaryQ">📋 Összegzés</button>
+        <button class="chatbot-suggestion" data-question="#élő" data-i18n="chatbot.liveQ">🔴 Élő meccsek</button>
+    </div>
+
+    <div class="chatbot-input-area">
+        <input type="text" id="chatbotInput" class="chatbot-input" placeholder="Írj üzenetet vagy #parancsot..." autocomplete="off" maxlength="500">
+        <button id="chatbotSend" class="chatbot-send" title="Küldés"><i class="fas fa-paper-plane"></i></button>
     </div>
 </div>
 
@@ -55,4 +69,5 @@ if (strpos($chatbotPath, '/frontend/Help/') !== false ||
 ?>
 <?php include __DIR__ . '/site_settings.php'; ?>
 <link rel="stylesheet" href="<?php echo $chatbotPrefix; ?>css/Chatbot/chatbot.css">
-<script src="<?php echo $chatbotPrefix; ?>js/Chatbot/chatbot.js"></script>
+<script src="<?php echo $chatbotPrefix; ?>js/Chatbot/chatbot_v2.js"></script>
+<?php endif; ?>

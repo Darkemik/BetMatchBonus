@@ -68,6 +68,22 @@ $role = $_SESSION['admin_role'];
             border-color: #f5c518; background: #2a2a10;
         }
 
+        .setting-toggle {
+            width: 48px !important; height: 24px; cursor: pointer;
+        }
+        .setting-toggle:checked {
+            background-color: #52b788; border-color: #52b788;
+        }
+        .setting-toggle:not(:checked) {
+            background-color: #555; border-color: #555;
+        }
+        .setting-toggle:focus {
+            box-shadow: 0 0 0 0.2rem rgba(82, 183, 136, .25);
+        }
+        .setting-toggle.changed {
+            box-shadow: 0 0 0 2px #f5c518;
+        }
+
         .save-bar {
             position: sticky; bottom: 0; background: #16213e;
             padding: 16px 24px; border-top: 2px solid #e94560;
@@ -160,6 +176,7 @@ $role = $_SESSION['admin_role'];
 const API = '../../backend/ApiRequest/admin_settings.php';
 
 const CATEGORY_META = {
+    general:      { label: 'Általános',           icon: '⚙️', color: '#a29bfe' },
     deposit:      { label: 'Befizetés',          icon: '💰', color: '#52b788' },
     withdrawal:   { label: 'Kifizetés',           icon: '💸', color: '#f5c518' },
     betting:      { label: 'Fogadás',             icon: '🎫', color: '#4cc9f0' },
@@ -188,6 +205,7 @@ function renderSettings(settings) {
     const grouped = {};
 
     settings.forEach(s => {
+        if (s.input_type === 'hidden' || s.category === 'internal') return;
         if (!grouped[s.category]) grouped[s.category] = [];
         grouped[s.category].push(s);
         originalValues[s.setting_key] = s.setting_value;
@@ -205,18 +223,35 @@ function renderSettings(settings) {
             </h5>`;
 
         items.forEach(s => {
-            const step = s.setting_value.includes('.') ? '0.01' : '1';
-            html += `
-            <div class="setting-row">
-                <div class="setting-info">
-                    <div class="setting-label">${escHtml(s.label)}</div>
-                    <div class="setting-desc">${escHtml(s.description || '')}</div>
-                </div>
-                <input type="number" class="setting-input" id="input-${s.setting_key}"
-                       value="${escHtml(s.setting_value)}" step="${step}" min="0"
-                       data-key="${s.setting_key}" data-original="${escHtml(s.setting_value)}"
-                       oninput="onSettingChange(this)">
-            </div>`;
+            if (s.input_type === 'toggle') {
+                const isOn = s.setting_value === '1';
+                html += `
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">${escHtml(s.label)}</div>
+                        <div class="setting-desc">${escHtml(s.description || '')}</div>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input setting-toggle" type="checkbox" role="switch"
+                               id="input-${s.setting_key}" ${isOn ? 'checked' : ''}
+                               data-key="${s.setting_key}" data-original="${s.setting_value}"
+                               onchange="onToggleChange(this)">
+                    </div>
+                </div>`;
+            } else {
+                const step = s.setting_value.includes('.') ? '0.01' : '1';
+                html += `
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">${escHtml(s.label)}</div>
+                        <div class="setting-desc">${escHtml(s.description || '')}</div>
+                    </div>
+                    <input type="number" class="setting-input" id="input-${s.setting_key}"
+                           value="${escHtml(s.setting_value)}" step="${step}" min="0"
+                           data-key="${s.setting_key}" data-original="${escHtml(s.setting_value)}"
+                           oninput="onSettingChange(this)">
+                </div>`;
+            }
         });
 
         html += '</div>';
@@ -239,8 +274,18 @@ function onSettingChange(input) {
     updateSaveBar();
 }
 
+function onToggleChange(toggle) {
+    const current = toggle.checked ? '1' : '0';
+    if (current !== toggle.dataset.original) {
+        toggle.classList.add('changed');
+    } else {
+        toggle.classList.remove('changed');
+    }
+    updateSaveBar();
+}
+
 function updateSaveBar() {
-    const changed = document.querySelectorAll('.setting-input.changed');
+    const changed = document.querySelectorAll('.setting-input.changed, .setting-toggle.changed');
     const bar = document.getElementById('saveBar');
     const count = document.getElementById('changesCount');
 
@@ -253,16 +298,24 @@ function resetAll() {
         input.value = input.dataset.original;
         input.classList.remove('changed');
     });
+    document.querySelectorAll('.setting-toggle').forEach(toggle => {
+        toggle.checked = toggle.dataset.original === '1';
+        toggle.classList.remove('changed');
+    });
     updateSaveBar();
 }
 
 async function saveSettings() {
-    const changed = document.querySelectorAll('.setting-input.changed');
-    if (changed.length === 0) return;
+    const changedInputs = document.querySelectorAll('.setting-input.changed');
+    const changedToggles = document.querySelectorAll('.setting-toggle.changed');
+    if (changedInputs.length === 0 && changedToggles.length === 0) return;
 
     const updates = {};
-    changed.forEach(input => {
+    changedInputs.forEach(input => {
         updates[input.dataset.key] = input.value;
+    });
+    changedToggles.forEach(toggle => {
+        updates[toggle.dataset.key] = toggle.checked ? '1' : '0';
     });
 
     try {
@@ -275,10 +328,13 @@ async function saveSettings() {
 
         if (data.success) {
             showToast(data.message, 'success');
-            // Update originals
-            changed.forEach(input => {
+            changedInputs.forEach(input => {
                 input.dataset.original = input.value;
                 input.classList.remove('changed');
+            });
+            changedToggles.forEach(toggle => {
+                toggle.dataset.original = toggle.checked ? '1' : '0';
+                toggle.classList.remove('changed');
             });
             updateSaveBar();
         } else {

@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         exit;
     }
 
-    $result = $conn->query("SELECT setting_key, setting_value, category, label, description, input_type, updated_at FROM SystemSettings ORDER BY FIELD(category, 'deposit', 'withdrawal', 'betting', 'security', 'registration'), setting_key");
+    $result = $conn->query("SELECT setting_key, setting_value, category, label, description, input_type, updated_at FROM SystemSettings ORDER BY FIELD(category, 'general', 'deposit', 'withdrawal', 'betting', 'security', 'registration'), setting_key");
 
     $settings = [];
     while ($row = $result->fetch_assoc()) {

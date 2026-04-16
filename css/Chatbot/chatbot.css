@@ -1,3 +1,5 @@
+/* ===== BMB ASSZISZTENS v2.0 CSS ===== */
+
 /* ===== CHATBOT TOGGLE GOMB ===== */
 .chatbot-toggle {
     position: fixed;
@@ -21,7 +23,7 @@
 }
 
 .chatbot-toggle:hover {
-    transform: scale(1.1);
+    transform: scale(1.12);
     box-shadow: 0 8px 32px rgba(108, 92, 231, 0.7);
 }
 
@@ -37,7 +39,7 @@
 
 @keyframes chatbotPulse {
     0%, 100% { box-shadow: 0 6px 24px rgba(108, 92, 231, 0.5); }
-    50% { box-shadow: 0 6px 32px rgba(108, 92, 231, 0.8), 0 0 0 8px rgba(108, 92, 231, 0.15); }
+    50% { box-shadow: 0 6px 32px rgba(108, 92, 231, 0.8), 0 0 0 10px rgba(108, 92, 231, 0.12); }
 }
 
 /* ===== NOTIFICATION BADGE ===== */
@@ -82,7 +84,7 @@
     cursor: pointer;
     opacity: 0;
     transform: translateY(8px) scale(0.96);
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
 .chatbot-startup-popup.show {
@@ -114,16 +116,16 @@
     position: fixed;
     bottom: 100px;
     right: 28px;
-    width: 380px;
-    max-height: 560px;
-    background: #1a1a2e;
-    border-radius: 16px;
-    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
+    width: 390px;
+    max-height: 580px;
+    background: #12122a;
+    border-radius: 18px;
+    box-shadow: 0 16px 60px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(108, 92, 231, 0.15);
     z-index: 99991;
     display: none;
     flex-direction: column;
     overflow: hidden;
-    border: 1px solid rgba(108, 92, 231, 0.3);
+    border: 1px solid rgba(108, 92, 231, 0.25);
 }
 
 .chatbot-window.open {
@@ -147,7 +149,7 @@
 
 /* ===== HEADER ===== */
 .chatbot-header {
-    background: linear-gradient(135deg, #16213e, #0f3460);
+    background: linear-gradient(135deg, #16213e 0%, #0f3460 60%, #1a1a5e 100%);
     padding: 14px 16px;
     display: flex;
     align-items: center;
@@ -163,16 +165,32 @@
 }
 
 .chatbot-avatar {
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
     background: linear-gradient(135deg, #6c5ce7, #a29bfe);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 19px;
     color: #fff;
     flex-shrink: 0;
+    box-shadow: 0 2px 12px rgba(108, 92, 231, 0.4);
+    position: relative;
+}
+
+.chatbot-avatar::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    border: 2px solid rgba(108, 92, 231, 0.25);
+    animation: avatarGlow 3s infinite;
+}
+
+@keyframes avatarGlow {
+    0%, 100% { border-color: rgba(108, 92, 231, 0.2); }
+    50% { border-color: rgba(108, 92, 231, 0.5); }
 }
 
 .chatbot-header-info {
@@ -184,6 +202,7 @@
     color: #fff;
     font-weight: 700;
     font-size: 14px;
+    letter-spacing: 0.3px;
 }
 
 .chatbot-status {
@@ -240,9 +259,9 @@
     padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    min-height: 250px;
-    max-height: 320px;
+    gap: 10px;
+    min-height: 260px;
+    max-height: 340px;
     scroll-behavior: smooth;
 }
 
@@ -259,12 +278,12 @@
     border-radius: 10px;
 }
 
-/* Üzenet buborék */
+/* ===== ÜZENET BUBORÉK ===== */
 .chat-message {
     display: flex;
     gap: 8px;
-    max-width: 88%;
-    animation: msgFadeIn 0.3s ease;
+    max-width: 90%;
+    animation: msgSlideIn 0.35s ease;
 }
 
 .chat-message.bot {
@@ -276,8 +295,8 @@
     flex-direction: row-reverse;
 }
 
-@keyframes msgFadeIn {
-    from { opacity: 0; transform: translateY(8px); }
+@keyframes msgSlideIn {
+    from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
@@ -290,6 +309,7 @@
     justify-content: center;
     font-size: 13px;
     flex-shrink: 0;
+    margin-top: 2px;
 }
 
 .chat-message.bot .chat-msg-avatar {
@@ -302,18 +322,24 @@
     color: #fff;
 }
 
+.chat-msg-content {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
 .chat-msg-bubble {
     padding: 10px 14px;
-    border-radius: 14px;
+    border-radius: 16px;
     font-size: 13px;
-    line-height: 1.5;
+    line-height: 1.55;
     word-wrap: break-word;
 }
 
 .chat-message.bot .chat-msg-bubble {
-    background: #16213e;
+    background: linear-gradient(135deg, #16213e, #1a1a40);
     color: #e0e0e0;
-    border: 1px solid rgba(108, 92, 231, 0.15);
+    border: 1px solid rgba(108, 92, 231, 0.12);
     border-top-left-radius: 4px;
 }
 
@@ -321,6 +347,17 @@
     background: linear-gradient(135deg, #6c5ce7, #7d6ee7);
     color: #fff;
     border-top-right-radius: 4px;
+}
+
+/* Időbélyeg */
+.chat-msg-time {
+    font-size: 10px;
+    color: #555;
+    padding: 0 4px;
+}
+
+.chat-message.user .chat-msg-time {
+    text-align: right;
 }
 
 .chat-msg-bubble a {
@@ -336,10 +373,267 @@
     color: #ddd;
 }
 
-/* Gépelés animáció */
+/* ===== INTERAKTÍV KÁRTYÁK ===== */
+
+/* Info kártya (kulcs-érték sorok) */
+.chat-info-card {
+    background: rgba(15, 52, 96, 0.4);
+    border: 1px solid rgba(108, 92, 231, 0.15);
+    border-radius: 10px;
+    padding: 8px 0;
+    margin: 8px 0 4px;
+    overflow: hidden;
+}
+
+.chat-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.chat-info-row + .chat-info-row {
+    border-top: 1px solid rgba(108, 92, 231, 0.08);
+}
+
+.chat-info-row a {
+    color: #a29bfe !important;
+}
+
+.chat-info-label {
+    color: #8a8d91;
+    font-weight: 600;
+    font-size: 11px;
+    min-width: 60px;
+}
+
+/* Lépések (1-2-3) */
+.chat-steps {
+    margin: 8px 0 4px;
+}
+
+.chat-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 5px 0;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+/* Akció link (gomb stílusú) */
+.chat-action-link {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 7px 14px;
+    background: rgba(108, 92, 231, 0.15);
+    border: 1px solid rgba(108, 92, 231, 0.3);
+    border-radius: 20px;
+    color: #a29bfe !important;
+    text-decoration: none !important;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.chat-action-link:hover {
+    background: rgba(108, 92, 231, 0.3);
+    color: #fff !important;
+    transform: translateX(2px);
+}
+
+/* Egyenleg kártya */
+.chat-balance-card {
+    text-align: center;
+    padding: 14px 12px;
+}
+
+.chat-balance-main {
+    font-size: 24px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.5px;
+}
+
+.chat-balance-main small {
+    font-size: 14px;
+    font-weight: 400;
+    color: #8a8d91;
+}
+
+.chat-balance-bonus {
+    font-size: 12px;
+    color: #a29bfe;
+    margin-top: 4px;
+}
+
+/* Bónusz elem */
+.chat-bonus-item {
+    background: rgba(15, 52, 96, 0.3);
+    border: 1px solid rgba(108, 92, 231, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+    margin: 6px 0;
+}
+
+.chat-bonus-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: #e0e0e0;
+    margin-bottom: 4px;
+}
+
+.chat-bonus-balance {
+    font-size: 11px;
+    color: #a29bfe;
+    margin-bottom: 4px;
+}
+
+.chat-badge {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    vertical-align: middle;
+    margin-left: 4px;
+}
+
+.chat-badge-active {
+    background: rgba(39, 174, 96, 0.2);
+    color: #27ae60;
+}
+
+.chat-badge-pending {
+    background: rgba(241, 196, 15, 0.2);
+    color: #f1c40f;
+}
+
+/* Progress bar */
+.chat-progress-wrap {
+    width: 100%;
+    height: 6px;
+    background: rgba(108, 92, 231, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 4px 0;
+}
+
+.chat-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #6c5ce7, #a29bfe);
+    border-radius: 3px;
+    transition: width 0.6s ease;
+    min-width: 2px;
+}
+
+.chat-progress-text {
+    font-size: 10px;
+    color: #8a8d91;
+}
+
+/* Ticket elem */
+.chat-ticket-item {
+    background: rgba(15, 52, 96, 0.3);
+    border: 1px solid rgba(108, 92, 231, 0.1);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin: 4px 0;
+}
+
+.chat-ticket-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 700;
+    color: #e0e0e0;
+    margin-bottom: 4px;
+}
+
+.chat-ticket-date {
+    font-size: 10px;
+    font-weight: 400;
+    color: #8a8d91;
+}
+
+.chat-ticket-details {
+    display: flex;
+    gap: 12px;
+    font-size: 11px;
+    color: #bbb;
+    flex-wrap: wrap;
+}
+
+/* Parancsok grid */
+.chat-commands-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin: 8px 0 4px;
+}
+
+.chat-cmd {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px;
+    background: rgba(15, 52, 96, 0.35);
+    border: 1px solid rgba(108, 92, 231, 0.15);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 11px;
+    color: #bbb;
+}
+
+.chat-cmd:hover {
+    background: rgba(108, 92, 231, 0.2);
+    border-color: rgba(108, 92, 231, 0.4);
+    color: #fff;
+}
+
+.chat-cmd-code {
+    font-family: monospace;
+    color: #a29bfe;
+    font-weight: 700;
+    font-size: 12px;
+}
+
+/* Sportok grid */
+.chat-sports-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    margin: 8px 0 4px;
+    font-size: 12px;
+}
+
+.chat-sports-grid span {
+    padding: 4px 6px;
+    background: rgba(15, 52, 96, 0.25);
+    border-radius: 6px;
+}
+
+/* ===== GÉPELÉS ANIMÁCIÓ ===== */
 .typing-indicator {
     display: flex;
-    gap: 4px;
+    gap: 5px;
     padding: 4px 0;
 }
 
@@ -370,8 +664,8 @@
 }
 
 .chatbot-suggestion {
-    background: rgba(108, 92, 231, 0.1);
-    border: 1px solid rgba(108, 92, 231, 0.25);
+    background: rgba(108, 92, 231, 0.08);
+    border: 1px solid rgba(108, 92, 231, 0.2);
     color: #a29bfe;
     padding: 6px 12px;
     border-radius: 20px;
@@ -385,6 +679,7 @@
     background: rgba(108, 92, 231, 0.25);
     color: #fff;
     border-color: rgba(108, 92, 231, 0.5);
+    transform: translateY(-1px);
 }
 
 /* ===== INPUT MEZŐ ===== */
@@ -393,7 +688,7 @@
     display: flex;
     gap: 8px;
     border-top: 1px solid rgba(108, 92, 231, 0.15);
-    background: #151528;
+    background: #0f0f24;
     flex-shrink: 0;
 }
 
@@ -406,11 +701,12 @@
     border-radius: 24px;
     font-size: 13px;
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .chatbot-input:focus {
     border-color: #6c5ce7;
+    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
 }
 
 .chatbot-input::placeholder {
@@ -451,7 +747,7 @@
         right: 10px;
         bottom: 96px;
         max-height: 70vh;
-        border-radius: 12px;
+        border-radius: 14px;
     }
 
     .chatbot-toggle {
@@ -472,6 +768,11 @@
         max-width: calc(100vw - 110px);
         font-size: 12px;
         padding: 10px 12px;
+    }
+
+    .chat-commands-grid,
+    .chat-sports-grid {
+        grid-template-columns: 1fr;
     }
 }
 
