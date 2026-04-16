@@ -53,11 +53,52 @@ function getDailyBoostedMatch(): ?array
     }
 
     // 2) Jelöltek lekérdezése (fix napi ablak: ma 00:00 UTC → +3 nap)
+    //    - Csak főoldali sportok (kizárjuk: 145=E-sportok, 146=e-Labdarúgás, 147=e-Kosárlabda, 148=e-Jégkorong)
+    //    - Csak a TOP 3 bajnokság (fontossági sorrend szerint, amiknek van meccsük)
     $from = (new DateTime('today 00:00:00', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
     $to   = (new DateTime('+3 days 23:59:59', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
 
     $priorityOrder = str_replace('comp.', 'ch.', LEAGUE_PRIORITY_SQL);
 
+    // Először megkeressük a top 3 bajnokságot fontossági sorrendben
+    $topChampsSql = "
+    SELECT DISTINCT ch.id AS comp_id, ch.name AS comp_name, ({$priorityOrder}) AS prio
+    FROM Events m
+    JOIN Sports s ON m.sport_id = s.id
+    JOIN Competitions ch ON m.competition_id = ch.id
+    LEFT JOIN Countries c ON ch.country_id = c.id
+    WHERE m.start_time BETWEEN ? AND ?
+      AND m.status_id != 3
+      AND m.name IS NOT NULL
+      AND TRIM(m.name) != ''
+      AND m.api_id IS NOT NULL
+      AND m.api_id > 0
+      AND s.api_id NOT IN (145, 146, 147, 148)
+      AND ({$priorityOrder}) < 99
+    ORDER BY prio ASC
+    LIMIT 3
+    ";
+
+    $stmtTop = $conn->prepare($topChampsSql);
+    if (!$stmtTop) {
+        return null;
+    }
+    $stmtTop->bind_param("ss", $from, $to);
+    $stmtTop->execute();
+    $topRes = $stmtTop->get_result();
+
+    $topCompIds = [];
+    while ($row = $topRes->fetch_assoc()) {
+        $topCompIds[] = (int)$row['comp_id'];
+    }
+    $stmtTop->close();
+
+    if (empty($topCompIds)) {
+        return null;
+    }
+
+    // Meccsek lekérdezése csak a top 3 bajnokságból
+    $inPlaceholders = implode(',', array_fill(0, count($topCompIds), '?'));
     $sql = "
     SELECT 
         m.api_id,
@@ -77,7 +118,7 @@ function getDailyBoostedMatch(): ?array
       AND TRIM(m.name) != ''
       AND m.api_id IS NOT NULL
       AND m.api_id > 0
-      AND ({$priorityOrder}) < 99
+      AND m.competition_id IN ({$inPlaceholders})
     ORDER BY {$priorityOrder}, m.start_time ASC
     LIMIT 50
     ";
@@ -86,7 +127,9 @@ function getDailyBoostedMatch(): ?array
     if (!$stmt) {
         return null;
     }
-    $stmt->bind_param("ss", $from, $to);
+    $types = "ss" . str_repeat('i', count($topCompIds));
+    $params = array_merge([$from, $to], $topCompIds);
+    $stmt->bind_param($types, ...$params);
     $stmt->execute();
     $res = $stmt->get_result();
 
@@ -100,55 +143,75 @@ function getDailyBoostedMatch(): ?array
         return null;
     }
 
-    // 3) Determinisztikus kiválasztás
+    // 3) Determinisztikus kiválasztás + fallback ha az API-ból nincs odds
+    //    Ha a kiválasztott meccsre az API nem ad vissza piacot, próbáljuk a következőt
     $dayHash = crc32($today . 'oddsboost');
-    $selectedIndex = abs($dayHash) % count($candidates);
-    $selected = $candidates[$selectedIndex];
+    $totalCandidates = count($candidates);
+    $startIndex = abs($dayHash) % $totalCandidates;
+    $maxAttempts = min($totalCandidates, 10); // Max 10 próba
 
-    $eventId = (int)$selected['api_id'];
+    for ($attempt = 0; $attempt < $maxAttempts; $attempt++) {
+        $selectedIndex = ($startIndex + $attempt) % $totalCandidates;
+        $selected = $candidates[$selectedIndex];
+        $eventId = (int)$selected['api_id'];
 
-    // 4) Odds lekérése az API-ból → piac és selection kiválasztása
-    $boostedMarket = null;
-    $boostedSelection = null;
-    $originalOdd = null;
-    $boostedOdd = null;
+        // 4) Odds lekérése az API-ból → piac és selection kiválasztása
+        $boostedMarket = null;
+        $boostedSelection = null;
+        $originalOdd = null;
+        $boostedOdd = null;
 
-    try {
-        $apiData = apiGet(EP_MATCH_DETAILS . '/' . $eventId);
+        try {
+            $apiData = apiGet(EP_MATCH_DETAILS . '/' . $eventId);
 
-        if (isset($apiData['markets']) && is_array($apiData['markets'])) {
-            $targetMarket = null;
-            foreach ($apiData['markets'] as $market) {
-                $mName = mb_strtolower($market['name'] ?? '');
-                $sels = $market['selections'] ?? [];
-                if (count($sels) < 2) continue;
+            if (isset($apiData['markets']) && is_array($apiData['markets']) && count($apiData['markets']) > 0) {
+                $targetMarket = null;
+                foreach ($apiData['markets'] as $market) {
+                    $mName = mb_strtolower($market['name'] ?? '');
+                    $sels = $market['selections'] ?? [];
+                    if (count($sels) < 2) continue;
 
-                if (strpos($mName, 'győztes') !== false ||
-                    strpos($mName, 'winner') !== false ||
-                    strpos($mName, '1x2') !== false ||
-                    strpos($mName, 'végeredmény') !== false ||
-                    strpos($mName, 'match result') !== false) {
-                    $targetMarket = $market;
-                    break;
+                    if (strpos($mName, 'győztes') !== false ||
+                        strpos($mName, 'winner') !== false ||
+                        strpos($mName, '1x2') !== false ||
+                        strpos($mName, 'végeredmény') !== false ||
+                        strpos($mName, 'match result') !== false) {
+                        $targetMarket = $market;
+                        break;
+                    }
+                    if ($targetMarket === null) {
+                        $targetMarket = $market;
+                    }
                 }
-                if ($targetMarket === null) {
-                    $targetMarket = $market;
+
+                if ($targetMarket && !empty($targetMarket['selections'])) {
+                    $selCount = count($targetMarket['selections']);
+                    $selIndex = abs(crc32($today . 'sel')) % $selCount;
+                    $sel = $targetMarket['selections'][$selIndex];
+
+                    $boostedMarket = $targetMarket['name'];
+                    $boostedSelection = $sel['name'] ?? '';
+                    $originalOdd = round((float)($sel['odd'] ?? 1.0), 2);
+                    $boostedOdd = round($originalOdd * 1.5, 2);
                 }
             }
-
-            if ($targetMarket && !empty($targetMarket['selections'])) {
-                $selCount = count($targetMarket['selections']);
-                $selIndex = abs(crc32($today . 'sel')) % $selCount;
-                $sel = $targetMarket['selections'][$selIndex];
-
-                $boostedMarket = $targetMarket['name'];
-                $boostedSelection = $sel['name'] ?? '';
-                $originalOdd = round((float)($sel['odd'] ?? 1.0), 2);
-                $boostedOdd = round($originalOdd * 1.5, 2);
-            }
+        } catch (Throwable $e) {
+            error_log("Oddsűrhajó cache API hiba (eventId=$eventId): " . $e->getMessage());
         }
-    } catch (Throwable $e) {
-        error_log("Oddsűrhajó cache API hiba: " . $e->getMessage());
+
+        // Ha sikerült odds-ot kapni, kilépünk a ciklusból
+        if ($boostedMarket !== null && $boostedOdd !== null && $boostedOdd > 1) {
+            break;
+        }
+
+        // Nem sikerült, próbáljuk a következő jelöltet
+        error_log("Oddsűrhajó: eventId=$eventId nem adott vissza odds-ot, következő jelölt...");
+    }
+
+    // Ha egyetlen jelölt sem adott odds-ot, ne mentsünk üres cache-t
+    if ($boostedMarket === null || $boostedOdd === null || $boostedOdd <= 1) {
+        error_log("Oddsűrhajó: Egyik jelölt sem adott vissza érvényes odds-ot ($maxAttempts próba)");
+        return null;
     }
 
     // 5) Cache mentése

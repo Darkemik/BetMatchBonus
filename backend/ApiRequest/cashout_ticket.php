@@ -5,11 +5,12 @@
  * GET  ?ticket_id=X          → Cashout érték kiszámítása (nem hajt végre)
  * POST { ticketId: X }       → Cashout végrehajtása
  * 
- * CASHOUT LOGIKA:
- * - Alap: tét × (aktuális összszorzó / eredeti összszorzó) × 0.90 (10% jutalék)
- * - Ha egy selectionhöz tartozó meccs élő és az ellenfél vezet / gólt lőtt → csökkentett szorzó
+ * CASHOUT LOGIKA (per-selection weight):
+ * - WON: Co_i = Oe (teljes odds kredit)
+ * - OPEN: Co_i = w = min(1.0, Oe/Ol)  (büntet ha romlik, nem jutalmaz 100%-on túl)
+ * - Nincs live adat: Co_i = 1.0 (semleges)
+ * - CashOut = (∏Co_i) × Tét × 0.92
  * - Ha bármely selection LOST → cashout = 0 (nincs lehetőség)
- * - Ha minden selection WON → cashout = potential_win (teljes kifizetés)
  */
 
 session_start();
@@ -217,7 +218,7 @@ function calculateCashout($conn, $ticketId, $userId) {
     // Selections lekérése
     $stmtSel = $conn->prepare("
         SELECT ts.id, ts.match_id, ts.event_id, ts.pick_label, ts.market_name, 
-               ts.odds_at_pick, ts.status, ts.home_team, ts.away_team
+               ts.odds_at_pick, ts.is_boosted, ts.status, ts.home_team, ts.away_team
         FROM TicketSelections ts
         WHERE ts.ticket_id = ?
     ");
@@ -242,6 +243,13 @@ function calculateCashout($conn, $ticketId, $userId) {
         }
     }
 
+    // Oddsűrhajó (boosted) tételt tartalmazó szelvény nem cashoutolható
+    foreach ($selections as $sel) {
+        if (!empty($sel['is_boosted'])) {
+            return ['status' => 'ok', 'available' => false, 'message' => 'Oddsűrhajó tételt tartalmazó szelvény nem cashoutolható'];
+        }
+    }
+
     // Minden selection WON → teljes kifizetés (de kissé csökkentett, mert még nem settled)
     $allWon = true;
     foreach ($selections as $sel) {
@@ -250,82 +258,44 @@ function calculateCashout($conn, $ticketId, $userId) {
             break;
         }
     }
-    if ($allWon) {
-        // Minden nyert → 95%-ot adjuk (5% jutalék az azonnali kifizetésért)
-        $cashout = round($potentialWin * 0.95, 0);
-        return [
-            'status' => 'ok',
-            'available' => true,
-            'cashout_amount' => $cashout,
-            'potential_win' => $potentialWin,
-            'message' => 'Minden tipped nyert! Cash out elérhető.'
-        ];
-    }
+    // ── CASHOUT KALKULÁCIÓ ──
+    // Per-selection weight modell:
+    //   WON:   Co_i = Oe (teljes odds kredit)
+    //   OPEN:  Co_i = w = min(1.0, Oe/Ol)  (büntet ha romlik, nem jutalmaz 100%-on túl)
+    //   Nincs live adat: Co_i = 1.0 (semleges)
+    //   CashOut = (∏Co_i) × Tét × 0.92
+    $ALPHA = 0.92;
 
-    // ── DINAMIKUS CASHOUT KALKULÁCIÓ ──
-    // Szorzó: a WON selection-ök odds-ját "biztos"-nak vesszük (1.0),
-    // az OPEN selection-ökhöz élő odds alapján korrigálunk
-    $cashoutMultiplier = 1.0;
-    $HOUSE_EDGE = 0.90; // 10% jutalék a platformnak
+    $coProduct = 1.0;
 
     foreach ($selections as $sel) {
+        $origOdds = (float)$sel['odds_at_pick'];
+
         if ($sel['status'] === 'WON') {
-            // Nyert tétel → teljes odds beszámítása
-            $cashoutMultiplier *= (float)$sel['odds_at_pick'];
-            continue;
+            // WON → teljes odds kredit
+            $coProduct *= $origOdds;
+        } elseif ($sel['status'] === 'OPEN') {
+            // Live odds lekérése
+            $matchApiId = (int)$sel['match_id'];
+            $pickLabel  = $sel['pick_label'] ?? '';
+            $marketName = $sel['market_name'] ?? '';
+
+            $liveOdds = fetchLiveOddsForSelection($conn, $matchApiId, $marketName, $pickLabel);
+
+            if ($liveOdds !== null && $liveOdds > 0) {
+                // w = min(1.0, Oe/Ol) — büntet ha romlott, max 1.0 ha javult/változatlan
+                $w = min(1.0, $origOdds / $liveOdds);
+                $coProduct *= $w;
+            }
+            // Nincs live adat → Co_i = 1.0 (semleges, nem szorzunk)
         }
-
-        // OPEN tétel → élő meccs állapota alapján korrigálunk
-        $matchId = (int)$sel['match_id'];
-        $eventId = $sel['event_id'] ? (int)$sel['event_id'] : null;
-        $originalOdds = (float)$sel['odds_at_pick'];
-        $pickLabel = strtolower(trim($sel['pick_label'] ?? ''));
-        $marketName = strtolower(trim($sel['market_name'] ?? ''));
-
-        // Élő meccs adatok az adatbázisból
-        $liveData = getLiveMatchData($conn, $matchId, $eventId);
-
-        if (!$liveData) {
-            // Nem tudunk live adatot → eredeti odds 85%-a (bizonytalansági levonás)
-            $cashoutMultiplier *= ($originalOdds * 0.85);
-            continue;
-        }
-
-        $homeScore = (int)($liveData['home_score'] ?? 0);
-        $awayScore = (int)($liveData['away_score'] ?? 0);
-        $isLive = (bool)($liveData['is_live'] ?? false);
-        $liveTime = $liveData['live_time'] ?? '';
-
-        // Elapsed perc becslése
-        $elapsedMinutes = parseElapsedMinutes($liveTime);
-
-        if (!$isLive && $elapsedMinutes === 0) {
-            // Meccs még nem kezdődött → eredeti odds × enyhe csökkentés
-            $cashoutMultiplier *= ($originalOdds * 0.92);
-            continue;
-        }
-
-        // ── KOCKÁZAT ÉRTÉKELÉS az élő állás alapján ──
-        $adjustedOdds = calculateLiveAdjustedOdds(
-            $originalOdds, $pickLabel, $marketName,
-            $homeScore, $awayScore, $elapsedMinutes,
-            $sel['home_team'], $sel['away_team']
-        );
-
-        $cashoutMultiplier *= $adjustedOdds;
     }
 
-    // Végső cashout = tét × korrigált szorzó × jutalék
-    $rawCashout = $stake * ($cashoutMultiplier / $originalTotalOdds) * $HOUSE_EDGE;
+    // CashOut = Co × Tét × 0.92
+    $cashout = round($coProduct * $stake * $ALPHA, 0);
 
-    // Minimum: 0, Maximum: potentialWin 95%-a
-    $cashout = max(0, min($rawCashout, $potentialWin * 0.95));
-    $cashout = round($cashout, 0); // Egész forintra kerekítve
-
-    // Ha 0-ra jönne ki, nem érhető el
-    if ($cashout <= 0) {
-        return ['status' => 'ok', 'available' => false, 'cashout_amount' => 0, 'message' => 'Cash out jelenleg nem elérhető'];
-    }
+    // Maximum: potentialWin × alpha
+    $cashout = min($cashout, round($potentialWin * $ALPHA, 0));
 
     return [
         'status' => 'ok',
@@ -333,193 +303,85 @@ function calculateCashout($conn, $ticketId, $userId) {
         'cashout_amount' => $cashout,
         'potential_win' => $potentialWin,
         'stake' => $stake,
-        'message' => 'Cash out elérhető'
+        'message' => $allWon
+            ? 'Minden tipped nyert! Cash out elérhető.'
+            : 'Cash out elérhető'
     ];
 }
 
 /**
- * Élő meccsadatok lekérése az Events táblából
+ * Live odds lekérése egy adott selection-höz az API-ból
+ * Visszaadja az aktuális odds-ot, vagy null ha nem sikerül
  */
-function getLiveMatchData($conn, $matchApiId, $eventId = null) {
-    if ($eventId) {
-        $stmt = $conn->prepare("SELECT is_live, live_time, live_status, home_score, away_score, start_time, status_id, home_team_name, away_team_name FROM Events WHERE id = ? LIMIT 1");
-        $stmt->bind_param("i", $eventId);
-    } else {
-        $stmt = $conn->prepare("SELECT is_live, live_time, live_status, home_score, away_score, start_time, status_id, home_team_name, away_team_name FROM Events WHERE api_id = ? LIMIT 1");
-        $stmt->bind_param("i", $matchApiId);
+function fetchLiveOddsForSelection($conn, $matchApiId, $marketName, $pickLabel) {
+    if ($matchApiId <= 0) return null;
+
+    try {
+        $apiData = apiGet(EP_MATCH_DETAILS . '/' . $matchApiId);
+
+        if (!isset($apiData['markets']) || !is_array($apiData['markets'])) {
+            return null;
+        }
+
+        $marketNameLower = mb_strtolower(trim($marketName));
+        $pickLabelLower  = mb_strtolower(trim($pickLabel));
+
+        // 1) Pontos market név egyezés keresése
+        foreach ($apiData['markets'] as $market) {
+            $mName = mb_strtolower(trim($market['name'] ?? ''));
+            if ($mName !== $marketNameLower) continue;
+
+            foreach ($market['selections'] ?? [] as $selection) {
+                $sName = mb_strtolower(trim($selection['name'] ?? ''));
+                if ($sName === $pickLabelLower) {
+                    $odd = (float)($selection['odd'] ?? 0);
+                    if ($odd > 0) return $odd;
+                }
+            }
+        }
+
+        // 2) Ha nem találtuk pontosan → részleges egyezés (market típus + selection név)
+        foreach ($apiData['markets'] as $market) {
+            $mName = mb_strtolower(trim($market['name'] ?? ''));
+
+            // Csak hasonló típusú piacot fogadunk el
+            if (!marketTypeMatches($marketNameLower, $mName)) continue;
+
+            foreach ($market['selections'] ?? [] as $selection) {
+                $sName = mb_strtolower(trim($selection['name'] ?? ''));
+                if ($sName === $pickLabelLower) {
+                    $odd = (float)($selection['odd'] ?? 0);
+                    if ($odd > 0) return $odd;
+                }
+            }
+        }
+
+        return null;
+    } catch (Throwable $e) {
+        error_log("Cashout live odds hiba (matchApiId=$matchApiId): " . $e->getMessage());
+        return null;
     }
-    $stmt->execute();
-    $result = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
-    return $result;
 }
 
 /**
- * Lejátszott percek becslése a live_time string alapján
+ * Két market név típus-szintű egyezése (1x2 ≈ 1x2, over/under ≈ over/under, stb.)
  */
-function parseElapsedMinutes($liveTime) {
-    if (empty($liveTime)) return 0;
-    $lt = strtolower(trim($liveTime));
+function marketTypeMatches($original, $live) {
+    $types = [
+        ['1x2', 'winner', 'győztes', 'gyoztes', 'match result', 'moneyline'],
+        ['over', 'under', 'több', 'tobb', 'kevesebb', 'total', 'gólszám', 'golszam'],
+        ['both teams', 'mindkét', 'mindket', 'btts'],
+    ];
 
-    // "45+2'" vagy "67'" vagy "HT" stb.
-    if (preg_match('/(\d+)/', $lt, $m)) {
-        return (int)$m[1];
-    }
-    if (strpos($lt, 'ht') !== false || strpos($lt, 'half') !== false || strpos($lt, 'félidő') !== false) {
-        return 45;
-    }
-    if (strpos($lt, 'ft') !== false || strpos($lt, 'vége') !== false || strpos($lt, 'ended') !== false) {
-        return 90;
-    }
-    return 0;
-}
-
-/**
- * Élő korrigált odds számítás a meccs állapota alapján
- * 
- * A logika:
- * - 1X2 piac: ha a fogadott csapat vezet → odds nő (kedvezőbb cashout)
- *              ha az ellenfél vezet → odds csökken (kedvezőtlenebb cashout)
- * - Over/Under: gólkülönbség alapján
- * - Időtényező: minél több idő telt el, annál több információnk van
- */
-function calculateLiveAdjustedOdds($originalOdds, $pick, $market, $homeScore, $awayScore, $elapsedMinutes, $homeTeam, $awayTeam) {
-    $homeTeamLower = strtolower(trim($homeTeam ?? ''));
-    $awayTeamLower = strtolower(trim($awayTeam ?? ''));
-
-    // Idő-faktor: 0.0 (épp kezdődött) → 1.0 (90. perc)
-    $timeFactor = min(1.0, max(0.0, $elapsedMinutes / 90.0));
-
-    // ── 1X2 / MATCH WINNER ──
-    if (is1x2Market($market)) {
-        $betOnHome = ($pick === '1' || $pick === 'home' || $pick === $homeTeamLower);
-        $betOnAway = ($pick === '2' || $pick === 'away' || $pick === $awayTeamLower);
-        $betOnDraw = ($pick === 'x' || $pick === 'draw' || $pick === 'döntetlen');
-
-        $goalDiff = $homeScore - $awayScore; // + = hazai vezet, - = vendég vezet
-
-        if ($betOnHome) {
-            if ($goalDiff > 0) {
-                // Hazai vezet → jó irányba megy → odds emelkedik (könnyebb cashout)
-                $boost = 1.0 + ($goalDiff * 0.25 * $timeFactor);
-                return $originalOdds * min($boost, 1.8);
-            } elseif ($goalDiff < 0) {
-                // Vendég vezet → rossz irány → odds csökken
-                $penalty = 1.0 - (abs($goalDiff) * 0.30 * (0.5 + $timeFactor * 0.5));
-                return $originalOdds * max($penalty, 0.05);
-            }
-            // Döntetlen → enyhe csökkenés az idő előrehaladtával
-            return $originalOdds * (1.0 - $timeFactor * 0.1);
+    foreach ($types as $group) {
+        $origMatch = false;
+        $liveMatch = false;
+        foreach ($group as $keyword) {
+            if (strpos($original, $keyword) !== false) $origMatch = true;
+            if (strpos($live, $keyword) !== false) $liveMatch = true;
         }
-
-        if ($betOnAway) {
-            if ($goalDiff < 0) {
-                // Vendég vezet → jó irány
-                $boost = 1.0 + (abs($goalDiff) * 0.25 * $timeFactor);
-                return $originalOdds * min($boost, 1.8);
-            } elseif ($goalDiff > 0) {
-                // Hazai vezet → rossz irány
-                $penalty = 1.0 - ($goalDiff * 0.30 * (0.5 + $timeFactor * 0.5));
-                return $originalOdds * max($penalty, 0.05);
-            }
-            return $originalOdds * (1.0 - $timeFactor * 0.1);
-        }
-
-        if ($betOnDraw) {
-            if ($homeScore === $awayScore) {
-                // Döntetlen → jó irány (de idővel kevésbé valószínű)
-                $boost = 1.0 + (0.15 * $timeFactor);
-                return $originalOdds * min($boost, 1.5);
-            } else {
-                // Nem döntetlen → rossz irány
-                $diff = abs($goalDiff);
-                $penalty = 1.0 - ($diff * 0.35 * (0.5 + $timeFactor * 0.5));
-                return $originalOdds * max($penalty, 0.05);
-            }
-        }
+        if ($origMatch && $liveMatch) return true;
     }
 
-    // ── OVER/UNDER ──
-    if (isOverUnderMarket($market)) {
-        $totalGoals = $homeScore + $awayScore;
-
-        // Vonal kinyerése
-        $line = 0;
-        if (preg_match('/\((\d+\.?\d*)\)/', $market, $m)) {
-            $line = (float)$m[1];
-        }
-        if ($line == 0 && preg_match('/(\d+[,.]?\d*)/', $pick, $m)) {
-            $line = (float)str_replace(',', '.', $m[1]);
-        }
-
-        if ($line > 0) {
-            $isOver = (strpos($pick, 'over') !== false || strpos($pick, 'több') !== false || strpos($pick, 'fölött') !== false || strpos($pick, 'felett') !== false);
-
-            if ($isOver) {
-                $diff = $totalGoals - $line;
-                if ($diff > 0) {
-                    // Már over → kedvező
-                    return $originalOdds * min(1.0 + (0.3 * $timeFactor), 1.6);
-                } else {
-                    // Még under → kedvezőtlen (idő múlásával rosszabb)
-                    $remaining = $line - $totalGoals;
-                    $penalty = 1.0 - ($remaining * 0.15 * $timeFactor);
-                    return $originalOdds * max($penalty, 0.1);
-                }
-            } else {
-                // Under
-                $diff = $line - $totalGoals;
-                if ($diff > 0 && $timeFactor > 0.5) {
-                    // Még under + sok idő eltelt → kedvező
-                    return $originalOdds * min(1.0 + (0.2 * $timeFactor), 1.4);
-                } elseif ($totalGoals >= $line) {
-                    // Már over → elveszett
-                    return $originalOdds * 0.05;
-                }
-                return $originalOdds * (1.0 - $timeFactor * 0.05);
-            }
-        }
-    }
-
-    // ── BOTH TEAMS TO SCORE ──
-    if (isBttsMarket($market)) {
-        $bothScored = ($homeScore > 0 && $awayScore > 0);
-        $isYes = (strpos($pick, 'yes') !== false || strpos($pick, 'igen') !== false);
-
-        if ($isYes) {
-            if ($bothScored) {
-                return $originalOdds * min(1.0 + (0.4 * $timeFactor), 1.7);
-            }
-            // Minél kevesebb idő van hátra és még nem lőtt mindkét csapat → rosszabb
-            $penalty = 1.0 - ($timeFactor * 0.25);
-            return $originalOdds * max($penalty, 0.2);
-        } else {
-            if ($bothScored) {
-                return $originalOdds * 0.05; // Már lőtt mindkettő
-            }
-            return $originalOdds * (1.0 + ($timeFactor * 0.15));
-        }
-    }
-
-    // ── ISMERETLEN PIAC → mérsékelt csökkentés ──
-    return $originalOdds * (0.90 - $timeFactor * 0.05);
-}
-
-function is1x2Market($market) {
-    return (strpos($market, '1x2') !== false || strpos($market, 'winner') !== false ||
-            strpos($market, 'győztes') !== false || strpos($market, 'gyoztes') !== false ||
-            strpos($market, 'match result') !== false || strpos($market, 'moneyline') !== false ||
-            strpos($market, 'full time result') !== false);
-}
-
-function isOverUnderMarket($market) {
-    return (strpos($market, 'over') !== false || strpos($market, 'under') !== false ||
-            strpos($market, 'több') !== false || strpos($market, 'tobb') !== false ||
-            strpos($market, 'kevesebb') !== false || strpos($market, 'total') !== false ||
-            strpos($market, 'gólszám') !== false || strpos($market, 'golszam') !== false);
-}
-
-function isBttsMarket($market) {
-    return (strpos($market, 'both teams') !== false || strpos($market, 'mindkét') !== false ||
-            strpos($market, 'mindket') !== false || strpos($market, 'btts') !== false);
+    return false;
 }

@@ -468,24 +468,24 @@ document.querySelectorAll('.btn-manual-wd').forEach(btn => {
         const amount = parseFloat(document.getElementById('manual-amount-' + uid).value);
         const note = document.getElementById('manual-note-' + uid).value.trim();
 
-        if (!amount || amount <= 0) { alert('Add meg az összeget!'); return; }
-        if (!confirm('Biztosan létrehozol egy manuális kifizetést: ' + amount.toLocaleString('hu') + ' Ft?')) return;
-
-        fetch('/BetMatchBonus/backend/ApiRequest/admin_withdrawal_action.php', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ action: 'manual_withdraw', user_id: parseInt(uid), amount: amount, note: note })
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                showToast(data.message, 'success');
-                setTimeout(() => location.reload(), 1200);
-            } else {
-                showToast(data.message, 'danger');
-            }
-        })
-        .catch(() => showToast('Hálózati hiba!', 'danger'));
+        if (!amount || amount <= 0) { BmbPopup.warning('Add meg az összeget!'); return; }
+        BmbPopup.confirm('Biztosan létrehozol egy manuális kifizetést: ' + amount.toLocaleString('hu') + ' Ft?', function() {
+            fetch('/BetMatchBonus/backend/ApiRequest/admin_withdrawal_action.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ action: 'manual_withdraw', user_id: parseInt(uid), amount: amount, note: note })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 1200);
+                } else {
+                    showToast(data.message, 'danger');
+                }
+            })
+            .catch(() => showToast('Hálózati hiba!', 'danger'));
+        });
     });
 });
 
@@ -512,24 +512,24 @@ document.querySelectorAll('.btn-revoke-confirm').forEach(btn => {
         e.stopPropagation();
         const tid = this.dataset.tid;
         const reason = document.getElementById('revoke-reason-' + tid).value.trim();
-        if (!reason) { alert('Add meg a visszavonás okát!'); return; }
-        if (!confirm('Biztosan visszavonod? Az összeg visszakerül a felhasználó egyenlegére.')) return;
-
-        fetch('/BetMatchBonus/backend/ApiRequest/admin_withdrawal_action.php', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ action: 'revoke', transaction_id: parseInt(tid), reason: reason })
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                showToast(data.message, 'success');
-                setTimeout(() => location.reload(), 1200);
-            } else {
-                showToast(data.message, 'danger');
-            }
-        })
-        .catch(() => showToast('Hálózati hiba!', 'danger'));
+        if (!reason) { BmbPopup.warning('Add meg a visszavonás okát!'); return; }
+        BmbPopup.confirm('Biztosan visszavonod? Az összeg visszakerül a felhasználó egyenlegére.', function() {
+            fetch('/BetMatchBonus/backend/ApiRequest/admin_withdrawal_action.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ action: 'revoke', transaction_id: parseInt(tid), reason: reason })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 1200);
+                } else {
+                    showToast(data.message, 'danger');
+                }
+            })
+            .catch(() => showToast('Hálózati hiba!', 'danger'));
+        });
     });
 });
 

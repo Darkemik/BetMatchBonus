@@ -354,8 +354,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.btn-void').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
-            if (!confirm('Biztosan érvényteleníted ezt a szelvényt? A tét visszakerül a felhasználó egyenlegére.')) return;
-            ticketAction('void', this.dataset.tid);
+            BmbPopup.confirm('Biztosan érvényteleníted ezt a szelvényt? A tét visszakerül a felhasználó egyenlegére.', () => {
+                ticketAction('void', btn.dataset.tid);
+            });
         });
     });
 
@@ -363,8 +364,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.btn-manual-won').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
-            if (!confirm('Biztosan NYERTESRE zárod ezt a szelvényt? A nyeremény jóváírásra kerül.')) return;
-            ticketAction('manual_close', this.dataset.tid, 'WON');
+            BmbPopup.confirm('Biztosan NYERTESRE zárod ezt a szelvényt? A nyeremény jóváírásra kerül.', () => {
+                ticketAction('manual_close', btn.dataset.tid, 'WON');
+            });
         });
     });
 
@@ -372,8 +374,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.btn-manual-lost').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
-            if (!confirm('Biztosan VESZTESRE zárod ezt a szelvényt?')) return;
-            ticketAction('manual_close', this.dataset.tid, 'LOST');
+            BmbPopup.confirm('Biztosan VESZTESRE zárod ezt a szelvényt?', () => {
+                ticketAction('manual_close', btn.dataset.tid, 'LOST');
+            });
         });
     });
 });

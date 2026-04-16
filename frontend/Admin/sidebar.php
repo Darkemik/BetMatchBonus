@@ -50,3 +50,6 @@ if ($role === 'SUPERADMIN') {
     echo '<a href="settings.php" class="nav-link" style="' . $settingsStyle . '">⚙️ Rendszerbeállítások</a>' . "\n";
 }
 ?>
+<!-- Admin BmbPopup betöltése (confirm/alert helyett) -->
+<link rel="stylesheet" href="../../css/Main/popup.css">
+<script src="../../js/Main/popup.js"></script>

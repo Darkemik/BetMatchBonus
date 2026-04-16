@@ -454,17 +454,17 @@ function toggleRefundBox(txId) {
 }
 
 async function doRefund(txId) {
-    if (!confirm('Biztosan visszatéríted ezt a befizetést? Az összeg levonásra kerül a felhasználó egyenlegéből.')) return;
+    BmbPopup.confirm('Biztosan visszatéríted ezt a befizetést? Az összeg levonásra kerül a felhasználó egyenlegéből.', async function() {
+        const reason = document.getElementById('refundReason-' + txId).value.trim();
+        const data = await apiCall({ action: 'refund', transaction_id: txId, reason: reason });
 
-    const reason = document.getElementById('refundReason-' + txId).value.trim();
-    const data = await apiCall({ action: 'refund', transaction_id: txId, reason: reason });
-
-    if (data.success) {
-        showToast(data.message, 'success');
-        setTimeout(() => location.reload(), 1000);
-    } else {
-        showToast(data.message, 'danger');
-    }
+        if (data.success) {
+            showToast(data.message, 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(data.message, 'danger');
+        }
+    });
 }
 
 /* ━━━ Manuális jóváírás ━━━ */
@@ -476,16 +476,16 @@ async function doManualDeposit(uid) {
         showToast('Adj meg érvényes összeget!', 'danger');
         return;
     }
-    if (!confirm(`Biztosan jóváírsz ${amount.toLocaleString('hu')} Ft-ot?`)) return;
+    BmbPopup.confirm(`Biztosan jóváírsz ${amount.toLocaleString('hu')} Ft-ot?`, async function() {
+        const data = await apiCall({ action: 'manual_deposit', user_id: uid, amount: amount, note: note });
 
-    const data = await apiCall({ action: 'manual_deposit', user_id: uid, amount: amount, note: note });
-
-    if (data.success) {
-        showToast(data.message, 'success');
-        setTimeout(() => location.reload(), 1000);
-    } else {
-        showToast(data.message, 'danger');
-    }
+        if (data.success) {
+            showToast(data.message, 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(data.message, 'danger');
+        }
+    });
 }
 </script>
 </body>

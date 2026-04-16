@@ -142,6 +142,10 @@ require_once "../../backend/connect.php";
           <div class="center-search">
             <input type="search" id="matchSearch" class="match-search-input" placeholder="Keresés csapat vagy bajnokság neve alapján..." data-i18n-placeholder="mainMenu.searchPlaceholder">
           </div>
+          <button id="sortToggleBtn" class="sort-toggle-btn" title="Rendezés váltása">
+            <i class="fas fa-trophy"></i>
+            <span class="sort-toggle-label">Fontosság</span>
+          </button>
         </div>
 
         <div id="matches-container">

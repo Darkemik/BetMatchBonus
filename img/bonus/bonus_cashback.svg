@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240">
+  <defs>
+    <linearGradient id="bg3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a3e"/>
+      <stop offset="100%" style="stop-color:#0d2137"/>
+    </linearGradient>
+    <linearGradient id="accent3" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4caf50"/>
+      <stop offset="100%" style="stop-color:#2e7d32"/>
+    </linearGradient>
+    <linearGradient id="arrow3" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4fc3f7"/>
+      <stop offset="100%" style="stop-color:#0288d1"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="240" fill="url(#bg3)" rx="16"/>
+  <!-- Circular arrow (cashback symbol) -->
+  <circle cx="200" cy="95" r="50" fill="none" stroke="url(#accent3)" stroke-width="4" stroke-dasharray="240 80" transform="rotate(-30 200 95)"/>
+  <polygon points="235,60 245,72 228,70" fill="#4caf50"/>
+  <!-- 30% text -->
+  <text x="200" y="105" text-anchor="middle" fill="#4caf50" font-family="Arial,sans-serif" font-size="32" font-weight="bold">30%</text>
+  <!-- Money return icon -->
+  <rect x="170" y="118" width="60" height="28" rx="6" fill="none" stroke="url(#arrow3)" stroke-width="2"/>
+  <text x="200" y="137" text-anchor="middle" fill="#4fc3f7" font-family="Arial,sans-serif" font-size="12" font-weight="bold">FREE BET</text>
+  <!-- Down arrow (return) -->
+  <line x1="200" y1="35" x2="200" y2="18" stroke="#4fc3f7" stroke-width="2" opacity="0.4"/>
+  <polygon points="193,35 207,35 200,44" fill="#4fc3f7" opacity="0.4"/>
+  <!-- Title -->
+  <text x="200" y="185" text-anchor="middle" fill="#fff" font-family="Arial,sans-serif" font-size="18" font-weight="bold">CASHBACK</text>
+  <text x="200" y="210" text-anchor="middle" fill="#4caf50" font-family="Arial,sans-serif" font-size="16" font-weight="bold">BÓNUSZ</text>
+  <!-- Decorative shield -->
+  <path d="M55,70 L55,50 Q55,40 65,40 L75,40 Q85,40 85,50 L85,70 Q85,90 70,100 Q55,90 55,70Z" fill="none" stroke="#4caf50" stroke-width="1.5" opacity="0.25"/>
+  <circle cx="340" cy="60" r="15" fill="#4fc3f7" opacity="0.15"/>
+  <circle cx="350" cy="190" r="20" fill="#4caf50" opacity="0.15"/>
+</svg>

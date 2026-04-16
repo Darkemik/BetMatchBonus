@@ -18,6 +18,8 @@ document.addEventListener('DOMContentLoaded', function () {
   let sportsData = []; // sidebar adatok cache
   let currentSportId = 66; // 66 = Foci (alapértelmezett)
   let isFinishedView = false; // Lejátszott meccsek nézet
+  let currentSortMode = 'priority'; // 'priority' vagy 'time'
+  const sortToggleBtn = document.getElementById('sortToggleBtn');
 
   // ========== LAPOZÁS ==========
   const PAGE_SIZE = 20;
@@ -386,6 +388,8 @@ document.addEventListener('DOMContentLoaded', function () {
       if (sportId && sportId > 0) {
           url += '?sport_id=' + sportId;
       }
+      // Rendezési mód hozzáadása
+      url += (url.includes('?') ? '&' : '?') + 'sort=' + currentSortMode;
 
       // Cím frissítése
       if (centerTitle) {
@@ -418,6 +422,31 @@ document.addEventListener('DOMContentLoaded', function () {
               scheduleColumnsSync();
           });
   }
+
+  // ========== RENDEZÉS VÁLTÓ GOMB ==========
+  if (sortToggleBtn) {
+      sortToggleBtn.addEventListener('click', function () {
+          if (isFinishedView) return; // lejátszott nézetben nem váltunk
+          currentSortMode = currentSortMode === 'priority' ? 'time' : 'priority';
+          updateSortButtonUI();
+          loadMatches(currentSportId);
+      });
+  }
+  function updateSortButtonUI() {
+      if (!sortToggleBtn) return;
+      if (currentSortMode === 'priority') {
+          sortToggleBtn.innerHTML = '<i class="fas fa-trophy"></i><span class="sort-toggle-label">Fontosság</span>';
+          sortToggleBtn.title = 'Váltás időrendi sorrendre';
+          sortToggleBtn.classList.remove('sort-mode-time');
+          sortToggleBtn.classList.add('sort-mode-priority');
+      } else {
+          sortToggleBtn.innerHTML = '<i class="fas fa-clock"></i><span class="sort-toggle-label">Időrend</span>';
+          sortToggleBtn.title = 'Váltás fontossági sorrendre';
+          sortToggleBtn.classList.remove('sort-mode-priority');
+          sortToggleBtn.classList.add('sort-mode-time');
+      }
+  }
+  updateSortButtonUI();
 
   // ========== CENTER KERESÉS ==========
   if (matchSearch) {
@@ -518,11 +547,12 @@ document.addEventListener('DOMContentLoaded', function () {
               const odds = parseFloat(this.getAttribute('data-odd'));
               const market = this.getAttribute('data-market');
               const matchId = parseInt(this.getAttribute('data-match-id')) || 0;
+              const isBoostedSel = this.hasAttribute('data-boosted');
 
               if (!homeTeam || !awayTeam || !pick || !market) return;
 
               if (typeof window.toggleOdds === 'function') {
-                  window.toggleOdds(homeTeam, awayTeam, pick, odds, market, matchId);
+                  window.toggleOdds(homeTeam, awayTeam, pick, odds, market, matchId, false, isBoostedSel);
                   setTimeout(() => {
                       if (typeof window.refreshAllOddsButtons === 'function') {
                           window.refreshAllOddsButtons();
@@ -663,7 +693,8 @@ document.addEventListener('DOMContentLoaded', function () {
                               data-away="${escapeHtml(match.awayTeam || '')}"
                               data-pick="${escapeHtml(selection.name)}"
                               data-market="${escapeHtml(marketFullName)}"
-                              data-odd="${oddsValue}">
+                              data-odd="${oddsValue}"
+                              ${isBoosted ? 'data-boosted="1"' : ''}>
                               <span class="selection-name">${escapeHtml(td(selection.name))}</span>
                               ${oddsContent}
                           </button>`;
@@ -962,6 +993,10 @@ document.addEventListener('DOMContentLoaded', function () {
       const finishedBtn = document.getElementById('show-finished-matches');
       if (finishedBtn) {
           finishedBtn.classList.toggle('active', isFinishedView);
+      }
+      // Rendezés gomb elrejtése lejátszott nézetben
+      if (sortToggleBtn) {
+          sortToggleBtn.style.display = isFinishedView ? 'none' : '';
       }
       if (sportsData.length) {
           renderSportsList(sportsData);

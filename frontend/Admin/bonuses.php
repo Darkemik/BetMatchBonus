@@ -310,6 +310,7 @@ $bonuses = $conn->query("
                                     data-wagering="<?= (float)($b['wagering_multiplier'] ?? 0) ?>"
                                     data-max-win="<?= (float)($b['max_win_multiplier'] ?? 5) ?>"
                                     data-daily-start="<?= htmlspecialchars($b['daily_start_time'] ?? '') ?>"
+                                    data-image-url="<?= htmlspecialchars($b['image_url'] ?? '') ?>"
                                 ><i class="fas fa-edit"></i> Szerkesztés</button>
                                 </div>
                             </td>
@@ -347,6 +348,23 @@ $bonuses = $conn->query("
                 <div class="mb-2">
                     <label for="editDescription">Leírás</label>
                     <textarea class="form-control form-control-sm" id="editDescription" name="edit_description" rows="4"></textarea>
+                </div>
+
+                <!-- Bónusz kép feltöltés -->
+                <div class="mb-3">
+                    <label class="d-block">Bónusz kép</label>
+                    <div id="bonusImagePreview" class="mb-2" style="text-align:center;">
+                        <img id="bonusImageThumb" src="" alt="Bónusz kép" 
+                             style="max-width:100%; max-height:140px; border-radius:8px; background:#0a1628; padding:8px; display:none;">
+                    </div>
+                    <div class="d-flex gap-2">
+                        <input type="file" class="form-control form-control-sm" id="bonusImageFile" 
+                               accept="image/jpeg,image/png,image/gif,image/svg+xml,image/webp" style="flex:1;">
+                        <button type="button" class="btn btn-sm btn-info" id="uploadBonusImageBtn" disabled>
+                            <i class="fas fa-upload"></i> Feltöltés
+                        </button>
+                    </div>
+                    <div id="imageUploadStatus" class="mt-1" style="font-size:0.8rem;"></div>
                 </div>
 
                 <div class="row mb-2">
@@ -431,6 +449,10 @@ document.addEventListener('DOMContentLoaded', function() {
         dailyStart: document.getElementById('editDailyStart')
     };
     const preview = document.getElementById('previewCalc');
+    const bonusImageThumb = document.getElementById('bonusImageThumb');
+    const bonusImageFile = document.getElementById('bonusImageFile');
+    const uploadBonusImageBtn = document.getElementById('uploadBonusImageBtn');
+    const imageUploadStatus = document.getElementById('imageUploadStatus');
 
     function updatePreview() {
         const pct = parseFloat(fields.matchPercent.value) || 0;
@@ -467,6 +489,18 @@ document.addEventListener('DOMContentLoaded', function() {
             fields.maxWin.value = this.dataset.maxWin;
             fields.dailyStart.value = this.dataset.dailyStart || '';
 
+            // Kép előnézet betöltése
+            var imgUrl = this.dataset.imageUrl || '';
+            if (imgUrl) {
+                bonusImageThumb.src = imgUrl;
+                bonusImageThumb.style.display = 'block';
+            } else {
+                bonusImageThumb.style.display = 'none';
+            }
+            bonusImageFile.value = '';
+            uploadBonusImageBtn.disabled = true;
+            imageUploadStatus.textContent = '';
+
             panel.classList.add('active');
             updatePreview();
             panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -481,6 +515,55 @@ document.addEventListener('DOMContentLoaded', function() {
     // Előnézet frissítés inputoknál
     [fields.matchPercent, fields.maxBonus, fields.minDeposit, fields.wagering, fields.maxWin].forEach(el => {
         el.addEventListener('input', updatePreview);
+    });
+
+    // Kép feltöltés kezelése
+    bonusImageFile.addEventListener('change', function() {
+        uploadBonusImageBtn.disabled = !this.files.length;
+        if (this.files.length) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                bonusImageThumb.src = e.target.result;
+                bonusImageThumb.style.display = 'block';
+            };
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    uploadBonusImageBtn.addEventListener('click', function() {
+        var bonusId = fields.id.value;
+        var file = bonusImageFile.files[0];
+        if (!bonusId || !file) return;
+
+        var formData = new FormData();
+        formData.append('bonus_id', bonusId);
+        formData.append('bonus_image', file);
+
+        uploadBonusImageBtn.disabled = true;
+        imageUploadStatus.innerHTML = '<span style="color:#4fc3f7;"><i class="fas fa-spinner fa-spin"></i> Feltöltés...</span>';
+
+        fetch('../../backend/ApiRequest/admin_bonus_image.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                imageUploadStatus.innerHTML = '<span style="color:#4caf50;"><i class="fas fa-check-circle"></i> ' + data.message + '</span>';
+                bonusImageThumb.src = data.image_url;
+                bonusImageThumb.style.display = 'block';
+                // Frissítjük az edit gomb data attribútumát is
+                var editBtn = document.querySelector('.btn-edit-bonus[data-id="' + bonusId + '"]');
+                if (editBtn) editBtn.dataset.imageUrl = data.image_url;
+            } else {
+                imageUploadStatus.innerHTML = '<span style="color:#e94560;"><i class="fas fa-exclamation-triangle"></i> ' + data.error + '</span>';
+            }
+            uploadBonusImageBtn.disabled = false;
+        })
+        .catch(function(err) {
+            imageUploadStatus.innerHTML = '<span style="color:#e94560;"><i class="fas fa-exclamation-triangle"></i> Hálózati hiba.</span>';
+            uploadBonusImageBtn.disabled = false;
+        });
     });
 });
 </script>

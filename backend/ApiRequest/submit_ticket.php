@@ -117,7 +117,7 @@ if ($hasOddsPyramidBoost && $selectionCount >= $minPyramidSelections) {
     $calculatedTotalOdds = round($calculatedTotalOdds * $oddsPyramidMultiplier, 2);
 }
 
-$effectiveTotalOdds = max(round($totalOdds, 2), $calculatedTotalOdds);
+$effectiveTotalOdds = $calculatedTotalOdds;
 
 // Wallet ellenőrzése
 // Opcionális oszlopok detektálása (schema kompatibilitás miatt).
@@ -390,7 +390,7 @@ try {
         INSERT INTO Tickets (user_id, stake, bonus_stake, user_bonus_id, total_odds, potential_win, status, created_at, updated_at)
         VALUES (?, ?, ?, ?, ?, ?, 'OPEN', NOW(), NOW())
     ");
-    $stmtTicket->bind_param("iddidd", $userId, $stake, $deductFromBonus, $ticketUserBonusId, $totalOdds, $potentialWin);
+    $stmtTicket->bind_param("iddidd", $userId, $stake, $deductFromBonus, $ticketUserBonusId, $effectiveTotalOdds, $potentialWin);
     $stmtTicket->execute();
     $ticketId = $stmtTicket->insert_id;
     $stmtTicket->close();
@@ -444,14 +444,16 @@ try {
             $allSelectionsResolved = false;
         }
 
+        $isBoosted = !empty($item['isBoosted']) ? 1 : 0;
+
         // MINDIG mentjük a selection-t - outcome_id és event_id lehet NULL
         $stmtSel = $conn->prepare("
-            INSERT INTO TicketSelections (ticket_id, outcome_id, event_id, match_id, home_team, away_team, pick_label, market_name, odds_at_pick, status, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', NOW())
+            INSERT INTO TicketSelections (ticket_id, outcome_id, event_id, match_id, home_team, away_team, pick_label, market_name, odds_at_pick, is_boosted, status, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', NOW())
         ");
-        $stmtSel->bind_param("iiiissssd",
+        $stmtSel->bind_param("iiiissssdi",
             $ticketId, $outcomeId, $eventId, $matchId,
-            $homeTeam, $awayTeam, $pick, $market, $odds
+            $homeTeam, $awayTeam, $pick, $market, $odds, $isBoosted
         );
         $stmtSel->execute();
         $stmtSel->close();

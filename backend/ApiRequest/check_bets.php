@@ -58,7 +58,11 @@ function evaluateOpenTickets($conn, $userId) {
         }
         $stmtSel->close();
 
-        if (empty($selectionsToCheck)) continue;
+        if (empty($selectionsToCheck)) {
+            // Nincs OPEN selection, de a ticket meg OPEN -> ujraszamoljuk a statuszt
+            updateTicketStatus($conn, $ticketId, $userId);
+            continue;
+        }
 
         // 3. Minden OPEN selection-hoz lekerjuk a meccs adatokat
         foreach ($selectionsToCheck as $sel) {

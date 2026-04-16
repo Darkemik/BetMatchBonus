@@ -345,58 +345,59 @@ document.getElementById('composeForm').addEventListener('submit', async function
     if (!title || !message) return;
 
     const targetLabels = { all: 'összes felhasználónak', active: 'aktív felhasználóknak', verified: 'hitelesített felhasználóknak' };
-    if (!confirm('Biztosan elküldöd a hirdetményt ' + targetLabels[target] + '?')) return;
+    BmbPopup.confirm('Biztosan elküldöd a hirdetményt ' + targetLabels[target] + '?', async function() {
+        const btn = document.getElementById('sendBtn');
+        const result = document.getElementById('sendResult');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Küldés...';
+        result.innerHTML = '';
 
-    const btn = document.getElementById('sendBtn');
-    const result = document.getElementById('sendResult');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Küldés...';
-    result.innerHTML = '';
+        try {
+            const res = await fetch('../../backend/ApiRequest/admin_notifications.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'send', title, message, target })
+            });
+            const data = await res.json();
 
-    try {
-        const res = await fetch('../../backend/ApiRequest/admin_notifications.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'send', title, message, target })
-        });
-        const data = await res.json();
-
-        if (data.success) {
-            result.innerHTML = '<span style="color:#52b788;"><i class="fas fa-check-circle"></i> ' + data.message + '</span>';
-            document.getElementById('notifTitle').value = '';
-            document.getElementById('notifMessage').value = '';
-            document.getElementById('titleCount').textContent = '0';
-            document.getElementById('msgCount').textContent = '0';
-            document.getElementById('previewBox').style.display = 'none';
-            loadStats();
-            loadHistory(1);
-        } else {
-            result.innerHTML = '<span style="color:#dc3545;"><i class="fas fa-times-circle"></i> ' + (data.error || 'Hiba') + '</span>';
+            if (data.success) {
+                result.innerHTML = '<span style="color:#52b788;"><i class="fas fa-check-circle"></i> ' + data.message + '</span>';
+                document.getElementById('notifTitle').value = '';
+                document.getElementById('notifMessage').value = '';
+                document.getElementById('titleCount').textContent = '0';
+                document.getElementById('msgCount').textContent = '0';
+                document.getElementById('previewBox').style.display = 'none';
+                loadStats();
+                loadHistory(1);
+            } else {
+                result.innerHTML = '<span style="color:#dc3545;"><i class="fas fa-times-circle"></i> ' + (data.error || 'Hiba') + '</span>';
+            }
+        } catch (err) {
+            result.innerHTML = '<span style="color:#dc3545;">Hálózati hiba</span>';
         }
-    } catch (err) {
-        result.innerHTML = '<span style="color:#dc3545;">Hálózati hiba</span>';
-    }
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Küldés';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Küldés';
+    });
 });
 
 // ─── Törlés ───
 async function deleteNotif(title, sentAt) {
-    if (!confirm('Biztosan törlöd ezt a hirdetményt minden felhasználónál?')) return;
-    try {
-        const res = await fetch('../../backend/ApiRequest/admin_notifications.php', {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, sent_at: sentAt })
-        });
-        const data = await res.json();
-        if (data.success) {
-            loadStats();
-            loadHistory(currentPage);
-        } else {
-            alert(data.error || 'Törlési hiba');
-        }
-    } catch (e) { alert('Hálózati hiba'); }
+    BmbPopup.confirm('Biztosan törlöd ezt a hirdetményt minden felhasználónál?', async function() {
+        try {
+            const res = await fetch('../../backend/ApiRequest/admin_notifications.php', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, sent_at: sentAt })
+            });
+            const data = await res.json();
+            if (data.success) {
+                loadStats();
+                loadHistory(currentPage);
+            } else {
+                BmbPopup.error(data.error || 'Törlési hiba');
+            }
+        } catch (e) { BmbPopup.error('Hálózati hiba'); }
+    });
 }
 
 // ─── Szerkesztés ───

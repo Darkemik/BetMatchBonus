@@ -291,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ===== TOGGLE: HOZZÁADÁS / ELTÁVOLÍTÁS =====
-    window.toggleOdds = function(homeTeam, awayTeam, pick, odds, market, matchId, isDailyTip) {
+    window.toggleOdds = function(homeTeam, awayTeam, pick, odds, market, matchId, isDailyTip, isBoosted) {
         console.log('[BETSLIP] toggleOdds called:', {homeTeam, awayTeam, pick, odds, market, matchId, isDailyTip});
         
         var existingIndex = ticketItems.findIndex(function(item) {
@@ -335,6 +335,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 market: market,
                 matchId: matchId || 0,
                 isDailyTip: !!isDailyTip,
+                isBoosted: !!isBoosted,
                 addedAt: new Date().toISOString()
             });
         }
@@ -1062,15 +1063,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                      itemStatus === 'CASHOUT' ? '💰' : '⏳';
                     const itemStatusClass = itemStatus.toLowerCase();
                     
-                    const isOpen = itemStatus === 'OPEN';
-                    const clickable = (item.event_id && isOpen) ? 'elozmeny-match-clickable' : '';
-                    const dataAttr = (item.event_id && isOpen) ? `data-event-id="${item.event_id}"` : '';
+                    const clickable = item.event_id ? 'elozmeny-match-clickable' : '';
+                    const dataAttr = item.event_id ? `data-event-id="${item.event_id}"` : '';
                     itemsHtml += `
                         <div class="elozmeny-item-entry ${itemStatusClass}">
                             <div class="elozmeny-match ${clickable}" ${dataAttr}>
                                 <span class="item-status-icon">${itemIcon}</span>
                                 ${escapeHtml(item.homeTeam)} vs ${escapeHtml(item.awayTeam)}
-                                ${(item.event_id && isOpen) ? '<i class="fas fa-external-link-alt elozmeny-match-link-icon"></i>' : ''}
+                                ${item.event_id ? '<i class="fas fa-external-link-alt elozmeny-match-link-icon"></i>' : ''}
                             </div>
                             <div class="elozmeny-market">${escapeHtml(item.market)}</div>
                             <div class="elozmeny-pick">${t('betslip.tipLabel', 'Tipp:')} <strong>${escapeHtml(item.pick)}</strong> @ ${parseFloat(item.odds).toFixed(2)}</div>
@@ -1152,17 +1152,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const eventId = parseInt(matchEl.getAttribute('data-event-id'));
         if (!eventId) return;
 
-        // Mindig az élő oldalra navigálunk az eventId paraméterrel
-        const livePath = '../../frontend/Live/live.php?eventId=' + eventId;
-        if (window.location.pathname.includes('/Live/live.php')) {
-            // Már az élő oldalon vagyunk
+        // Főoldalra navigálunk, ahol a loadMatchDetails fallback-kel kezeli a lejátszott meccseket is
+        const mainPath = '../../frontend/MainMenu/mainmenu.php?eventId=' + eventId;
+        if (window.location.pathname.includes('/MainMenu/mainmenu.php')) {
+            // Már a főoldalon vagyunk
             if (typeof window.loadMatchDetails === 'function') {
                 window.loadMatchDetails(eventId);
             } else {
-                window.location.href = livePath;
+                window.location.href = mainPath;
             }
         } else {
-            window.location.href = livePath;
+            window.location.href = mainPath;
         }
     });
 

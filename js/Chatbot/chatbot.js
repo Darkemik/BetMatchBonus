@@ -343,6 +343,8 @@
 
     function showStartupPopup() {
         if (isOpen || getEl('chatbotStartupPopup')) return;
+        // Csak egyszer jelenjen meg session-önként
+        if (sessionStorage.getItem('bmb_popup_shown')) return;
 
         var popup = document.createElement('button');
         popup.type = 'button';
@@ -364,6 +366,8 @@
         requestAnimationFrame(function () {
             popup.classList.add('show');
         });
+
+        sessionStorage.setItem('bmb_popup_shown', '1');
 
         startupPopupHideTimer = setTimeout(function () {
             hideStartupPopup();

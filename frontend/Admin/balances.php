@@ -388,30 +388,30 @@ async function adjustBalance(uid, type) {
     if (!reason) { showToast('Add meg az okot!', false); return; }
 
     const label = type === 'credit' ? 'jóváírás' : 'levonás';
-    if (!confirm(`Biztosan végrehajtod: ${fmt(amount)} Ft ${label}?`)) return;
+    BmbPopup.confirm(`Biztosan végrehajtod: ${fmt(amount)} Ft ${label}?`, async function() {
+        try {
+            const res = await fetch(API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: uid, amount, type, reason })
+            });
+            const data = await res.json();
 
-    try {
-        const res = await fetch(API, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: uid, amount, type, reason })
-        });
-        const data = await res.json();
-
-        if (data.success) {
-            showToast(data.message, true);
-            document.getElementById('adjAmount-' + uid).value = '';
-            document.getElementById('adjReason-' + uid).value = '';
-            document.getElementById('curBal-' + uid).textContent = fmt(data.new_balance);
-            loadHistory(uid, 1);
-            // Frissítjük a fő sort is
-            loadUsers(currentPage);
-        } else {
-            showToast(data.error || 'Hiba', false);
+            if (data.success) {
+                showToast(data.message, true);
+                document.getElementById('adjAmount-' + uid).value = '';
+                document.getElementById('adjReason-' + uid).value = '';
+                document.getElementById('curBal-' + uid).textContent = fmt(data.new_balance);
+                loadHistory(uid, 1);
+                // Frissítjük a fő sort is
+                loadUsers(currentPage);
+            } else {
+                showToast(data.error || 'Hiba', false);
+            }
+        } catch (err) {
+            showToast('Hálózati hiba', false);
         }
-    } catch (err) {
-        showToast('Hálózati hiba', false);
-    }
+    });
 }
 
 function renderPagination(current, total, containerId, callback) {

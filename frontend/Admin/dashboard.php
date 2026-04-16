@@ -478,24 +478,25 @@ document.addEventListener('DOMContentLoaded', function() {
             const uid = this.dataset.uid;
             const currentlyActive = this.dataset.active === '1';
             const action = currentlyActive ? 'letiltani' : 'aktiválni';
+            const thisBtn = this;
 
-            if (!confirm('Biztosan szeretnéd ' + action + ' ezt a felhasználót?')) return;
+            BmbPopup.confirm('Biztosan szeretnéd ' + action + ' ezt a felhasználót?', function() {
+                const formData = new FormData();
+                formData.append('action', 'toggle_active');
+                formData.append('user_id', uid);
+                formData.append('is_active', currentlyActive ? '0' : '1');
 
-            const formData = new FormData();
-            formData.append('action', 'toggle_active');
-            formData.append('user_id', uid);
-            formData.append('is_active', currentlyActive ? '0' : '1');
+                thisBtn.disabled = true;
 
-            btn.disabled = true;
-
-            fetch(API_URL, { method: 'POST', body: formData })
-                .then(r => r.json())
-                .then(data => {
-                    showToast(data.message, data.success ? 'success' : 'danger');
-                    if (data.success) setTimeout(() => location.reload(), 1000);
-                })
-                .catch(() => showToast('Hálózati hiba!', 'danger'))
-                .finally(() => { btn.disabled = false; });
+                fetch(API_URL, { method: 'POST', body: formData })
+                    .then(r => r.json())
+                    .then(data => {
+                        showToast(data.message, data.success ? 'success' : 'danger');
+                        if (data.success) setTimeout(() => location.reload(), 1000);
+                    })
+                    .catch(() => showToast('Hálózati hiba!', 'danger'))
+                    .finally(() => { thisBtn.disabled = false; });
+            });
         });
     });
 

@@ -383,6 +383,17 @@ try {
         $finishedCount = $conn->affected_rows;
     }
 
+    // ── 5) UPCOMING TAKARÍTÁS: múltbeli meccsek amik soha nem lettek LIVE ──
+    // Ha a start_time elmúlt és status_id még mindig 1 (Upcoming),
+    // az API már nem adja vissza őket → manuálisan befejezettnek jelöljük.
+    $stmt = $conn->prepare("
+        UPDATE Events SET status_id = 3
+        WHERE status_id = 1 AND is_live = 0 AND start_time < NOW()
+    ");
+    $stmt->execute();
+    $staleCount = $stmt->affected_rows;
+    $stmt->close();
+
     $conn->commit();
 
     echo json_encode([
@@ -392,6 +403,7 @@ try {
             'sports'       => count($sportLocalMap),
             'competitions' => count($leagueNameMap),
             'finished'     => $finishedCount ?? 0,
+            'stale_fixed'  => $staleCount ?? 0,
         ]
     ], JSON_UNESCAPED_UNICODE);
 

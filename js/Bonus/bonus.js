@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="doboz-inner">
                     <div class="doboz-front">
                         <div class="doboz-kep-wrap">
-                            <img src="${bonus.image}" class="doboz-kep" alt="${bonus.title}" style="object-fit: contain; background: #0f3460; padding: 20px;">
+                            <img src="${bonus.image}" class="doboz-kep" alt="${bonus.title}" style="object-fit: cover; border-radius: 12px 12px 0 0;">
                             ${bonus.amount && bonus.amount !== 'Több lépcsős' ? `<span class="bonus-amount-badge">${bonus.amount}</span>` : ""}
                         </div>
                         <div class="doboz-tartalom">

@@ -308,28 +308,28 @@ function showToast(msg, type = 'success') {
 }
 
 async function approveUser(userId, username) {
-    if (!confirm('Biztosan jóváhagyod ' + username + ' regisztrációját?')) return;
-
-    try {
-        const res = await fetch(API, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'approve', user_id: userId })
-        });
-        const data = await res.json();
-        if (data.success) {
-            showToast(data.message, 'success');
-            const card = document.getElementById('regCard-' + userId);
-            card.style.opacity = '0.4';
-            card.style.pointerEvents = 'none';
-            setTimeout(() => card.remove(), 1500);
-            updatePendingCount(-1);
-        } else {
-            showToast(data.message, 'danger');
+    BmbPopup.confirm('Biztosan jóváhagyod ' + username + ' regisztrációját?', async function() {
+        try {
+            const res = await fetch(API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'approve', user_id: userId })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(data.message, 'success');
+                const card = document.getElementById('regCard-' + userId);
+                card.style.opacity = '0.4';
+                card.style.pointerEvents = 'none';
+                setTimeout(() => card.remove(), 1500);
+                updatePendingCount(-1);
+            } else {
+                showToast(data.message, 'danger');
+            }
+        } catch (e) {
+            showToast('Hálózati hiba.', 'danger');
         }
-    } catch (e) {
-        showToast('Hálózati hiba.', 'danger');
-    }
+    });
 }
 
 function showRejectModal(userId, username) {

@@ -472,31 +472,32 @@ document.querySelectorAll('.role-quick-select').forEach(select => {
         const adminId = parseInt(this.dataset.adminId);
         const roleId = parseInt(this.value);
         const roleName = this.options[this.selectedIndex].text;
+        const thisSelect = this;
         updateSelectColor(this);
 
-        if (!confirm(`Biztosan módosítod a szerepkört: ${roleName}?`)) {
-            // Visszaállítás az eredeti értékre
-            this.value = this.dataset.originalValue || this.querySelector('[selected]')?.value;
-            return;
-        }
-
-        try {
-            const res = await fetch(API_URL, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ admin_id: adminId, role_id: roleId })
-            });
-            const data = await res.json();
-            if (data.success) {
-                showToast(data.message, 'success');
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                showToast(data.message, 'danger');
-                this.value = this.dataset.originalValue || this.querySelector('[selected]')?.value;
+        BmbPopup.confirm(`Biztosan módosítod a szerepkört: ${roleName}?`, async function() {
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ admin_id: adminId, role_id: roleId })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(data.message, 'danger');
+                    thisSelect.value = thisSelect.dataset.originalValue || thisSelect.querySelector('[selected]')?.value;
+                }
+            } catch (e) {
+                showToast('Hálózati hiba', 'danger');
             }
-        } catch (e) {
-            showToast('Hálózati hiba', 'danger');
-        }
+        }, function() {
+            // Mégse → visszaállítás
+            thisSelect.value = thisSelect.dataset.originalValue || thisSelect.querySelector('[selected]')?.value;
+            updateSelectColor(thisSelect);
+        });
     });
     // Eredeti érték mentése
     select.dataset.originalValue = select.value;
@@ -601,16 +602,16 @@ async function resetPassword() {
 /* ━━━ Aktív/Inaktív toggle ━━━ */
 // Aktiválás (nincs modal, egyszerű confirm)
 async function toggleActive(id, username) {
-    if (!confirm(`Biztosan aktiválod ${username} fiókját?`)) return;
+    BmbPopup.confirm(`Biztosan aktiválod ${username} fiókját?`, async function() {
+        const data = await apiCall({ action: 'toggle_active', admin_id: id });
 
-    const data = await apiCall({ action: 'toggle_active', admin_id: id });
-
-    if (data.success) {
-        showToast(data.message, 'success');
-        setTimeout(() => location.reload(), 1000);
-    } else {
-        showToast(data.message, 'danger');
-    }
+        if (data.success) {
+            showToast(data.message, 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(data.message, 'danger');
+        }
+    });
 }
 
 // Letiltás (modal indoklással)

@@ -14,11 +14,15 @@ date_default_timezone_set('Europe/Budapest');
 
 $sportId = isset($_GET['sport_id']) ? (int)$_GET['sport_id'] : 0;
 $gameTag = isset($_GET['game_tag']) ? trim($_GET['game_tag']) : '';
+$sortMode = isset($_GET['sort']) && $_GET['sort'] === 'time' ? 'time' : 'priority';
 
 $from = (new DateTime('now', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
 $to   = (new DateTime('+3 days 23:59:59', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
 
 $priorityOrder = str_replace('comp.', 'ch.', LEAGUE_PRIORITY_SQL);
+$orderBy = $sortMode === 'time'
+    ? 'm.start_time ASC, ' . $priorityOrder
+    : $priorityOrder . ', m.start_time ASC';
 
 $naFilter = "
     AND m.api_id IS NOT NULL
@@ -62,7 +66,7 @@ if ($sportId > 0) {
       AND m.start_time IS NOT NULL
       $naFilter
       $gameTagFilter
-    ORDER BY $priorityOrder, m.start_time ASC
+    ORDER BY $orderBy
     ";
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
@@ -97,7 +101,7 @@ if ($sportId > 0) {
       AND m.start_time IS NOT NULL
       $naFilter
       $gameTagFilter
-    ORDER BY $priorityOrder, m.start_time ASC
+    ORDER BY $orderBy
     ";
     $stmt = $conn->prepare($sql);
     if (!$stmt) {

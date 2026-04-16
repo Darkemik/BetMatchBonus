@@ -12,7 +12,7 @@ $todayFrom = date('Y-m-d 00:01:00'); // fallback, per-bonus override below
 $tomorrowFrom = date('Y-m-d 00:01:00', strtotime('+1 day'));
 
 // Lekérdezés: csak aktív bónuszok
-$query = "SELECT id, code, name, description, bonus_amount, min_deposit, max_bonus_amount, match_percent, 
+$query = "SELECT id, code, name, description, image_url, bonus_amount, min_deposit, max_bonus_amount, match_percent, 
                  is_step_bonus, step_number, bonus_type_id, valid_weekdays_only, is_active,
                  daily_start_time, admin_force_active, sport_restriction, bonus_trigger
           FROM BonusCodes 
@@ -128,7 +128,7 @@ if ($result) {
             'isStepBonus' => $isStepBonus,
             'status' => $isGuest ? null : 'AKTÍV',
             'longDescription' => $row['description'],
-            'image' => '../../img/logo.png',
+            'image' => !empty($row['image_url']) ? $row['image_url'] : '../../img/logo.png',
             'hasExistingBonus' => $hasExistingBonus,
             'sportRestriction' => ($sportRestriction && $sportRestriction !== 'ANY') ? $sportRestriction : null,
             'bonusTrigger' => $bonusTrigger

@@ -395,21 +395,21 @@ document.getElementById('btnGiveFreebet').addEventListener('click', async functi
     if (!amount || amount < 100) { showToast('Minimum összeg: 100 Ft', 'error'); return; }
     if (!reason) { showToast('Adj meg indoklást!', 'error'); return; }
 
-    if (sendAll && !confirm(`Biztosan küldöd ${fmt(amount)} Ft-ot MINDEN aktív felhasználónak?`)) return;
+    const doSend = async () => {
+        const btn = document.getElementById('btnGiveFreebet');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Küldés...';
 
-    this.disabled = true;
-    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Küldés...';
+        const expireHours = parseInt(document.getElementById('freebetExpire').value);
+        const action = sendAll ? 'give_freebet_all' : 'give_freebet';
+        const payload = sendAll
+            ? { amount, expire_hours: expireHours, reason }
+            : { user_id: userId, amount, expire_hours: expireHours, reason };
 
-    const expireHours = parseInt(document.getElementById('freebetExpire').value);
-    const action = sendAll ? 'give_freebet_all' : 'give_freebet';
-    const payload = sendAll
-        ? { amount, expire_hours: expireHours, reason }
-        : { user_id: userId, amount, expire_hours: expireHours, reason };
+        const data = await apiCall(action, payload);
 
-    const data = await apiCall(action, payload);
-
-    this.disabled = false;
-    this.innerHTML = '<i class="fas fa-gift"></i> Free Bet jóváírás';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-gift"></i> Free Bet jóváírás';
 
     if (data.success) {
         showToast(data.message, 'success');
@@ -422,6 +422,13 @@ document.getElementById('btnGiveFreebet').addEventListener('click', async functi
         loadHistory(1);
     } else {
         showToast(data.message, 'error');
+    }
+    };
+
+    if (sendAll) {
+        BmbPopup.confirm(`Biztosan küldöd ${fmt(amount)} Ft-ot MINDEN aktív felhasználónak?`, doSend);
+    } else {
+        doSend();
     }
 });
 
@@ -496,15 +503,15 @@ async function revokeFreebet(id, isBatch, batchCount) {
     const msg = isBatch
         ? `Biztosan visszavonod ezt a Free Bet-et MINDEN címzettől (${batchCount} fő)?`
         : 'Biztosan visszavonod ezt a Free Bet-et?';
-    if (!confirm(msg)) return;
-
-    const data = await apiCall('revoke_freebet', { id });
-    if (data.success) {
-        showToast(data.message, 'success');
-        loadHistory(1);
-    } else {
-        showToast(data.message, 'error');
-    }
+    BmbPopup.confirm(msg, async function() {
+        const data = await apiCall('revoke_freebet', { id });
+        if (data.success) {
+            showToast(data.message, 'success');
+            loadHistory(1);
+        } else {
+            showToast(data.message, 'error');
+        }
+    });
 }
 </script>
 </body>
