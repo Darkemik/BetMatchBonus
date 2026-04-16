@@ -25,12 +25,121 @@ document.addEventListener('DOMContentLoaded', function() {
     let manualStakeBeforeFreeBet = (window.SITE_SETTINGS && window.SITE_SETTINGS.min_bet_amount) || 100;
     let activeBonusList = [];
     let isTicketSubmitting = false;
+    let cashoutRefreshTimer = null;
+    const pendingCashoutRequests = new Set();
 
     function formatFt(value) {
         return (parseFloat(value) || 0).toLocaleString('hu-HU', {
             maximumFractionDigits: 0,
             minimumFractionDigits: 0
         }) + ' Ft';
+    }
+
+    function normalizeLiveKeyPart(value) {
+        return String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
+    }
+
+    function buildSelectionLiveKey(selection) {
+        const matchId = selection.match_id || selection.matchId || selection.event_id || selection.eventId || '';
+        const market = selection.market_name || selection.market || '';
+        const pick = selection.pick_label || selection.pick || '';
+        return [String(matchId), normalizeLiveKeyPart(market), normalizeLiveKeyPart(pick)].join('|');
+    }
+
+    function isHistoryTabActive() {
+        return !!document.getElementById('betslip-elozmeny')?.classList.contains('active');
+    }
+
+    function resetSelectionLiveState(ticketId) {
+        document.querySelectorAll('.elozmeny-item-entry[data-ticket-id="' + ticketId + '"]').forEach(row => {
+            row.classList.remove('live-up', 'live-down', 'live-flat', 'live-won', 'live-lost', 'live-no-data');
+            const liveMeta = row.querySelector('.elozmeny-live-meta');
+            if (liveMeta) {
+                liveMeta.textContent = '';
+                liveMeta.style.display = 'none';
+                liveMeta.classList.remove('trend-up', 'trend-down', 'trend-flat', 'trend-neutral');
+            }
+        });
+    }
+
+    function applySelectionLiveUpdates(ticketId, selectionUpdates) {
+        if (!Array.isArray(selectionUpdates) || selectionUpdates.length === 0) {
+            resetSelectionLiveState(ticketId);
+            return;
+        }
+
+        const updatesByKey = new Map();
+        selectionUpdates.forEach(update => updatesByKey.set(buildSelectionLiveKey(update), update));
+
+        document.querySelectorAll('.elozmeny-item-entry[data-ticket-id="' + ticketId + '"]').forEach(row => {
+            row.classList.remove('live-up', 'live-down', 'live-flat', 'live-won', 'live-lost', 'live-no-data');
+            const liveMeta = row.querySelector('.elozmeny-live-meta');
+            const update = updatesByKey.get(row.getAttribute('data-live-key') || '');
+
+            if (!update) {
+                if (liveMeta) {
+                    liveMeta.textContent = '';
+                    liveMeta.style.display = 'none';
+                }
+                return;
+            }
+
+            let liveText = '';
+            let liveTextClass = 'trend-neutral';
+            if (update.status === 'WON') {
+                row.classList.add('live-won');
+                liveText = 'Lezárva: nyertes';
+                liveTextClass = 'trend-up';
+            } else if (update.status === 'LOST') {
+                row.classList.add('live-lost');
+                liveText = 'Lezárva: vesztes';
+                liveTextClass = 'trend-down';
+            } else if (update.live_odds && Number(update.live_odds) > 0) {
+                const liveOdds = parseFloat(update.live_odds).toFixed(2);
+                if (update.trend === 'up') {
+                    liveText = 'Live odds javult: ' + liveOdds;
+                    liveTextClass = 'trend-up';
+                } else if (update.trend === 'down') {
+                    liveText = 'Live odds romlott: ' + liveOdds;
+                    liveTextClass = 'trend-down';
+                } else {
+                    liveText = 'Live odds változatlan: ' + liveOdds;
+                    liveTextClass = 'trend-flat';
+                }
+            } else {
+                liveText = 'Live odds adat nem elérhető';
+                liveTextClass = 'trend-neutral';
+            }
+
+            if (liveMeta) {
+                liveMeta.textContent = liveText;
+                liveMeta.style.display = liveText ? 'block' : 'none';
+                liveMeta.classList.remove('trend-up', 'trend-down', 'trend-flat', 'trend-neutral');
+                liveMeta.classList.add(liveTextClass);
+            }
+        });
+    }
+
+    function refreshVisibleCashoutPreviews() {
+        if (!isHistoryTabActive()) return;
+        const openTicketButtons = document.querySelectorAll('.cashout-btn[data-ticket-id]');
+        openTicketButtons.forEach(btn => {
+            const ticketId = parseInt(btn.getAttribute('data-ticket-id'), 10);
+            if (ticketId > 0) {
+                window.BetslipCashout.loadPreview(ticketId);
+            }
+        });
+    }
+
+    function manageCashoutLiveRefresh() {
+        const hasOpenTickets = bettingHistory.some(t => t.status === 'OPEN');
+
+        if (hasOpenTickets && !cashoutRefreshTimer) {
+            cashoutRefreshTimer = setInterval(refreshVisibleCashoutPreviews, 7000);
+        } else if (!hasOpenTickets && cashoutRefreshTimer) {
+            clearInterval(cashoutRefreshTimer);
+            cashoutRefreshTimer = null;
+        }
     }
 
     function getTicketMetrics() {
@@ -1015,6 +1124,8 @@ document.addEventListener('DOMContentLoaded', function() {
             clearInterval(historyCheckTimer);
             historyCheckTimer = null;
         }
+
+        manageCashoutLiveRefresh();
     }
 
     // ===== FOGADÁSI ELŐZMÉNYEK RENDERELÉS =====
@@ -1062,18 +1173,21 @@ document.addEventListener('DOMContentLoaded', function() {
                                      itemStatus === 'LOST' ? '❌' : 
                                      itemStatus === 'CASHOUT' ? '💰' : '⏳';
                     const itemStatusClass = itemStatus.toLowerCase();
+                    const liveKey = buildSelectionLiveKey(item);
                     
-                    const clickable = item.event_id ? 'elozmeny-match-clickable' : '';
-                    const dataAttr = item.event_id ? `data-event-id="${item.event_id}"` : '';
+                    const navMatchId = item.event_id || item.match_id || null;
+                    const clickable = navMatchId ? 'elozmeny-match-clickable' : '';
+                    const dataAttr = navMatchId ? `data-match-id="${navMatchId}"` : '';
                     itemsHtml += `
-                        <div class="elozmeny-item-entry ${itemStatusClass}">
+                        <div class="elozmeny-item-entry ${itemStatusClass}" data-ticket-id="${ticket.id}" data-live-key="${escapeHtml(liveKey)}">
                             <div class="elozmeny-match ${clickable}" ${dataAttr}>
                                 <span class="item-status-icon">${itemIcon}</span>
                                 ${escapeHtml(item.homeTeam)} vs ${escapeHtml(item.awayTeam)}
-                                ${item.event_id ? '<i class="fas fa-external-link-alt elozmeny-match-link-icon"></i>' : ''}
+                                ${navMatchId ? '<i class="fas fa-external-link-alt elozmeny-match-link-icon"></i>' : ''}
                             </div>
                             <div class="elozmeny-market">${escapeHtml(item.market)}</div>
                             <div class="elozmeny-pick">${t('betslip.tipLabel', 'Tipp:')} <strong>${escapeHtml(item.pick)}</strong> @ ${parseFloat(item.odds).toFixed(2)}</div>
+                            <div class="elozmeny-live-meta" style="display:none"></div>
                         </div>
                     `;
                 });
@@ -1149,7 +1263,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('click', function(e) {
         const matchEl = e.target.closest('.elozmeny-match-clickable');
         if (!matchEl) return;
-        const eventId = parseInt(matchEl.getAttribute('data-event-id'));
+        const eventId = parseInt(matchEl.getAttribute('data-match-id'), 10);
         if (!eventId) return;
 
         // Főoldalra navigálunk, ahol a loadMatchDetails fallback-kel kezeli a lejátszott meccseket is
@@ -1174,22 +1288,42 @@ document.addEventListener('DOMContentLoaded', function() {
             const sectionEl = document.getElementById('cashout-section-' + ticketId);
             if (!amountEl || !sectionEl) return;
 
+            if (pendingCashoutRequests.has(ticketId)) return;
+            pendingCashoutRequests.add(ticketId);
+
             fetch('../../backend/ApiRequest/cashout_ticket.php?ticket_id=' + ticketId)
                 .then(r => r.json())
                 .then(data => {
                     if (data.status === 'ok' && data.available && data.cashout_amount > 0) {
-                        amountEl.textContent = parseFloat(data.cashout_amount).toLocaleString('hu-HU') + ' Ft';
+                        const nextAmount = parseFloat(data.cashout_amount) || 0;
+                        const prevAmount = parseFloat(amountEl.getAttribute('data-last-cashout') || '0') || 0;
+
+                        amountEl.textContent = nextAmount.toLocaleString('hu-HU') + ' Ft';
+                        amountEl.setAttribute('data-last-cashout', String(nextAmount));
+
+                        amountEl.classList.remove('cashout-amount-up', 'cashout-amount-down');
+                        if (prevAmount > 0 && nextAmount !== prevAmount) {
+                            amountEl.classList.add(nextAmount > prevAmount ? 'cashout-amount-up' : 'cashout-amount-down');
+                        }
+
                         sectionEl.style.display = 'block';
                         sectionEl.querySelector('.cashout-btn').onclick = function() {
                             window.BetslipCashout.confirm(ticketId, data.cashout_amount);
                         };
+
+                        applySelectionLiveUpdates(ticketId, data.selection_updates || []);
                     } else {
                         // Cashout nem elérhető → elrejtjük
                         sectionEl.style.display = 'none';
+                        resetSelectionLiveState(ticketId);
                     }
                 })
                 .catch(() => {
                     sectionEl.style.display = 'none';
+                    resetSelectionLiveState(ticketId);
+                })
+                .finally(() => {
+                    pendingCashoutRequests.delete(ticketId);
                 });
         },
 
@@ -1324,6 +1458,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (target === 'elozmeny') {
                 loadBettingHistory();
+                setTimeout(refreshVisibleCashoutPreviews, 200);
             }
         });
     });

@@ -988,6 +988,39 @@
     padding-left: 8px;
 }
 
+.elozmeny-item-entry.live-won {
+    border-left-color: #16a34a;
+    background: rgba(22, 163, 74, 0.14);
+}
+
+.elozmeny-item-entry.live-lost {
+    border-left-color: #dc2626;
+    background: rgba(220, 38, 38, 0.14);
+}
+
+.elozmeny-live-meta {
+    margin-top: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #cbd5e1;
+}
+
+.elozmeny-live-meta.trend-up {
+    color: #22c55e;
+}
+
+.elozmeny-live-meta.trend-down {
+    color: #ef4444;
+}
+
+.elozmeny-live-meta.trend-flat {
+    color: #9ca3af;
+}
+
+.elozmeny-live-meta.trend-neutral {
+    color: #cbd5e1;
+}
+
 .item-status-icon {
     margin-right: 4px;
     font-size: 12px;
@@ -1127,6 +1160,28 @@
 .cashout-btn-amount {
     font-weight: 800;
     font-size: 14px;
+}
+
+.cashout-btn-amount.cashout-amount-up {
+    animation: cashoutAmountUp 0.8s ease;
+    color: #22c55e;
+}
+
+.cashout-btn-amount.cashout-amount-down {
+    animation: cashoutAmountDown 0.8s ease;
+    color: #ef4444;
+}
+
+@keyframes cashoutAmountUp {
+    0% { transform: translateY(0); }
+    35% { transform: translateY(-2px) scale(1.05); }
+    100% { transform: translateY(0); }
+}
+
+@keyframes cashoutAmountDown {
+    0% { transform: translateY(0); }
+    35% { transform: translateY(2px) scale(1.05); }
+    100% { transform: translateY(0); }
 }
 
 /* Cashout badge (lezárt szelvény) */

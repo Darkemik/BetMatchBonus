@@ -119,6 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     'data-away="' + escapeHtml(awayTeam) + '" ' +
                     'data-pick="' + escapeHtml(sel.name) + '" ' +
                     'data-odd="' + oddsValue + '" ' +
+                    'data-match-id="' + (currentMatchId || 0) + '" ' +
                     'data-market="' + escapeHtml(marketFullName) + '">' +
                     '<span class="selection-name">' + escapeHtml(td(sel.name)) + '</span>' +
                     oddsContent +

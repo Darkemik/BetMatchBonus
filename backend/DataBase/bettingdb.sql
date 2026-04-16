@@ -427,6 +427,7 @@ CREATE TABLE IF NOT EXISTS TicketSelections (
   pick_label     VARCHAR(150)  DEFAULT NULL,
   market_name    VARCHAR(200)  DEFAULT NULL,
   odds_at_pick   DECIMAL(8,4)  NOT NULL,
+  is_boosted     TINYINT(1)    NOT NULL DEFAULT 0,
   status         VARCHAR(20)   NOT NULL DEFAULT 'OPEN',
   created_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_tsel_ticket  FOREIGN KEY (ticket_id)  REFERENCES Tickets(id)      ON UPDATE CASCADE ON DELETE CASCADE,

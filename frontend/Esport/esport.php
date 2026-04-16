@@ -145,7 +145,7 @@ require_once "../../backend/connect.php";
     <script src="../../js/Main/layout.js"></script>
     <script src="../../js/Main/popup.js"></script>
     <script src="../../js/Main/auth_ui.js"></script>
-    <script src="../../js/Betslip/betslip.js"></script>
+    <script src="../../js/Betslip/betslip.js?v=<?= time() ?>"></script>
     <script src="../../js/Esport/esport.js"></script>
     <?php include '../../frontend/Components/loginmodal.php'; ?>
     <?php include '../../frontend/Components/registermodal.php'; ?>

@@ -59,14 +59,23 @@ while ($ticket = $ticketsResult->fetch_assoc()) {
     
     $selections = [];
     while ($sel = $selectionsResult->fetch_assoc()) {
+        $rawHomeTeam = $sel['home_team'] ?: ($sel['home_team_name'] ?? '');
+        $rawAwayTeam = $sel['away_team'] ?: ($sel['away_team_name'] ?? '');
+        $eventApiId = $sel['event_api_id'] ? (int)$sel['event_api_id'] : null;
+        $matchId = $sel['match_id'] ? (int)$sel['match_id'] : ($eventApiId ?: null);
+        if (!$matchId && $rawHomeTeam && $rawAwayTeam) {
+            $matchId = resolve_match_api_id_by_teams($conn, $rawHomeTeam, $rawAwayTeam);
+        }
+
         $selections[] = [
-            'homeTeam' => $sel['home_team'] ?: ($sel['home_team_name'] ?? ''),
-            'awayTeam' => $sel['away_team'] ?: ($sel['away_team_name'] ?? ''),
+            'homeTeam' => $rawHomeTeam,
+            'awayTeam' => $rawAwayTeam,
             'pick' => $sel['pick_label'] ?: ($sel['label'] ?? ''),
             'market' => $sel['market_name'] ?: ($sel['em_market_name'] ?? ''),
             'odds' => (float)$sel['odds_at_pick'],
             'status' => $sel['status'],
-            'event_id' => $sel['event_api_id'] ? (int)$sel['event_api_id'] : null
+            'event_id' => $eventApiId,
+            'match_id' => $matchId
         ];
     }
     $stmtSelections->close();
@@ -114,5 +123,32 @@ echo json_encode([
     'status' => 'ok',
     'history' => $tickets
 ]);
+
+function resolve_match_api_id_by_teams($conn, $homeTeam, $awayTeam) {
+    static $cache = [];
+
+    $homeKey = mb_strtolower(trim((string)$homeTeam));
+    $awayKey = mb_strtolower(trim((string)$awayTeam));
+    $cacheKey = $homeKey . '||' . $awayKey;
+    if (isset($cache[$cacheKey])) {
+        return $cache[$cacheKey];
+    }
+
+    if ($homeKey === '' || $awayKey === '') {
+        $cache[$cacheKey] = null;
+        return null;
+    }
+
+    $stmt = $conn->prepare("\n        SELECT api_id\n        FROM Events\n        WHERE api_id IS NOT NULL\n          AND (\n            (LOWER(TRIM(home_team_name)) = ? AND LOWER(TRIM(away_team_name)) = ?)\n            OR (LOWER(TRIM(home_team_name)) = ? AND LOWER(TRIM(away_team_name)) = ?)\n            OR LOWER(name) LIKE ?\n          )\n        ORDER BY is_live DESC, start_time DESC\n        LIMIT 1\n    ");
+    $nameLike = '%' . $homeKey . '%vs%' . $awayKey . '%';
+    $stmt->bind_param('sssss', $homeKey, $awayKey, $awayKey, $homeKey, $nameLike);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    $resolved = $row ? (int)$row['api_id'] : null;
+    $cache[$cacheKey] = $resolved;
+    return $resolved;
+}
 
 ?>

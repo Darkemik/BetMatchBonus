@@ -137,6 +137,12 @@ if ($winningsColRes && (int)$winningsColRes['cnt'] > 0) {
     $hasWinningsBalance = true;
 }
 
+$ticketSelectionBoostColStmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'TicketSelections' AND COLUMN_NAME = 'is_boosted'");
+$ticketSelectionBoostColStmt->execute();
+$ticketSelectionBoostColRes = $ticketSelectionBoostColStmt->get_result()->fetch_assoc();
+$ticketSelectionBoostColStmt->close();
+$hasTicketSelectionIsBoosted = $ticketSelectionBoostColRes && (int)$ticketSelectionBoostColRes['cnt'] > 0;
+
 $selectCols = "balance";
 if ($hasBonusBalance) {
     $selectCols .= ", bonus_balance";
@@ -401,12 +407,19 @@ try {
 
     // 2. TICKET SELECTIONS MENTÉSE
     foreach ($items as $item) {
-        $matchId = (int)$item['matchId'];
+        $matchId = isset($item['matchId']) ? (int)$item['matchId'] : 0;
+        if ($matchId <= 0 && isset($item['eventId'])) {
+            $matchId = (int)$item['eventId'];
+        }
         $pick = $item['pick'];
         $odds = (float)$item['odds'];
         $market = $item['market'];
         $homeTeam = $item['homeTeam'] ?? '';
         $awayTeam = $item['awayTeam'] ?? '';
+
+        if ($matchId <= 0 && $homeTeam !== '' && $awayTeam !== '') {
+            $matchId = resolve_match_api_id_by_teams($conn, $homeTeam, $awayTeam);
+        }
 
         // Outcome, Event ID és sport keresése az adatbázisból (opcionális - lehet NULL)
         $outcomeId = null;
@@ -446,15 +459,27 @@ try {
 
         $isBoosted = !empty($item['isBoosted']) ? 1 : 0;
 
-        // MINDIG mentjük a selection-t - outcome_id és event_id lehet NULL
-        $stmtSel = $conn->prepare("
-            INSERT INTO TicketSelections (ticket_id, outcome_id, event_id, match_id, home_team, away_team, pick_label, market_name, odds_at_pick, is_boosted, status, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', NOW())
-        ");
-        $stmtSel->bind_param("iiiissssdi",
-            $ticketId, $outcomeId, $eventId, $matchId,
-            $homeTeam, $awayTeam, $pick, $market, $odds, $isBoosted
-        );
+        // MINDIG mentjük a selection-t - outcome_id és event_id lehet NULL.
+        // Régi sémán (is_boosted oszlop nélkül) kompatibilis insertet használunk.
+        if ($hasTicketSelectionIsBoosted) {
+            $stmtSel = $conn->prepare("
+                INSERT INTO TicketSelections (ticket_id, outcome_id, event_id, match_id, home_team, away_team, pick_label, market_name, odds_at_pick, is_boosted, status, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', NOW())
+            ");
+            $stmtSel->bind_param("iiiissssdi",
+                $ticketId, $outcomeId, $eventId, $matchId,
+                $homeTeam, $awayTeam, $pick, $market, $odds, $isBoosted
+            );
+        } else {
+            $stmtSel = $conn->prepare("
+                INSERT INTO TicketSelections (ticket_id, outcome_id, event_id, match_id, home_team, away_team, pick_label, market_name, odds_at_pick, status, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', NOW())
+            ");
+            $stmtSel->bind_param("iiiissssd",
+                $ticketId, $outcomeId, $eventId, $matchId,
+                $homeTeam, $awayTeam, $pick, $market, $odds
+            );
+        }
         $stmtSel->execute();
         $stmtSel->close();
     }
@@ -813,6 +838,33 @@ try {
     $conn->rollback();
     http_response_code(500);
     echo json_encode(['status' => 'error', 'message' => 'Hiba a mentéskor: ' . $e->getMessage()]);
+}
+
+function resolve_match_api_id_by_teams($conn, $homeTeam, $awayTeam) {
+    static $cache = [];
+
+    $homeKey = mb_strtolower(trim((string)$homeTeam));
+    $awayKey = mb_strtolower(trim((string)$awayTeam));
+    $cacheKey = $homeKey . '||' . $awayKey;
+    if (isset($cache[$cacheKey])) {
+        return $cache[$cacheKey];
+    }
+
+    if ($homeKey === '' || $awayKey === '') {
+        $cache[$cacheKey] = 0;
+        return 0;
+    }
+
+    $stmt = $conn->prepare("\n        SELECT api_id\n        FROM Events\n        WHERE api_id IS NOT NULL\n          AND (\n            (LOWER(TRIM(home_team_name)) = ? AND LOWER(TRIM(away_team_name)) = ?)\n            OR (LOWER(TRIM(home_team_name)) = ? AND LOWER(TRIM(away_team_name)) = ?)\n            OR LOWER(name) LIKE ?\n          )\n        ORDER BY is_live DESC, start_time DESC\n        LIMIT 1\n    ");
+    $nameLike = '%' . $homeKey . '%vs%' . $awayKey . '%';
+    $stmt->bind_param('sssss', $homeKey, $awayKey, $awayKey, $homeKey, $nameLike);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    $resolved = $row ? (int)$row['api_id'] : 0;
+    $cache[$cacheKey] = $resolved;
+    return $resolved;
 }
 
 ?>
