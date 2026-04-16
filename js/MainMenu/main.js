@@ -146,9 +146,16 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!sportsList) return;
 
       const filterLower = (filter || '').toLowerCase();
+      const hiddenSportApiIds = new Set([146, 147, 148]);
+      const hiddenSportNames = new Set(['e-labdarúgás', 'e-kosárlabda', 'e-jégkorong', 'e-labdarugas', 'e-kosarlabda', 'e-jegkorong']);
       const isEsportSport = (sport) => {
           const name = ((sport && sport.sport_name) ? String(sport.sport_name) : '').trim().toLowerCase();
           return name === 'e-sportok' || name === 'e-sport' || name === 'esport' || name === 'esports';
+      };
+      const isHiddenMainMenuSport = (sport) => {
+          const sportApiId = Number((sport && sport.sport_api_id) || 0);
+          const name = ((sport && sport.sport_name) ? String(sport.sport_name) : '').trim().toLowerCase();
+          return hiddenSportApiIds.has(sportApiId) || hiddenSportNames.has(name);
       };
 
       let filtered = sports;
@@ -188,8 +195,8 @@ document.addEventListener('DOMContentLoaded', function () {
           }).filter(Boolean);
       }
 
-      // Főoldali bal sáv: az E-sportok sportág ne jelenjen meg külön blokkban.
-      filtered = filtered.filter(sport => !isEsportSport(sport));
+    // Főoldali bal sáv: az E-sportok gyűjtő, és a 3 e-sport variáns ne jelenjen meg külön blokkban.
+    filtered = filtered.filter(sport => !isEsportSport(sport) && !isHiddenMainMenuSport(sport));
 
       if (filtered.length === 0) {
           sportsList.innerHTML = '<div class="sidebar-loading" style="color:#888;">' + t('mainMenu.noSearchResult', 'Nincs találat a keresésre.') + '</div>';
