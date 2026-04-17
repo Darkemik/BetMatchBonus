@@ -32,6 +32,59 @@ if ((int)$user['is_active'] === 1) {
     exit;
 }
 
+function syncRegistrationImages(mysqli $conn, int $userId): bool {
+    $uploadDir = __DIR__ . '/../uploads/registrations/' . $userId . '/';
+    if (!is_dir($uploadDir)) {
+        return true;
+    }
+
+    $fieldPrefixes = [
+        'id_image_first'  => 'id_image_first_',
+        'id_image_second' => 'id_image_second_',
+        'address_image'   => 'address_image_',
+    ];
+
+    $setParts = [];
+    $types = '';
+    $params = [];
+
+    foreach ($fieldPrefixes as $field => $prefix) {
+        $matches = glob($uploadDir . $prefix . '*');
+        if (!$matches || !isset($matches[0])) {
+            continue;
+        }
+
+        $relativePath = 'uploads/registrations/' . $userId . '/' . basename($matches[0]);
+        $setParts[] = $field . ' = ?';
+        $types .= 's';
+        $params[] = $relativePath;
+    }
+
+    if (empty($setParts)) {
+        return true;
+    }
+
+    $sql = 'UPDATE Users SET ' . implode(', ', $setParts) . ' WHERE id = ?';
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        return false;
+    }
+
+    $types .= 'i';
+    $params[] = $userId;
+    $stmt->bind_param($types, ...$params);
+    $ok = $stmt->execute();
+    $stmt->close();
+
+    return $ok;
+}
+
+if (!syncRegistrationImages($conn, (int)$user['id'])) {
+    http_response_code(500);
+    showPage('Hiba', 'A dokumentumképek mentése sikertelen volt, a jóváhagyás megszakadt.', false);
+    exit;
+}
+
 // Jóváhagyás: is_active = 1, token törlése
 $upd = $conn->prepare("UPDATE Users SET is_active = 1, is_verified = 1, approval_token = NULL WHERE id = ?");
 $upd->bind_param("i", $user['id']);

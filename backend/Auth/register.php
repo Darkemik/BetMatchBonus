@@ -88,6 +88,23 @@ if ($birthplace === '') {
     exit;
 }
 
+// Képek előzetes ellenőrzése (még az adatbázis INSERT előtt)
+$imageFields = ['id_image_first', 'id_image_second', 'address_image'];
+$allowedMime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif'];
+
+// Duplikált kép ellenőrzés (hash alapján, szerver oldalon)
+$uploadHashes = [];
+foreach ($imageFields as $field) {
+    if (isset($_FILES[$field]) && $_FILES[$field]['error'] === UPLOAD_ERR_OK) {
+        $fileHash = sha1_file($_FILES[$field]['tmp_name']);
+        if (in_array($fileHash, $uploadHashes, true)) {
+            echo json_encode(['success' => false, 'message' => 'Ugyanazt a képet nem töltheted fel több helyre!']);
+            exit;
+        }
+        $uploadHashes[] = $fileHash;
+    }
+}
+
 // Jelszó hashelés
 $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
@@ -125,21 +142,6 @@ if (!is_dir($uploadDir)) {
 }
 
 $savedFiles = [];
-$imageFields = ['id_image_first', 'id_image_second', 'address_image'];
-$allowedMime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif'];
-
-// Duplikált kép ellenőrzés (hash alapján, szerver oldalon)
-$uploadHashes = [];
-foreach ($imageFields as $field) {
-    if (isset($_FILES[$field]) && $_FILES[$field]['error'] === UPLOAD_ERR_OK) {
-        $fileHash = sha1_file($_FILES[$field]['tmp_name']);
-        if (in_array($fileHash, $uploadHashes, true)) {
-            echo json_encode(['success' => false, 'message' => 'Ugyanazt a képet nem töltheted fel több helyre!']);
-            exit;
-        }
-        $uploadHashes[] = $fileHash;
-    }
-}
 
 foreach ($imageFields as $field) {
     if (isset($_FILES[$field]) && $_FILES[$field]['error'] === UPLOAD_ERR_OK) {
@@ -162,11 +164,6 @@ foreach ($imageFields as $field) {
 
         if (move_uploaded_file($_FILES[$field]['tmp_name'], $destPath)) {
             $savedFiles[$field] = $destPath;
-            $relativePath = 'uploads/registrations/' . $userId . '/' . $safeFilename;
-            $updImg = $conn->prepare("UPDATE Users SET $field = ? WHERE id = ?");
-            $updImg->bind_param("si", $relativePath, $userId);
-            $updImg->execute();
-            $updImg->close();
         }
     }
 }

@@ -57,10 +57,62 @@ function getConfiguredMailer(): PHPMailer {
     return $mail;
 }
 
+function syncRegistrationImages(mysqli $conn, int $userId): bool {
+    $uploadDir = __DIR__ . '/../uploads/registrations/' . $userId . '/';
+    if (!is_dir($uploadDir)) {
+        return true;
+    }
+
+    $fieldPrefixes = [
+        'id_image_first'  => 'id_image_first_',
+        'id_image_second' => 'id_image_second_',
+        'address_image'   => 'address_image_',
+    ];
+
+    $setParts = [];
+    $types = '';
+    $params = [];
+
+    foreach ($fieldPrefixes as $field => $prefix) {
+        $matches = glob($uploadDir . $prefix . '*');
+        if (!$matches || !isset($matches[0])) {
+            continue;
+        }
+
+        $relativePath = 'uploads/registrations/' . $userId . '/' . basename($matches[0]);
+        $setParts[] = $field . ' = ?';
+        $types .= 's';
+        $params[] = $relativePath;
+    }
+
+    if (empty($setParts)) {
+        return true;
+    }
+
+    $sql = 'UPDATE Users SET ' . implode(', ', $setParts) . ' WHERE id = ?';
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        return false;
+    }
+
+    $types .= 'i';
+    $params[] = $userId;
+    $stmt->bind_param($types, ...$params);
+    $ok = $stmt->execute();
+    $stmt->close();
+
+    return $ok;
+}
+
 /* ━━━━━ APPROVE ━━━━━ */
 if ($action === 'approve') {
     if ((int)$user['is_active'] === 1 && (int)$user['is_verified'] === 1) {
         echo json_encode(['success' => false, 'message' => 'Ez a felhasználó már jóváhagyásra került.']);
+        exit;
+    }
+
+    if (!syncRegistrationImages($conn, $userId)) {
+        echo json_encode(['success' => false, 'message' => 'A dokumentumképek mentése sikertelen volt, a jóváhagyás megszakadt.']);
         exit;
     }
 
