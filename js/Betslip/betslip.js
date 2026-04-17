@@ -27,6 +27,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let isTicketSubmitting = false;
     let cashoutRefreshTimer = null;
     const pendingCashoutRequests = new Set();
+    let isHistoryLoading = false;
+    let historyLoadedOnce = false;
+    let historyAbortController = null;
 
     function formatFt(value) {
         return (parseFloat(value) || 0).toLocaleString('hu-HU', {
@@ -293,6 +296,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 applyFreeBetSelectionState();
                 updatePlaceBetButton();
                 updateBetslipBalanceDisplay();
+                if (isLoggedIn && isHistoryTabActive() && !historyLoadedOnce) {
+                    loadBettingHistory();
+                }
             })
             .catch(e => {
                 console.error('[BETSLIP] Login check error:', e);
@@ -307,6 +313,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 activeBonusList = [];
                 renderFreeBetOption();
                 updatePlaceBetButton();
+                manageBackgroundCheck();
             });
     }
 
@@ -1086,12 +1093,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== FOGADÁSI ELŐZMÉNYEK BETÖLTÉSE =====
     function loadBettingHistory() {
-        fetch('../../backend/ApiRequest/get_betting_history.php')
-            .then(r => r.json())
+        if (!isLoggedIn) {
+            bettingHistory = [];
+            renderHistory();
+            manageBackgroundCheck();
+            return;
+        }
+
+        if (isHistoryLoading) {
+            return;
+        }
+
+        if (historyAbortController) {
+            historyAbortController.abort();
+        }
+        historyAbortController = new AbortController();
+        isHistoryLoading = true;
+
+        fetch('../../backend/ApiRequest/get_betting_history.php', {
+            signal: historyAbortController.signal,
+            cache: 'no-store'
+        })
+            .then(r => {
+                if (r.status === 401) {
+                    throw new Error('UNAUTHORIZED');
+                }
+                return r.json();
+            })
             .then(data => {
                 if (data.status === 'ok') {
                     const oldHistory = bettingHistory;
                     bettingHistory = data.history || [];
+                    historyLoadedOnce = true;
                     renderHistory();
 
                     // Státuszváltozás detektálás → popup értesítés
@@ -1103,7 +1136,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     manageBackgroundCheck();
                 }
             })
-            .catch(e => console.error('Előzmények hiba:', e));
+            .catch(e => {
+                if (e && e.name === 'AbortError') return;
+
+                if (String(e && e.message) === 'UNAUTHORIZED') {
+                    isLoggedIn = false;
+                    bettingHistory = [];
+                    renderHistory();
+                    manageBackgroundCheck();
+                    return;
+                }
+
+                console.error('Előzmények hiba:', e);
+            })
+            .finally(() => {
+                isHistoryLoading = false;
+            });
     }
 
     // ===== STÁTUSZVÁLTOZÁS DETEKTÁLÁS (csak logolás, popup nélkül) =====
@@ -1125,6 +1173,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== HÁTTÉR KIÉRTÉKELÉS KEZELÉSE =====
     function manageBackgroundCheck() {
+        if (!isLoggedIn) {
+            if (historyCheckTimer) {
+                clearInterval(historyCheckTimer);
+                historyCheckTimer = null;
+            }
+            manageCashoutLiveRefresh();
+            return;
+        }
+
         const hasOpenTickets = bettingHistory.some(t => t.status === 'OPEN');
 
         if (hasOpenTickets && !historyCheckTimer) {
@@ -1283,8 +1340,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!eventId) return;
 
         // Főoldalra navigálunk, ahol a loadMatchDetails fallback-kel kezeli a lejátszott meccseket is
-        const mainPath = '../../frontend/MainMenu/mainmenu.php?eventId=' + eventId;
-        if (window.location.pathname.includes('/MainMenu/mainmenu.php')) {
+        const mainPath = '../../frontend/MainMenu/MainMenu.php?eventId=' + eventId;
+        if (window.location.pathname.includes('/MainMenu/MainMenu.php')) {
             // Már a főoldalon vagyunk
             if (typeof window.loadMatchDetails === 'function') {
                 window.loadMatchDetails(eventId);
@@ -1512,7 +1569,11 @@ document.addEventListener('DOMContentLoaded', function() {
     checkLoginStatus();
     loadFromStorage();
     renderTicket();
-    loadBettingHistory();
+    // Előzményeket csak kérésre (tab nyitáskor) és bejelentkezve töltünk,
+    // ezzel elkerüljük a reload utáni párhuzamos, fagyást okozó hívásokat.
+    if (isHistoryTabActive()) {
+        loadBettingHistory();
+    }
     refreshAllOddsButtons();
     updatePlaceBetButton();
 
