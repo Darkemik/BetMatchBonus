@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * SYNC_COMPETITIONS_AND_EVENTS.PHP
  * 
@@ -393,13 +393,13 @@ try {
 
         // ── 6) Hibás FINISHED állapotok visszaállítása UPCOMING-ra ──
         // Régebbi logika idő alapján is 3-ra állíthatott meccseket score nélkül.
-        $stmt = $conn->prepare("\
-                UPDATE Events
-                SET status_id = 1
-                WHERE status_id = 3
-                    AND is_live = 0
-                    AND home_score IS NULL
-                    AND away_score IS NULL
+        $stmt = $conn->prepare("
+            UPDATE Events
+            SET status_id = 1
+            WHERE status_id = 3
+                AND is_live = 0
+                AND home_score IS NULL
+                AND away_score IS NULL
         ");
         $stmt->execute();
         $normalizedCount = $stmt->affected_rows;
