@@ -44,7 +44,9 @@ function resolveStatusId(
     int $eventApiId,
     bool $isLive,
     ?string $liveStatus,
-    ?string $startUtc
+    ?string $startUtc,
+    ?int $homeScore,
+    ?int $awayScore
 ): int {
     if ($isLive) {
         return 2; // LIVE
@@ -70,18 +72,9 @@ function resolveStatusId(
         }
     }
 
-    // Ha múltbeli meccs (a kezdés már elmúlt), új adatbázisnál is legyen
-    // nagy eséllyel befejezettnek jelölve, ne ragadjon UPCOMING-on.
-    if (!empty($startUtc)) {
-        try {
-            $start = new DateTime($startUtc, new DateTimeZone('UTC'));
-            $nowUtc = new DateTime('now', new DateTimeZone('UTC'));
-            if ($start <= $nowUtc) {
-                return 3;
-            }
-        } catch (Throwable $e) {
-            // Hibás dátumnál marad az alapértelmezett UPCOMING.
-        }
+    // Score megléte erős jel arra, hogy az esemény már lezárult.
+    if ($homeScore !== null && $awayScore !== null) {
+        return 3;
     }
 
     return 1; // Upcoming
@@ -197,8 +190,8 @@ function upsertEvent(
             start_time     = VALUES(start_time),
             is_live        = VALUES(is_live),
             live_time      = VALUES(live_time),
-            home_score     = VALUES(home_score),
-            away_score     = VALUES(away_score)
+            home_score     = COALESCE(VALUES(home_score), home_score),
+            away_score     = COALESCE(VALUES(away_score), away_score)
     ");
     $stmt->bind_param(
         'iiiissisii',
@@ -356,7 +349,7 @@ try {
 
             $competitionId = upsertCompetition($conn, $leagueApiId, $sportLocalId, $leagueName, $countryId, $sportApiId);
             $statusText = (string)($m['liveStatus'] ?? $m['status'] ?? '');
-            $statusId = resolveStatusId($conn, $eventApiId, $isLive, $statusText, $startUtc);
+            $statusId = resolveStatusId($conn, $eventApiId, $isLive, $statusText, $startUtc, $homeScore, $awayScore);
 
             upsertEvent(
                 $conn, $eventApiId, $sportLocalId, $competitionId, $statusId,
@@ -383,16 +376,34 @@ try {
         $finishedCount = $conn->affected_rows;
     }
 
-    // ── 5) UPCOMING TAKARÍTÁS: múltbeli meccsek amik soha nem lettek LIVE ──
-    // Ha a start_time elmúlt és status_id még mindig 1 (Upcoming),
-    // az API már nem adja vissza őket → manuálisan befejezettnek jelöljük.
+    // ── 5) UPCOMING TAKARÍTÁS: csak bizonyítottan lezárt sorokat zárunk ──
+    // Nem jelölünk automatikusan befejezettnek pusztán idő alapján,
+    // mert ez hamis "Vége" állapotot és --- score-t okozhat.
     $stmt = $conn->prepare("
         UPDATE Events SET status_id = 3
-        WHERE status_id = 1 AND is_live = 0 AND start_time < NOW()
+        WHERE status_id = 1
+          AND is_live = 0
+          AND start_time < NOW()
+          AND home_score IS NOT NULL
+          AND away_score IS NOT NULL
     ");
     $stmt->execute();
     $staleCount = $stmt->affected_rows;
     $stmt->close();
+
+        // ── 6) Hibás FINISHED állapotok visszaállítása UPCOMING-ra ──
+        // Régebbi logika idő alapján is 3-ra állíthatott meccseket score nélkül.
+        $stmt = $conn->prepare("\
+                UPDATE Events
+                SET status_id = 1
+                WHERE status_id = 3
+                    AND is_live = 0
+                    AND home_score IS NULL
+                    AND away_score IS NULL
+        ");
+        $stmt->execute();
+        $normalizedCount = $stmt->affected_rows;
+        $stmt->close();
 
     $conn->commit();
 
@@ -404,6 +415,7 @@ try {
             'competitions' => count($leagueNameMap),
             'finished'     => $finishedCount ?? 0,
             'stale_fixed'  => $staleCount ?? 0,
+            'normalized'   => $normalizedCount ?? 0,
         ]
     ], JSON_UNESCAPED_UNICODE);
 

@@ -802,10 +802,11 @@ document.addEventListener('DOMContentLoaded', function () {
       </div>`;
 
       // Győztes megállapítás
-      let winner = t('mainMenu.draw', 'Döntetlen');
+      let winner = t('mainMenu.noData', 'Nincs adat');
       if (match.homeScore !== null && match.awayScore !== null) {
           if (match.homeScore > match.awayScore) winner = escapeHtml(match.homeTeam);
           else if (match.awayScore > match.homeScore) winner = escapeHtml(match.awayTeam);
+          else winner = t('mainMenu.draw', 'Döntetlen');
       }
       html += `<div class="info-card">
           <div class="info-card-icon"><i class="fas fa-medal"></i></div>

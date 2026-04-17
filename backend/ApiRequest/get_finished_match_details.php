@@ -67,9 +67,57 @@ if (empty($homeTeam) || empty($awayTeam)) {
 // Score
 $homeScore = $dbRow['home_score'];
 $awayScore = $dbRow['away_score'];
-$score = ($homeScore !== null && $awayScore !== null)
+
+// Fallback: ha befejezett a meccs, de nincs mentett score a DB-ben,
+// próbáljuk az API match details-ből pótolni és visszamenteni.
+if ($homeScore === null || $awayScore === null) {
+    try {
+        $apiData = apiGet(EP_MATCH_DETAILS . '/' . $eventId);
+
+        $apiHome = null;
+        $apiAway = null;
+
+        if (isset($apiData['score']) && is_array($apiData['score']) && count($apiData['score']) >= 2) {
+            $apiHome = is_numeric($apiData['score'][0]) ? (int)$apiData['score'][0] : null;
+            $apiAway = is_numeric($apiData['score'][1]) ? (int)$apiData['score'][1] : null;
+        }
+
+        if ($apiHome === null && isset($apiData['homeScore']) && is_numeric($apiData['homeScore'])) {
+            $apiHome = (int)$apiData['homeScore'];
+        }
+        if ($apiAway === null && isset($apiData['awayScore']) && is_numeric($apiData['awayScore'])) {
+            $apiAway = (int)$apiData['awayScore'];
+        }
+
+        if ($apiHome !== null && $apiAway !== null) {
+            $homeScore = $apiHome;
+            $awayScore = $apiAway;
+
+            $saveScoreStmt = $conn->prepare("\
+                UPDATE Events
+                SET home_score = ?, away_score = ?
+                WHERE api_id = ?
+            ");
+            $saveScoreStmt->bind_param("iii", $homeScore, $awayScore, $eventId);
+            $saveScoreStmt->execute();
+            $saveScoreStmt->close();
+        }
+
+        if (empty($homeTeam) && !empty($apiData['homeTeam'])) {
+            $homeTeam = (string)$apiData['homeTeam'];
+        }
+        if (empty($awayTeam) && !empty($apiData['awayTeam'])) {
+            $awayTeam = (string)$apiData['awayTeam'];
+        }
+    } catch (Throwable $e) {
+        error_log("get_finished_match_details fallback API hiba eventId={$eventId}: " . $e->getMessage());
+    }
+}
+
+$scoreKnown = ($homeScore !== null && $awayScore !== null);
+$score = $scoreKnown
     ? (int)$homeScore . ' - ' . (int)$awayScore
-    : '- - -';
+    : 'Nincs hiteles adat';
 
 // Start time (DB-ben UTC van tárolva, Budapest-re konvertáljuk megjelenítéshez)
 $startFormatted = null;
@@ -87,6 +135,7 @@ $response = [
         'awayTeam'     => $awayTeam,
         'homeScore'    => $homeScore !== null ? (int)$homeScore : null,
         'awayScore'    => $awayScore !== null ? (int)$awayScore : null,
+        'scoreKnown'   => $scoreKnown,
         'score'        => $score,
         'startTime'    => $startFormatted,
         'country'      => $dbRow['country_name'] ?: 'Nemzetközi',

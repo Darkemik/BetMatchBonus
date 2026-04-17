@@ -1,6 +1,6 @@
 <?php
 /**
- * GET_FINISHED_MATCHES.PHP — Lejátszott meccsek (utolsó 3 nap, status_id=3)
+ * GET_FINISHED_MATCHES.PHP — Lejátszott/megtörtént meccsek (utolsó 3 nap)
  * 
  * Query: ?sport_id=66 (opcionális)
  * Output: HTML tábla
@@ -44,8 +44,11 @@ if ($sportId > 0) {
     JOIN Sports s ON m.sport_id = s.id
     JOIN Competitions ch ON m.competition_id = ch.id
     LEFT JOIN Countries c ON ch.country_id = c.id
-    WHERE s.api_id = ?
-      AND m.status_id = 3
+        WHERE s.api_id = ?
+        AND (
+            m.status_id = 3
+            OR (m.is_live = 0 AND m.start_time < ?)
+            )
       AND m.start_time BETWEEN ? AND ?
       AND m.name IS NOT NULL
       AND TRIM(m.name) != ''
@@ -58,7 +61,7 @@ if ($sportId > 0) {
         echo '<div class="no-matches">Hiba az adatbázis lekérdezésnél.</div>';
         exit;
     }
-    $stmt->bind_param("iss", $sportId, $from, $now);
+    $stmt->bind_param("isss", $sportId, $now, $from, $now);
 } else {
     $sql = "
     SELECT 
@@ -76,7 +79,10 @@ if ($sportId > 0) {
     JOIN Sports s ON m.sport_id = s.id
     JOIN Competitions ch ON m.competition_id = ch.id
     LEFT JOIN Countries c ON ch.country_id = c.id
-    WHERE m.status_id = 3
+        WHERE (
+            m.status_id = 3
+            OR (m.is_live = 0 AND m.start_time < ?)
+            )
       AND m.start_time BETWEEN ? AND ?
       AND m.name IS NOT NULL
       AND TRIM(m.name) != ''
@@ -89,7 +95,7 @@ if ($sportId > 0) {
         echo '<div class="no-matches">Hiba az adatbázis lekérdezésnél.</div>';
         exit;
     }
-    $stmt->bind_param("ss", $from, $now);
+    $stmt->bind_param("sss", $now, $from, $now);
 }
 
 $stmt->execute();
@@ -145,7 +151,7 @@ while ($row = $res->fetch_assoc()):
     $awayScore = $row['away_score'];
     $scoreDisplay = ($homeScore !== null && $awayScore !== null)
         ? (int)$homeScore . ' - ' . (int)$awayScore
-        : '- - -';
+        : 'Nincs adat';
 
     $apiId = (int)$row['api_id'];
 
