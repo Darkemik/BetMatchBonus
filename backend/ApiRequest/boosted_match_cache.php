@@ -22,6 +22,7 @@ function getDailyBoostedMatch(): ?array
 {
     global $conn;
 
+    $strategyVersion = 2;
     $today = date('Y-m-d');
     $cacheDir  = __DIR__ . '/../uploads';
     $cacheFile = $cacheDir . '/boosted_cache.json';
@@ -41,59 +42,22 @@ function getDailyBoostedMatch(): ?array
                 is_numeric($cached['boostedOdd']) &&
                 (float)$cached['boostedOdd'] > 1;
 
-            if ($cachedEventId > 0 && $hasBoostData) {
+            $sameStrategy = (int)($cached['strategyVersion'] ?? 1) === $strategyVersion;
+
+            if ($cachedEventId > 0 && $hasBoostData && $sameStrategy) {
                 return $cached;
             }
         }
     }
 
-    // 2) Jelöltek lekérdezése (fix napi ablak: ma 00:00 UTC → +3 nap)
-    //    - Csak főoldali sportok (kizárjuk: 145=E-sportok, 146=e-Labdarúgás, 147=e-Kosárlabda, 148=e-Jégkorong)
-    //    - Csak a TOP 3 bajnokság (fontossági sorrend szerint, amiknek van meccsük)
+    // 2) Jelöltek lekérdezése (fix napi ablak: ma 00:00 UTC → ma 23:59 UTC)
+    //    - Sporttól függetlenül (nincs sport szűrés)
+    //    - Mindig a napi legfontosabb meccset keressük (liga-prioritás, majd kezdési idő)
     $from = (new DateTime('today 00:00:00', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
-    $to   = (new DateTime('+3 days 23:59:59', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
+    $to   = (new DateTime('today 23:59:59', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
 
     $priorityOrder = str_replace('comp.', 'ch.', LEAGUE_PRIORITY_SQL);
 
-    // Először megkeressük a top 3 bajnokságot fontossági sorrendben
-    $topChampsSql = "
-    SELECT DISTINCT ch.id AS comp_id, ch.name AS comp_name, ({$priorityOrder}) AS prio
-    FROM Events m
-    JOIN Sports s ON m.sport_id = s.id
-    JOIN Competitions ch ON m.competition_id = ch.id
-    LEFT JOIN Countries c ON ch.country_id = c.id
-    WHERE m.start_time BETWEEN ? AND ?
-      AND m.status_id != 3
-      AND m.name IS NOT NULL
-      AND TRIM(m.name) != ''
-      AND m.api_id IS NOT NULL
-      AND m.api_id > 0
-      AND s.api_id NOT IN (145, 146, 147, 148)
-      AND ({$priorityOrder}) < 99
-    ORDER BY prio ASC
-    LIMIT 3
-    ";
-
-    $stmtTop = $conn->prepare($topChampsSql);
-    if (!$stmtTop) {
-        return null;
-    }
-    $stmtTop->bind_param("ss", $from, $to);
-    $stmtTop->execute();
-    $topRes = $stmtTop->get_result();
-
-    $topCompIds = [];
-    while ($row = $topRes->fetch_assoc()) {
-        $topCompIds[] = (int)$row['comp_id'];
-    }
-    $stmtTop->close();
-
-    if (empty($topCompIds)) {
-        return null;
-    }
-
-    // Meccsek lekérdezése csak a top 3 bajnokságból
-    $inPlaceholders = implode(',', array_fill(0, count($topCompIds), '?'));
     $sql = "
     SELECT 
         m.api_id,
@@ -102,29 +66,28 @@ function getDailyBoostedMatch(): ?array
         m.is_live,
         c.name AS country_name,
         ch.name AS championship_name,
-        s.api_id AS sport_api_id
+        s.api_id AS sport_api_id,
+        ({$priorityOrder}) AS priority_score
     FROM Events m
     JOIN Sports s ON m.sport_id = s.id
     JOIN Competitions ch ON m.competition_id = ch.id
     LEFT JOIN Countries c ON ch.country_id = c.id
     WHERE m.start_time BETWEEN ? AND ?
       AND m.status_id != 3
+      AND m.is_live = 0
       AND m.name IS NOT NULL
       AND TRIM(m.name) != ''
       AND m.api_id IS NOT NULL
       AND m.api_id > 0
-      AND m.competition_id IN ({$inPlaceholders})
-    ORDER BY {$priorityOrder}, m.start_time ASC
-    LIMIT 50
+    ORDER BY ({$priorityOrder}) ASC, m.start_time ASC
+    LIMIT 200
     ";
 
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
         return null;
     }
-    $types = "ss" . str_repeat('i', count($topCompIds));
-    $params = array_merge([$from, $to], $topCompIds);
-    $stmt->bind_param($types, ...$params);
+    $stmt->bind_param("ss", $from, $to);
     $stmt->execute();
     $res = $stmt->get_result();
 
@@ -138,16 +101,12 @@ function getDailyBoostedMatch(): ?array
         return null;
     }
 
-    // 3) Determinisztikus kiválasztás + fallback ha az API-ból nincs odds
-    //    Ha a kiválasztott meccsre az API nem ad vissza piacot, próbáljuk a következőt
-    $dayHash = crc32($today . 'oddsboost');
-    $totalCandidates = count($candidates);
-    $startIndex = abs($dayHash) % $totalCandidates;
-    $maxAttempts = min($totalCandidates, 10); // Max 10 próba
+    // 3) Napi legfontosabb meccs kiválasztása + fallback ha az API-ból nincs odds
+    //    Ha az első legfontosabb meccshez nincs piac/odds, próbáljuk a következő fontosságú napi meccset.
+    $maxAttempts = min(count($candidates), 20);
 
     for ($attempt = 0; $attempt < $maxAttempts; $attempt++) {
-        $selectedIndex = ($startIndex + $attempt) % $totalCandidates;
-        $selected = $candidates[$selectedIndex];
+        $selected = $candidates[$attempt];
         $eventId = (int)$selected['api_id'];
 
         // 4) Odds lekérése az API-ból → piac és selection kiválasztása
@@ -180,9 +139,16 @@ function getDailyBoostedMatch(): ?array
                 }
 
                 if ($targetMarket && !empty($targetMarket['selections'])) {
-                    $selCount = count($targetMarket['selections']);
-                    $selIndex = abs(crc32($today . 'sel')) % $selCount;
-                    $sel = $targetMarket['selections'][$selIndex];
+                    $validSelections = array_values(array_filter($targetMarket['selections'], function ($s) {
+                        return isset($s['odd']) && is_numeric($s['odd']) && (float)$s['odd'] > 1;
+                    }));
+
+                    if (empty($validSelections)) {
+                        continue;
+                    }
+
+                    // Konzisztens, egyszeru valasztas: az elso ervenyes opcio
+                    $sel = $validSelections[0];
 
                     $boostedMarket = $targetMarket['name'];
                     $boostedSelection = $sel['name'] ?? '';
@@ -224,6 +190,7 @@ function getDailyBoostedMatch(): ?array
         'originalOdd'       => $originalOdd,
         'boostedOdd'        => $boostedOdd,
         'boostMultiplier'   => 1.5,
+        'strategyVersion'   => $strategyVersion,
     ];
 
     if (!is_dir($cacheDir)) {

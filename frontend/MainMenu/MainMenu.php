@@ -17,7 +17,7 @@ require_once "../../backend/connect.php";
   <link rel="stylesheet" href="../../css/RootColor/root.css">
   <link rel="stylesheet" href="../../css/MainMenu/MainMenu.css?v=<?= time() ?>">
   <link rel="stylesheet" href="../../css/Main/layout.css?v=<?= time() ?>">
-  <link rel="stylesheet" href="../../css/Betslip/betslip.css">
+  <link rel="stylesheet" href="../../css/Betslip/betslip.css?v=<?= time() ?>">
   <link rel="stylesheet" href="../../css/Main/popup.css">
   <link rel="stylesheet" href="../../css/Modal/modal.css">
   <link rel="icon" href="../../img/logo.png" type="image/x-icon">
@@ -85,7 +85,12 @@ require_once "../../backend/connect.php";
 
   <div class="content-parent">
     <div class="right-container">
-      <?php include '../../frontend/Components/betslip.php'; ?>
+      <div class="mainmenu-betslip-slot" id="mainmenu-betslip-slot" aria-hidden="true">
+        <button type="button" class="mobile-betslip-close" id="mobile-betslip-close" aria-label="Szelvény bezárása">
+          <i class="fas fa-times"></i>
+        </button>
+        <?php include '../../frontend/Components/betslip.php'; ?>
+      </div>
 
       <!-- Napi tippek -->
       <div class="daily-tips-wrapper" id="daily-tips-wrapper">
@@ -158,6 +163,13 @@ require_once "../../backend/connect.php";
 
     </div>
   </div>
+
+  <button type="button" class="mobile-betslip-fab" id="mobile-betslip-fab" aria-expanded="false" aria-controls="mainmenu-betslip-slot">
+    <span class="mobile-betslip-fab-icon"><i class="fas fa-cart-shopping"></i></span>
+    <span class="mobile-betslip-fab-label" data-i18n="betslip.ticket">Szelvény</span>
+    <span class="mobile-betslip-fab-count" id="mobile-betslip-fab-count">0</span>
+  </button>
+  <div class="mobile-betslip-backdrop" id="mobile-betslip-backdrop" aria-hidden="true"></div>
 
   <?php include '../../frontend/Components/footer.php';?>
   <?php include '../../frontend/Components/loginmodal.php';?>

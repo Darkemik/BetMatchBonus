@@ -29,6 +29,37 @@ if (!$isCli) {
 
 require_once __DIR__ . '/connect.php';
 
+/**
+ * JSON objektum kinyerése zajos kimenetből is.
+ * Pl. warning + JSON kombináció esetén is megpróbálja a tényleges JSON-t értelmezni.
+ */
+function decodeSyncOutput(string $output): array
+{
+    $output = trim($output);
+    if ($output === '') {
+        throw new RuntimeException('Szinkron kimenet üres. Ellenőrizd a sync fájl futását és PHP error logot.');
+    }
+
+    $json = json_decode($output, true);
+    if (is_array($json)) {
+        return $json;
+    }
+
+    // Fallback: ha warning/notice került a JSON elé vagy mögé, vágjuk ki a JSON blokkot.
+    $firstBrace = strpos($output, '{');
+    $lastBrace  = strrpos($output, '}');
+    if ($firstBrace !== false && $lastBrace !== false && $lastBrace > $firstBrace) {
+        $candidate = substr($output, $firstBrace, $lastBrace - $firstBrace + 1);
+        $json = json_decode($candidate, true);
+        if (is_array($json)) {
+            return $json;
+        }
+    }
+
+    $short = mb_substr(preg_replace('/\s+/', ' ', $output), 0, 220);
+    throw new RuntimeException('Érvénytelen sync JSON kimenet: ' . $short);
+}
+
 // ── 0. SEED CHECK — Ha üresek a táblák, automatikusan feltölti ──
 try {
     $needPostal = $conn->query("SHOW TABLES LIKE 'PostalCodes'")->num_rows === 0
@@ -115,8 +146,11 @@ try {
     require __DIR__ . '/ApiRequest/sync_competitions_and_events.php';
     $output = trim(ob_get_clean());
 
-    $json = json_decode($output, true);
-    if (is_array($json) && isset($json['success']) && $json['success'] === false) {
+    $json = decodeSyncOutput($output);
+    if (!isset($json['success'])) {
+        throw new RuntimeException('A sync válaszból hiányzik a success mező.');
+    }
+    if ($json['success'] !== true) {
         throw new RuntimeException($json['error'] ?? 'Szinkron hiba');
     }
 

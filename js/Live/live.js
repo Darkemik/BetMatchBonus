@@ -9,12 +9,51 @@
     let viewingMatchDetails = false;
     let refreshRequestId = 0;
     let currentDetailEventId = null;
+    const mobileBetslipFab = document.getElementById('mobile-betslip-fab');
+    const mobileBetslipFabCount = document.getElementById('mobile-betslip-fab-count');
+    const mobileBetslipBackdrop = document.getElementById('mobile-betslip-backdrop');
+    const mobileBetslipClose = document.getElementById('mobile-betslip-close');
+    const mobileBetslipSlot = document.getElementById('live-betslip-slot');
+    const mobileViewportQuery = window.matchMedia('(max-width: 768px)');
 
     function applyDynamicTranslations(root) {
         if (!root) return;
         root.querySelectorAll('.country-name, .league-name, .league-country, .league-title, .market-name, .selection-name, .sport-name').forEach(el => {
             el.textContent = td(el.textContent);
         });
+    }
+
+    function isMobileViewport() {
+        return !!(mobileViewportQuery && mobileViewportQuery.matches);
+    }
+
+    function openMobileBetslip() {
+        if (!isMobileViewport()) return;
+        document.body.classList.add('mobile-betslip-open');
+        if (mobileBetslipFab) {
+            mobileBetslipFab.setAttribute('aria-expanded', 'true');
+        }
+        if (mobileBetslipSlot) {
+            mobileBetslipSlot.setAttribute('aria-hidden', 'false');
+        }
+    }
+
+    function closeMobileBetslip() {
+        document.body.classList.remove('mobile-betslip-open');
+        if (mobileBetslipFab) {
+            mobileBetslipFab.setAttribute('aria-expanded', 'false');
+        }
+        if (mobileBetslipSlot) {
+            mobileBetslipSlot.setAttribute('aria-hidden', 'true');
+        }
+    }
+
+    function syncMobileBetslipCount() {
+        if (!mobileBetslipFabCount) return;
+        const countEl = document.getElementById('betslip-count');
+        const countText = countEl ? String(countEl.textContent || '').trim() : '0';
+        const normalized = countText === '' ? '0' : countText;
+        mobileBetslipFabCount.textContent = normalized;
     }
 
     // ===== BAJNOKSÁG ÁLLAPOTOK (sportváltás között megmarad) =====
@@ -813,6 +852,49 @@
 
     // ===== INICIALIZÁLÁS =====
     console.log('[LIVE.JS] Az oldal inicializálása...');
+
+    if (mobileBetslipFab) {
+        mobileBetslipFab.addEventListener('click', function() {
+            if (document.body.classList.contains('mobile-betslip-open')) {
+                closeMobileBetslip();
+            } else {
+                openMobileBetslip();
+            }
+        });
+    }
+
+    if (mobileBetslipBackdrop) {
+        mobileBetslipBackdrop.addEventListener('click', closeMobileBetslip);
+    }
+
+    if (mobileBetslipClose) {
+        mobileBetslipClose.addEventListener('click', closeMobileBetslip);
+    }
+
+    if (mobileViewportQuery && typeof mobileViewportQuery.addEventListener === 'function') {
+        mobileViewportQuery.addEventListener('change', function(e) {
+            if (!e.matches) {
+                closeMobileBetslip();
+            }
+        });
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeMobileBetslip();
+        }
+    });
+
+    const betslipCountObserverTarget = document.getElementById('betslip-count');
+    if (betslipCountObserverTarget && typeof MutationObserver !== 'undefined') {
+        const betslipCountObserver = new MutationObserver(syncMobileBetslipCount);
+        betslipCountObserver.observe(betslipCountObserverTarget, {
+            childList: true,
+            subtree: true,
+            characterData: true
+        });
+    }
+    syncMobileBetslipCount();
 
     // Háttér szinkron (API → DB) — throttled
     function syncFromApi() {

@@ -14,6 +14,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const contentParent = document.querySelector('.content-parent');
     const mainContentWrap = contentParent ? contentParent.querySelector('.main_content') : null;
     const rightColumnWrap = contentParent ? contentParent.querySelector('.right-container') : null;
+    const mobileBetslipFab = document.getElementById('mobile-betslip-fab');
+    const mobileBetslipFabCount = document.getElementById('mobile-betslip-fab-count');
+    const mobileBetslipBackdrop = document.getElementById('mobile-betslip-backdrop');
+    const mobileBetslipClose = document.getElementById('mobile-betslip-close');
+    const mobileBetslipSlot = document.getElementById('mainmenu-betslip-slot');
+    const mobileViewportQuery = window.matchMedia('(max-width: 768px)');
 
   let sportsData = []; // sidebar adatok cache
   let currentSportId = 66; // 66 = Foci (alapértelmezett)
@@ -125,6 +131,39 @@ document.addEventListener('DOMContentLoaded', function () {
       requestAnimationFrame(function() {
           requestAnimationFrame(syncColumnsToTipsBottom);
       });
+  }
+
+  function isMobileViewport() {
+      return !!(mobileViewportQuery && mobileViewportQuery.matches);
+  }
+
+  function openMobileBetslip() {
+      if (!isMobileViewport()) return;
+      document.body.classList.add('mobile-betslip-open');
+      if (mobileBetslipFab) {
+          mobileBetslipFab.setAttribute('aria-expanded', 'true');
+      }
+      if (mobileBetslipSlot) {
+          mobileBetslipSlot.setAttribute('aria-hidden', 'false');
+      }
+  }
+
+  function closeMobileBetslip() {
+      document.body.classList.remove('mobile-betslip-open');
+      if (mobileBetslipFab) {
+          mobileBetslipFab.setAttribute('aria-expanded', 'false');
+      }
+      if (mobileBetslipSlot) {
+          mobileBetslipSlot.setAttribute('aria-hidden', 'true');
+      }
+  }
+
+  function syncMobileBetslipCount() {
+      if (!mobileBetslipFabCount) return;
+      const countEl = document.getElementById('betslip-count');
+      const countText = countEl ? String(countEl.textContent || '').trim() : '0';
+      const normalized = countText === '' ? '0' : countText;
+      mobileBetslipFabCount.textContent = normalized;
   }
 
   // ========== SIDEBAR SPORTOK BETÖLTÉSE ==========
@@ -1309,6 +1348,49 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   window.addEventListener('resize', scheduleColumnsSync);
+
+  if (mobileBetslipFab) {
+      mobileBetslipFab.addEventListener('click', function() {
+          if (document.body.classList.contains('mobile-betslip-open')) {
+              closeMobileBetslip();
+          } else {
+              openMobileBetslip();
+          }
+      });
+  }
+
+  if (mobileBetslipBackdrop) {
+      mobileBetslipBackdrop.addEventListener('click', closeMobileBetslip);
+  }
+
+  if (mobileBetslipClose) {
+      mobileBetslipClose.addEventListener('click', closeMobileBetslip);
+  }
+
+  if (mobileViewportQuery && typeof mobileViewportQuery.addEventListener === 'function') {
+      mobileViewportQuery.addEventListener('change', function(e) {
+          if (!e.matches) {
+              closeMobileBetslip();
+          }
+      });
+  }
+
+  document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+          closeMobileBetslip();
+      }
+  });
+
+  const betslipCountObserverTarget = document.getElementById('betslip-count');
+  if (betslipCountObserverTarget && typeof MutationObserver !== 'undefined') {
+      const betslipCountObserver = new MutationObserver(syncMobileBetslipCount);
+      betslipCountObserver.observe(betslipCountObserverTarget, {
+          childList: true,
+          subtree: true,
+          characterData: true
+      });
+  }
+  syncMobileBetslipCount();
 
   loadSidebarSports();
   loadMatches(66); // Alapértelmezett: Foci

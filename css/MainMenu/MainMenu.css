@@ -569,8 +569,8 @@ body .simple-footer {
 .league-name { font-weight: 600; color: #b0bec5; font-size: 12px; }
 .match-cell { white-space: nowrap; }
 .team { font-weight: 600; color: #ecf0f1; font-size: 13px; }
-.home-team { color: #fff; }
-.away-team { color: #cfd8dc; }
+.home-team,
+.away-team { color: #fff; }
 .vs {
   display: inline-block;
   margin: 0 6px;
@@ -837,7 +837,7 @@ body .simple-footer {
 }
 @media (max-width: 768px) {
   .main_content { flex-direction: column; height: auto; }
-  .left-sidebar { width: 100%; min-width: 100%; max-height: 300px; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .left-sidebar { width: 100%; min-width: 100%; max-height: none; overflow-y: visible; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.06); }
   .center-content { width: 100%; }
   .right-sidebar { display: none; }
   .center-header { flex-wrap: wrap; align-items: center; }
@@ -846,10 +846,6 @@ body .simple-footer {
   .match-search-input { width: 100%; }
 }
 @media (max-width: 600px) {
-  .matches-table thead th:nth-child(1),
-  .matches-table td:nth-child(1) { display: none; }
-  .matches-table thead th:nth-child(4),
-  .matches-table td:nth-child(4) { display: none; }
   .match-scoreboard { flex-direction: column; gap: 10px; }
 }
 .match-row.highlight {
@@ -904,6 +900,17 @@ body .simple-footer {
   padding: 0 10px;
 }
 
+.mainmenu-betslip-slot {
+  width: 100%;
+  position: relative;
+}
+
+.mobile-betslip-close,
+.mobile-betslip-fab,
+.mobile-betslip-backdrop {
+  display: none;
+}
+
 /* Ensure the main flex area doesn't go under the floated betslip */
 .content-parent > .main_content {
   width: 80%;
@@ -918,6 +925,154 @@ body .simple-footer {
 
   .content-parent > .main_content {
     width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .content-parent {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .content-parent::after {
+    display: none;
+  }
+
+  .content-parent > .main_content {
+    order: 1;
+    width: 100%;
+  }
+
+  .content-parent > .right-container {
+    order: 2;
+    padding: 0 10px 86px;
+    width: 100%;
+  }
+
+  .mainmenu-betslip-slot {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1401;
+    padding: 0;
+    transform: translateY(104%);
+    transition: transform 0.26s ease;
+    pointer-events: none;
+  }
+
+  .mainmenu-betslip-slot .betslip-wrapper {
+    border-radius: 14px 14px 0 0;
+    border-left: none;
+    border-top: 3px solid #e94560;
+    box-shadow: 0 -14px 34px rgba(0, 0, 0, 0.55);
+    height: min(72vh, 620px);
+    max-height: min(72vh, 620px);
+  }
+
+  .mainmenu-betslip-slot .betslip-header {
+    padding-right: 56px;
+  }
+
+  .mainmenu-betslip-slot .betslip-count {
+    margin-right: 42px;
+  }
+
+  .mobile-betslip-close {
+    display: flex;
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.44);
+    color: #fff;
+    z-index: 2;
+  }
+
+  .mobile-betslip-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 8, 14, 0.62);
+    backdrop-filter: blur(1px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease;
+    z-index: 1400;
+  }
+
+  .mobile-betslip-fab {
+    display: inline-flex;
+    position: fixed;
+    left: 50%;
+    bottom: calc(64px + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #f5c518 0%, #f39c12 100%);
+    color: #172033;
+    border: none;
+    border-radius: 999px;
+    padding: 10px 14px;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+    font-weight: 800;
+    z-index: 1402;
+    line-height: 1;
+  }
+
+  .mobile-betslip-fab-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.32);
+    font-size: 15px;
+  }
+
+  .mobile-betslip-fab-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .mobile-betslip-fab-count {
+    min-width: 22px;
+    height: 22px;
+    border-radius: 11px;
+    padding: 0 7px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    background: #172033;
+    color: #f5c518;
+    font-weight: 800;
+  }
+
+  body.mobile-betslip-open {
+    overflow: hidden;
+  }
+
+  body.mobile-betslip-open .mainmenu-betslip-slot {
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  body.mobile-betslip-open .mobile-betslip-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  body.mobile-betslip-open .mobile-betslip-fab {
+    opacity: 0;
+    pointer-events: none;
   }
 }
 
@@ -1063,6 +1218,8 @@ body .simple-footer {
 .league-matches .match-cell .away-team {
   display: inline-block;
   min-width: 80px;
+  color: #fff !important;
+  font-weight: 700;
 }
 
 .league-matches .match-cell .vs {
@@ -1182,8 +1339,47 @@ body .simple-footer {
   .league-matches .matches-table td:nth-child(4) {
     display: none;
   }
-  .league-matches .matches-table td:nth-child(1) { width: 60%; }
-  .league-matches .matches-table td:nth-child(3) { width: 40%; }
+  .league-matches .matches-table td {
+    padding: 8px 8px;
+  }
+  .league-matches .matches-table td:nth-child(1) {
+    width: 66%;
+    padding-left: 10px;
+  }
+  .league-matches .matches-table td:nth-child(3) {
+    width: 34%;
+  }
+
+  .league-matches .match-cell {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .league-matches .match-cell .home-team,
+  .league-matches .match-cell .away-team,
+  .league-matches .match-cell .full-match-name {
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .league-matches .match-cell .vs {
+    margin: 0 4px;
+    padding: 1px 6px;
+    font-size: 9px;
+    letter-spacing: 0.3px;
+  }
+
+  .league-matches .start-time {
+    max-width: 100%;
+    white-space: normal;
+    line-height: 1.2;
+    font-size: 11px;
+    padding: 3px 6px;
+  }
 }
 
 /* ========== ODDSŰRHAJÓ ========== */

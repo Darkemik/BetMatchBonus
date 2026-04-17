@@ -138,6 +138,15 @@
     gap: 8px;
 }
 
+/* Final normalization: home and away must look identical */
+.league-matches .match-cell .team,
+.league-matches .match-cell .home-team,
+.league-matches .match-cell .away-team {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    font-weight: 700 !important;
+    opacity: 1 !important;
+}
 .tab-button i {
     font-size: 14px;
 }
@@ -244,12 +253,9 @@
     font-size: 14px;
 }
 
-.home-team {
-    color: #fff;
-}
-
+.home-team,
 .away-team {
-    color: #cfd8dc;
+    color: #fff;
 }
 
 .vs {
@@ -331,6 +337,17 @@
     padding: 0 10px;
 }
 
+.esport-betslip-slot {
+    width: 100%;
+    position: relative;
+}
+
+.mobile-betslip-close,
+.mobile-betslip-fab,
+.mobile-betslip-backdrop {
+    display: none;
+}
+
 .content-parent > .elo-main {
     width: 80%;
 }
@@ -344,6 +361,143 @@
 
     .content-parent > .elo-main {
         width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .content-parent > .right-container {
+        width: 0;
+        height: 0;
+        min-height: 0;
+        padding: 0;
+        margin: 0;
+        overflow: visible;
+    }
+
+    .esport-betslip-slot {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1401;
+        padding: 0;
+        transform: translateY(104%);
+        transition: transform 0.26s ease;
+        pointer-events: none;
+    }
+
+    .esport-betslip-slot .betslip-wrapper {
+        border-radius: 14px 14px 0 0;
+        border-left: none;
+        border-top: 3px solid #e94560;
+        box-shadow: 0 -14px 34px rgba(0, 0, 0, 0.55);
+        height: min(72vh, 620px);
+        max-height: min(72vh, 620px);
+    }
+
+    .esport-betslip-slot .betslip-header {
+        padding-right: 56px;
+    }
+
+    .esport-betslip-slot .betslip-count {
+        margin-right: 42px;
+    }
+
+    .mobile-betslip-close {
+        display: flex;
+        position: absolute;
+        top: 10px;
+        right: 12px;
+        width: 34px;
+        height: 34px;
+        border: none;
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.44);
+        color: #fff;
+        z-index: 2;
+    }
+
+    .mobile-betslip-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(4, 8, 14, 0.62);
+        backdrop-filter: blur(1px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.22s ease;
+        z-index: 1400;
+    }
+
+    .mobile-betslip-fab {
+        display: inline-flex;
+        position: fixed;
+        left: 50%;
+        bottom: calc(64px + env(safe-area-inset-bottom));
+        transform: translateX(-50%);
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #f5c518 0%, #f39c12 100%);
+        color: #172033;
+        border: none;
+        border-radius: 999px;
+        padding: 10px 14px;
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+        font-weight: 800;
+        z-index: 1402;
+        line-height: 1;
+    }
+
+    .mobile-betslip-fab-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.32);
+        font-size: 15px;
+    }
+
+    .mobile-betslip-fab-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .mobile-betslip-fab-count {
+        min-width: 22px;
+        height: 22px;
+        border-radius: 11px;
+        padding: 0 7px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        background: #172033;
+        color: #f5c518;
+        font-weight: 800;
+    }
+
+    body.mobile-betslip-open {
+        overflow: hidden;
+    }
+
+    body.mobile-betslip-open .esport-betslip-slot {
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+
+    body.mobile-betslip-open .mobile-betslip-backdrop {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    body.mobile-betslip-open .mobile-betslip-fab {
+        opacity: 0;
+        pointer-events: none;
     }
 }
 
@@ -708,8 +862,8 @@
 }
 
 @media (max-width: 600px) {
-    .matches-table thead th:nth-child(1),
-    .matches-table td:nth-child(1) { display: none; }
+    .matches-table thead th:nth-child(2),
+    .matches-table td:nth-child(2) { display: none; }
     .matches-table thead th:nth-child(4),
     .matches-table td:nth-child(4) { display: none; }
     .matches-table td { padding: 8px 6px; }
@@ -1053,6 +1207,8 @@
 .league-matches .match-cell .away-team {
   display: inline-block;
   min-width: 80px;
+    color: #fff !important;
+    font-weight: 700;
 }
 
 .league-matches .match-cell .vs {
@@ -1197,4 +1353,15 @@
   }
   .league-matches .matches-table td:nth-child(1) { width: 60%; }
   .league-matches .matches-table td:nth-child(3) { width: 40%; }
+}
+
+/* Hard override at file end so away team cannot be dimmed by later rules */
+.league-matches .match-row .match-cell .team,
+.league-matches .match-row .match-cell .home-team,
+.league-matches .match-row .match-cell .away-team {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    font-weight: 700 !important;
+    opacity: 1 !important;
+    text-shadow: none !important;
 }

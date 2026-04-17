@@ -13,9 +13,9 @@ require_once "../../backend/connect.php";
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <!-- App CSS after vendors -->
     <link rel="stylesheet" href="../../css/RootColor/root.css">
-    <link rel="stylesheet" href="../../css/Main/layout.css">
-    <link rel="stylesheet" href="../../css/Esport/esport.css">
-    <link rel="stylesheet" href="../../css/Betslip/betslip.css">
+    <link rel="stylesheet" href="../../css/Main/layout.css?v=<?= time() ?>">
+    <link rel="stylesheet" href="../../css/Esport/esport.css?v=<?= time() ?>">
+    <link rel="stylesheet" href="../../css/Betslip/betslip.css?v=<?= time() ?>">
     <link rel="stylesheet" href="../../css/Main/popup.css">
     <link rel="stylesheet" href="../../css/Modal/modal.css">
     <link rel="icon" href="../../img/logo.png" type="image/x-icon">
@@ -82,7 +82,12 @@ require_once "../../backend/connect.php";
 
     <div class="content-parent">
         <div class="right-container">
-            <?php include '../../frontend/Components/betslip.php'; ?>
+            <div class="esport-betslip-slot" id="esport-betslip-slot" aria-hidden="true">
+                <button type="button" class="mobile-betslip-close" id="mobile-betslip-close" aria-label="Szelvény bezárása">
+                    <i class="fas fa-times"></i>
+                </button>
+                <?php include '../../frontend/Components/betslip.php'; ?>
+            </div>
         </div>
         <div class="elo-main">
             <div class="elo-container">
@@ -136,6 +141,13 @@ require_once "../../backend/connect.php";
         </div>
     </div>
 
+    <button type="button" class="mobile-betslip-fab" id="mobile-betslip-fab" aria-expanded="false" aria-controls="esport-betslip-slot">
+        <span class="mobile-betslip-fab-icon"><i class="fas fa-cart-shopping"></i></span>
+        <span class="mobile-betslip-fab-label" data-i18n="betslip.ticket">Szelvény</span>
+        <span class="mobile-betslip-fab-count" id="mobile-betslip-fab-count">0</span>
+    </button>
+    <div class="mobile-betslip-backdrop" id="mobile-betslip-backdrop" aria-hidden="true"></div>
+
     <?php include '../../frontend/Components/footer.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../../js/Login/loginmodal.js"></script>
@@ -146,7 +158,7 @@ require_once "../../backend/connect.php";
     <script src="../../js/Main/popup.js"></script>
     <script src="../../js/Main/auth_ui.js"></script>
     <script src="../../js/Betslip/betslip.js?v=<?= time() ?>"></script>
-    <script src="../../js/Esport/esport.js"></script>
+    <script src="../../js/Esport/esport.js?v=<?= time() ?>"></script>
     <?php include '../../frontend/Components/loginmodal.php'; ?>
     <?php include '../../frontend/Components/registermodal.php'; ?>
     <?php include '../../frontend/Components/registermodal2.php'; ?>
