@@ -27,12 +27,19 @@ document.addEventListener('DOMContentLoaded', function() {
     let isTicketSubmitting = false;
     let cashoutRefreshTimer = null;
     const pendingCashoutRequests = new Set();
+    let isHistoryLoading = false;
+    let historyLoadedOnce = false;
+    let historyAbortController = null;
 
     function formatFt(value) {
         return (parseFloat(value) || 0).toLocaleString('hu-HU', {
             maximumFractionDigits: 0,
             minimumFractionDigits: 0
         }) + ' Ft';
+    }
+
+    function formatOddsHu(value) {
+        return (parseFloat(value) || 0).toFixed(2).replace('.', ',');
     }
 
     function normalizeLiveKeyPart(value) {
@@ -289,6 +296,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 applyFreeBetSelectionState();
                 updatePlaceBetButton();
                 updateBetslipBalanceDisplay();
+                if (isLoggedIn && isHistoryTabActive() && !historyLoadedOnce) {
+                    loadBettingHistory();
+                }
             })
             .catch(e => {
                 console.error('[BETSLIP] Login check error:', e);
@@ -303,6 +313,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 activeBonusList = [];
                 renderFreeBetOption();
                 updatePlaceBetButton();
+                manageBackgroundCheck();
             });
     }
 
@@ -400,7 +411,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ===== TOGGLE: HOZZÁADÁS / ELTÁVOLÍTÁS =====
-    window.toggleOdds = function(homeTeam, awayTeam, pick, odds, market, matchId, isDailyTip, isBoosted) {
+    window.toggleOdds = function(homeTeam, awayTeam, pick, odds, market, matchId, isDailyTip, isBoosted, originalOdds) {
         console.log('[BETSLIP] toggleOdds called:', {homeTeam, awayTeam, pick, odds, market, matchId, isDailyTip});
         
         var existingIndex = ticketItems.findIndex(function(item) {
@@ -445,6 +456,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 matchId: matchId || 0,
                 isDailyTip: !!isDailyTip,
                 isBoosted: !!isBoosted,
+                originalOdds: (isBoosted && parseFloat(originalOdds) > 0) ? parseFloat(originalOdds) : null,
                 addedAt: new Date().toISOString()
             });
         }
@@ -534,6 +546,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const metrics = getTicketMetrics();
 
         ticketItems.forEach((item, idx) => {
+            const currentOdds = parseFloat(item.odds) || 0;
+            const oldOdds = parseFloat(item.originalOdds) || 0;
+            const hasBoostedOddsDisplay = !!item.isBoosted && oldOdds > 0;
+            const oddsHtml = hasBoostedOddsDisplay
+                ? `<span class="betslip-boosted-odd-display">
+                        <span class="betslip-original-odd-crossed">${formatOddsHu(oldOdds)}</span>
+                        <i class="fas fa-rocket betslip-boosted-icon-small" aria-hidden="true"></i>
+                        <span class="betslip-boosted-new-odd">${formatOddsHu(currentOdds)}</span>
+                   </span>`
+                : `<span>${formatOddsHu(currentOdds)}</span>`;
+
             const el = document.createElement('div');
             el.className = 'betslip-item';
             el.innerHTML = `
@@ -543,7 +566,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div class="betslip-item-market">${escapeHtml(td(item.market))}</div>
                 <div class="betslip-item-pick">${escapeHtml(td(item.pick))}</div>
-                <div class="betslip-item-odds">${item.odds.toFixed(2)}${item.isDailyTip ? ' <span class="daily-tip-badge">Napi tipp</span>' : ''}</div>
+                <div class="betslip-item-odds">${oddsHtml}${item.isDailyTip ? ' <span class="daily-tip-badge">Napi tipp</span>' : ''}</div>
             `;
             betsContainer.appendChild(el);
         });
@@ -1070,12 +1093,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== FOGADÁSI ELŐZMÉNYEK BETÖLTÉSE =====
     function loadBettingHistory() {
-        fetch('../../backend/ApiRequest/get_betting_history.php')
-            .then(r => r.json())
+        if (!isLoggedIn) {
+            bettingHistory = [];
+            renderHistory();
+            manageBackgroundCheck();
+            return;
+        }
+
+        if (isHistoryLoading) {
+            return;
+        }
+
+        if (historyAbortController) {
+            historyAbortController.abort();
+        }
+        historyAbortController = new AbortController();
+        isHistoryLoading = true;
+
+        fetch('../../backend/ApiRequest/get_betting_history.php', {
+            signal: historyAbortController.signal,
+            cache: 'no-store'
+        })
+            .then(r => {
+                if (r.status === 401) {
+                    throw new Error('UNAUTHORIZED');
+                }
+                return r.json();
+            })
             .then(data => {
                 if (data.status === 'ok') {
                     const oldHistory = bettingHistory;
                     bettingHistory = data.history || [];
+                    historyLoadedOnce = true;
                     renderHistory();
 
                     // Státuszváltozás detektálás → popup értesítés
@@ -1087,7 +1136,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     manageBackgroundCheck();
                 }
             })
-            .catch(e => console.error('Előzmények hiba:', e));
+            .catch(e => {
+                if (e && e.name === 'AbortError') return;
+
+                if (String(e && e.message) === 'UNAUTHORIZED') {
+                    isLoggedIn = false;
+                    bettingHistory = [];
+                    renderHistory();
+                    manageBackgroundCheck();
+                    return;
+                }
+
+                console.error('Előzmények hiba:', e);
+            })
+            .finally(() => {
+                isHistoryLoading = false;
+            });
     }
 
     // ===== STÁTUSZVÁLTOZÁS DETEKTÁLÁS (csak logolás, popup nélkül) =====
@@ -1109,6 +1173,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== HÁTTÉR KIÉRTÉKELÉS KEZELÉSE =====
     function manageBackgroundCheck() {
+        if (!isLoggedIn) {
+            if (historyCheckTimer) {
+                clearInterval(historyCheckTimer);
+                historyCheckTimer = null;
+            }
+            manageCashoutLiveRefresh();
+            return;
+        }
+
         const hasOpenTickets = bettingHistory.some(t => t.status === 'OPEN');
 
         if (hasOpenTickets && !historyCheckTimer) {
@@ -1267,8 +1340,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!eventId) return;
 
         // Főoldalra navigálunk, ahol a loadMatchDetails fallback-kel kezeli a lejátszott meccseket is
-        const mainPath = '../../frontend/MainMenu/mainmenu.php?eventId=' + eventId;
-        if (window.location.pathname.includes('/MainMenu/mainmenu.php')) {
+        const mainPath = '../../frontend/MainMenu/MainMenu.php?eventId=' + eventId;
+        if (window.location.pathname.includes('/MainMenu/MainMenu.php')) {
             // Már a főoldalon vagyunk
             if (typeof window.loadMatchDetails === 'function') {
                 window.loadMatchDetails(eventId);
@@ -1496,7 +1569,11 @@ document.addEventListener('DOMContentLoaded', function() {
     checkLoginStatus();
     loadFromStorage();
     renderTicket();
-    loadBettingHistory();
+    // Előzményeket csak kérésre (tab nyitáskor) és bejelentkezve töltünk,
+    // ezzel elkerüljük a reload utáni párhuzamos, fagyást okozó hívásokat.
+    if (isHistoryTabActive()) {
+        loadBettingHistory();
+    }
     refreshAllOddsButtons();
     updatePlaceBetButton();
 

@@ -237,6 +237,18 @@ function calculateCashout($conn, $ticketId, $userId) {
     }
     $stmtSel->close();
 
+    $isEsportTicket = false;
+    foreach ($selections as $sel) {
+        $matchApiId = (int)($sel['match_id'] ?? 0);
+        if ($matchApiId <= 0 && !empty($sel['event_id'])) {
+            $matchApiId = resolveMatchApiIdByEventRowId($conn, (int)$sel['event_id']);
+        }
+        if ($matchApiId > 0 && isEsportApiEvent($conn, $matchApiId)) {
+            $isEsportTicket = true;
+            break;
+        }
+    }
+
     if (empty($selections)) {
         return ['status' => 'ok', 'available' => false, 'message' => 'Nincs tétel a szelvényen'];
     }
@@ -373,7 +385,12 @@ function calculateCashout($conn, $ticketId, $userId) {
     }
 
     // Korai fázisban is legyen értelmes minimum (kb. tét*alpha környéke), de szigorúan plafon alatt.
-    $baselineFloorFraction = max(0.0, min(0.20, ($stake * $ALPHA) / max(1.0, $maxCashout)));
+    if ($isEsportTicket) {
+        // eSportnál ne a tét legyen a minimum referencia, hanem a potenciális maximum egy része.
+        $baselineFloorFraction = 0.10;
+    } else {
+        $baselineFloorFraction = max(0.0, min(0.20, ($stake * $ALPHA) / max(1.0, $maxCashout)));
+    }
     $cashoutFraction = max($cashoutFraction, $baselineFloorFraction);
 
     if ($allWon) {
@@ -430,6 +447,10 @@ function fetchLiveOddsForSelection($conn, $matchApiId, $marketName, $pickLabel) 
 
         foreach ($apiData['markets'] as $market) {
             $marketNameRaw = (string)($market['name'] ?? '');
+            $marketSpecialValue = trim((string)($market['specialValue'] ?? ''));
+            if ($marketSpecialValue !== '') {
+                $marketNameRaw .= ' (' . $marketSpecialValue . ')';
+            }
             $marketNorm = normalizeCashoutText($marketNameRaw);
 
             $marketSimilarity = marketNameSimilarityScore($targetMarketNorm, $marketNorm);
@@ -642,4 +663,50 @@ function resolveMatchApiIdByTeams($conn, $homeTeam, $awayTeam) {
     $resolved = $row ? (int)$row['api_id'] : 0;
     $cache[$cacheKey] = $resolved;
     return $resolved;
+}
+
+function resolveMatchApiIdByEventRowId($conn, $eventRowId) {
+    static $cache = [];
+    $eventRowId = (int)$eventRowId;
+    if ($eventRowId <= 0) return 0;
+
+    if (isset($cache[$eventRowId])) {
+        return $cache[$eventRowId];
+    }
+
+    $stmt = $conn->prepare("SELECT api_id FROM Events WHERE id = ? LIMIT 1");
+    $stmt->bind_param('i', $eventRowId);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    $resolved = $row ? (int)$row['api_id'] : 0;
+    $cache[$eventRowId] = $resolved;
+    return $resolved;
+}
+
+function isEsportApiEvent($conn, $eventApiId) {
+    static $cache = [];
+    $eventApiId = (int)$eventApiId;
+    if ($eventApiId <= 0) return false;
+
+    if (isset($cache[$eventApiId])) {
+        return $cache[$eventApiId];
+    }
+
+    $stmt = $conn->prepare(" 
+        SELECT 1
+        FROM Events e
+        INNER JOIN Sports s ON s.id = e.sport_id
+        WHERE e.api_id = ?
+          AND s.api_id IN (145, 146, 147, 148)
+        LIMIT 1
+    ");
+    $stmt->bind_param('i', $eventApiId);
+    $stmt->execute();
+    $isEsport = (bool)$stmt->get_result()->fetch_row();
+    $stmt->close();
+
+    $cache[$eventApiId] = $isEsport;
+    return $isEsport;
 }

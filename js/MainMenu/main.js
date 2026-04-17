@@ -555,11 +555,13 @@ document.addEventListener('DOMContentLoaded', function () {
               const market = this.getAttribute('data-market');
               const matchId = parseInt(this.getAttribute('data-match-id')) || 0;
               const isBoostedSel = this.hasAttribute('data-boosted');
+              const originalOddsAttr = this.getAttribute('data-original-odd');
+              const originalOdds = originalOddsAttr !== null ? parseFloat(originalOddsAttr) : null;
 
               if (!homeTeam || !awayTeam || !pick || !market) return;
 
               if (typeof window.toggleOdds === 'function') {
-                  window.toggleOdds(homeTeam, awayTeam, pick, odds, market, matchId, false, isBoostedSel);
+                  window.toggleOdds(homeTeam, awayTeam, pick, odds, market, matchId, false, isBoostedSel, originalOdds);
                   setTimeout(() => {
                       if (typeof window.refreshAllOddsButtons === 'function') {
                           window.refreshAllOddsButtons();
@@ -701,6 +703,7 @@ document.addEventListener('DOMContentLoaded', function () {
                               data-pick="${escapeHtml(selection.name)}"
                               data-market="${escapeHtml(marketFullName)}"
                               data-odd="${oddsValue}"
+                              ${isBoosted && originalOdds > 0 ? `data-original-odd="${originalOdds}"` : ''}
                               ${isBoosted ? 'data-boosted="1"' : ''}>
                               <span class="selection-name">${escapeHtml(td(selection.name))}</span>
                               ${oddsContent}

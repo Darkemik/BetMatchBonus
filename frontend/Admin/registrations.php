@@ -34,6 +34,26 @@ $approvedCount = $conn->query("
     SELECT COUNT(*) AS c FROM Users
     WHERE is_active = 1 AND is_verified = 1
 ")->fetch_assoc()['c'];
+
+function resolvePendingDocPath(int $userId, string $field, ?string $dbValue): string {
+    $baseWeb = '../../backend/uploads/registrations/' . $userId . '/';
+    $baseFs = __DIR__ . '/../../backend/uploads/registrations/' . $userId . '/';
+
+    if (!empty($dbValue)) {
+        return $baseWeb . basename($dbValue);
+    }
+
+    if (!is_dir($baseFs)) {
+        return '';
+    }
+
+    $matches = glob($baseFs . $field . '_*');
+    if (!$matches || !isset($matches[0])) {
+        return '';
+    }
+
+    return $baseWeb . basename($matches[0]);
+}
 ?>
 <!DOCTYPE html>
 <html lang="hu">
@@ -106,6 +126,8 @@ $approvedCount = $conn->query("
             text-align: center; padding: 60px 20px; color: #9aa6b2;
         }
         .empty-state i { font-size: 3rem; margin-bottom: 12px; display: block; }
+
+        #rejectReason::placeholder { color: #fff; opacity: 1; }
 
         /* Lightbox */
         .lightbox-overlay {
@@ -218,18 +240,17 @@ $approvedCount = $conn->query("
                     <h6 class="mt-3 mb-2" style="color:#aaa;"><i class="fas fa-id-card me-1"></i>Dokumentumok</h6>
                     <div class="doc-images">
                         <?php
-                        $imgBase = '../../backend/uploads/registrations/' . (int)$u['id'] . '/';
                         $docs = [
-                            ['file' => $u['id_image_first'], 'label' => 'Személyi 1. oldal'],
-                            ['file' => $u['id_image_second'], 'label' => 'Személyi 2. oldal'],
-                            ['file' => $u['address_image'], 'label' => 'Lakcímkártya'],
+                            ['field' => 'id_image_first', 'label' => 'Személyi 1. oldal'],
+                            ['field' => 'id_image_second', 'label' => 'Személyi 2. oldal'],
+                            ['field' => 'address_image', 'label' => 'Lakcímkártya'],
                         ];
                         foreach ($docs as $doc):
-                            if (!empty($doc['file'])):
-                                $src = $imgBase . htmlspecialchars(basename($doc['file']));
+                            $src = resolvePendingDocPath((int)$u['id'], $doc['field'], $u[$doc['field']] ?? null);
+                            if ($src !== ''):
                         ?>
                         <div style="text-align:center;">
-                            <img src="<?= $src ?>" class="doc-thumb" alt="<?= htmlspecialchars($doc['label']) ?>"
+                            <img src="<?= htmlspecialchars($src) ?>" class="doc-thumb" alt="<?= htmlspecialchars($doc['label']) ?>"
                                  onclick="openLightbox(this.src)">
                             <div class="doc-label"><?= $doc['label'] ?></div>
                         </div>

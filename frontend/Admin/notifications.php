@@ -47,6 +47,13 @@ $activePage = 'notifications';
             background: #1a1a2e; border: 1px solid rgba(255,255,255,0.12);
             color: #eee; border-radius: 8px;
         }
+        .compose-card .form-control::placeholder,
+        .compose-card textarea::placeholder,
+        .edit-modal .form-control::placeholder,
+        .edit-modal textarea::placeholder {
+            color: #fff;
+            opacity: 1;
+        }
         .compose-card .form-control:focus, .compose-card .form-select:focus {
             border-color: #e94560; box-shadow: 0 0 0 2px rgba(233,69,96,0.2);
         }
