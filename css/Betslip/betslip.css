@@ -384,6 +384,28 @@
     font-weight: 600;
 }
 
+.betslip-boosted-odd-display {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.betslip-original-odd-crossed {
+    text-decoration: line-through;
+    color: #8b93a7;
+    font-weight: 500;
+}
+
+.betslip-boosted-icon-small {
+    color: #f5c518;
+    font-size: 11px;
+}
+
+.betslip-boosted-new-odd {
+    color: #f5c518;
+    font-weight: 800;
+}
+
 .daily-tip-badge {
     background: linear-gradient(135deg, #ff9800, #ff5722);
     color: #fff;

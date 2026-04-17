@@ -35,6 +35,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }) + ' Ft';
     }
 
+    function formatOddsHu(value) {
+        return (parseFloat(value) || 0).toFixed(2).replace('.', ',');
+    }
+
     function normalizeLiveKeyPart(value) {
         return String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
     }
@@ -400,7 +404,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ===== TOGGLE: HOZZÁADÁS / ELTÁVOLÍTÁS =====
-    window.toggleOdds = function(homeTeam, awayTeam, pick, odds, market, matchId, isDailyTip, isBoosted) {
+    window.toggleOdds = function(homeTeam, awayTeam, pick, odds, market, matchId, isDailyTip, isBoosted, originalOdds) {
         console.log('[BETSLIP] toggleOdds called:', {homeTeam, awayTeam, pick, odds, market, matchId, isDailyTip});
         
         var existingIndex = ticketItems.findIndex(function(item) {
@@ -445,6 +449,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 matchId: matchId || 0,
                 isDailyTip: !!isDailyTip,
                 isBoosted: !!isBoosted,
+                originalOdds: (isBoosted && parseFloat(originalOdds) > 0) ? parseFloat(originalOdds) : null,
                 addedAt: new Date().toISOString()
             });
         }
@@ -534,6 +539,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const metrics = getTicketMetrics();
 
         ticketItems.forEach((item, idx) => {
+            const currentOdds = parseFloat(item.odds) || 0;
+            const oldOdds = parseFloat(item.originalOdds) || 0;
+            const hasBoostedOddsDisplay = !!item.isBoosted && oldOdds > 0;
+            const oddsHtml = hasBoostedOddsDisplay
+                ? `<span class="betslip-boosted-odd-display">
+                        <span class="betslip-original-odd-crossed">${formatOddsHu(oldOdds)}</span>
+                        <i class="fas fa-rocket betslip-boosted-icon-small" aria-hidden="true"></i>
+                        <span class="betslip-boosted-new-odd">${formatOddsHu(currentOdds)}</span>
+                   </span>`
+                : `<span>${formatOddsHu(currentOdds)}</span>`;
+
             const el = document.createElement('div');
             el.className = 'betslip-item';
             el.innerHTML = `
@@ -543,7 +559,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div class="betslip-item-market">${escapeHtml(td(item.market))}</div>
                 <div class="betslip-item-pick">${escapeHtml(td(item.pick))}</div>
-                <div class="betslip-item-odds">${item.odds.toFixed(2)}${item.isDailyTip ? ' <span class="daily-tip-badge">Napi tipp</span>' : ''}</div>
+                <div class="betslip-item-odds">${oddsHtml}${item.isDailyTip ? ' <span class="daily-tip-badge">Napi tipp</span>' : ''}</div>
             `;
             betsContainer.appendChild(el);
         });

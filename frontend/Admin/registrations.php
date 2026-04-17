@@ -127,6 +127,8 @@ function resolvePendingDocPath(int $userId, string $field, ?string $dbValue): st
         }
         .empty-state i { font-size: 3rem; margin-bottom: 12px; display: block; }
 
+        #rejectReason::placeholder { color: #fff; opacity: 1; }
+
         /* Lightbox */
         .lightbox-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;

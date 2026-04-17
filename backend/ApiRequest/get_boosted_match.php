@@ -22,6 +22,24 @@ if (!$cached || empty($cached['eventId'])) {
     exit;
 }
 
+$eventId = (int)$cached['eventId'];
+$statusStmt = $conn->prepare("SELECT status_id, is_live FROM Events WHERE api_id = ? LIMIT 1");
+if ($statusStmt) {
+    $statusStmt->bind_param('i', $eventId);
+    $statusStmt->execute();
+    $eventRow = $statusStmt->get_result()->fetch_assoc();
+    $statusStmt->close();
+
+    // Ha a mai Oddsűrhajó meccs véget ért, ne mutassunk új meccset ma.
+    if ($eventRow && (int)($eventRow['status_id'] ?? 0) === 3) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'Holnap lesz új Oddsűrhajó, a mai véget ért!'
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+}
+
 // Csapatnevek bontása
 $matchName = $cached['matchName'] ?? '';
 $homeTeam = '';
@@ -46,7 +64,7 @@ if (!empty($cached['startUtc'])) {
 
 echo json_encode([
     'success'          => true,
-    'eventId'          => $cached['eventId'],
+    'eventId'          => $eventId,
     'matchName'        => $matchName,
     'homeTeam'         => $homeTeam,
     'awayTeam'         => $awayTeam,

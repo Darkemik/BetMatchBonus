@@ -13,6 +13,9 @@ require_once dirname(__DIR__) . "/config.php";
  * Visszaadja a mai napi boosted meccs adatait.
  * Ha még nincs cache (vagy más napé), újraszámolja.
  *
+ * FONTOS: ugyanazon a napon nem váltunk új meccsre akkor sem,
+ * ha a napi Oddsűrhajó meccs időközben befejeződött.
+ *
  * @return array|null  ['eventId'=>int, 'marketName'=>string, 'selectionName'=>string, 'date'=>string] vagy null
  */
 function getDailyBoostedMatch(): ?array
@@ -23,7 +26,8 @@ function getDailyBoostedMatch(): ?array
     $cacheDir  = __DIR__ . '/../uploads';
     $cacheFile = $cacheDir . '/boosted_cache.json';
 
-    // 1) Cache olvasás: ha mai napra van és még érvényes eventre mutat, rögtön visszaadjuk
+    // 1) Cache olvasás: ha mai napra van és valid boost adatot tartalmaz, rögtön visszaadjuk
+    //    (nem rotálunk új meccsre nap közben)
     if (file_exists($cacheFile)) {
         $cached = json_decode(file_get_contents($cacheFile), true);
         if (is_array($cached) && ($cached['date'] ?? '') === $today) {
@@ -38,16 +42,7 @@ function getDailyBoostedMatch(): ?array
                 (float)$cached['boostedOdd'] > 1;
 
             if ($cachedEventId > 0 && $hasBoostData) {
-                $checkStmt = $conn->prepare("SELECT 1 FROM Events WHERE api_id = ? AND status_id != 3 LIMIT 1");
-                if ($checkStmt) {
-                    $checkStmt->bind_param('i', $cachedEventId);
-                    $checkStmt->execute();
-                    $ok = (bool)$checkStmt->get_result()->fetch_row();
-                    $checkStmt->close();
-                    if ($ok) {
-                        return $cached;
-                    }
-                }
+                return $cached;
             }
         }
     }
