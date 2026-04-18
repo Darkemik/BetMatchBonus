@@ -333,17 +333,14 @@ $stmt->close();
                         <td>
                             <span class="match-score"><?php echo htmlspecialchars($m['score']); ?></span>
                         </td>
-                        <td>
-                            <span class="start-time"><?php echo $m['dayLabel'] . ' ' . $m['startFormatted']; ?></span>
-                        </td>
                         <td class="live-time-cell">
                             <?php if ($m['isLive']): ?>
                                 <span class="live-dot"></span>
                                 <span class="live-time-value"><?php echo $m['timeDisplay']; ?></span>
                             <?php elseif ($m['startUtcDt'] <= $nowDt): ?>
-                                <span class="status-upcoming"><i class="fas fa-clock"></i> Hamarosan</span>
+                                <span class="status-upcoming">Hamarosan</span>
                             <?php else: ?>
-                                <span class="status-upcoming"><i class="fas fa-clock"></i> <?php echo $m['startFormatted']; ?></span>
+                                <span class="start-time"><?php echo $m['dayLabel'] . ' ' . $m['startFormatted']; ?></span>
                             <?php endif; ?>
                         </td>
                     </tr>

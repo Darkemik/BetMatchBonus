@@ -5,6 +5,34 @@ const INACTIVITY_LIMIT_MS = 30 * 60 * 1000; // 30 perc
   document.addEventListener(evt, () => { window.__lastUserActivity = Date.now(); }, { passive: true });
 });
 
+function clearChatbotClientData() {
+  try {
+    const localKeysToClear = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i) || '';
+      if (k === 'bmb_chat_history' || k.indexOf('bmb_chat_') === 0 || k.indexOf('chatbot_') === 0) {
+        localKeysToClear.push(k);
+      }
+    }
+    localKeysToClear.forEach((k) => localStorage.removeItem(k));
+  } catch (e) {
+    console.warn('Chatbot localStorage clear error:', e);
+  }
+
+  try {
+    const sessionKeysToClear = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const k = sessionStorage.key(i) || '';
+      if (k === 'bmb_popup_shown' || k.indexOf('bmb_chat_') === 0 || k.indexOf('chatbot_') === 0) {
+        sessionKeysToClear.push(k);
+      }
+    }
+    sessionKeysToClear.forEach((k) => sessionStorage.removeItem(k));
+  } catch (e) {
+    console.warn('Chatbot sessionStorage clear error:', e);
+  }
+}
+
 async function refreshAuthUI() {
   const loginBtn = document.querySelector('.loginbtn');
   const regBtn = document.querySelector('.registrationbtn');
@@ -36,6 +64,8 @@ async function refreshAuthUI() {
     const data = await res.json();
 
     if (!data.loggedIn) {
+      clearChatbotClientData();
+
       if (loginBtn) loginBtn.style.display = '';
       if (regBtn) regBtn.style.display = '';
       userMenu.style.display = 'none';
@@ -123,6 +153,7 @@ async function refreshAuthUI() {
         if (idleMs >= INACTIVITY_LIMIT_MS) {
           clearInterval(window.__sessionLoginDurationTimer);
           fetch('/BetMatchBonus/backend/Auth/logout.php', { method: 'POST' }).finally(() => {
+            clearChatbotClientData();
             alert('30 percig inaktív voltál, ezért kijelentkeztettünk. Kérjük, jelentkezz be újra!');
             window.location.href = '/BetMatchBonus/frontend/MainMenu/MainMenu.php';
           });
@@ -133,6 +164,7 @@ async function refreshAuthUI() {
         if (left <= 0) {
           clearInterval(window.__sessionLoginDurationTimer);
           fetch('/BetMatchBonus/backend/Auth/logout.php', { method: 'POST' }).finally(() => {
+            clearChatbotClientData();
             alert('A munkameneted lejárt (1 óra). Kérjük, jelentkezz be újra!');
             window.location.href = '/BetMatchBonus/frontend/MainMenu/MainMenu.php';
           });
@@ -210,11 +242,13 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const res = await fetch('/BetMatchBonus/backend/Auth/logout.php', { method: 'POST' });
         if (res.ok) {
+          clearChatbotClientData();
           // Kijelentkezés után menjünk a főoldalra
           window.location.href = '/BetMatchBonus/frontend/MainMenu/MainMenu.php';
         }
       } catch (e) {
         console.error('Logout error:', e);
+        clearChatbotClientData();
         window.location.href = '/BetMatchBonus/frontend/MainMenu/MainMenu.php';
       }
     });

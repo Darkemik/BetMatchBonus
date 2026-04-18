@@ -4,8 +4,8 @@
  * 
  * Determinisztikusan kiválaszt 3 meccset a főbb bajnokságokból,
  * mindegyikhez lekéri az odds-ot az API-ból, és 2 tippet ad meccsenként.
- * Minden tipp össz-oddsa ~2.5-re van célozva.
- * A tippek naponta változnak (dátum-hash) és fájlba vannak cache-elve.
+ * A tippek naponta változnak (dátum-hash), de az oddsok mindig
+ * az aktuális meccs-oddsokból érkeznek.
  * 
  * Output: JSON [ { eventId, homeTeam, awayTeam, league, picks, comboOdds, startTime, isDailyTip }, ... ]
  */
@@ -19,14 +19,8 @@ $today = date('Y-m-d');
 $cacheDir  = dirname(__DIR__) . '/uploads';
 $cacheFile = $cacheDir . '/daily_tips_cache.json';
 
-// 1) Cache ellenőrzés: ha mai napra van, rögtön visszaadjuk
-if (file_exists($cacheFile)) {
-    $cached = json_decode(file_get_contents($cacheFile), true);
-    if (is_array($cached) && ($cached['date'] ?? '') === $today && !empty($cached['tips'])) {
-        echo json_encode($cached['tips'], JSON_UNESCAPED_UNICODE);
-        exit;
-    }
-}
+// Nem adunk vissza egész napos statikus cache-t, mert az oddsoknak
+// követniük kell az élő változásokat.
 
 // 2) Jelöltek lekérdezése (fix napi ablak: ma 00:00 UTC → +3 nap)
 $from = (new DateTime('today 00:00:00', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
@@ -59,6 +53,7 @@ JOIN Competitions ch ON m.competition_id = ch.id
 JOIN Sports s ON m.sport_id = s.id
 LEFT JOIN Countries c ON ch.country_id = c.id
 WHERE m.start_time BETWEEN ? AND ?
+    AND m.start_time > UTC_TIMESTAMP()
   AND m.status_id NOT IN (3, 5)
   AND m.name IS NOT NULL AND TRIM(m.name) != ''
   AND m.api_id IS NOT NULL AND m.api_id > 0
@@ -78,6 +73,7 @@ if (!$stmt) {
     JOIN Competitions ch ON m.competition_id = ch.id
     LEFT JOIN Countries c ON ch.country_id = c.id
     WHERE m.start_time BETWEEN ? AND ?
+            AND m.start_time > UTC_TIMESTAMP()
       AND m.status_id NOT IN (3, 5)
       AND m.name IS NOT NULL AND TRIM(m.name) != ''
       AND m.api_id > 0
@@ -111,6 +107,7 @@ if (count($candidates) < 20) {
     JOIN Competitions ch ON m.competition_id = ch.id
     LEFT JOIN Countries c ON ch.country_id = c.id
     WHERE m.start_time BETWEEN ? AND ?
+            AND m.start_time > UTC_TIMESTAMP()
       AND m.status_id NOT IN (3, 5)
       AND m.name IS NOT NULL AND TRIM(m.name) != ''
       AND m.api_id > 0
@@ -138,7 +135,6 @@ if (empty($candidates)) {
 // 3) Determinisztikusan meccset választunk (napi hash), max 3 tipp
 $targetTipCount = 3;
 $tipCount = min($targetTipCount + 12, count($candidates));
-$targetComboOdds = 2.5;
 
 $selectedIndices = [];
 $pool = range(0, count($candidates) - 1);
@@ -180,6 +176,20 @@ foreach ($selectedIndices as $si) {
     try {
         $apiData = apiGet(EP_MATCH_DETAILS . '/' . $eventId);
 
+        $matchInfo = (isset($apiData['match']) && is_array($apiData['match'])) ? $apiData['match'] : [];
+        $isLiveNow = !empty($matchInfo['isLive']);
+        $hasStarted = !empty($matchInfo['hasStarted']);
+        if ($isLiveNow || $hasStarted) {
+            continue;
+        }
+
+        if (!empty($matchInfo['startUtc'])) {
+            $startTs = strtotime((string)$matchInfo['startUtc']);
+            if ($startTs !== false && $startTs <= time()) {
+                continue;
+            }
+        }
+
         if (!isset($apiData['markets']) || !is_array($apiData['markets'])) continue;
 
         // Érdemi piacok szűrése (min 2 selection)
@@ -200,26 +210,32 @@ foreach ($selectedIndices as $si) {
         $m2Idx = abs(crc32($today . 'mB' . $si)) % count($mPool);
         $market2 = $validMarkets[$mPool[$m2Idx]];
 
-        $sel1Idx = abs(crc32($today . 'sA' . $si)) % count($market1['selections']);
-        $sel2Idx = abs(crc32($today . 'sB' . $si)) % count($market2['selections']);
+        $validSelections1 = array_values(array_filter($market1['selections'], function ($sel) {
+            $odd = (float)($sel['odd'] ?? 0);
+            return $odd > 1;
+        }));
+        $validSelections2 = array_values(array_filter($market2['selections'], function ($sel) {
+            $odd = (float)($sel['odd'] ?? 0);
+            return $odd > 1;
+        }));
 
-        $s1 = $market1['selections'][$sel1Idx];
-        $s2 = $market2['selections'][$sel2Idx];
+        if (empty($validSelections1) || empty($validSelections2)) continue;
+
+        $sel1Idx = abs(crc32($today . 'sA' . $si)) % count($validSelections1);
+        $sel2Idx = abs(crc32($today . 'sB' . $si)) % count($validSelections2);
+
+        $s1 = $validSelections1[$sel1Idx];
+        $s2 = $validSelections2[$sel2Idx];
+
+        $market1Name = (string)($market1['name'] ?? '');
+        $market2Name = (string)($market2['name'] ?? '');
+        $market1Special = isset($market1['specialValue']) ? trim((string)$market1['specialValue']) : '';
+        $market2Special = isset($market2['specialValue']) ? trim((string)$market2['specialValue']) : '';
+        $market1Full = $market1Name . ($market1Special !== '' ? ' (' . $market1Special . ')' : '');
+        $market2Full = $market2Name . ($market2Special !== '' ? ' (' . $market2Special . ')' : '');
 
         $odd1 = round((float)($s1['odd'] ?? 1.0), 2);
         $odd2 = round((float)($s2['odd'] ?? 1.0), 2);
-
-        // Odds korrekció: target combo = 2.5
-        if ($odd2 > 0) {
-            $odd1 = round($targetComboOdds / $odd2, 2);
-            if ($odd1 < 1.10) {
-                $odd1 = 1.10;
-                $odd2 = round($targetComboOdds / $odd1, 2);
-            } elseif ($odd1 > 3.00) {
-                $odd1 = round(sqrt($targetComboOdds), 2);
-                $odd2 = round($targetComboOdds / $odd1, 2);
-            }
-        }
 
         $comboOdds = round($odd1 * $odd2, 2);
 
@@ -230,8 +246,22 @@ foreach ($selectedIndices as $si) {
             'league'    => $match['championship_name'] ?? '',
             'startTime' => $startFormatted,
             'picks'     => [
-                ['market' => $market1['name'] ?? '', 'pick' => $s1['name'] ?? '', 'odds' => $odd1],
-                ['market' => $market2['name'] ?? '', 'pick' => $s2['name'] ?? '', 'odds' => $odd2],
+                [
+                    'market' => $market1Full,
+                    'marketId' => (int)($market1['id'] ?? ($market1['marketId'] ?? 0)),
+                    'specialValue' => $market1Special,
+                    'pick' => $s1['name'] ?? '',
+                    'selectionId' => (int)($s1['id'] ?? ($s1['selectionId'] ?? 0)),
+                    'odds' => $odd1
+                ],
+                [
+                    'market' => $market2Full,
+                    'marketId' => (int)($market2['id'] ?? ($market2['marketId'] ?? 0)),
+                    'specialValue' => $market2Special,
+                    'pick' => $s2['name'] ?? '',
+                    'selectionId' => (int)($s2['id'] ?? ($s2['selectionId'] ?? 0)),
+                    'odds' => $odd2
+                ],
             ],
             'comboOdds' => $comboOdds,
             'isDailyTip' => true,

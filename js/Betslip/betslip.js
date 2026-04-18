@@ -475,12 +475,40 @@ document.addEventListener('DOMContentLoaded', function() {
         const markets = Array.isArray(details && details.markets) ? details.markets : [];
         if (!item || markets.length === 0) return null;
 
+        const targetMarketId = parseInt(item.marketId, 10) || 0;
+        const targetSelectionId = parseInt(item.selectionId, 10) || 0;
         const targetMarket = normalizeLiveKeyPart(item.market);
         const targetPick = normalizeLiveKeyPart(item.pick);
 
+        // Elsődleges egyeztetés stabil API azonosító alapján.
+        if (targetMarketId > 0 && targetSelectionId > 0) {
+            for (const market of markets) {
+                const marketId = parseInt(market && (market.id || market.marketId), 10) || 0;
+                if (marketId !== targetMarketId) continue;
+
+                const selections = Array.isArray(market.selections) ? market.selections : [];
+                const selection = selections.find(sel => (parseInt(sel && (sel.id || sel.selectionId), 10) || 0) === targetSelectionId);
+                if (selection) {
+                    return {
+                        selection,
+                        market
+                    };
+                }
+            }
+        }
+
         for (const market of markets) {
-            const marketFullName = buildMarketFullNameFromApi(market);
-            if (normalizeLiveKeyPart(marketFullName) !== targetMarket) {
+            const specialVal = market && market.specialValue ? ' (' + market.specialValue + ')' : '';
+            const marketRawName = (market && market.name) || '';
+            const marketTranslatedName = td(marketRawName);
+            const normalizedCandidates = new Set([
+                normalizeLiveKeyPart(marketRawName + specialVal),
+                normalizeLiveKeyPart(marketTranslatedName + specialVal),
+                normalizeLiveKeyPart(marketRawName),
+                normalizeLiveKeyPart(marketTranslatedName)
+            ]);
+            const marketMatches = normalizedCandidates.has(targetMarket);
+            if (!marketMatches) {
                 continue;
             }
 
@@ -606,8 +634,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     nextReason = matchFinished ? 'match_finished' : 'market_closed';
                 }
             } else if (matchFinished || hasAnyMarkets) {
-                nextUnavailable = true;
-                nextReason = matchFinished ? 'match_finished' : 'market_closed';
+                // Napi tippeknél név-eltérés miatt ne zárjuk le vakon a piacot,
+                // csak ha a meccs ténylegesen befejeződött.
+                if (item.isDailyTip && !matchFinished) {
+                    nextUnavailable = !!item.marketUnavailable;
+                    nextReason = item.unavailableReason || null;
+                } else {
+                    nextUnavailable = true;
+                    nextReason = matchFinished ? 'match_finished' : 'market_closed';
+                }
             }
 
             const currentOdds = parseFloat(item.odds) || 0;
@@ -679,7 +714,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const visibleMatchIdsWithMarkets = new Set();
         let visibleSelectionButtonCount = 0;
 
-        const upsertOdds = (homeTeam, awayTeam, market, pick, odds, matchId, isBoosted, originalOdds) => {
+        const upsertOdds = (homeTeam, awayTeam, market, pick, odds, matchId, isBoosted, originalOdds, marketId, selectionId) => {
             const parsedOdds = parseFloat(odds);
             if (!homeTeam || !awayTeam || !market || !pick || Number.isNaN(parsedOdds)) {
                 return;
@@ -690,7 +725,9 @@ document.addEventListener('DOMContentLoaded', function() {
             oddsMap.set(key, {
                 odds: parsedOdds,
                 isBoosted: !!isBoosted,
-                originalOdds: parseFloat(originalOdds) || 0
+                originalOdds: parseFloat(originalOdds) || 0,
+                marketId: parseInt(marketId, 10) || 0,
+                selectionId: parseInt(selectionId, 10) || 0
             });
 
             // Fallback kulcs matchId nélkül, ha a szelvény elemnél nincs matchId eltárolva.
@@ -700,7 +737,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     oddsMap.set(fallbackKey, {
                         odds: parsedOdds,
                         isBoosted: !!isBoosted,
-                        originalOdds: parseFloat(originalOdds) || 0
+                        originalOdds: parseFloat(originalOdds) || 0,
+                        marketId: parseInt(marketId, 10) || 0,
+                        selectionId: parseInt(selectionId, 10) || 0
                     });
                 }
             }
@@ -721,7 +760,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 btn.getAttribute('data-odd'),
                 matchId,
                 btn.hasAttribute('data-boosted'),
-                btn.getAttribute('data-original-odd')
+                btn.getAttribute('data-original-odd'),
+                btn.getAttribute('data-market-id'),
+                btn.getAttribute('data-selection-id')
             );
         });
 
@@ -734,7 +775,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 el.getAttribute('data-odd'),
                 el.getAttribute('data-event-id'),
                 false,
-                0
+                0,
+                el.getAttribute('data-market-id'),
+                el.getAttribute('data-selection-id')
             );
         });
 
@@ -845,6 +888,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 odds: nextOdds,
                 isBoosted: nextBoosted,
                 originalOdds: (nextBoosted && nextOriginal > 0) ? nextOriginal : null,
+                marketId: (parseInt(item.marketId, 10) || 0) > 0 ? item.marketId : (parseInt(visibleOdds.marketId, 10) || 0),
+                selectionId: (parseInt(item.selectionId, 10) || 0) > 0 ? item.selectionId : (parseInt(visibleOdds.selectionId, 10) || 0),
                 marketUnavailable: nextUnavailable,
                 unavailableReason: nextReason
             };
@@ -898,8 +943,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ===== TOGGLE: HOZZÁADÁS / ELTÁVOLÍTÁS =====
-    window.toggleOdds = function(homeTeam, awayTeam, pick, odds, market, matchId, isDailyTip, isBoosted, originalOdds) {
+    window.toggleOdds = function(homeTeam, awayTeam, pick, odds, market, matchId, isDailyTip, isBoosted, originalOdds, marketId, selectionId) {
         console.log('[BETSLIP] toggleOdds called:', {homeTeam, awayTeam, pick, odds, market, matchId, isDailyTip});
+        const normalizedMarketId = parseInt(marketId, 10) || 0;
+        const normalizedSelectionId = parseInt(selectionId, 10) || 0;
         
         var existingIndex = ticketItems.findIndex(function(item) {
             return item.homeTeam === homeTeam && 
@@ -940,6 +987,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 pick: pick,
                 odds: odds,
                 market: market,
+                marketId: normalizedMarketId,
+                selectionId: normalizedSelectionId,
                 matchId: matchId || 0,
                 isDailyTip: !!isDailyTip,
                 isBoosted: !!isBoosted,

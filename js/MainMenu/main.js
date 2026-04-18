@@ -788,6 +788,8 @@ document.addEventListener('DOMContentLoaded', function () {
               const odds = parseFloat(this.getAttribute('data-odd'));
               const market = this.getAttribute('data-market');
               const matchId = parseInt(this.getAttribute('data-match-id')) || 0;
+              const marketId = parseInt(this.getAttribute('data-market-id')) || 0;
+              const selectionId = parseInt(this.getAttribute('data-selection-id')) || 0;
               const isBoostedSel = this.hasAttribute('data-boosted');
               const originalOddsAttr = this.getAttribute('data-original-odd');
               const originalOdds = originalOddsAttr !== null ? parseFloat(originalOddsAttr) : null;
@@ -795,7 +797,7 @@ document.addEventListener('DOMContentLoaded', function () {
               if (!homeTeam || !awayTeam || !pick || !market) return;
 
               if (typeof window.toggleOdds === 'function') {
-                  window.toggleOdds(homeTeam, awayTeam, pick, odds, market, matchId, false, isBoostedSel, originalOdds);
+                  window.toggleOdds(homeTeam, awayTeam, pick, odds, market, matchId, false, isBoostedSel, originalOdds, marketId, selectionId);
                   setTimeout(() => {
                       if (typeof window.refreshAllOddsButtons === 'function') {
                           window.refreshAllOddsButtons();
@@ -960,6 +962,8 @@ document.addEventListener('DOMContentLoaded', function () {
                               data-away="${escapeHtml(match.awayTeam || '')}"
                               data-pick="${escapeHtml(selection.name)}"
                               data-market="${escapeHtml(marketFullName)}"
+                              data-market-id="${parseInt(market.id || market.marketId || 0)}"
+                              data-selection-id="${parseInt(selection.id || selection.selectionId || 0)}"
                               data-odd="${oddsValue}"
                               ${isBoosted && originalOdds > 0 ? `data-original-odd="${originalOdds}"` : ''}
                               ${isBoosted ? 'data-boosted="1"' : ''}>
@@ -1430,6 +1434,8 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       // Sidebar is frissüljön
       loadSidebarSports();
+      // Napi tippek oddsainak frissítése
+      loadDailyTips();
   }, 30000);
 
   // ========== NAPI TIPPEK ==========
@@ -1480,6 +1486,8 @@ document.addEventListener('DOMContentLoaded', function () {
                                data-away="${escapeHtml(tip.awayTeam)}"
                                data-pick="${escapeHtml(p.pick)}"
                                data-market="${escapeHtml(p.market)}"
+                             data-market-id="${parseInt(p.marketId || 0)}"
+                             data-selection-id="${parseInt(p.selectionId || 0)}"
                                data-odd="${parseFloat(p.odds).toFixed(2)}">
                               <span class="tip-combo-market">${escapeHtml(p.market)}</span>
                               <span class="tip-combo-value">${escapeHtml(p.pick)} <span class="tip-combo-odd">${parseFloat(p.odds).toFixed(2)}</span></span>
@@ -1518,8 +1526,10 @@ document.addEventListener('DOMContentLoaded', function () {
                           const odd = parseFloat(el.getAttribute('data-odd'));
                           const market = el.getAttribute('data-market');
                           const matchId = parseInt(el.getAttribute('data-event-id'));
+                          const marketId = parseInt(el.getAttribute('data-market-id')) || 0;
+                          const selectionId = parseInt(el.getAttribute('data-selection-id')) || 0;
                           if (typeof window.toggleOdds === 'function') {
-                              window.toggleOdds(home, away, pick, odd, market, matchId, true);
+                              window.toggleOdds(home, away, pick, odd, market, matchId, true, false, null, marketId, selectionId);
                           }
                       });
                       syncTipButtonStates();
