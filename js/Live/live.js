@@ -16,6 +16,29 @@
     const mobileBetslipSlot = document.getElementById('live-betslip-slot');
     const mobileViewportQuery = window.matchMedia('(max-width: 768px)');
 
+    function updateLiveUrlState(options) {
+        const opts = options || {};
+        const url = new URL(window.location.href);
+
+        if (Object.prototype.hasOwnProperty.call(opts, 'eventId')) {
+            if (opts.eventId) {
+                url.searchParams.set('eventId', String(opts.eventId));
+            } else {
+                url.searchParams.delete('eventId');
+            }
+        }
+
+        const nextQuery = url.searchParams.toString();
+        const nextUrl = url.pathname + (nextQuery ? '?' + nextQuery : '') + url.hash;
+        window.history.replaceState({}, document.title, nextUrl);
+    }
+
+    function getEventIdFromCurrentUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const eventId = parseInt(params.get('eventId'), 10);
+        return Number.isFinite(eventId) && eventId > 0 ? eventId : null;
+    }
+
     function applyDynamicTranslations(root) {
         if (!root) return;
         root.querySelectorAll('.country-name, .league-name, .league-country, .league-title, .market-name, .selection-name, .sport-name').forEach(el => {
@@ -622,6 +645,7 @@
         viewingMatchDetails = true;
         currentDetailEventId = eventId;
         refreshRequestId++;
+        updateLiveUrlState({ eventId: eventId });
         
         const container = matchesContainer;
         container.innerHTML = '<div class="loading-details"><i class="fas fa-spinner fa-spin"></i> ' + t('live.loadingMatchDetails', 'Meccs adatok betöltése...') + '</div>';
@@ -864,6 +888,7 @@
             console.log('[LIVE.JS] Vissza a meccsekhez');
             viewingMatchDetails = false;
             currentDetailEventId = null;
+            updateLiveUrlState({ eventId: null });
             refreshMatches();
         });
     }
@@ -1042,13 +1067,11 @@
             buildSportsNav(liveSports);
 
             // ========== MECCS MEGNYITÁSA URL-BŐL (ha ?eventId=123 paraméterrel érkezünk) ==========
-            const urlParams = new URLSearchParams(window.location.search);
-            const eventIdParam = urlParams.get('eventId');
-            if (eventIdParam) {
-                const eid = parseInt(eventIdParam);
+            const initialEventId = getEventIdFromCurrentUrl();
+            if (initialEventId) {
+                const eid = parseInt(initialEventId, 10);
                 if (eid) {
                     loadMatchDetails(eid);
-                    window.history.replaceState({}, document.title, window.location.pathname);
                     loadTickerAndUpcoming();
                     return; // Ne írja felül a matchesContainer-t a refreshMatches
                 }
@@ -1390,6 +1413,13 @@
     }, 5000);
 
     window.addEventListener('languageChanged', function() {
+        const eventIdInUrl = getEventIdFromCurrentUrl();
+        if (eventIdInUrl) {
+            if (!viewingMatchDetails || currentDetailEventId !== eventIdInUrl) {
+                loadMatchDetails(eventIdInUrl);
+                return;
+            }
+        }
         if (viewingMatchDetails && currentDetailEventId) {
             refreshMatchDetails();
             return;

@@ -15,6 +15,29 @@ document.addEventListener("DOMContentLoaded", () => {
     const mobileBetslipSlot = document.getElementById('esport-betslip-slot');
     const mobileViewportQuery = window.matchMedia('(max-width: 768px)');
 
+    function updateEsportUrlState(options) {
+        const opts = options || {};
+        const url = new URL(window.location.href);
+
+        if (Object.prototype.hasOwnProperty.call(opts, 'eventId')) {
+            if (opts.eventId) {
+                url.searchParams.set('eventId', String(opts.eventId));
+            } else {
+                url.searchParams.delete('eventId');
+            }
+        }
+
+        const nextQuery = url.searchParams.toString();
+        const nextUrl = url.pathname + (nextQuery ? '?' + nextQuery : '') + url.hash;
+        window.history.replaceState({}, document.title, nextUrl);
+    }
+
+    function getEventIdFromCurrentUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const eventId = parseInt(params.get('eventId'), 10);
+        return Number.isFinite(eventId) && eventId > 0 ? eventId : null;
+    }
+
     function isMobileViewport() {
         return !!(mobileViewportQuery && mobileViewportQuery.matches);
     }
@@ -691,6 +714,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function loadMatchDetails(eventId) {
         currentMatchId = eventId;
+        updateEsportUrlState({ eventId: eventId });
         var container = getActiveContainer();
         container.innerHTML = '<div class="loading-details"><i class="fas fa-spinner fa-spin"></i> ' + t('esport.loadingMatch', 'Meccs adatok betöltése...') + '</div>';
         fetch("../../backend/ApiRequest/get_match_details.php?eventId=" + eventId)
@@ -814,6 +838,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (backBtn) {
             backBtn.addEventListener('click', function() {
                 currentMatchId = null;
+                updateEsportUrlState({ eventId: null });
                 if (activeTab === 'live') {
                     refreshLiveMatches();
                 } else {
@@ -868,6 +893,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // ===== AUTO REFRESH =====
     function refreshActive() {
+        if (!currentMatchId) {
+            updateEsportUrlState({ eventId: null });
+        }
         if (activeTab === 'live') {
             refreshLiveMatches();
         } else {
@@ -930,7 +958,12 @@ document.addEventListener("DOMContentLoaded", () => {
             .catch(function() {});
     }).then(function() {
         initEsportSearch();
-        refreshTodayMatches();
+        var initialEventId = getEventIdFromCurrentUrl();
+        if (initialEventId) {
+            loadMatchDetails(initialEventId);
+        } else {
+            refreshTodayMatches();
+        }
         startAutoRefresh();
     });
 
@@ -938,7 +971,16 @@ document.addEventListener("DOMContentLoaded", () => {
     setInterval(fetchGameTags, 60000);
 
     window.addEventListener('languageChanged', function() {
-        refreshActive();
+        var eventIdInUrl = getEventIdFromCurrentUrl();
+        if (eventIdInUrl) {
+            if (!currentMatchId || currentMatchId !== eventIdInUrl) {
+                loadMatchDetails(eventIdInUrl);
+            } else {
+                refreshMatchDetails(currentMatchId);
+            }
+        } else {
+            refreshActive();
+        }
         fetch("../../backend/ApiRequest/get_matches_live.php")
             .then(function(res) { return res.json(); })
             .then(function(apiResult) {

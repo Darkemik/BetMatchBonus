@@ -23,10 +23,54 @@ document.addEventListener('DOMContentLoaded', function () {
   let isFinishedView = false; // Lejátszott meccsek nézet
   let currentSortMode = 'priority'; // 'priority' vagy 'time'
   const sortToggleBtn = document.getElementById('sortToggleBtn');
+    let isMatchDetailsView = false;
 
-  // ========== LAPOZÁS ==========
-  const PAGE_SIZE = 20;
-  let currentPage = 1;
+    function updateSortToggleVisibility() {
+            if (!sortToggleBtn) return;
+            sortToggleBtn.style.display = (isFinishedView || isMatchDetailsView) ? 'none' : '';
+    }
+
+  function updateMainMenuUrlState(options) {
+      const opts = options || {};
+      const params = new URLSearchParams(window.location.search);
+
+      if (opts.sportId && Number(opts.sportId) > 0) {
+          params.set('sport_id', String(Number(opts.sportId)));
+      } else {
+          params.delete('sport_id');
+      }
+
+      if (opts.eventId && Number(opts.eventId) > 0) {
+          params.set('eventId', String(Number(opts.eventId)));
+      } else {
+          params.delete('eventId');
+      }
+
+      if (opts.view === 'finished') {
+          params.set('view', 'finished');
+      } else {
+          params.delete('view');
+      }
+
+      if (opts.boosted === true) {
+          params.set('boosted', '1');
+      } else {
+          params.delete('boosted');
+      }
+
+      const query = params.toString();
+      const nextUrl = query ? (window.location.pathname + '?' + query) : window.location.pathname;
+      window.history.replaceState({}, document.title, nextUrl);
+  }
+
+  function getEventIdFromCurrentUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const eventId = parseInt(params.get('eventId'), 10);
+      return Number.isFinite(eventId) && eventId > 0 ? eventId : null;
+  }
+
+    // ========== LAPOZÁS ==========
+    let currentPage = 1;
 
   // ========== LIGA PRIORITÁS ==========
   const PRIORITY_LEAGUES = [
@@ -514,20 +558,31 @@ document.addEventListener('DOMContentLoaded', function () {
   // ========== MECCSEK BETÖLTÉSE (CENTER) ==========
   function loadMatches(sportId) {
       if (!matchesContainer) return;
+      isMatchDetailsView = false;
+      updateSortToggleVisibility();
+
+      const normalizedSportId = Number(sportId) > 0 ? Number(sportId) : currentSportId;
+      currentSportId = normalizedSportId;
+      updateMainMenuUrlState({
+          sportId: currentSportId,
+          eventId: null,
+          view: null,
+          boosted: false
+      });
 
     matchesContainer.innerHTML = '<div class="loading-details"><i class="fas fa-spinner fa-spin"></i> ' + t('mainMenu.loadingMatches', 'Meccsek betöltése...') + '</div>';
 
       let url = '../../backend/ApiRequest/mainmenu_matches.php';
-      if (sportId && sportId > 0) {
-          url += '?sport_id=' + sportId;
+      if (normalizedSportId && normalizedSportId > 0) {
+          url += '?sport_id=' + normalizedSportId;
       }
       // Rendezési mód hozzáadása
       url += (url.includes('?') ? '&' : '?') + 'sort=' + currentSortMode;
 
       // Cím frissítése
       if (centerTitle) {
-          if (sportId && sportId > 0) {
-              const sport = sportsData.find(s => s.sport_api_id === sportId);
+          if (normalizedSportId && normalizedSportId > 0) {
+              const sport = sportsData.find(s => s.sport_api_id === normalizedSportId);
               const sportName = sport ? td(sport.sport_name) : 'Sport';
               centerTitle.innerHTML = `<i class="fas ${sport ? sport.icon : 'fa-trophy'}"></i> ${escapeHtml(sportName)} ${t('mainMenu.matchesWord', 'meccsek')}`;
           } else {
@@ -730,6 +785,15 @@ document.addEventListener('DOMContentLoaded', function () {
   // ========== MECCS RÉSZLETEK BETÖLTÉSE ==========
   function loadMatchDetails(eventId) {
       if (!matchesContainer) return;
+      isMatchDetailsView = true;
+      updateSortToggleVisibility();
+
+      updateMainMenuUrlState({
+          sportId: currentSportId,
+          eventId: eventId,
+          view: isFinishedView ? 'finished' : null,
+          boosted: false
+      });
 
     matchesContainer.innerHTML = '<div class="loading-details"><i class="fas fa-spinner fa-spin"></i> ' + t('mainMenu.loadingMatchDetails', 'Meccs adatok betöltése...') + '</div>';
 
@@ -908,6 +972,8 @@ document.addEventListener('DOMContentLoaded', function () {
       const backBtn = document.getElementById('back-to-matches');
       if (backBtn) {
           backBtn.addEventListener('click', function () {
+              isMatchDetailsView = false;
+              updateSortToggleVisibility();
               if (isFinishedView) {
                   loadFinishedMatches(currentSportId);
               } else {
@@ -1170,6 +1236,8 @@ document.addEventListener('DOMContentLoaded', function () {
       const backBtn = document.getElementById('back-to-matches');
       if (backBtn) {
           backBtn.addEventListener('click', function () {
+              isMatchDetailsView = false;
+              updateSortToggleVisibility();
               loadFinishedMatches(currentSportId);
           });
       }
@@ -1191,10 +1259,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (finishedBtn) {
           finishedBtn.classList.toggle('active', isFinishedView);
       }
-      // Rendezés gomb elrejtése lejátszott nézetben
-      if (sortToggleBtn) {
-          sortToggleBtn.style.display = isFinishedView ? 'none' : '';
-      }
+      updateSortToggleVisibility();
       if (sportsData.length) {
           renderSportsList(sportsData);
       }
@@ -1202,18 +1267,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function loadFinishedMatches(sportId) {
       if (!matchesContainer) return;
+      isMatchDetailsView = false;
       setFinishedViewMode(true);
+
+      const normalizedSportId = Number(sportId) > 0 ? Number(sportId) : currentSportId;
+      currentSportId = normalizedSportId;
+      updateMainMenuUrlState({
+          sportId: currentSportId,
+          eventId: null,
+          view: 'finished',
+          boosted: false
+      });
 
       matchesContainer.innerHTML = '<div class="loading-details"><i class="fas fa-spinner fa-spin"></i> ' + t('mainMenu.loadingMatches', 'Meccsek betöltése...') + '</div>';
 
       let url = '../../backend/ApiRequest/get_finished_matches.php';
-      if (sportId && sportId > 0) {
-          url += '?sport_id=' + sportId;
+      if (normalizedSportId && normalizedSportId > 0) {
+          url += '?sport_id=' + normalizedSportId;
       }
 
       // Cím frissítése
       if (centerTitle) {
-          const sport = sportsData.find(s => s.sport_api_id === sportId);
+          const sport = sportsData.find(s => s.sport_api_id === normalizedSportId);
           const sportName = sport ? sport.sport_name : '';
           const prefix = sportName ? escapeHtml(sportName) + ' — ' : '';
           centerTitle.innerHTML = '<i class="fas fa-flag-checkered"></i> ' + prefix + t('mainMenu.finishedMatchesTitle', 'Lejátszott meccsek (utolsó 3 nap)');
@@ -1299,22 +1374,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // ========== ODDSŰRHAJÓ AUTO-OPEN (ha ?boosted=1 paraméterrel érkezünk) ==========
   const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('boosted') === '1' && boostedMatchBtn) {
-      boostedMatchBtn.click();
-      // Töröljük a paramétert az URL-ből, hogy frissítéskor ne nyíljon meg újra
-      const cleanUrl = window.location.pathname;
-      window.history.replaceState({}, document.title, cleanUrl);
-  }
+  const initialSportId = parseInt(urlParams.get('sport_id'), 10);
+  const initialEventId = parseInt(urlParams.get('eventId'), 10);
+  const initialView = (urlParams.get('view') || '').toLowerCase();
+  const shouldOpenBoosted = urlParams.get('boosted') === '1';
 
   // ========== MECCS MEGNYITÁSA URL-BŐL (ha ?eventId=123 paraméterrel érkezünk) ==========
-  const eventIdParam = urlParams.get('eventId');
-  if (eventIdParam) {
-      const eid = parseInt(eventIdParam);
-      if (eid) {
-          loadMatchDetails(eid);
-          const cleanUrl2 = window.location.pathname;
-          window.history.replaceState({}, document.title, cleanUrl2);
-      }
+  if (initialView === 'finished') {
+      setFinishedViewMode(true);
   }
 
   // Globálisan elérhető, pl. betslip előzményekből
@@ -1472,7 +1539,10 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       const activeSportId = currentSportId || 66;
-      if (isFinishedView) {
+      const eventIdInUrl = getEventIdFromCurrentUrl();
+      if (eventIdInUrl) {
+          loadMatchDetails(eventIdInUrl);
+      } else if (isFinishedView) {
           loadFinishedMatches(activeSportId);
       } else {
           loadMatches(activeSportId);
@@ -1549,7 +1619,20 @@ document.addEventListener('DOMContentLoaded', function () {
   syncMobileBetslipCount();
 
   loadSidebarSports();
-  loadMatches(66); // Alapértelmezett: Foci
+
+  if (initialEventId) {
+      currentSportId = initialSportId > 0 ? initialSportId : currentSportId;
+      loadMatchDetails(initialEventId);
+  } else if (shouldOpenBoosted && boostedMatchBtn) {
+      boostedMatchBtn.click();
+  } else if (isFinishedView) {
+      currentSportId = initialSportId > 0 ? initialSportId : currentSportId;
+      loadFinishedMatches(currentSportId);
+  } else {
+      currentSportId = initialSportId > 0 ? initialSportId : 66;
+      loadMatches(currentSportId);
+  }
+
   loadDailyTips();
   scheduleColumnsSync();
 });
