@@ -189,6 +189,16 @@ document.addEventListener('DOMContentLoaded', function () {
           .trim();
   }
 
+      function normalizeSearchText(value) {
+          return (value || '')
+          .toString()
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
+
   function getMarketCategory(marketName) {
       const name = normalizeMarketText(marketName);
 
@@ -657,12 +667,11 @@ document.addEventListener('DOMContentLoaded', function () {
       let searchTimeout = null;
       matchSearch.addEventListener('input', function () {
           clearTimeout(searchTimeout);
-          const val = this.value.trim().toLowerCase();
+          const val = normalizeSearchText(this.value);
 
           searchTimeout = setTimeout(() => {
               const rows = matchesContainer.querySelectorAll('.match-row');
               const leagueGroups = matchesContainer.querySelectorAll('.league-group');
-              if (rows.length === 0) return;
 
               if (val === '') {
                   // Keresés ürítve: minden league-group és első meccs látható
@@ -679,22 +688,50 @@ document.addEventListener('DOMContentLoaded', function () {
 
               // Keresési mód: meccseket szűrjük, league-group-okat is kezeljük
               let visibleCount = 0;
-              leagueGroups.forEach(lg => {
-                  const lgRows = lg.querySelectorAll('.match-row');
-                  let hasVisible = false;
-                  lgRows.forEach(row => {
-                      const text = row.textContent.toLowerCase();
+              if (leagueGroups.length > 0) {
+                  leagueGroups.forEach(lg => {
+                      const leagueHeaderText = normalizeSearchText(
+                          lg.querySelector('.league-header')?.textContent || ''
+                      );
+                      const leagueMatchesSearch = leagueHeaderText.includes(val);
+                      const lgRows = lg.querySelectorAll('.match-row');
+                      let hasVisible = false;
+
+                      if (leagueMatchesSearch) {
+                          lgRows.forEach(row => {
+                              row.style.display = '';
+                              hasVisible = true;
+                              visibleCount++;
+                          });
+                          lg.style.display = hasVisible ? '' : 'none';
+                          if (hasVisible) lg.classList.add('expanded');
+                          return;
+                      }
+
+                      lgRows.forEach(row => {
+                          const text = normalizeSearchText(row.textContent);
+                          if (text.includes(val)) {
+                              row.style.display = '';
+                              hasVisible = true;
+                              visibleCount++;
+                          } else {
+                              row.style.display = 'none';
+                          }
+                      });
+                      lg.style.display = hasVisible ? '' : 'none';
+                      if (hasVisible) lg.classList.add('expanded');
+                  });
+              } else {
+                  rows.forEach(row => {
+                      const text = normalizeSearchText(row.textContent);
                       if (text.includes(val)) {
                           row.style.display = '';
-                          hasVisible = true;
                           visibleCount++;
                       } else {
                           row.style.display = 'none';
                       }
                   });
-                  lg.style.display = hasVisible ? '' : 'none';
-                  if (hasVisible) lg.classList.add('expanded');
-              });
+              }
 
               // "Több betöltése" gomb elrejtése keresés alatt
               const loadMoreWrapper = matchesContainer.querySelector('.load-more-btn-wrapper');
