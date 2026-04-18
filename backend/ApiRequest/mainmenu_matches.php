@@ -16,10 +16,77 @@ $sportId = isset($_GET['sport_id']) ? (int)$_GET['sport_id'] : 0;
 $gameTag = isset($_GET['game_tag']) ? trim($_GET['game_tag']) : '';
 $sortMode = isset($_GET['sort']) && $_GET['sort'] === 'time' ? 'time' : 'priority';
 
+function resolveCompetitionApiId(mysqli $conn, array $countryCodes, array $leagueNames): int {
+    if (empty($leagueNames)) return 0;
+
+    $leagueConds = [];
+    $types = '';
+    $params = [];
+
+    foreach ($leagueNames as $name) {
+        $leagueConds[] = 'LOWER(TRIM(comp.name)) = ?';
+        $types .= 's';
+        $params[] = mb_strtolower(trim($name));
+    }
+
+    $countrySql = '';
+    if (!empty($countryCodes)) {
+        $countryConds = [];
+        foreach ($countryCodes as $code) {
+            $countryConds[] = 'UPPER(TRIM(c.code)) = ?';
+            $types .= 's';
+            $params[] = strtoupper(trim($code));
+        }
+        $countrySql = ' AND (' . implode(' OR ', $countryConds) . ')';
+    }
+
+    $sql = "
+        SELECT comp.api_id
+        FROM Competitions comp
+        LEFT JOIN Countries c ON comp.country_id = c.id
+        WHERE comp.api_id IS NOT NULL
+          AND (" . implode(' OR ', $leagueConds) . ")
+          {$countrySql}
+        ORDER BY comp.id ASC
+        LIMIT 1
+    ";
+
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) return 0;
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    return (int)($row['api_id'] ?? 0);
+}
+
 $from = (new DateTime('now', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
 $to   = (new DateTime('+3 days 23:59:59', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
 
-$priorityOrder = str_replace('comp.', 'ch.', LEAGUE_PRIORITY_SQL);
+$priorityIds = [
+    'premier' => resolveCompetitionApiId($conn, ['ENG', 'GBR'], ['Premier League']),
+    'laliga' => resolveCompetitionApiId($conn, ['ESP'], ['La Liga', 'LaLiga']),
+    'serieA' => resolveCompetitionApiId($conn, ['ITA'], ['Serie A']),
+    'bundesliga' => resolveCompetitionApiId($conn, ['DEU', 'GER'], ['Bundesliga']),
+    'ligue1' => resolveCompetitionApiId($conn, ['FRA'], ['Ligue 1']),
+    'fizz' => resolveCompetitionApiId($conn, [], ['Fizz Liga', 'Fizz League']),
+    'nb1' => resolveCompetitionApiId($conn, ['HUN'], ['NB I', 'NB1', 'OTP Bank Liga']),
+];
+
+$fallbackPriorityOrder = str_replace('comp.', 'ch.', LEAGUE_PRIORITY_SQL);
+$priorityOrder = "
+    CASE
+        WHEN ch.api_id = " . ($priorityIds['premier'] > 0 ? (int)$priorityIds['premier'] : -1) . " THEN 1
+        WHEN ch.api_id = " . ($priorityIds['laliga'] > 0 ? (int)$priorityIds['laliga'] : -1) . " THEN 2
+        WHEN ch.api_id = " . ($priorityIds['serieA'] > 0 ? (int)$priorityIds['serieA'] : -1) . " THEN 3
+        WHEN ch.api_id = " . ($priorityIds['bundesliga'] > 0 ? (int)$priorityIds['bundesliga'] : -1) . " THEN 4
+        WHEN ch.api_id = " . ($priorityIds['ligue1'] > 0 ? (int)$priorityIds['ligue1'] : -1) . " THEN 5
+        WHEN ch.api_id = " . ($priorityIds['fizz'] > 0 ? (int)$priorityIds['fizz'] : -1) . " THEN 6
+        WHEN ch.api_id = " . ($priorityIds['nb1'] > 0 ? (int)$priorityIds['nb1'] : -1) . " THEN 7
+        ELSE ({$fallbackPriorityOrder})
+    END
+";
 $orderBy = $sortMode === 'time'
     ? 'm.start_time ASC, ' . $priorityOrder
     : $priorityOrder . ', m.start_time ASC';
@@ -53,7 +120,9 @@ if ($sportId > 0) {
         m.home_score,
         m.away_score,
         c.name AS country_name,
+        c.code AS country_code,
         ch.name AS championship_name,
+        ch.api_id AS competition_api_id,
         s.api_id AS sport_api_id
     FROM Events m
     JOIN Sports s ON m.sport_id = s.id
@@ -89,7 +158,9 @@ if ($sportId > 0) {
         m.home_score,
         m.away_score,
         c.name AS country_name,
+        c.code AS country_code,
         ch.name AS championship_name,
+        ch.api_id AS competition_api_id,
         s.api_id AS sport_api_id
     FROM Events m
     JOIN Sports s ON m.sport_id = s.id
@@ -190,9 +261,14 @@ while ($row = $res->fetch_assoc()):
 
     $apiId = (int)$row['api_id'];
 
-    $leagueKey = $champName ?: 'Egyéb';
+    $competitionApiId = (int)($row['competition_api_id'] ?? 0);
+    $countryCode = strtoupper(trim((string)($row['country_code'] ?? '')));
+    $leagueKey = $competitionApiId > 0
+        ? ('comp_' . $competitionApiId)
+        : ('name_' . mb_strtolower($champName . '|' . $countryCode));
     if (!isset($leagues[$leagueKey])) {
         $leagues[$leagueKey] = [
+            'league_name' => $champName ?: 'Egyéb',
             'country' => $countryName ?: 'Nemzetközi',
             'matches' => [],
         ];
@@ -218,13 +294,13 @@ $stmt->close();
     <div class="no-matches"><i class="fas fa-calendar-times" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i>Jelenleg nincs megjeleníthető meccs.</div>
 <?php else: ?>
     <?php $leagueRenderIndex = 0; ?>
-    <?php foreach ($leagues as $leagueName => $leagueData):
+    <?php foreach ($leagues as $leagueKey => $leagueData):
         $isInitiallyExpanded = $leagueRenderIndex < 3;
         $matches = $leagueData['matches'];
         $matchCount = count($matches);
         $countryDisplay = htmlspecialchars($leagueData['country']);
-        $leagueDisplay = htmlspecialchars($leagueName);
-        $leagueId = 'league-' . md5($leagueName);
+        $leagueDisplay = htmlspecialchars($leagueData['league_name'] ?? 'Egyéb');
+        $leagueId = 'league-' . md5($leagueKey);
     ?>
     <div class="league-group<?php echo $isInitiallyExpanded ? ' expanded' : ''; ?>" data-league-id="<?php echo $leagueId; ?>">
         <div class="league-header" onclick="this.parentElement.classList.toggle('expanded')">

@@ -733,6 +733,16 @@ document.addEventListener('DOMContentLoaded', function () {
           return;
       }
 
+      const startDateTimeText = match.startUtc
+          ? new Date(match.startUtc).toLocaleString('hu-HU', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit'
+          }).replace(',', '')
+          : '-';
+
       const markets = matchData.markets || [];
       const isBoostedMatch = match.isBoosted || false;
 
@@ -746,7 +756,7 @@ document.addEventListener('DOMContentLoaded', function () {
               <div class="match-meta">
                   <span class="meta-item"><i class="fas fa-globe-europe"></i> ${escapeHtml(td(match.country || t('mainMenu.unknown', 'Ismeretlen')))}</span>
                   <span class="meta-item"><i class="fas fa-trophy"></i> ${escapeHtml(td(match.championship || t('mainMenu.unknown', 'Ismeretlen')))}</span>
-                  <span class="meta-item"><i class="fas fa-clock"></i> ${escapeHtml(match.startUtc ? new Date(match.startUtc).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }) : '-')}</span>
+                  <span class="meta-item"><i class="fas fa-clock"></i> ${escapeHtml(startDateTimeText)}</span>
               </div>
               <div class="match-scoreboard">
                   <div class="team-side home-side">

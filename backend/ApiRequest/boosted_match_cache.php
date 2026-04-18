@@ -9,6 +9,52 @@
 require_once dirname(__DIR__) . "/connect.php";
 require_once dirname(__DIR__) . "/config.php";
 
+function resolveCompetitionApiIdForBoost(mysqli $conn, array $countryCodes, array $leagueNames): int
+{
+    if (empty($leagueNames)) return 0;
+
+    $leagueConds = [];
+    $types = '';
+    $params = [];
+
+    foreach ($leagueNames as $name) {
+        $leagueConds[] = 'LOWER(TRIM(comp.name)) = ?';
+        $types .= 's';
+        $params[] = mb_strtolower(trim($name));
+    }
+
+    $countrySql = '';
+    if (!empty($countryCodes)) {
+        $countryConds = [];
+        foreach ($countryCodes as $code) {
+            $countryConds[] = 'UPPER(TRIM(c.code)) = ?';
+            $types .= 's';
+            $params[] = strtoupper(trim($code));
+        }
+        $countrySql = ' AND (' . implode(' OR ', $countryConds) . ')';
+    }
+
+    $sql = "
+        SELECT comp.api_id
+        FROM Competitions comp
+        LEFT JOIN Countries c ON comp.country_id = c.id
+        WHERE comp.api_id IS NOT NULL
+          AND (" . implode(' OR ', $leagueConds) . ")
+          {$countrySql}
+        ORDER BY comp.id ASC
+        LIMIT 1
+    ";
+
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) return 0;
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    return (int)($row['api_id'] ?? 0);
+}
+
 /**
  * Visszaadja a mai napi boosted meccs adatait.
  * Ha még nincs cache (vagy más napé), újraszámolja.
@@ -22,7 +68,7 @@ function getDailyBoostedMatch(): ?array
 {
     global $conn;
 
-    $strategyVersion = 2;
+    $strategyVersion = 3;
     $today = date('Y-m-d');
     $cacheDir  = __DIR__ . '/../uploads';
     $cacheFile = $cacheDir . '/boosted_cache.json';
@@ -51,12 +97,34 @@ function getDailyBoostedMatch(): ?array
     }
 
     // 2) Jelöltek lekérdezése (fix napi ablak: ma 00:00 UTC → ma 23:59 UTC)
-    //    - Sporttól függetlenül (nincs sport szűrés)
-    //    - Mindig a napi legfontosabb meccset keressük (liga-prioritás, majd kezdési idő)
+    //    - Csak labdarúgás (sport_api_id=66)
+    //    - A főoldali sorrend szerinti első 3 ligatáblából választunk
     $from = (new DateTime('today 00:00:00', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
     $to   = (new DateTime('today 23:59:59', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
 
-    $priorityOrder = str_replace('comp.', 'ch.', LEAGUE_PRIORITY_SQL);
+    $priorityIds = [
+        'premier' => resolveCompetitionApiIdForBoost($conn, ['ENG', 'GBR'], ['Premier League']),
+        'laliga' => resolveCompetitionApiIdForBoost($conn, ['ESP'], ['La Liga', 'LaLiga']),
+        'serieA' => resolveCompetitionApiIdForBoost($conn, ['ITA'], ['Serie A']),
+        'bundesliga' => resolveCompetitionApiIdForBoost($conn, ['DEU', 'GER'], ['Bundesliga']),
+        'ligue1' => resolveCompetitionApiIdForBoost($conn, ['FRA'], ['Ligue 1']),
+        'fizz' => resolveCompetitionApiIdForBoost($conn, [], ['Fizz Liga', 'Fizz League']),
+        'nb1' => resolveCompetitionApiIdForBoost($conn, ['HUN'], ['NB I', 'NB1', 'OTP Bank Liga']),
+    ];
+
+    $fallbackPriorityOrder = str_replace('comp.', 'ch.', LEAGUE_PRIORITY_SQL);
+    $priorityOrder = "
+        CASE
+            WHEN ch.api_id = " . ($priorityIds['premier'] > 0 ? (int)$priorityIds['premier'] : -1) . " THEN 1
+            WHEN ch.api_id = " . ($priorityIds['laliga'] > 0 ? (int)$priorityIds['laliga'] : -1) . " THEN 2
+            WHEN ch.api_id = " . ($priorityIds['serieA'] > 0 ? (int)$priorityIds['serieA'] : -1) . " THEN 3
+            WHEN ch.api_id = " . ($priorityIds['bundesliga'] > 0 ? (int)$priorityIds['bundesliga'] : -1) . " THEN 4
+            WHEN ch.api_id = " . ($priorityIds['ligue1'] > 0 ? (int)$priorityIds['ligue1'] : -1) . " THEN 5
+            WHEN ch.api_id = " . ($priorityIds['fizz'] > 0 ? (int)$priorityIds['fizz'] : -1) . " THEN 6
+            WHEN ch.api_id = " . ($priorityIds['nb1'] > 0 ? (int)$priorityIds['nb1'] : -1) . " THEN 7
+            ELSE ({$fallbackPriorityOrder})
+        END
+    ";
 
     $sql = "
     SELECT 
@@ -65,7 +133,9 @@ function getDailyBoostedMatch(): ?array
         m.start_time AS start_utc,
         m.is_live,
         c.name AS country_name,
+        c.code AS country_code,
         ch.name AS championship_name,
+        ch.api_id AS competition_api_id,
         s.api_id AS sport_api_id,
         ({$priorityOrder}) AS priority_score
     FROM Events m
@@ -73,6 +143,7 @@ function getDailyBoostedMatch(): ?array
     JOIN Competitions ch ON m.competition_id = ch.id
     LEFT JOIN Countries c ON ch.country_id = c.id
     WHERE m.start_time BETWEEN ? AND ?
+            AND s.api_id = 66
       AND m.status_id != 3
       AND m.is_live = 0
       AND m.name IS NOT NULL
@@ -96,6 +167,42 @@ function getDailyBoostedMatch(): ?array
         $candidates[] = $row;
     }
     $stmt->close();
+
+    if (empty($candidates)) {
+        return null;
+    }
+
+    $topLeagueKeys = [];
+    $topLeagueKeySet = [];
+
+    foreach ($candidates as $row) {
+        $competitionApiId = (int)($row['competition_api_id'] ?? 0);
+        $countryCode = strtoupper(trim((string)($row['country_code'] ?? '')));
+        $leagueName = trim((string)($row['championship_name'] ?? ''));
+        $leagueKey = $competitionApiId > 0
+            ? ('comp_' . $competitionApiId)
+            : ('name_' . mb_strtolower($leagueName . '|' . $countryCode));
+
+        if (!isset($topLeagueKeySet[$leagueKey])) {
+            $topLeagueKeySet[$leagueKey] = true;
+            $topLeagueKeys[] = $leagueKey;
+            if (count($topLeagueKeys) >= 3) {
+                break;
+            }
+        }
+    }
+
+    if (!empty($topLeagueKeySet)) {
+        $candidates = array_values(array_filter($candidates, function ($row) use ($topLeagueKeySet) {
+            $competitionApiId = (int)($row['competition_api_id'] ?? 0);
+            $countryCode = strtoupper(trim((string)($row['country_code'] ?? '')));
+            $leagueName = trim((string)($row['championship_name'] ?? ''));
+            $leagueKey = $competitionApiId > 0
+                ? ('comp_' . $competitionApiId)
+                : ('name_' . mb_strtolower($leagueName . '|' . $countryCode));
+            return isset($topLeagueKeySet[$leagueKey]);
+        }));
+    }
 
     if (empty($candidates)) {
         return null;
