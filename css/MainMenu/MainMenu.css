@@ -1201,37 +1201,70 @@ body .simple-footer {
 .league-matches .matches-table td {
   padding: 10px 14px;
   font-size: 13px;
+  border-bottom: none !important;
 }
 
 /* Oszlopszélességek: Meccs | Állás | Kezdés | Státusz */
-.league-matches .matches-table td:nth-child(1) { width: 40%; text-align: left; padding-left: 20px; }
-.league-matches .matches-table td:nth-child(2) { width: 15%; text-align: center; }
-.league-matches .matches-table td:nth-child(3) { width: 22%; text-align: center; }
-.league-matches .matches-table td:nth-child(4) { width: 23%; text-align: center; }
+.league-matches .matches-table td:nth-child(1) { width: 78%; text-align: left; padding-left: 20px; }
+.league-matches .matches-table td:nth-child(2) { width: 6%; text-align: center; }
+.league-matches .matches-table td:nth-child(3) { width: 8%; text-align: center; }
+.league-matches .matches-table td:nth-child(4) { width: 8%; text-align: center; }
 
 /* Meccs cella csapatok elrendezése */
 .league-matches .match-cell {
-  white-space: normal;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  overflow: hidden;
 }
 
 .league-matches .match-cell .home-team,
 .league-matches .match-cell .away-team {
-  display: inline-block;
-  min-width: 80px;
+  display: block;
+  min-width: 0;
   color: #fff !important;
   font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.league-matches .match-cell .home-team {
+  flex: 0 1 auto;
+  max-width: 42%;
+  text-align: left;
+}
+
+.league-matches .match-cell .away-team {
+  flex: 1 1 auto;
+  max-width: none;
+  text-align: left;
 }
 
 .league-matches .match-cell .vs {
-  display: inline-block;
-  margin: 0 10px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
   background: rgba(76,175,80,0.15);
-  padding: 2px 8px;
+  padding: 2px 6px;
   border-radius: 4px;
   font-size: 10px;
   color: #4CAF50;
   font-weight: 700;
-  vertical-align: middle;
+  text-align: center;
+}
+
+.league-matches .match-cell .full-match-name {
+  display: block;
+  width: 100%;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Eredmény badge stílus */
@@ -1336,6 +1369,7 @@ body .simple-footer {
     display: none;
   }
   .league-matches .matches-table td:nth-child(2),
+  .league-matches .matches-table td:nth-child(3),
   .league-matches .matches-table td:nth-child(4) {
     display: none;
   }
@@ -1343,17 +1377,25 @@ body .simple-footer {
     padding: 8px 8px;
   }
   .league-matches .matches-table td:nth-child(1) {
-    width: 66%;
+    width: 100%;
     padding-left: 10px;
-  }
-  .league-matches .matches-table td:nth-child(3) {
-    width: 34%;
   }
 
   .league-matches .match-cell {
-    white-space: normal;
-    overflow-wrap: anywhere;
-    word-break: break-word;
+    white-space: nowrap;
+    display: flex;
+    gap: 3px;
+    overflow: hidden;
+  }
+
+  .league-matches .match-cell .home-team {
+    flex: 0 1 auto;
+    max-width: 38%;
+  }
+
+  .league-matches .match-cell .away-team {
+    flex: 1 1 auto;
+    max-width: none;
   }
 
   .league-matches .match-cell .home-team,
@@ -1361,15 +1403,16 @@ body .simple-footer {
   .league-matches .match-cell .full-match-name {
     min-width: 0;
     max-width: 100%;
-    white-space: normal;
-    overflow-wrap: anywhere;
-    word-break: break-word;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 12px;
   }
 
   .league-matches .match-cell .vs {
-    margin: 0 4px;
-    padding: 1px 6px;
-    font-size: 9px;
+    margin: 0;
+    padding: 1px 4px;
+    font-size: 8px;
     letter-spacing: 0.3px;
   }
 

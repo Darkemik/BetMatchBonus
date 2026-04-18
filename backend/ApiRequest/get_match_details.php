@@ -80,6 +80,8 @@ $response_data = [
         'awayTeam'     => $awayTeam,
         'score'        => $score ?: '0 - 0',
         'isLive'       => $dbRow ? (bool)$dbRow['is_live'] : false,
+        'statusId'     => $dbRow ? (int)($dbRow['status_id'] ?? 0) : 0,
+        'hasStarted'   => false,
         'liveTime'     => $dbRow['live_time'] ?? null,
         'liveStatus'   => null,
         'country'      => $dbRow['country_name'] ?: 'Nemzetközi',
@@ -88,6 +90,22 @@ $response_data = [
     ],
     'markets' => []
 ];
+
+if ($dbRow) {
+    $startTs = 0;
+    if (!empty($dbRow['start_time'])) {
+        try {
+            $dtStart = new DateTime($dbRow['start_time'], new DateTimeZone('UTC'));
+            $startTs = $dtStart->getTimestamp();
+        } catch (Throwable $e) {
+            $startTs = 0;
+        }
+    }
+
+    if ((int)($dbRow['is_live'] ?? 0) === 1 || ($startTs > 0 && $startTs <= time())) {
+        $response_data['match']['hasStarted'] = true;
+    }
+}
 
 // ── 2) ODDS/PIACOK API-BÓL (real-time) ──────────
 
@@ -109,6 +127,7 @@ try {
     // Ha az API-nak van frissebb score/live adat, felülírjuk
     if (!empty($apiData['isLive'])) {
         $response_data['match']['isLive'] = true;
+        $response_data['match']['hasStarted'] = true;
     }
     if (!empty($apiData['liveTime'])) {
         $response_data['match']['liveTime'] = $apiData['liveTime'];
@@ -130,6 +149,10 @@ try {
 
     // Piacok feldolgozása
     if (isset($apiData['markets']) && is_array($apiData['markets'])) {
+        // Oddsűrhajó meccs indulás után nem rakható: piacokat lezárjuk.
+        if ($isBoostedMatch && !empty($response_data['match']['hasStarted'])) {
+            $apiData['markets'] = [];
+        }
 
         $seen = [];
         foreach ($apiData['markets'] as $market) {

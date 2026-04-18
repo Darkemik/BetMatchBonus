@@ -210,35 +210,125 @@ const COUNTRY_MAP = [
 // ── Bajnokság prioritás (mainmenu rendezéshez) ───
 const LEAGUE_PRIORITY_SQL = "
     CASE
-        WHEN comp.name LIKE '%Világbajnokság%'
-          OR comp.name LIKE '%World Cup%'
-          OR comp.name LIKE '%VB%'                  THEN 1
-        WHEN comp.name LIKE '%Nemzetek Ligája%'
-          OR comp.name LIKE '%Nations League%'      THEN 2
-        WHEN comp.name LIKE '%Európa-bajnokság%'
-          OR comp.name LIKE '%Euro 20%'
-          OR comp.name LIKE '%UEFA EURO%'            THEN 3
-        WHEN comp.name LIKE '%Champions League%'
-          OR comp.name LIKE '%Bajnokok Ligája%'     THEN 4
-        WHEN comp.name LIKE '%Europa League%'
-          OR comp.name LIKE '%Európa Liga%'         THEN 5
-        WHEN comp.name LIKE '%Conference League%'
-          OR comp.name LIKE '%Konferencia Liga%'    THEN 6
-        WHEN comp.name LIKE '%NB I%'
-          OR comp.name LIKE '%NB1%'
-          OR comp.name LIKE '%Nemzeti Bajnokság%'
-          OR comp.name LIKE '%OTP Bank Liga%'       THEN 7
-        WHEN comp.name LIKE '%Premier League%'      THEN 8
-        WHEN comp.name LIKE '%La Liga%'
-          OR comp.name LIKE '%LaLiga%'              THEN 9
-        WHEN comp.name LIKE '%Bundesliga%'          THEN 10
-        WHEN comp.name LIKE '%Serie A%'             THEN 11
-        WHEN comp.name LIKE '%Ligue 1%'             THEN 12
-        WHEN comp.name LIKE '%NB II%'
-          OR comp.name LIKE '%NB2%'
-          OR comp.name LIKE '%Második osztály%'     THEN 13
-        WHEN comp.name LIKE '%Eredivisie%'          THEN 14
-        WHEN comp.name LIKE '%Primeira Liga%'       THEN 15
+                                -- Csak a sima Bundesliga legyen elöl, a többi Bundesliga variáns hátra.
+                                WHEN LOWER(TRIM(comp.name)) LIKE '%bundesliga 2%'
+                                    OR LOWER(TRIM(comp.name)) LIKE '%2. bundesliga%'
+                                    OR LOWER(TRIM(comp.name)) LIKE '%bundesliga ii%'
+                                    OR LOWER(TRIM(comp.name)) LIKE '%bundesliga 3%'
+                                    OR LOWER(TRIM(comp.name)) LIKE '%3. bundesliga%'
+                                    OR LOWER(TRIM(comp.name)) LIKE '%bundesliga iii%'
+                                    OR LOWER(TRIM(comp.name)) LIKE '%regionalliga%'
+                                    OR LOWER(TRIM(comp.name)) LIKE '%northern premier league%'                 THEN 97
+
+                -- Kiemelt TOP3 sorrend:
+                -- 1) Premier League  2) LaLiga  3) Serie A
+                -- (mindig ez legyen elöl a főoldalon)
+                WHEN LOWER(TRIM(comp.name)) = 'premier league'
+                    AND (
+                                c.name IS NULL
+                                OR LOWER(TRIM(c.name)) IN ('england', 'anglia', 'eng', 'united kingdom', 'great britain', 'uk')
+                            )                                                              THEN 1
+                WHEN LOWER(TRIM(comp.name)) IN ('la liga', 'laliga')                        THEN 2
+                WHEN LOWER(TRIM(comp.name)) LIKE 'serie a%'                                 THEN 3
+                                WHEN LOWER(TRIM(comp.name)) = 'bundesliga'                                  THEN 4
+                WHEN LOWER(TRIM(comp.name)) = 'ligue 1'                                      THEN 5
+                WHEN LOWER(TRIM(comp.name)) IN ('fizz liga', 'fizz league')                  THEN 6
+                WHEN LOWER(TRIM(comp.name)) IN ('nb i', 'nb1', 'otp bank liga')             THEN 7
+
+                -- Kifejezett tiltólista: ezek ne jöjjenek a Premier League elé.
+                WHEN comp.name LIKE '%Northern Premier League%'                      THEN 96
+
+                -- Női sorozatok ne kerüljenek a fő élmezőnybe kulcsszavas egyezés miatt.
+                WHEN comp.name LIKE '%Női%'
+                    OR comp.name LIKE '%Women%'
+                    OR comp.name LIKE '%(N)%'                                         THEN 90
+
+                -- Nemzetközi top sorrend (a megadott lista szerint)
+                WHEN comp.name LIKE '%COSAFA Cup%'                                  THEN 7
+                WHEN comp.name LIKE '%Copa America%'                                THEN 8
+                WHEN comp.name LIKE '%Európa-bajnokság%'
+                    OR comp.name LIKE '%UEFA EURO%'
+                    OR comp.name LIKE '%Euro 20%'
+                    OR comp.name LIKE '%Euro %'                                       THEN 9
+                WHEN comp.name LIKE '%Women%Champions League%'
+                    OR comp.name LIKE '%Women''s Champions League%'
+                    OR comp.name LIKE '%Női%Bajnokok Ligája%'
+                    OR comp.name LIKE '%Női%Champions League%'                        THEN 70
+                WHEN comp.name LIKE '%Bajnokok Ligája%'
+                    OR comp.name LIKE '%Champions League%'                            THEN 10
+                WHEN comp.name LIKE '%Európa-liga%'
+                    OR comp.name LIKE '%Európa Liga%'
+                    OR comp.name LIKE '%Europa League%'                               THEN 11
+                WHEN comp.name LIKE '%Konferencia Liga%'
+                    OR comp.name LIKE '%Conference League%'                           THEN 12
+                WHEN comp.name LIKE '%Nemzetek Ligája%'
+                    OR comp.name LIKE '%Nations League%'                              THEN 13
+                WHEN comp.name LIKE '%UEFA Szuperkupa%'
+                    OR comp.name LIKE '%UEFA Super Cup%'                              THEN 14
+                WHEN comp.name LIKE '%Olimpiai Játékok%'
+                    OR comp.name LIKE '%Olympic Games%'                               THEN 15
+                WHEN comp.name LIKE '%FIFA Klub-vb%'
+                    OR comp.name LIKE '%FIFA Club World Cup%'                         THEN 16
+                WHEN comp.name LIKE '%Finalissima%'                                 THEN 17
+                WHEN comp.name LIKE '%Világbajnokság%'
+                    OR comp.name LIKE '%World Cup%'
+                    OR comp.name LIKE '% VB%'
+                    OR comp.name LIKE 'VB%'
+                    OR comp.name LIKE '%VB %'                                         THEN 18
+
+                -- Anglia
+                WHEN comp.name LIKE '%Championship%'                                THEN 20
+                WHEN comp.name LIKE '%FA Cup%'                                      THEN 21
+                WHEN comp.name LIKE '%EFL Cup%'
+                    OR comp.name LIKE '%Carabao Cup%'                                 THEN 22
+
+                -- Magyarország
+                WHEN comp.name LIKE '%NB I%'
+                    OR comp.name LIKE '%NB1%'
+                    OR comp.name LIKE '%Nemzeti Bajnokság I%'
+                    OR comp.name LIKE '%OTP Bank Liga%'                               THEN 24
+                WHEN comp.name LIKE '%NB II%'
+                    OR comp.name LIKE '%NB2%'
+                    OR comp.name LIKE '%Nemzeti Bajnokság II%'
+                    OR comp.name LIKE '%Második osztály%'                             THEN 25
+                WHEN comp.name LIKE '%MOL Magyar Kupa%'
+                    OR comp.name LIKE '%Magyar Kupa%'                                 THEN 26
+
+                -- Spanyolország
+                WHEN comp.name LIKE '%La Liga%'
+                    OR comp.name LIKE '%LaLiga%'                                      THEN 27
+                WHEN comp.name LIKE '%Copa del Rey%'                                THEN 28
+                WHEN comp.name LIKE '%Spanyol Szuperkupa%'
+                    OR comp.name LIKE '%Supercopa%'                                   THEN 29
+
+                -- Olaszország
+                WHEN comp.name LIKE '%Serie A%'                                     THEN 30
+                WHEN comp.name LIKE '%Coppa Italia%'                                THEN 31
+                WHEN comp.name LIKE '%Olasz Szuperkupa%'
+                    OR comp.name LIKE '%Supercoppa%'                                  THEN 32
+
+                -- Németország
+                WHEN LOWER(TRIM(comp.name)) = 'bundesliga'                          THEN 33
+                WHEN comp.name LIKE '%Német Kupa%'
+                    OR comp.name LIKE '%DFB-Pokal%'                                   THEN 34
+
+                -- Franciaország
+                WHEN comp.name LIKE '%Ligue 1%'                                     THEN 35
+                WHEN comp.name LIKE '%Francia Kupa%'
+                    OR comp.name LIKE '%Coupe de France%'                             THEN 36
+
+                -- Portugália
+                WHEN comp.name LIKE '%Liga Portugal%'
+                    OR comp.name LIKE '%Primeira Liga%'                               THEN 37
+
+                -- Törökország
+                WHEN comp.name LIKE '%Super Lig%'
+                    OR comp.name LIKE '%Süper Lig%'                                   THEN 38
+
+                -- Görögország
+                WHEN comp.name LIKE '%Szuperliga%'
+                    OR comp.name LIKE '%Super League Greece%'                         THEN 39
+
         ELSE 99
     END
 ";

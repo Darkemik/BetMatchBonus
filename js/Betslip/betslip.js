@@ -30,6 +30,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let isHistoryLoading = false;
     let historyLoadedOnce = false;
     let historyAbortController = null;
+    let oddsSyncScheduled = false;
+    let remoteAvailabilityValidationInFlight = false;
+    let lastRemoteAvailabilityValidationAt = 0;
+    const REMOTE_AVAILABILITY_VALIDATION_MS = 20000;
 
     function formatFt(value) {
         return (parseFloat(value) || 0).toLocaleString('hu-HU', {
@@ -44,6 +48,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function normalizeLiveKeyPart(value) {
         return String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
+    }
+
+    function buildTicketOddsKey(homeTeam, awayTeam, market, pick, matchId) {
+        const normalizedMatchId = parseInt(matchId, 10) || 0;
+        return [
+            String(normalizedMatchId),
+            normalizeLiveKeyPart(homeTeam),
+            normalizeLiveKeyPart(awayTeam),
+            normalizeLiveKeyPart(market),
+            normalizeLiveKeyPart(pick)
+        ].join('|');
     }
 
     function buildSelectionLiveKey(selection) {
@@ -410,6 +425,450 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('bettingHistory', JSON.stringify(bettingHistory));
     }
 
+    function getUnavailableTicketItemsCount() {
+        return ticketItems.filter(item => !!item.marketUnavailable).length;
+    }
+
+    function isCurrentEventContextWithoutMarkets(matchId, visibleSelectionButtonCount) {
+        if (!(matchId > 0)) return false;
+        if (visibleSelectionButtonCount > 0) return false;
+        if (!window.location || !window.location.search) return false;
+
+        const eventIdInUrl = parseInt(new URLSearchParams(window.location.search).get('eventId'), 10) || 0;
+        return eventIdInUrl === matchId;
+    }
+
+    function buildMarketFullNameFromApi(market) {
+        const specialVal = market && market.specialValue ? ' (' + market.specialValue + ')' : '';
+        return td((market && market.name) || '') + specialVal;
+    }
+
+    function findSelectionInMatchDetails(details, item) {
+        const markets = Array.isArray(details && details.markets) ? details.markets : [];
+        if (!item || markets.length === 0) return null;
+
+        const targetMarket = normalizeLiveKeyPart(item.market);
+        const targetPick = normalizeLiveKeyPart(item.pick);
+
+        for (const market of markets) {
+            const marketFullName = buildMarketFullNameFromApi(market);
+            if (normalizeLiveKeyPart(marketFullName) !== targetMarket) {
+                continue;
+            }
+
+            const selections = Array.isArray(market.selections) ? market.selections : [];
+            const selection = selections.find(sel => normalizeLiveKeyPart(sel && sel.name) === targetPick);
+            if (selection) {
+                return {
+                    selection,
+                    market
+                };
+            }
+        }
+
+        return null;
+    }
+
+    function isMatchFinishedFromDetails(details) {
+        const match = details && details.match ? details.match : null;
+        if (!match) return false;
+
+        const statusId = parseInt(match.statusId, 10) || 0;
+        if (statusId === 3) {
+            return true;
+        }
+
+        const liveStatus = normalizeLiveKeyPart(match.liveStatus || '');
+        const finishedKeywords = ['ended', 'finished', 'full time', 'ft', 'final', 'vege', 'vége'];
+        if (finishedKeywords.some(keyword => liveStatus.includes(keyword))) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function isMatchStartedFromDetails(details) {
+        const match = details && details.match ? details.match : null;
+        if (!match) return false;
+
+        if (match.hasStarted === true) {
+            return true;
+        }
+
+        if (match.isLive === true) {
+            return true;
+        }
+
+        if (match.startUtc) {
+            const startTs = Date.parse(match.startUtc);
+            if (!Number.isNaN(startTs) && startTs <= Date.now()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    async function validateTicketAvailabilityFromApi() {
+        if (!Array.isArray(ticketItems) || ticketItems.length === 0) return false;
+
+        const uniqueMatchIds = Array.from(new Set(
+            ticketItems
+                .map(item => parseInt(item.matchId, 10) || 0)
+                .filter(id => id > 0)
+        ));
+
+        if (uniqueMatchIds.length === 0) return false;
+
+        const detailResults = await Promise.allSettled(
+            uniqueMatchIds.map(matchId =>
+                fetch('../../backend/ApiRequest/get_match_details.php?eventId=' + matchId, { cache: 'no-store' })
+                    .then(r => (r.ok ? r.json() : null))
+                    .catch(() => null)
+            )
+        );
+
+        const detailsByMatchId = new Map();
+        uniqueMatchIds.forEach((matchId, idx) => {
+            const settled = detailResults[idx];
+            if (settled && settled.status === 'fulfilled' && settled.value) {
+                detailsByMatchId.set(matchId, settled.value);
+            }
+        });
+
+        if (detailsByMatchId.size === 0) return false;
+
+        let changedCount = 0;
+        let hasNewUnavailable = false;
+
+        ticketItems = ticketItems.map(item => {
+            const matchId = parseInt(item.matchId, 10) || 0;
+            if (!(matchId > 0)) return item;
+
+            const details = detailsByMatchId.get(matchId);
+            if (!details) return item;
+
+            const wasUnavailable = !!item.marketUnavailable;
+            const selectionLookup = findSelectionInMatchDetails(details, item);
+            const matchFinished = isMatchFinishedFromDetails(details);
+            const matchStarted = isMatchStartedFromDetails(details);
+            const oddsRocketStartedLock = !!(details.match && details.match.isBoosted) && matchStarted && !matchFinished;
+            const hasAnyMarkets = Array.isArray(details.markets) && details.markets.length > 0;
+
+            let nextUnavailable = false;
+            let nextReason = null;
+            let nextOdds = parseFloat(item.odds) || 0;
+            let nextBoosted = !!item.isBoosted;
+            let nextOriginalOdds = parseFloat(item.originalOdds) || 0;
+
+            if (oddsRocketStartedLock) {
+                nextUnavailable = true;
+                nextReason = 'oddsrocket_started';
+            } else if (selectionLookup && selectionLookup.selection) {
+                const selection = selectionLookup.selection;
+                const parsedSelectionOdds = parseFloat(selection.odds) || 0;
+                if (parsedSelectionOdds > 0) {
+                    nextOdds = parsedSelectionOdds;
+                }
+                nextBoosted = !!selection.boosted;
+                nextOriginalOdds = parseFloat(selection.originalOdds) || 0;
+
+                if (matchFinished || parsedSelectionOdds <= 1) {
+                    nextUnavailable = true;
+                    nextReason = matchFinished ? 'match_finished' : 'market_closed';
+                }
+            } else if (matchFinished || hasAnyMarkets) {
+                nextUnavailable = true;
+                nextReason = matchFinished ? 'match_finished' : 'market_closed';
+            }
+
+            const currentOdds = parseFloat(item.odds) || 0;
+            const currentBoosted = !!item.isBoosted;
+            const currentOriginalOdds = parseFloat(item.originalOdds) || 0;
+            const currentReason = item.unavailableReason || null;
+
+            const oddsChanged = Math.abs(currentOdds - nextOdds) > 0.0001;
+            const boostedChanged = currentBoosted !== nextBoosted;
+            const originalChanged = Math.abs(currentOriginalOdds - nextOriginalOdds) > 0.0001;
+            const unavailableChanged = wasUnavailable !== nextUnavailable;
+            const reasonChanged = currentReason !== nextReason;
+
+            if (!oddsChanged && !boostedChanged && !originalChanged && !unavailableChanged && !reasonChanged) {
+                return item;
+            }
+
+            if (!wasUnavailable && nextUnavailable) {
+                hasNewUnavailable = true;
+            }
+
+            changedCount += 1;
+            return {
+                ...item,
+                odds: nextOdds,
+                isBoosted: nextBoosted,
+                originalOdds: (nextBoosted && nextOriginalOdds > 0) ? nextOriginalOdds : null,
+                marketUnavailable: nextUnavailable,
+                unavailableReason: nextReason
+            };
+        });
+
+        if (changedCount > 0) {
+            saveToStorage();
+            renderTicket();
+
+            if (hasNewUnavailable) {
+                BmbPopup.warning('Ez a kimenetel már nem fogadható!', 'Piac lezárva');
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    function scheduleRemoteAvailabilityValidation(force = false) {
+        if (remoteAvailabilityValidationInFlight) return;
+
+        const now = Date.now();
+        if (!force && (now - lastRemoteAvailabilityValidationAt) < REMOTE_AVAILABILITY_VALIDATION_MS) {
+            return;
+        }
+
+        remoteAvailabilityValidationInFlight = true;
+        lastRemoteAvailabilityValidationAt = now;
+
+        validateTicketAvailabilityFromApi()
+            .catch((e) => {
+                console.warn('[BETSLIP] Piac elérhetőség ellenőrzés hiba:', e);
+            })
+            .finally(() => {
+                remoteAvailabilityValidationInFlight = false;
+            });
+    }
+
+    function collectVisibleOddsBySelection() {
+        const oddsMap = new Map();
+        const visibleMatchIdsWithMarkets = new Set();
+        let visibleSelectionButtonCount = 0;
+
+        const upsertOdds = (homeTeam, awayTeam, market, pick, odds, matchId, isBoosted, originalOdds) => {
+            const parsedOdds = parseFloat(odds);
+            if (!homeTeam || !awayTeam || !market || !pick || Number.isNaN(parsedOdds)) {
+                return;
+            }
+
+            const normalizedMatchId = parseInt(matchId, 10) || 0;
+            const key = buildTicketOddsKey(homeTeam, awayTeam, market, pick, normalizedMatchId);
+            oddsMap.set(key, {
+                odds: parsedOdds,
+                isBoosted: !!isBoosted,
+                originalOdds: parseFloat(originalOdds) || 0
+            });
+
+            // Fallback kulcs matchId nélkül, ha a szelvény elemnél nincs matchId eltárolva.
+            if (normalizedMatchId > 0) {
+                const fallbackKey = buildTicketOddsKey(homeTeam, awayTeam, market, pick, 0);
+                if (!oddsMap.has(fallbackKey)) {
+                    oddsMap.set(fallbackKey, {
+                        odds: parsedOdds,
+                        isBoosted: !!isBoosted,
+                        originalOdds: parseFloat(originalOdds) || 0
+                    });
+                }
+            }
+        };
+
+        document.querySelectorAll('.selection-btn[data-home][data-away][data-market][data-pick][data-odd]').forEach(btn => {
+            visibleSelectionButtonCount += 1;
+            const matchId = parseInt(btn.getAttribute('data-match-id'), 10) || 0;
+            if (matchId > 0) {
+                visibleMatchIdsWithMarkets.add(matchId);
+            }
+
+            upsertOdds(
+                btn.getAttribute('data-home'),
+                btn.getAttribute('data-away'),
+                btn.getAttribute('data-market'),
+                btn.getAttribute('data-pick'),
+                btn.getAttribute('data-odd'),
+                matchId,
+                btn.hasAttribute('data-boosted'),
+                btn.getAttribute('data-original-odd')
+            );
+        });
+
+        document.querySelectorAll('.tip-combo-pick[data-home][data-away][data-market][data-pick][data-odd]').forEach(el => {
+            upsertOdds(
+                el.getAttribute('data-home'),
+                el.getAttribute('data-away'),
+                el.getAttribute('data-market'),
+                el.getAttribute('data-pick'),
+                el.getAttribute('data-odd'),
+                el.getAttribute('data-event-id'),
+                false,
+                0
+            );
+        });
+
+        return {
+            oddsMap,
+            visibleMatchIdsWithMarkets,
+            visibleSelectionButtonCount
+        };
+    }
+
+    function syncTicketOddsWithVisibleSelections() {
+        if (!Array.isArray(ticketItems) || ticketItems.length === 0) {
+            return false;
+        }
+
+        const {
+            oddsMap,
+            visibleMatchIdsWithMarkets,
+            visibleSelectionButtonCount
+        } = collectVisibleOddsBySelection();
+        if (oddsMap.size === 0) {
+            // Akkor is frissítünk, ha részletek oldalon nincs már fogadható piac az adott meccshez.
+            let unavailableChanged = false;
+            ticketItems = ticketItems.map(item => {
+                const matchId = parseInt(item.matchId, 10) || 0;
+                if (!isCurrentEventContextWithoutMarkets(matchId, visibleSelectionButtonCount)) {
+                    return item;
+                }
+                if (item.marketUnavailable) {
+                    return item;
+                }
+                unavailableChanged = true;
+                return {
+                    ...item,
+                    marketUnavailable: true,
+                    unavailableReason: 'market_closed'
+                };
+            });
+
+            if (unavailableChanged) {
+                saveToStorage();
+                renderTicket();
+                return true;
+            }
+
+            return false;
+        }
+
+        let changedCount = 0;
+
+        ticketItems = ticketItems.map(item => {
+            const matchId = parseInt(item.matchId, 10) || 0;
+            const key = buildTicketOddsKey(item.homeTeam, item.awayTeam, item.market, item.pick, matchId);
+            const fallbackKey = matchId > 0
+                ? buildTicketOddsKey(item.homeTeam, item.awayTeam, item.market, item.pick, 0)
+                : key;
+
+            const visibleOdds = oddsMap.get(key) || oddsMap.get(fallbackKey);
+            if (!visibleOdds) {
+                const unavailableByMarket = matchId > 0 && visibleMatchIdsWithMarkets.has(matchId);
+                const unavailableByCurrentEventState = isCurrentEventContextWithoutMarkets(matchId, visibleSelectionButtonCount);
+                if (!unavailableByMarket && !unavailableByCurrentEventState) {
+                    return item;
+                }
+
+                changedCount += item.marketUnavailable ? 0 : 1;
+                return {
+                    ...item,
+                    marketUnavailable: true,
+                    unavailableReason: 'market_closed'
+                };
+            }
+
+            const currentUnavailable = !!item.marketUnavailable;
+            const nextUnavailable = (parseFloat(visibleOdds.odds) || 0) <= 1;
+            const currentReason = item.unavailableReason || null;
+            const nextReason = nextUnavailable ? 'market_closed' : null;
+
+            if (nextUnavailable && !currentUnavailable) {
+                changedCount += 1;
+            }
+            if (!nextUnavailable && currentUnavailable) {
+                changedCount += 1;
+            }
+            const reasonChanged = currentReason !== nextReason;
+            if (reasonChanged) {
+                changedCount += 1;
+            }
+
+            const currentOdds = parseFloat(item.odds) || 0;
+            const nextOdds = parseFloat(visibleOdds.odds) || 0;
+            const currentBoosted = !!item.isBoosted;
+            const nextBoosted = !!visibleOdds.isBoosted;
+            const currentOriginal = parseFloat(item.originalOdds) || 0;
+            const nextOriginal = parseFloat(visibleOdds.originalOdds) || 0;
+
+            const oddsChanged = Math.abs(currentOdds - nextOdds) > 0.0001;
+            const boostChanged = currentBoosted !== nextBoosted;
+            const originalChanged = Math.abs(currentOriginal - nextOriginal) > 0.0001;
+
+            if (!oddsChanged && !boostChanged && !originalChanged && !reasonChanged && (currentUnavailable === nextUnavailable)) {
+                return item;
+            }
+
+            changedCount += 1;
+            return {
+                ...item,
+                odds: nextOdds,
+                isBoosted: nextBoosted,
+                originalOdds: (nextBoosted && nextOriginal > 0) ? nextOriginal : null,
+                marketUnavailable: nextUnavailable,
+                unavailableReason: nextReason
+            };
+        });
+
+        if (changedCount > 0) {
+            console.log('[BETSLIP] Odds szinkron kész, frissült elemek:', changedCount);
+            saveToStorage();
+            renderTicket();
+            return true;
+        }
+
+        return false;
+    }
+
+    function scheduleVisibleOddsSync() {
+        if (oddsSyncScheduled) {
+            return;
+        }
+        oddsSyncScheduled = true;
+
+        window.requestAnimationFrame(() => {
+            oddsSyncScheduled = false;
+            syncTicketOddsWithVisibleSelections();
+        });
+    }
+
+    function shouldScheduleOddsSyncFromMutations(mutationsList) {
+        for (const mutation of mutationsList) {
+            if (mutation.type === 'attributes') {
+                const target = mutation.target;
+                if (target && target.matches && (target.matches('.selection-btn') || target.matches('.tip-combo-pick'))) {
+                    return true;
+                }
+            }
+
+            if (mutation.type === 'childList') {
+                for (const node of mutation.addedNodes) {
+                    if (!node || node.nodeType !== 1) continue;
+                    if (node.matches && (node.matches('.selection-btn') || node.matches('.tip-combo-pick'))) {
+                        return true;
+                    }
+                    if (node.querySelector && node.querySelector('.selection-btn, .tip-combo-pick')) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     // ===== TOGGLE: HOZZÁADÁS / ELTÁVOLÍTÁS =====
     window.toggleOdds = function(homeTeam, awayTeam, pick, odds, market, matchId, isDailyTip, isBoosted, originalOdds) {
         console.log('[BETSLIP] toggleOdds called:', {homeTeam, awayTeam, pick, odds, market, matchId, isDailyTip});
@@ -457,6 +916,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 isDailyTip: !!isDailyTip,
                 isBoosted: !!isBoosted,
                 originalOdds: (isBoosted && parseFloat(originalOdds) > 0) ? parseFloat(originalOdds) : null,
+                marketUnavailable: (parseFloat(odds) || 0) <= 1,
+                unavailableReason: ((parseFloat(odds) || 0) <= 1) ? 'market_closed' : null,
                 addedAt: new Date().toISOString()
             });
         }
@@ -548,6 +1009,7 @@ document.addEventListener('DOMContentLoaded', function() {
         ticketItems.forEach((item, idx) => {
             const currentOdds = parseFloat(item.odds) || 0;
             const oldOdds = parseFloat(item.originalOdds) || 0;
+            const isUnavailable = !!item.marketUnavailable;
             const hasBoostedOddsDisplay = !!item.isBoosted && oldOdds > 0;
             const oddsHtml = hasBoostedOddsDisplay
                 ? `<span class="betslip-boosted-odd-display">
@@ -558,7 +1020,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 : `<span>${formatOddsHu(currentOdds)}</span>`;
 
             const el = document.createElement('div');
-            el.className = 'betslip-item';
+            el.className = 'betslip-item' + (isUnavailable ? ' betslip-item-unavailable' : '');
             el.innerHTML = `
                 <div class="betslip-item-header">
                     <span>${escapeHtml(td(item.homeTeam))} vs ${escapeHtml(td(item.awayTeam))}</span>
@@ -567,6 +1029,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="betslip-item-market">${escapeHtml(td(item.market))}</div>
                 <div class="betslip-item-pick">${escapeHtml(td(item.pick))}</div>
                 <div class="betslip-item-odds">${oddsHtml}${item.isDailyTip ? ' <span class="daily-tip-badge">Napi tipp</span>' : ''}</div>
+                ${isUnavailable ? '<div class="betslip-item-warning"><i class="fas fa-lock"></i> Ez a kimenetel már nem fogadható!</div>' : ''}
             `;
             betsContainer.appendChild(el);
         });
@@ -821,14 +1284,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const freeBetCoversStake = useFreeBet && freeBetEligible && availableFreeBetAmount >= stake && availableFreeBetId > 0;
         const balanceType = getSelectedBalanceType();
         const activeBalance = balanceType === 'bonus' ? getSelectedBonusBalance() : userBalance;
+        const unavailableItems = getUnavailableTicketItemsCount();
         
         // Letiltás feltételei:
-        if (!isLoggedIn || ticketItems.length === 0 || (!freeBetCoversStake && (activeBalance === 0 || activeBalance < stake))) {
+        if (!isLoggedIn || ticketItems.length === 0 || unavailableItems > 0 || (!freeBetCoversStake && (activeBalance === 0 || activeBalance < stake))) {
             submitBtn.disabled = true;
             if (!isLoggedIn) {
                 submitBtn.title = t('betslip.mustLogin', 'Be kell jelentkezned a fogadáshoz');
             } else if (ticketItems.length === 0) {
                 submitBtn.title = t('betslip.minOneBet', 'Legalább egy fogadás szükséges');
+            } else if (unavailableItems > 0) {
+                submitBtn.title = 'Ez a kimenetel már nem fogadható! Távolítsd el vagy módosítsd a választást.';
             } else if (useFreeBet && !freeBetCoversStake) {
                 submitBtn.title = 'Az ingyenes fogadás feltételei vagy összege nem megfelelő ehhez a szelvényhez.';
             } else if (activeBalance === 0) {
@@ -861,6 +1327,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (!isLoggedIn) {
                 BmbPopup.info(t('betslip.loginRequiredMsg', 'A fogadáshoz be kell jelentkezned!'), t('betslip.loginRequiredTitle', 'Bejelentkezés szükséges'));
+                return;
+            }
+
+            if (getUnavailableTicketItemsCount() > 0) {
+                BmbPopup.warning('Ez a kimenetel már nem fogadható!', 'Nem fogadható piac');
                 return;
             }
 
@@ -1503,6 +1974,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log('[BETSLIP] Gomb disabled:', `${home} vs ${away} - ${pick}`);
                 }
             });
+
+            syncTicketOddsWithVisibleSelections();
+            scheduleRemoteAvailabilityValidation();
             
             // Tipp gombok szinkronizálása is
             if (typeof window.syncTipButtons === 'function') {
@@ -1575,7 +2049,27 @@ document.addEventListener('DOMContentLoaded', function() {
         loadBettingHistory();
     }
     refreshAllOddsButtons();
+    scheduleRemoteAvailabilityValidation(true);
     updatePlaceBetButton();
+
+    setInterval(() => {
+        scheduleRemoteAvailabilityValidation();
+    }, REMOTE_AVAILABILITY_VALIDATION_MS);
+
+    if (window.MutationObserver) {
+        const oddsDomObserver = new MutationObserver((mutationsList) => {
+            if (shouldScheduleOddsSyncFromMutations(mutationsList)) {
+                scheduleVisibleOddsSync();
+            }
+        });
+
+        oddsDomObserver.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['data-odd', 'data-original-odd', 'data-market', 'data-pick', 'data-home', 'data-away']
+        });
+    }
 
     console.log('[BETSLIP] Kész!');
 });

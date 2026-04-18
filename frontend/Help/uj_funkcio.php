@@ -24,7 +24,18 @@
 
         <!-- Fő tartalom (középső rész)-->
         <main class="main-content">
-
+            <section class="container py-4">
+                <h1 class="h4 mb-3">Új funkció videó</h1>
+                <div class="ratio ratio-16x9 rounded overflow-hidden shadow-sm">
+                    <iframe
+                        src="https://www.youtube.com/embed/_pMgNJjNodo"
+                        title="Új funkció bemutató videó"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            </section>
         </main>
 
         <?php include '../../frontend/Components/promokartya.php'; ?>

@@ -321,9 +321,20 @@
     transition: all 0.2s ease;
 }
 
+.betslip-item.betslip-item-unavailable {
+    background: rgba(140, 140, 140, 0.12);
+    border-color: rgba(150, 150, 150, 0.5);
+    opacity: 0.88;
+}
+
 .betslip-item:hover {
     background: rgba(255, 255, 255, 0.08);
     border-color: rgba(233, 69, 96, 0.6);
+}
+
+.betslip-item.betslip-item-unavailable:hover {
+    background: rgba(140, 140, 140, 0.16);
+    border-color: rgba(170, 170, 170, 0.65);
 }
 
 .betslip-item-header {
@@ -382,6 +393,30 @@
     font-size: 12px;
     color: #e94560;
     font-weight: 600;
+}
+
+.betslip-item.betslip-item-unavailable .betslip-item-header span:first-child,
+.betslip-item.betslip-item-unavailable .betslip-item-market,
+.betslip-item.betslip-item-unavailable .betslip-item-pick,
+.betslip-item.betslip-item-unavailable .betslip-item-odds {
+    color: #b2b2b2;
+}
+
+.betslip-item-warning {
+    margin-top: 8px;
+    font-size: 11px;
+    color: #d0d0d0;
+    background: rgba(90, 90, 90, 0.25);
+    border: 1px solid rgba(170, 170, 170, 0.35);
+    border-radius: 4px;
+    padding: 6px 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.betslip-item-warning i {
+    color: #c8c8c8;
 }
 
 .betslip-boosted-odd-display {

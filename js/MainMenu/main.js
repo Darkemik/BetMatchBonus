@@ -33,27 +33,93 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // ========== LIGA PRIORITÁS ==========
   const PRIORITY_LEAGUES = [
-      'világbajnokság', 'world cup', 'vb',
-      'nemzetek ligája', 'nations league',
-      'európa-bajnokság', 'euro 20', 'uefa euro',
+      // Nemzetközi top sorrend
+      'cosafa cup',
+      'copa america',
+      'európa-bajnokság', 'uefa euro', 'euro 20', 'euro ',
       'bajnokok ligája', 'champions league',
-      'europa league', 'európa liga',
-      'conference league', 'konferencia liga',
-      'nb i', 'nb1', 'nemzeti bajnokság', 'otp bank liga',
+      'európa-liga', 'európa liga', 'europa league',
+      'konferencia liga', 'conference league',
+      'nemzetek ligája', 'nations league',
+      'uefa szuperkupa', 'uefa super cup',
+      'olimpiai játékok', 'olympic games',
+      'fifa klub-vb', 'fifa club world cup',
+      'finalissima',
+      'világbajnokság', 'world cup', ' vb', 'vb ',
+
+      // Anglia
       'premier league',
+      'championship',
+      'fa cup',
+      'efl cup', 'carabao cup',
+
+      // Magyarország
+      'nb i', 'nb1', 'nemzeti bajnokság i', 'otp bank liga',
+      'nb ii', 'nb2', 'nemzeti bajnokság ii',
+      'mol magyar kupa', 'magyar kupa',
+
+      // Spanyolország
       'la liga', 'laliga',
-      'bundesliga',
+      'copa del rey',
+      'supercopa', 'spanyol szuperkupa',
+
+      // Olaszország
       'serie a',
+      'coppa italia',
+      'supercoppa', 'olasz szuperkupa',
+
+      // Németország
+      'bundesliga',
+      'német kupa', 'dfb-pokal',
+
+      // Franciaország
       'ligue 1',
-      'nb ii', 'nb2',
-      'eredivisie',
-      'primeira liga',
+      'francia kupa', 'coupe de france',
+
+      // Portugália
+      'liga portugal', 'primeira liga',
+
+      // Törökország
+      'super lig', 'süper lig',
+
+      // Görögország
+      'szuperliga', 'super league greece',
   ];
 
   function getLeaguePriority(leagueName) {
       const lower = (leagueName || '').toLowerCase();
+      const normalized = lower.replace(/\s+/g, ' ').trim();
+
+      // Kifejezetten ne emeljük előre a Northern Premier League variánsokat.
+      if (normalized.includes('northern premier league')) {
+          return PRIORITY_LEAGUES.length + 80;
+      }
+
+      // Csak a sima Bundesliga maradjon top4-ben.
+      if (normalized.includes('bundesliga') && normalized !== 'bundesliga') {
+          return PRIORITY_LEAGUES.length + 85;
+      }
+
+      // Kiemelt kérés: CSAK a sima Premier League legyen legelöl.
+      if (normalized === 'premier league') return -100;
+
+    // Kért fix TOP3 sorrend: 2) LaLiga, 3) Serie A.
+    if (normalized === 'la liga' || normalized === 'laliga') return -99;
+    if (normalized.startsWith('serie a')) return -98;
+
+            // Kért további sorrend: 4) Bundesliga, 5) Ligue 1, 6) Fizz Liga, 7) NB1.
+            if (normalized === 'bundesliga') return -97;
+            if (normalized === 'ligue 1') return -96;
+            if (normalized === 'fizz liga' || normalized === 'fizz league') return -95;
+            if (normalized === 'nb i' || normalized === 'nb1' || normalized === 'otp bank liga') return -94;
+
+      // Női sorozatok ne kerüljenek előre kulcsszavas találat miatt.
+      if (normalized.includes('women') || normalized.includes('női') || normalized.includes('(n)')) {
+          return PRIORITY_LEAGUES.length + 40;
+      }
+
       for (let i = 0; i < PRIORITY_LEAGUES.length; i++) {
-          if (lower.includes(PRIORITY_LEAGUES[i])) return i;
+          if (normalized.includes(PRIORITY_LEAGUES[i])) return i;
       }
       return PRIORITY_LEAGUES.length;
   }
@@ -775,6 +841,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
       // Odds gombok
       attachOddsButtonHandlers();
+      if (typeof window.refreshAllOddsButtons === 'function') {
+          window.refreshAllOddsButtons(50);
+      }
 
       // Nyelv
 
@@ -1278,6 +1347,9 @@ document.addEventListener('DOMContentLoaded', function () {
               tipsList.innerHTML = html;
               if (typeof window.applyI18n === 'function') window.applyI18n(tipsList);
               applyDynamicTranslations(tipsList);
+              if (typeof window.refreshAllOddsButtons === 'function') {
+                  window.refreshAllOddsButtons(50);
+              }
 
               tipsList.querySelectorAll('.tip-add-btn').forEach(btn => {
                   btn.addEventListener('click', function () {
