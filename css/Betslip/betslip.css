@@ -355,6 +355,36 @@
     text-overflow: ellipsis;
 }
 
+.betslip-match-link {
+    appearance: none;
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    color: #fff;
+    font-weight: 600;
+    font-size: 13px;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: rgba(245, 197, 24, 0.65);
+    text-underline-offset: 2px;
+}
+
+.betslip-match-link:hover {
+    color: #f5c518;
+    text-decoration-color: #f5c518;
+}
+
+.betslip-item.betslip-item-unavailable .betslip-match-link {
+    color: #b2b2b2;
+    text-decoration-color: rgba(178, 178, 178, 0.6);
+}
+
 .betslip-remove {
     background: rgba(233, 69, 96, 0.3);
     border: none;

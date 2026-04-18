@@ -68,6 +68,29 @@ document.addEventListener('DOMContentLoaded', function() {
         return [String(matchId), normalizeLiveKeyPart(market), normalizeLiveKeyPart(pick)].join('|');
     }
 
+    function buildMainMenuMatchUrl(matchId) {
+        const pathname = window.location && window.location.pathname ? window.location.pathname : '';
+        const frontendIdx = pathname.toLowerCase().indexOf('/frontend/');
+        const appPrefix = frontendIdx >= 0 ? pathname.substring(0, frontendIdx) : '';
+        return appPrefix + '/frontend/MainMenu/MainMenu.php?eventId=' + encodeURIComponent(String(matchId));
+    }
+
+    function openMatchDetailsFromBetslip(matchId) {
+        const numericMatchId = parseInt(matchId, 10) || 0;
+        if (!(numericMatchId > 0)) return;
+
+        if (typeof window.loadMatchDetails === 'function') {
+            try {
+                window.loadMatchDetails(numericMatchId);
+                return;
+            } catch (e) {
+                console.warn('[BETSLIP] loadMatchDetails hiba, fallback navigáció:', e);
+            }
+        }
+
+        window.location.href = buildMainMenuMatchUrl(numericMatchId);
+    }
+
     function isHistoryTabActive() {
         return !!document.getElementById('betslip-elozmeny')?.classList.contains('active');
     }
@@ -1016,6 +1039,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const oldOdds = parseFloat(item.originalOdds) || 0;
             const isUnavailable = !!item.marketUnavailable;
             const hasBoostedOddsDisplay = !!item.isBoosted && oldOdds > 0;
+            const matchId = parseInt(item.matchId, 10) || 0;
+            const matchLabel = escapeHtml(td(item.homeTeam)) + ' vs ' + escapeHtml(td(item.awayTeam));
             const oddsHtml = hasBoostedOddsDisplay
                 ? `<span class="betslip-boosted-odd-display">
                         <span class="betslip-original-odd-crossed">${formatOddsHu(oldOdds)}</span>
@@ -1028,7 +1053,9 @@ document.addEventListener('DOMContentLoaded', function() {
             el.className = 'betslip-item' + (isUnavailable ? ' betslip-item-unavailable' : '');
             el.innerHTML = `
                 <div class="betslip-item-header">
-                    <span>${escapeHtml(td(item.homeTeam))} vs ${escapeHtml(td(item.awayTeam))}</span>
+                    ${matchId > 0
+                        ? `<button type="button" class="betslip-match-link" data-match-id="${matchId}" title="Meccs megnyitása">${matchLabel}</button>`
+                        : `<span>${matchLabel}</span>`}
                     <button class="betslip-remove" data-index="${idx}" title="${t('betslip.remove', 'Eltávolítás')}">×</button>
                 </div>
                 <div class="betslip-item-market">${escapeHtml(td(item.market))}</div>
@@ -1078,6 +1105,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== REMOVE BUTTON - delegated event listener =====
     document.addEventListener('click', (e) => {
+        const matchLink = e.target.closest('.betslip-match-link[data-match-id]');
+        if (matchLink) {
+            e.preventDefault();
+            e.stopPropagation();
+            openMatchDetailsFromBetslip(matchLink.getAttribute('data-match-id'));
+            return;
+        }
+
         if (e.target.classList.contains('betslip-remove')) {
             const idx = parseInt(e.target.getAttribute('data-index'));
             console.log('[BETSLIP] Remove gomb kattintva, index:', idx);
