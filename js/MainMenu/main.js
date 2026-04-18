@@ -246,6 +246,19 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!name) return 'other';
 
       if (
+          name.includes('szabalytalansag') ||
+          name.includes('foul') ||
+          name.includes('fault') ||
+          name.includes('sarga lap') ||
+          name.includes('piros lap') ||
+          name.includes('lapok szama') ||
+          name.includes('cards') ||
+          name.includes('booking')
+      ) {
+          return 'fouls';
+      }
+
+      if (
           name.includes('corner') ||
           name.includes('szoglet')
       ) {
@@ -860,11 +873,12 @@ document.addEventListener('DOMContentLoaded', function () {
       const markets = matchData.markets || [];
       const isBoostedMatch = match.isBoosted || false;
       const marketFilters = [
-          { key: 'all', label: t('mainMenu.marketFilterAll', 'Összes') },
-          { key: 'goals', label: t('mainMenu.marketFilterGoals', 'Gólok') },
-          { key: 'corners', label: t('mainMenu.marketFilterCorners', 'Szögletek') },
-          { key: 'handicap', label: t('mainMenu.marketFilterHandicap', 'Hendikep') },
-          { key: 'halftime', label: t('mainMenu.marketFilterHalftime', 'Félidő') }
+          { key: 'all', icon: 'fa-layer-group', label: t('mainMenu.marketFilterAll', 'Összes') },
+          { key: 'goals', icon: 'fa-futbol', label: t('mainMenu.marketFilterGoals', 'Gólok') },
+          { key: 'corners', icon: 'fa-location-arrow', label: t('mainMenu.marketFilterCorners', 'Szögletek') },
+          { key: 'handicap', icon: 'fa-scale-balanced', label: t('mainMenu.marketFilterHandicap', 'Hendikep') },
+          { key: 'halftime', icon: 'fa-stopwatch', label: t('mainMenu.marketFilterHalftime', 'Félidő') },
+          { key: 'fouls', icon: 'fa-ban', label: t('mainMenu.marketFilterFouls', 'Szabálytalanságok') }
       ];
 
       let html = `
@@ -898,7 +912,7 @@ document.addEventListener('DOMContentLoaded', function () {
           <div class="markets-title-row">
               <h3 class="markets-title"><i class="fas fa-chart-bar"></i> ${t('mainMenu.bettingMarkets', 'Fogadási piacok')}</h3>
               <div class="market-filter-group" role="tablist" aria-label="Piac szűrők">
-                  ${marketFilters.map((filter, index) => `<button type="button" class="market-filter-btn${index === 0 ? ' active' : ''}" data-market-filter="${filter.key}">${escapeHtml(filter.label)}</button>`).join('')}
+                  ${marketFilters.map((filter, index) => `<button type="button" class="market-filter-btn${index === 0 ? ' active' : ''}" data-market-filter="${filter.key}"><i class="fas ${filter.icon}" aria-hidden="true"></i><span>${escapeHtml(filter.label)}</span></button>`).join('')}
               </div>
           </div>
       `;

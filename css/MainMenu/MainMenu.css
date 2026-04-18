@@ -625,6 +625,9 @@ body .simple-footer {
 }
 
 .market-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   border: 1px solid rgba(245,197,24,0.35);
   background: rgba(245,197,24,0.08);
   color: #f0f0f0;
@@ -635,6 +638,11 @@ body .simple-footer {
   letter-spacing: 0.2px;
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+.market-filter-btn i {
+  font-size: 0.78rem;
+  line-height: 1;
 }
 
 .market-filter-btn:hover {
