@@ -17,11 +17,11 @@
                 <div class="footer-column footer-column-center">
                     <div class="responsible-text">
                         <h2 data-i18n="footer.responsibleTitle">Ajánlott felelős szervező!</h2>
-                        <p>Maradjon játék! 18+. A túlzásba vitt szerencsejáték ártalmas, függőséget okozhat! 
+                        <p data-i18n-html="footer.responsibleTextHtml">Maradjon játék! 18+. A túlzásba vitt szerencsejáték ártalmas, függőséget okozhat! 
                            Kérje bejegyzését a játékosvédelmi nyilvántartásba!
                            <a href="../Help/jatekosvedelem.php" class="tudjmegtobbeta" target="_blank">Tudj meg többet!</a>
                         </p>
-                        <p class="responsible-extra">
+                        <p class="responsible-extra" data-i18n-html="footer.supportLineHtml">
                             <i class="fas fa-phone"></i> Segélyvonal: <strong>06 30 824 1867</strong> | 
                             <i class="fas fa-shield-alt"></i> Játékossegítő szolgálat: <a href="https://segelyszervezet.hu/projektek/jatekhatarokkal/" target="_blank" rel="noopener noreferrer" class="tudjmegtobbeta">segelyszervezet.hu</a>
                         </p>
@@ -55,7 +55,7 @@
 
             <div class="footer-bottom-bar">
                 <p data-i18n="footer.copyright">Élményt nyújtunk, értéket teremtünk © BetMatchBonus – 2026. Minden jog fenntartva.</p>
-                <p class="recaptcha-notice">Ez az oldal a reCAPTCHA védelme alatt áll, és a Google
+                <p class="recaptcha-notice" data-i18n-html="footer.recaptchaNoticeHtml">Ez az oldal a reCAPTCHA védelme alatt áll, és a Google
                     <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Adatvédelmi irányelvei</a> valamint az
                     <a href="https://policies.google.com/terms" target="_blank" rel="noopener">Általános Szerződési Feltételek</a> érvényesek.
                 </p>

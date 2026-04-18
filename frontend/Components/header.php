@@ -100,6 +100,6 @@
     </nav>
 </header>
 
-<script src="<?php echo dirname(dirname(dirname($_SERVER['PHP_SELF']))); ?>/js/Main/language.js"></script>
+<script src="<?php echo dirname(dirname(dirname($_SERVER['PHP_SELF']))); ?>/js/Main/language.js?v=<?php echo time(); ?>"></script>
 <script src="<?php echo dirname(dirname(dirname($_SERVER['PHP_SELF']))); ?>/js/Main/layout.js"></script>
 <script src="<?php echo dirname(dirname(dirname($_SERVER['PHP_SELF']))); ?>/js/Main/auth_ui.js"></script>

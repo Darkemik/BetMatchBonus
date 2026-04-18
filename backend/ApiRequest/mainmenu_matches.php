@@ -15,6 +15,7 @@ date_default_timezone_set('Europe/Budapest');
 $sportId = isset($_GET['sport_id']) ? (int)$_GET['sport_id'] : 0;
 $gameTag = isset($_GET['game_tag']) ? trim($_GET['game_tag']) : '';
 $sortMode = isset($_GET['sort']) && $_GET['sort'] === 'time' ? 'time' : 'priority';
+$lang = (isset($_GET['lang']) && strtolower((string)$_GET['lang']) === 'en') ? 'en' : 'hu';
 
 function resolveCompetitionApiId(mysqli $conn, array $countryCodes, array $leagueNames): int {
     if (empty($leagueNames)) return 0;
@@ -232,9 +233,9 @@ while ($row = $res->fetch_assoc()):
 
     $matchDay = $startUtcDt->format('Y-m-d');
     if ($matchDay === $todayBp) {
-        $dayLabel = 'Ma';
+        $dayLabel = $lang === 'en' ? 'Today' : 'Ma';
     } elseif ($matchDay === $tomorrowBp) {
-        $dayLabel = 'Holnap';
+        $dayLabel = $lang === 'en' ? 'Tomorrow' : 'Holnap';
     } else {
         $dayLabel = $startUtcDt->format('m.d.');
     }

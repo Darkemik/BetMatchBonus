@@ -4,7 +4,8 @@
     "live": "Live",
     "esport": "eSport",
     "bonuses": "Bonuses",
-    "help": "Help"
+    "help": "Help",
+    "menuAria": "Menu"
   },
   "auth": {
     "login": "Login",
@@ -16,7 +17,8 @@
     "withdrawal": "Withdrawal",
     "transactionHistory": "Transaction History",
     "myBonuses": "My Bonuses",
-    "activityLog": "Activity Log"
+    "activityLog": "Activity Log",
+    "notifications": "Notifications"
   },
   "loginModal": {
     "title": "Login",
@@ -94,6 +96,7 @@
   },
   "betslip": {
     "ticket": "Ticket",
+    "closeAria": "Close betslip",
     "history": "History",
     "single": "Single",
     "combo": "Combo",
@@ -141,7 +144,9 @@
   },
   "mainMenu": {
     "todayMatches": "Today's Matches",
+    "dailyTips": "Daily tips",
     "searchPlaceholder": "Search by team or league name...",
+    "dailyTipsBoost": "1.2x multiplier",
     "loading": "Loading...",
     "loadingMatches": "Loading matches...",
     "allSports": "All Sports",
@@ -158,7 +163,13 @@
     "noMarkets": "No markets available for this match.",
     "notLive": "Not live",
     "unknown": "Unknown",
+    "sportFallback": "Sport",
     "noMatchData": "No match data available.",
+    "sortPriority": "Priority",
+    "sortTime": "Time",
+    "sortSwitchToTime": "Switch to chronological order",
+    "sortSwitchToPriority": "Switch to priority order",
+    "marketFilterFouls": "Fouls",
     "matchesWord": "matches",
     "sidebarLoadError": "Error loading sports.",
     "loadingMatchDetails": "Loading match details...",
@@ -187,7 +198,8 @@
     "winRate": "Win Rate",
     "popularPick": "Popular Pick",
     "h2hHistory": "Head-to-Head History",
-    "sameCompMatches": "Same Competition"
+    "sameCompMatches": "Same Competition",
+    "oddsShipLiveInactive": "This match is currently live, so the Odds Spaceship is not active right now!"
   },
   "live": {
     "title": "Live Matches",
@@ -242,12 +254,20 @@
     "details": "DETAILS"
   },
   "footer": {
+    "infoTitle": "INFORMATION",
+    "contactTitle": "CONTACT",
     "privacyPolicy": "PRIVACY POLICY",
     "participationRules": "PARTICIPATION RULES",
+    "playerProtection": "PLAYER PROTECTION",
+    "paymentOptions": "PAYMENT OPTIONS",
+    "sportRules": "SPORT RULES",
     "customerService": "UGYFELSZOLGALAT@BETMATCHBONUS.HU",
     "faq": "FAQ",
     "responsibleTitle": "Recommended responsible operator!",
     "responsibleText": "Keep it a game! 18+. Excessive gambling is harmful and can be addictive! Request to be registered in the player protection registry!",
+    "responsibleTextHtml": "Keep it a game! 18+. Excessive gambling is harmful and can be addictive! Request to be registered in the player protection registry! <a href=\"../Help/jatekosvedelem.php\" class=\"tudjmegtobbeta\" target=\"_blank\">Learn more!</a>",
+    "supportLineHtml": "<i class=\"fas fa-phone\"></i> Helpline: <strong>+36 30 824 1867</strong> | <i class=\"fas fa-shield-alt\"></i> Player support service: <a href=\"https://segelyszervezet.hu/projektek/jatekhatarokkal/\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"tudjmegtobbeta\">segelyszervezet.hu</a>",
+    "recaptchaNoticeHtml": "This site is protected by reCAPTCHA and the Google <a href=\"https://policies.google.com/privacy\" target=\"_blank\" rel=\"noopener\">Privacy Policy</a> and <a href=\"https://policies.google.com/terms\" target=\"_blank\" rel=\"noopener\">Terms of Service</a> apply.",
     "learnMore": "Learn more!",
     "copyright": "We provide experiences, we create value © BetMatchBonus – 2026. All rights reserved."
   },
@@ -257,6 +277,7 @@
     "clearChat": "Clear chat",
     "close": "Close",
     "inputPlaceholder": "Ask a question...",
+    "inputPlaceholderCommand": "Type a message or a #command...",
     "send": "Send",
     "howToBet": "🎯 How to bet?",
     "sports": "🏆 Sports",
@@ -264,7 +285,22 @@
     "depositQ": "💳 Deposit",
     "withdrawalQ": "💰 Withdrawal",
     "liveMatchesQ": "⚽ Live matches",
-    "esportQ": "🎮 eSport"
+    "esportQ": "🎮 eSport",
+    "cmds": "⌨️ Commands",
+    "summaryQ": "📋 Summary",
+    "liveQ": "🔴 Live matches",
+    "welcomeHtml": "👋 <b>Welcome to BetMatchBonus!</b><br><br>I am your <b>BMB Assistant</b> – here to help you navigate!<br><br>Ask anything, or type <b>#commands</b> to see what I can do! 👇",
+    "chatCleared": "🔄 Chat cleared! How can I help? 😊",
+    "context": {
+      "live": "🔴 You are currently on the <b>Live</b> page. Click a match to view markets, or ask for <b>#live</b>",
+      "bonus": "🎁 You are on the <b>Bonuses</b> page. Type <b>#bonus</b> to see your active bonuses!",
+      "esport": "🎮 You are in the <b>eSport</b> section. Check out the live e-sport matches!",
+      "deposit": "💳 You are on the <b>Deposit</b> page. Ask me anything about payment methods!",
+      "withdrawal": "💰 You are on the <b>Withdrawal</b> page. If you have any questions, I can help!",
+      "profile": "📋 You are on the <b>Personal Data</b> page. Make sure your details are up to date!",
+      "transactions": "🧾 You are on the <b>Transactions</b> page. You can review all money movements here.",
+      "main": "⚽ You are on the <b>Main page</b>. Choose a sport from the left menu, or ask: <b>#live</b>"
+    }
   },
   "common": {
     "close": "Close",

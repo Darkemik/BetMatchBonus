@@ -4,7 +4,8 @@
     "live": "Élő",
     "esport": "eSport",
     "bonuses": "Bónuszok",
-    "help": "Segítség"
+    "help": "Segítség",
+    "menuAria": "Menü"
   },
   "auth": {
     "login": "Bejelentkezés",
@@ -16,7 +17,8 @@
     "withdrawal": "Kifizetés",
     "transactionHistory": "Tranzakciótörténet",
     "myBonuses": "Bónuszaim",
-    "activityLog": "Napló"
+    "activityLog": "Napló",
+    "notifications": "Értesítések"
   },
   "loginModal": {
     "title": "Bejelentkezés",
@@ -94,6 +96,7 @@
   },
   "betslip": {
     "ticket": "Szelvény",
+    "closeAria": "Szelvény bezárása",
     "history": "Előzmények",
     "single": "Egyes",
     "combo": "Kötés",
@@ -141,7 +144,9 @@
   },
   "mainMenu": {
     "todayMatches": "Mai meccsek",
+    "dailyTips": "Napi tippek",
     "searchPlaceholder": "Keresés csapat vagy bajnokság neve alapján...",
+    "dailyTipsBoost": "1.2x szorzó",
     "loading": "Betöltés...",
     "loadingMatches": "Meccsek betöltése...",
     "allSports": "Összes sport",
@@ -158,7 +163,13 @@
     "noMarkets": "Nincsenek elérhető piacok ehhez a mérkőzéshez.",
     "notLive": "Nem élő",
     "unknown": "Ismeretlen",
+    "sportFallback": "Sport",
     "noMatchData": "Nincsenek meccs adatok.",
+    "sortPriority": "Fontosság",
+    "sortTime": "Időrend",
+    "sortSwitchToTime": "Váltás időrendi sorrendre",
+    "sortSwitchToPriority": "Váltás fontossági sorrendre",
+    "marketFilterFouls": "Szabálytalanságok",
     "matchesWord": "meccsek"
     ,"sidebarLoadError": "Hiba a sportok betöltésekor."
     ,"loadingMatchDetails": "Meccs adatok betöltése..."
@@ -188,6 +199,7 @@
     ,"popularPick": "Népszerű tipp"
     ,"h2hHistory": "Egymás elleni előzmények"
     ,"sameCompMatches": "Ugyanebben a bajnokságban"
+    ,"oddsShipLiveInactive": "Jelenleg élőben megy ez a meccs, az oddsűrhajó jelenleg nem aktív!"
   },
   "live": {
     "title": "Élő meccsek",
@@ -242,12 +254,20 @@
     "details": "RÉSZLETEK"
   },
   "footer": {
+    "infoTitle": "INFORMÁCIÓK",
+    "contactTitle": "KAPCSOLAT",
     "privacyPolicy": "ADATKEZELÉSI TÁJÉKOZTATÓ",
     "participationRules": "RÉSZVÉTELI SZABÁLYZAT",
+    "playerProtection": "JÁTÉKOSVÉDELEM",
+    "paymentOptions": "FIZETÉSI LEHETŐSÉGEK",
+    "sportRules": "SPORTSZABÁLYOK",
     "customerService": "UGYFELSZOLGALAT@BETMATCHBONUS.HU",
     "faq": "GYIK",
     "responsibleTitle": "Ajánlott felelős szervező!",
     "responsibleText": "Maradjon játék! 18+. A túlzásba vitt szerencsejáték ártalmas, függőséget okozhat! Kérje bejegyzését a játékosvédelmi nyilvántartásba!",
+    "responsibleTextHtml": "Maradjon játék! 18+. A túlzásba vitt szerencsejáték ártalmas, függőséget okozhat! Kérje bejegyzését a játékosvédelmi nyilvántartásba! <a href=\"../Help/jatekosvedelem.php\" class=\"tudjmegtobbeta\" target=\"_blank\">Tudj meg többet!</a>",
+    "supportLineHtml": "<i class=\"fas fa-phone\"></i> Segélyvonal: <strong>06 30 824 1867</strong> | <i class=\"fas fa-shield-alt\"></i> Játékossegítő szolgálat: <a href=\"https://segelyszervezet.hu/projektek/jatekhatarokkal/\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"tudjmegtobbeta\">segelyszervezet.hu</a>",
+    "recaptchaNoticeHtml": "Ez az oldal a reCAPTCHA védelme alatt áll, és a Google <a href=\"https://policies.google.com/privacy\" target=\"_blank\" rel=\"noopener\">Adatvédelmi irányelvei</a> valamint az <a href=\"https://policies.google.com/terms\" target=\"_blank\" rel=\"noopener\">Általános Szerződési Feltételek</a> érvényesek.",
     "learnMore": "Tudj meg többet!",
     "copyright": "Élményt nyújtunk, értéket teremtünk © BetMatchBonus – 2026. Minden jog fenntartva."
   },
@@ -257,6 +277,7 @@
     "clearChat": "Beszélgetés törlése",
     "close": "Bezárás",
     "inputPlaceholder": "Írj egy kérdést...",
+    "inputPlaceholderCommand": "Írj üzenetet vagy #parancsot...",
     "send": "Küldés",
     "howToBet": "🎯 Hogyan fogadhatok?",
     "sports": "🏆 Sportágak",
@@ -264,7 +285,22 @@
     "depositQ": "💳 Befizetés",
     "withdrawalQ": "💰 Kifizetés",
     "liveMatchesQ": "⚽ Élő meccsek",
-    "esportQ": "🎮 eSport"
+    "esportQ": "🎮 eSport",
+    "cmds": "⌨️ Parancsok",
+    "summaryQ": "📋 Összegzés",
+    "liveQ": "🔴 Élő meccsek",
+    "welcomeHtml": "👋 <b>Üdvözöllek a BetMatchBonus-on!</b><br><br>Én vagyok a <b>BMB Asszisztens</b> – segítek eligazodni!<br><br>Kérdezz bátran, vagy írd be <b>#parancsok</b> a funkcióimért! 👇",
+    "chatCleared": "🔄 Beszélgetés törölve! Miben segíthetek? 😊",
+    "context": {
+      "live": "🔴 Jelenleg az <b>Élő</b> oldalon vagy. Kattints egy meccsre a piacok megtekintéséhez, vagy kérdezz rá: <b>#élő</b>",
+      "bonus": "🎁 A <b>Bónuszok</b> oldalon jársz. Írd be <b>#bónusz</b> az aktív bónuszaid megtekintéséhez!",
+      "esport": "🎮 Az <b>eSport</b> rovatban vagy. Nézd meg az élő e-sport meccseket!",
+      "deposit": "💳 A <b>Befizetés</b> oldalon vagy. Kérdezz bátran a fizetési módokról!",
+      "withdrawal": "💰 A <b>Kifizetés</b> oldalon vagy. Ha kérdésed van, segítek!",
+      "profile": "📋 A <b>Személyes adatok</b> oldalon jársz. Ellenőrizd, hogy naprakészek-e az adataid!",
+      "transactions": "🧾 A <b>Tranzakciók</b> oldalon vagy. Itt minden pénzmozgásodat láthatod.",
+      "main": "⚽ A <b>Főoldalon</b> vagy. Válassz sportot a bal menüből, vagy kérdezz: <b>#élő</b>"
+    }
   },
   "common": {
     "close": "Bezár",

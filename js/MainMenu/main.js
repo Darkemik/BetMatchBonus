@@ -63,6 +63,10 @@ document.addEventListener('DOMContentLoaded', function () {
       window.history.replaceState({}, document.title, nextUrl);
   }
 
+  function getUiLocale() {
+      return (typeof window.i18nLang === 'function' && window.i18nLang() === 'en') ? 'en-US' : 'hu-HU';
+  }
+
   function getEventIdFromCurrentUrl() {
       const params = new URLSearchParams(window.location.search);
       const eventId = parseInt(params.get('eventId'), 10);
@@ -201,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function () {
           year: 'numeric', month: '2-digit', day: '2-digit',
           hour: '2-digit', minute: '2-digit', second: '2-digit'
       };
-      currentDateTimeSpan.textContent = now.toLocaleString('hu-HU', opts);
+      currentDateTimeSpan.textContent = now.toLocaleString(getUiLocale(), opts);
   }
   updateDateTime();
   setInterval(updateDateTime, 1000);
@@ -589,6 +593,8 @@ document.addEventListener('DOMContentLoaded', function () {
       if (normalizedSportId && normalizedSportId > 0) {
           url += '?sport_id=' + normalizedSportId;
       }
+      const lang = (typeof window.i18nLang === 'function' && window.i18nLang() === 'en') ? 'en' : 'hu';
+      url += (url.includes('?') ? '&' : '?') + 'lang=' + encodeURIComponent(lang);
       // Rendezési mód hozzáadása
       url += (url.includes('?') ? '&' : '?') + 'sort=' + currentSortMode;
 
@@ -596,7 +602,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (centerTitle) {
           if (normalizedSportId && normalizedSportId > 0) {
               const sport = sportsData.find(s => s.sport_api_id === normalizedSportId);
-              const sportName = sport ? td(sport.sport_name) : 'Sport';
+              const sportName = sport ? td(sport.sport_name) : t('mainMenu.sportFallback', 'Sport');
               centerTitle.innerHTML = `<i class="fas ${sport ? sport.icon : 'fa-trophy'}"></i> ${escapeHtml(sportName)} ${t('mainMenu.matchesWord', 'meccsek')}`;
           } else {
               centerTitle.innerHTML = '<i class="fas fa-calendar-day"></i> ' + t('mainMenu.todayMatches', 'Mai meccsek');
@@ -636,13 +642,13 @@ document.addEventListener('DOMContentLoaded', function () {
   function updateSortButtonUI() {
       if (!sortToggleBtn) return;
       if (currentSortMode === 'priority') {
-          sortToggleBtn.innerHTML = '<i class="fas fa-trophy"></i><span class="sort-toggle-label">Fontosság</span>';
-          sortToggleBtn.title = 'Váltás időrendi sorrendre';
+          sortToggleBtn.innerHTML = '<i class="fas fa-trophy"></i><span class="sort-toggle-label">' + t('mainMenu.sortPriority', 'Fontosság') + '</span>';
+          sortToggleBtn.title = t('mainMenu.sortSwitchToTime', 'Váltás időrendi sorrendre');
           sortToggleBtn.classList.remove('sort-mode-time');
           sortToggleBtn.classList.add('sort-mode-priority');
       } else {
-          sortToggleBtn.innerHTML = '<i class="fas fa-clock"></i><span class="sort-toggle-label">Időrend</span>';
-          sortToggleBtn.title = 'Váltás fontossági sorrendre';
+          sortToggleBtn.innerHTML = '<i class="fas fa-clock"></i><span class="sort-toggle-label">' + t('mainMenu.sortTime', 'Időrend') + '</span>';
+          sortToggleBtn.title = t('mainMenu.sortSwitchToPriority', 'Váltás fontossági sorrendre');
           sortToggleBtn.classList.remove('sort-mode-priority');
           sortToggleBtn.classList.add('sort-mode-time');
       }
@@ -861,7 +867,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       const startDateTimeText = match.startUtc
-          ? new Date(match.startUtc).toLocaleString('hu-HU', {
+          ? new Date(match.startUtc).toLocaleString(getUiLocale(), {
               year: 'numeric',
               month: '2-digit',
               day: '2-digit',
@@ -1193,11 +1199,11 @@ document.addEventListener('DOMContentLoaded', function () {
                           </div>
                           <div class="user-bet-row">
                               <span>${t('mainMenu.stake', 'Tét:')}</span>
-                              <span>${bet.stake.toLocaleString('hu-HU')} Ft</span>
+                              <span>${bet.stake.toLocaleString(getUiLocale())} Ft</span>
                           </div>
                           <div class="user-bet-row highlight">
                               <span>${t('mainMenu.potentialWin', 'Nyeremény:')}</span>
-                              <span>${bet.potentialWin.toLocaleString('hu-HU')} Ft</span>
+                              <span>${bet.potentialWin.toLocaleString(getUiLocale())} Ft</span>
                           </div>
                       </div>
                   </div>`;
@@ -1372,7 +1378,7 @@ document.addEventListener('DOMContentLoaded', function () {
                   }
 
                   if (parseInt(data.isLive, 10) === 1) {
-                      matchesContainer.innerHTML = '<div class="no-matches"><i class="fas fa-info-circle" style="font-size:40px;color:#f5c518;margin-bottom:12px;display:block;"></i>Jelenleg élőben megy ez a meccs, az oddsűrhajó jelenleg nem aktív!</div>';
+                      matchesContainer.innerHTML = '<div class="no-matches"><i class="fas fa-info-circle" style="font-size:40px;color:#f5c518;margin-bottom:12px;display:block;"></i>' + t('mainMenu.oddsShipLiveInactive', 'Jelenleg élőben megy ez a meccs, az oddsűrhajó jelenleg nem aktív!') + '</div>';
                       return;
                   }
 
@@ -1496,8 +1502,8 @@ document.addEventListener('DOMContentLoaded', function () {
                   html += `
                       <div class="daily-tip-card">
                           <div class="tip-match-info">
-                              <span class="tip-league">${escapeHtml(tip.league)}</span>
-                              <span class="tip-time">${escapeHtml(tip.startTime)}</span>
+                              <span class="tip-league">${escapeHtml(td(tip.league))}</span>
+                              <span class="tip-time">${escapeHtml(td(tip.startTime))}</span>
                           </div>
                           <div class="tip-teams">${escapeHtml(tip.homeTeam)} - ${escapeHtml(tip.awayTeam)}</div>
                           <div class="tip-combo-picks">${picksHtml}</div>
@@ -1548,6 +1554,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // ========== INICIALIZÁLÁS ==========
   window.addEventListener('languageChanged', function () {
+      updateSortButtonUI();
+
       if (sportsData.length) {
           renderSportsList(sportsData, matchSearch ? matchSearch.value : '');
       }

@@ -31,7 +31,7 @@ require_once "../../backend/connect.php";
     <div class="header-top-row">
         <button class="navbar-toggler navbar-dark" type="button"
                 data-bs-toggle="collapse" data-bs-target="#mainNavbar"
-                aria-controls="mainNavbar" aria-expanded="false" aria-label="Menü">
+            aria-controls="mainNavbar" aria-expanded="false" aria-label="Menü" data-i18n-aria="nav.menuAria">
             <span class="navbar-toggler-icon"></span>
         </button>
 
@@ -86,7 +86,7 @@ require_once "../../backend/connect.php";
   <div class="content-parent">
     <div class="right-container">
       <div class="mainmenu-betslip-slot" id="mainmenu-betslip-slot" aria-hidden="true">
-        <button type="button" class="mobile-betslip-close" id="mobile-betslip-close" aria-label="Szelvény bezárása">
+        <button type="button" class="mobile-betslip-close" id="mobile-betslip-close" aria-label="Szelvény bezárása" data-i18n-aria="betslip.closeAria">
           <i class="fas fa-times"></i>
         </button>
         <?php include '../../frontend/Components/betslip.php'; ?>
@@ -97,7 +97,7 @@ require_once "../../backend/connect.php";
         <div class="daily-tips-header">
           <i class="fas fa-lightbulb"></i>
           <span data-i18n="mainMenu.dailyTips">Napi tippek</span>
-          <span class="daily-tips-boost-badge"><i class="fas fa-bolt"></i> 1.2x szorzó</span>
+          <span class="daily-tips-boost-badge"><i class="fas fa-bolt"></i> <span data-i18n="mainMenu.dailyTipsBoost">1.2x szorzó</span></span>
         </div>
         <div class="daily-tips-list" id="daily-tips-list">
           <div class="daily-tips-loading"><i class="fas fa-spinner fa-spin"></i></div>
@@ -142,9 +142,9 @@ require_once "../../backend/connect.php";
           <div class="center-search">
             <input type="search" id="matchSearch" class="match-search-input" placeholder="Keresés csapat vagy bajnokság neve alapján..." data-i18n-placeholder="mainMenu.searchPlaceholder">
           </div>
-          <button id="sortToggleBtn" class="sort-toggle-btn" title="Rendezés váltása">
+          <button id="sortToggleBtn" class="sort-toggle-btn" title="Rendezés váltása" data-i18n-title="mainMenu.sortSwitchToTime">
             <i class="fas fa-trophy"></i>
-            <span class="sort-toggle-label">Fontosság</span>
+            <span class="sort-toggle-label" data-i18n="mainMenu.sortPriority">Fontosság</span>
           </button>
         </div>
 
