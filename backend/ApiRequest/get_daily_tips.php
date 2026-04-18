@@ -19,8 +19,121 @@ $today = date('Y-m-d');
 $cacheDir  = dirname(__DIR__) . '/uploads';
 $cacheFile = $cacheDir . '/daily_tips_cache.json';
 
-// Nem adunk vissza egész napos statikus cache-t, mert az oddsoknak
-// követniük kell az élő változásokat.
+function normalizeDailyTipText($value) {
+    $text = trim((string)$value);
+    if (function_exists('mb_strtolower')) {
+        $text = mb_strtolower($text, 'UTF-8');
+    } else {
+        $text = strtolower($text);
+    }
+    $text = preg_replace('/\s+/u', ' ', $text);
+    return $text;
+}
+
+function refreshTipOddsFromApi($tip) {
+    if (!is_array($tip)) return $tip;
+
+    $eventId = (int)($tip['eventId'] ?? 0);
+    $picks = is_array($tip['picks'] ?? null) ? $tip['picks'] : [];
+    if ($eventId <= 0 || empty($picks)) {
+        return $tip;
+    }
+
+    try {
+        $apiData = apiGet(EP_MATCH_DETAILS . '/' . $eventId);
+    } catch (Throwable $e) {
+        error_log("daily_tips odds refresh API hiba eventId={$eventId}: " . $e->getMessage());
+        return $tip;
+    }
+
+    $markets = (isset($apiData['markets']) && is_array($apiData['markets'])) ? $apiData['markets'] : [];
+    if (empty($markets)) {
+        return $tip;
+    }
+
+    foreach ($picks as $idx => $pickData) {
+        $targetMarketId = (int)($pickData['marketId'] ?? 0);
+        $targetSelectionId = (int)($pickData['selectionId'] ?? 0);
+        $targetMarketText = normalizeDailyTipText($pickData['market'] ?? '');
+        $targetPickText = normalizeDailyTipText($pickData['pick'] ?? '');
+        $foundOdd = null;
+
+        foreach ($markets as $market) {
+            $marketId = (int)($market['id'] ?? ($market['marketId'] ?? 0));
+            $marketName = (string)($market['name'] ?? '');
+            $marketSpecial = isset($market['specialValue']) ? trim((string)$market['specialValue']) : '';
+            $marketFull = $marketName . ($marketSpecial !== '' ? ' (' . $marketSpecial . ')' : '');
+
+            if ($targetMarketId > 0 && $marketId > 0 && $marketId !== $targetMarketId) {
+                continue;
+            }
+
+            if ($targetMarketId <= 0) {
+                $candidateNames = [
+                    normalizeDailyTipText($marketName),
+                    normalizeDailyTipText($marketFull)
+                ];
+                if (!in_array($targetMarketText, $candidateNames, true)) {
+                    continue;
+                }
+            }
+
+            $selections = is_array($market['selections'] ?? null) ? $market['selections'] : [];
+            foreach ($selections as $selection) {
+                $selectionId = (int)($selection['id'] ?? ($selection['selectionId'] ?? 0));
+                $selectionName = normalizeDailyTipText($selection['name'] ?? '');
+
+                if ($targetSelectionId > 0 && $selectionId > 0 && $selectionId !== $targetSelectionId) {
+                    continue;
+                }
+                if ($targetSelectionId <= 0 && $selectionName !== $targetPickText) {
+                    continue;
+                }
+
+                $selectionOdd = round((float)($selection['odd'] ?? 0), 2);
+                if ($selectionOdd > 0) {
+                    $foundOdd = $selectionOdd;
+                }
+                break 2;
+            }
+        }
+
+        if ($foundOdd !== null) {
+            $picks[$idx]['odds'] = $foundOdd;
+        }
+    }
+
+    $comboOdds = 1.0;
+    foreach ($picks as $pickData) {
+        $odd = round((float)($pickData['odds'] ?? 0), 2);
+        if ($odd <= 0) {
+            $comboOdds = 0;
+            break;
+        }
+        $comboOdds *= $odd;
+    }
+
+    $tip['picks'] = $picks;
+    $tip['comboOdds'] = round($comboOdds, 2);
+    return $tip;
+}
+
+// A napi tippek meccsei/piacai csak naponta változzanak:
+// ha van mai cache, azt használjuk, csak az oddsokat frissítjük API-ból.
+if (file_exists($cacheFile)) {
+    $cached = json_decode((string)file_get_contents($cacheFile), true);
+    if (is_array($cached) && ($cached['date'] ?? '') === $today && is_array($cached['tips'] ?? null) && !empty($cached['tips'])) {
+        $tipsFromCache = array_map('refreshTipOddsFromApi', $cached['tips']);
+
+        file_put_contents($cacheFile, json_encode([
+            'date' => $today,
+            'tips' => $tipsFromCache,
+        ], JSON_UNESCAPED_UNICODE));
+
+        echo json_encode($tipsFromCache, JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+}
 
 // 2) Jelöltek lekérdezése (fix napi ablak: ma 00:00 UTC → +3 nap)
 $from = (new DateTime('today 00:00:00', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
@@ -44,6 +157,7 @@ if (!empty($esportIds)) {
 $sql = "
 SELECT 
     m.api_id,
+    m.competition_id,
     m.name AS match_name,
     m.start_time AS start_utc,
     ch.name AS championship_name,
@@ -55,6 +169,7 @@ LEFT JOIN Countries c ON ch.country_id = c.id
 WHERE m.start_time BETWEEN ? AND ?
     AND m.start_time > UTC_TIMESTAMP()
   AND m.status_id NOT IN (3, 5)
+    AND LOWER(ch.name) NOT LIKE '%serie a2%'
   AND m.name IS NOT NULL AND TRIM(m.name) != ''
   AND m.api_id IS NOT NULL AND m.api_id > 0
   {$esportFilter}
@@ -67,7 +182,7 @@ $stmt = $conn->prepare($sql);
 if (!$stmt) {
     // Ha a prioritásos query nem ad eleget, fallback: bármely valódi sport
     $sqlFallback = "
-    SELECT m.api_id, m.name AS match_name, m.start_time AS start_utc,
+    SELECT m.api_id, m.competition_id, m.name AS match_name, m.start_time AS start_utc,
            ch.name AS championship_name, c.name AS country_name
     FROM Events m
     JOIN Competitions ch ON m.competition_id = ch.id
@@ -75,6 +190,7 @@ if (!$stmt) {
     WHERE m.start_time BETWEEN ? AND ?
             AND m.start_time > UTC_TIMESTAMP()
       AND m.status_id NOT IN (3, 5)
+            AND LOWER(ch.name) NOT LIKE '%serie a2%'
       AND m.name IS NOT NULL AND TRIM(m.name) != ''
       AND m.api_id > 0
       {$esportFilter}
@@ -101,7 +217,7 @@ if (count($candidates) < 20) {
     $existingIds = array_column($candidates, 'api_id');
     $placeholders = !empty($existingIds) ? 'AND m.api_id NOT IN (' . implode(',', array_map('intval', $existingIds)) . ')' : '';
     $sqlExtra = "
-    SELECT m.api_id, m.name AS match_name, m.start_time AS start_utc,
+    SELECT m.api_id, m.competition_id, m.name AS match_name, m.start_time AS start_utc,
            ch.name AS championship_name, c.name AS country_name
     FROM Events m
     JOIN Competitions ch ON m.competition_id = ch.id
@@ -109,6 +225,7 @@ if (count($candidates) < 20) {
     WHERE m.start_time BETWEEN ? AND ?
             AND m.start_time > UTC_TIMESTAMP()
       AND m.status_id NOT IN (3, 5)
+        AND LOWER(ch.name) NOT LIKE '%serie a2%'
       AND m.name IS NOT NULL AND TRIM(m.name) != ''
       AND m.api_id > 0
       {$esportFilter}
@@ -125,6 +242,34 @@ if (count($candidates) < 20) {
         }
         $stmtExtra->close();
     }
+}
+
+if (empty($candidates)) {
+    echo json_encode([]);
+    exit;
+}
+
+// Csak az első 5 bajnoki táblából (competitionből) válogatunk napi tippet.
+$maxDailyTipTables = 5;
+$allowedCompetitionIds = [];
+$seenCompetitions = [];
+foreach ($candidates as $row) {
+    $competitionId = (int)($row['competition_id'] ?? 0);
+    if ($competitionId <= 0 || isset($seenCompetitions[$competitionId])) {
+        continue;
+    }
+    $seenCompetitions[$competitionId] = true;
+    $allowedCompetitionIds[] = $competitionId;
+    if (count($allowedCompetitionIds) >= $maxDailyTipTables) {
+        break;
+    }
+}
+
+if (!empty($allowedCompetitionIds)) {
+    $candidates = array_values(array_filter($candidates, function ($row) use ($allowedCompetitionIds) {
+        $competitionId = (int)($row['competition_id'] ?? 0);
+        return in_array($competitionId, $allowedCompetitionIds, true);
+    }));
 }
 
 if (empty($candidates)) {

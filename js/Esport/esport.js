@@ -761,6 +761,15 @@ document.addEventListener("DOMContentLoaded", () => {
         var liveTime = match.liveTime || '-';
         var isLive = match.isLive;
         var startTime = match.startUtc ? new Date(match.startUtc).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }) : '-';
+        var startDateTimeText = match.startUtc
+            ? new Date(match.startUtc).toLocaleString('hu-HU', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            }).replace(',', '')
+            : '-';
 
         console.log('[ESPORT] renderMatchDetails - Markets count:', markets.length);
         console.log('[ESPORT] Match data:', match);
@@ -784,7 +793,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 '<div class="match-meta">' +
                     '<span class="meta-item"><i class="fas fa-globe-europe"></i> ' + escapeHtml(td(match.country)) + '</span>' +
                     '<span class="meta-item"><i class="fas fa-trophy"></i> ' + escapeHtml(td(match.championship)) + '</span>' +
-                    '<span class="meta-item"><i class="fas fa-clock"></i> ' + startTime + '</span>' +
+                    '<span class="meta-item"><i class="fas fa-clock"></i> ' + escapeHtml(startDateTimeText) + '</span>' +
                 '</div>' +
                 '<div class="match-scoreboard">' +
                     '<div class="team-side home-side"><span class="team-name-big">' + escapeHtml(homeTeam) + '</span></div>' +
