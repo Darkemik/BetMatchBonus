@@ -133,11 +133,6 @@ require_once "../../backend/connect.php";
             <div class="sports-list" id="sportsList">
               <div class="sidebar-loading"><i class="fas fa-spinner fa-spin"></i> <span data-i18n="mainMenu.loading">Betöltés...</span></div>
             </div>
-
-            <div class="sport-detail-panel" id="sportDetailPanel" style="display:none;">
-              <button class="sidebar-back-btn" id="sidebarBackBtn"><i class="fas fa-arrow-left"></i> <span data-i18n="mainMenu.allSports">Összes sport</span></button>
-              <div id="sportDetailContent"></div>
-            </div>
         </div>
       </aside>
 

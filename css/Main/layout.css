@@ -500,6 +500,7 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     gap: 5px;
 }
 
@@ -523,6 +524,9 @@ body {
 }
 
 .footer-link {
+    display: inline-flex;
+    width: auto;
+    max-width: 100%;
     color: rgba(255, 255, 255, 0.75);
     text-decoration: none;
     font-size: 15px;

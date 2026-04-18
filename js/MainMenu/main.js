@@ -4,9 +4,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // ========== ELEMEK ==========
   const sportsList = document.getElementById('sportsList');
-  const sportDetailPanel = document.getElementById('sportDetailPanel');
-  const sportDetailContent = document.getElementById('sportDetailContent');
-  const sidebarBackBtn = document.getElementById('sidebarBackBtn');
   const matchesContainer = document.getElementById('matches-container');
   const centerTitle = document.getElementById('centerTitle');
   const matchSearch = document.getElementById('matchSearch');
@@ -455,84 +452,6 @@ document.addEventListener('DOMContentLoaded', function () {
                   loadMatches(sportId);
               }
           });
-      });
-  }
-
-  // ========== SIDEBAR SPORT RÉSZLETEK (drill-down) ==========
-  function showSportDetail(sport) {
-      if (!sportDetailPanel || !sportDetailContent) return;
-
-      sportsList.style.display = 'none';
-      sportDetailPanel.style.display = 'block';
-
-      let html = `<div class="sidebar-sport-detail-title">
-          <i class="fas ${escapeHtml(sport.icon)}"></i> ${escapeHtml(td(sport.sport_name))}
-      </div>`;
-
-      sport.countries.forEach(country => {
-          html += `<div class="sidebar-country-group">
-              <div class="sidebar-country-header">${escapeHtml(td(country.country_name))}</div>
-              <div class="sidebar-country-content">`;
-
-          country.competitions.forEach(comp => {
-              html += `<div class="sidebar-comp-group">
-                  <div class="sidebar-comp-header">${escapeHtml(td(comp.competition_name))}</div>
-                  <div class="sidebar-comp-content">`;
-
-              comp.matches.forEach(match => {
-                  const time = match.start_time ? match.start_time.substring(11, 16) : '';
-                  const liveIndicator = match.is_live
-                      ? '<span class="live-indicator-sm"></span>'
-                      : '';
-                  html += `
-                      <div class="sidebar-match-item" data-match-id="${match.api_id}">
-                          ${liveIndicator}
-                          <span class="match-name-sm">${escapeHtml(match.name)}</span>
-                          <span class="match-time-sm">${escapeHtml(time)}</span>
-                      </div>
-                  `;
-              });
-
-              html += '</div></div>';
-          });
-
-          html += '</div></div>';
-      });
-
-      sportDetailContent.innerHTML = html;
-
-      sportDetailContent.querySelectorAll('.sidebar-country-header').forEach(header => {
-          header.addEventListener('click', function () {
-              this.parentElement.classList.toggle('open');
-          });
-      });
-
-      sportDetailContent.querySelectorAll('.sidebar-comp-header').forEach(header => {
-          header.addEventListener('click', function () {
-              this.parentElement.classList.toggle('open');
-          });
-      });
-
-      sportDetailContent.querySelectorAll('.sidebar-match-item').forEach(item => {
-          item.addEventListener('click', function () {
-              const matchId = parseInt(this.getAttribute('data-match-id'));
-              if (matchId) {
-                  loadMatchDetails(matchId);
-              }
-          });
-      });
-  }
-
-  // Vissza gomb
-  if (sidebarBackBtn) {
-      sidebarBackBtn.addEventListener('click', function () {
-          sportDetailPanel.style.display = 'none';
-          sportsList.style.display = 'flex';
-          currentSportId = 66;
-          sportsList.querySelectorAll('.sidebar-sport-item').forEach(el => el.classList.remove('active'));
-          const fociItem = sportsList.querySelector('[data-sport-id="66"]');
-          if (fociItem) fociItem.classList.add('active');
-          loadMatches(66);
       });
   }
 

@@ -481,11 +481,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return eventIdInUrl === matchId;
     }
 
-    function buildMarketFullNameFromApi(market) {
-        const specialVal = market && market.specialValue ? ' (' + market.specialValue + ')' : '';
-        return td((market && market.name) || '') + specialVal;
-    }
-
     function findSelectionInMatchDetails(details, item) {
         const markets = Array.isArray(details && details.markets) ? details.markets : [];
         if (!item || markets.length === 0) return null;
