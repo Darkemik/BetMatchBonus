@@ -1,3 +1,7 @@
+.esport-page #notifBellLink {
+    display: none !important;
+}
+
 .elo-main {
     display: flex;
     justify-content: center;

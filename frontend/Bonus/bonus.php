@@ -16,7 +16,10 @@
     <link rel="icon" href="../../img/logo.png" type="image/x-icon">
 </head>
 
-<body>
+<body class="bonus-page">
+    <style>
+        #notifBellLink { display: none !important; }
+    </style>
     <?php include '../../frontend/Components/cookie_consent.php'; ?>
     <?php include '../../frontend/Components/disclaimer.php'; ?>
 

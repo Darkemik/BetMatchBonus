@@ -1,22 +1,6 @@
 <button class="loginbtn" data-i18n="auth.login" data-bs-toggle="modal" data-bs-target="#loginModal">Bejelentkezés</button>
 <button class="registrationbtn" data-i18n="auth.register" data-bs-toggle="modal" data-bs-target="#registerModal">Regisztráció</button>
 <div id="userMenu" class="dropdown" style="display:none;">
-    <div class="session-login-badge" title="Hátralévő idő (max. 1 óra)">
-        <span class="session-login-icon" aria-hidden="true">⏳</span>
-        <span id="sessionLoginDurationDisplay">01:00:00</span>
-    </div>
-    <div class="session-bet-badge" title="Pénztárca egyenleg">
-        <span class="session-bet-icon" aria-hidden="true">💰</span>
-        <span id="sessionBetDisplay">0 FT</span>
-    </div>
-    <div class="session-bet-badge" id="bonusBalanceBadge" title="Bónusz egyenleg" style="display:none;background:linear-gradient(135deg,#7c3aed22,#a78bfa33);border-color:#7c3aed44;">
-        <span class="session-bet-icon" aria-hidden="true">🎁</span>
-        <span id="bonusBalanceDisplay">0 FT</span>
-    </div>
-    <a href="../../frontend/UserProfile/notifications.php" class="notif-bell-link" id="notifBellLink" title="Értesítések" style="position:relative;color:#ccc;font-size:1.2rem;text-decoration:none;display:none;margin-right:8px;">
-        <i class="fas fa-bell"></i>
-        <span id="notifBellBadge" style="display:none;position:absolute;top:-5px;right:-8px;background:#dc3545;color:#fff;border-radius:50%;font-size:0.6rem;min-width:16px;height:16px;align-items:center;justify-content:center;font-weight:700;padding:0 4px;"></span>
-    </a>
     <button class="profile-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
         <div class="profile-avatar" id="profileAvatar">
             <i class="fas fa-user"></i>
@@ -32,6 +16,22 @@
             <div class="profile-dropdown-info">
                 <strong id="userFullName">-</strong>
                 <span id="userEmail">-</span>
+            </div>
+        </li>
+        <li class="session-quick-stats-wrap">
+            <div class="session-quick-stats">
+                <div class="session-login-badge" id="sessionLoginBadge" title="Hátralévő idő (max. 1 óra)">
+                    <span class="session-login-icon" aria-hidden="true">⏳</span>
+                    <span id="sessionLoginDurationDisplay">01:00:00</span>
+                </div>
+                <div class="session-bet-badge" id="sessionWalletBadge" title="Pénztárca egyenleg">
+                    <span class="session-bet-icon" aria-hidden="true">💰</span>
+                    <span id="sessionBetDisplay">0 FT</span>
+                </div>
+                <div class="session-bet-badge" id="bonusBalanceBadge" title="Bónusz egyenleg" style="display:none;background:linear-gradient(135deg,#7c3aed22,#a78bfa33);border-color:#7c3aed44;">
+                    <span class="session-bet-icon" aria-hidden="true">🎁</span>
+                    <span id="bonusBalanceDisplay">0 FT</span>
+                </div>
             </div>
         </li>
         <li>

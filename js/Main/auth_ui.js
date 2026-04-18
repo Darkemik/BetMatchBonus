@@ -64,6 +64,7 @@ async function refreshAuthUI() {
     const data = await res.json();
 
     if (!data.loggedIn) {
+      document.body.classList.remove('logged-in');
       clearChatbotClientData();
 
       if (loginBtn) loginBtn.style.display = '';
@@ -83,6 +84,7 @@ async function refreshAuthUI() {
     if (loginBtn) loginBtn.style.display = 'none';
     if (regBtn) regBtn.style.display = 'none';
     userMenu.style.display = '';
+    document.body.classList.add('logged-in');
 
     const u = data.user || {};
     const usernameEl = document.getElementById('userMenuUsername');
@@ -185,14 +187,23 @@ async function refreshAuthUI() {
 
 async function updateNotifBadge() {
   try {
+    const path = (window.location.pathname || '').toLowerCase();
+    const shouldHideBell = path.includes('/frontend/esport/') || path.includes('/frontend/bonus/') || path.includes('/frontend/help/') || path.includes('/frontend/userprofile/');
+
+    const bellLink = document.getElementById('notifBellLink');
+    const bellBadge = document.getElementById('notifBellBadge');
+    if (shouldHideBell) {
+      if (bellLink) bellLink.style.display = 'none';
+      if (bellBadge) bellBadge.style.display = 'none';
+      return;
+    }
+
     const res = await fetch('/BetMatchBonus/backend/ApiRequest/UserProfile/get_notifications.php?count=1', { cache: 'no-store' });
     const data = await res.json();
     if (!data.success) return;
     const count = data.unread_count || 0;
 
     // Bell icon in header
-    const bellLink = document.getElementById('notifBellLink');
-    const bellBadge = document.getElementById('notifBellBadge');
     if (bellLink) bellLink.style.display = '';
     if (bellBadge) {
       if (count > 0) {

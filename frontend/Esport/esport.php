@@ -21,7 +21,7 @@ require_once "../../backend/connect.php";
     <link rel="icon" href="../../img/logo.png" type="image/x-icon">
 </head>
 
-<body>
+<body class="esport-page">
     <?php include '../../frontend/Components/cookie_consent.php'; ?>
     <?php include '../../frontend/Components/disclaimer.php'; ?>
 

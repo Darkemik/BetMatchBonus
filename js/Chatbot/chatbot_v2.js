@@ -412,6 +412,31 @@
         }, 180);
     }
 
+    function applyMobileFloatingOffsets() {
+        var isMobileLayout = window.matchMedia('(max-width: 900px)').matches;
+        var chatbotWindow = getEl('chatbotWindow');
+        var chatbotToggle = getEl('chatbotToggle');
+        var startupPopup = getEl('chatbotStartupPopup');
+        var mobileBetslipFab = getEl('mobile-betslip-fab');
+        var alignedBottom = '64px';
+
+        if (mobileBetslipFab) {
+            var fabBottom = window.getComputedStyle(mobileBetslipFab).bottom;
+            if (fabBottom && fabBottom !== 'auto') alignedBottom = fabBottom;
+        }
+
+        if (isMobileLayout) {
+            if (chatbotToggle) chatbotToggle.style.setProperty('bottom', 'calc(' + alignedBottom + ' + 54px)', 'important');
+            if (startupPopup) startupPopup.style.setProperty('bottom', 'calc(' + alignedBottom + ' + 60px)', 'important');
+            if (chatbotWindow) chatbotWindow.style.setProperty('bottom', 'calc(' + alignedBottom + ' + 136px)', 'important');
+            return;
+        }
+
+        if (chatbotWindow) chatbotWindow.style.removeProperty('bottom');
+        if (chatbotToggle) chatbotToggle.style.removeProperty('bottom');
+        if (startupPopup) startupPopup.style.removeProperty('bottom');
+    }
+
     function showStartupPopup() {
         if (isOpen || getEl('chatbotStartupPopup')) return;
         if (sessionStorage.getItem('bmb_popup_shown')) return;
@@ -430,6 +455,7 @@
         });
 
         document.body.appendChild(popup);
+        applyMobileFloatingOffsets();
         requestAnimationFrame(function () { popup.classList.add('show'); });
         sessionStorage.setItem('bmb_popup_shown', '1');
         startupPopupHideTimer = setTimeout(hideStartupPopup, 7000);
@@ -750,6 +776,10 @@
     // ===== INICIALIZÁLÁS =====
     function init() {
         restoreChat();
+
+        applyMobileFloatingOffsets();
+        window.addEventListener('resize', applyMobileFloatingOffsets);
+        window.addEventListener('orientationchange', applyMobileFloatingOffsets);
 
         var toggleBtn = getEl('chatbotToggle');
         if (toggleBtn) toggleBtn.addEventListener('click', toggleChat);

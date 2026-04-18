@@ -1,4 +1,45 @@
 <header class="header">
+    <style>
+        .profile-dropdown .session-quick-stats-wrap {
+            padding: 8px 12px 10px !important;
+        }
+
+        .profile-dropdown .session-quick-stats {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 8px !important;
+        }
+
+        .profile-dropdown .session-login-badge,
+        .profile-dropdown .session-bet-badge {
+            width: 100% !important;
+            justify-content: flex-start !important;
+            padding: 8px 12px !important;
+            font-size: 13px !important;
+        }
+
+        @media (max-width: 768px) {
+            .navbar-toggler {
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                width: 44px !important;
+                height: 44px !important;
+                padding: 0 !important;
+                border: 1px solid rgba(255, 255, 255, 0.16) !important;
+                border-radius: 10px !important;
+                background: linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)) !important;
+                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+            }
+
+            .navbar-toggler-icon {
+                width: 22px !important;
+                height: 22px !important;
+                background-size: 22px 22px !important;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='rgba(255,255,255,0.94)' d='M4 6.75h16a1 1 0 1 0 0-2H4a1 1 0 1 0 0 2zm0 6.25h16a1 1 0 1 0 0-2H4a1 1 0 1 0 0 2zm0 6.25h16a1 1 0 0 0 0-2H4a1 1 0 1 0 0 2z'/%3E%3C/svg%3E") !important;
+            }
+        }
+    </style>
     <div class="header-top-row">
         <button class="navbar-toggler navbar-dark" type="button"
                 data-bs-toggle="collapse" data-bs-target="#mainNavbar"

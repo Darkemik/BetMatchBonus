@@ -1,4 +1,7 @@
 <header class="header">
+    <style>
+        #notifBellLink { display: none !important; }
+    </style>
     <div class="header-top-row">
         <button class="navbar-toggler navbar-dark" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
             aria-controls="mainNavbar" aria-expanded="false" aria-label="Menü">

@@ -1,3 +1,7 @@
+.bonus-page #notifBellLink {
+    display: none !important;
+}
+
 .bonus-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);

@@ -362,6 +362,24 @@ body {
     margin: 4px 0 !important;
 }
 
+.profile-dropdown .session-quick-stats-wrap {
+    padding: 8px 12px 10px;
+}
+
+.profile-dropdown .session-quick-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.profile-dropdown .session-login-badge,
+.profile-dropdown .session-bet-badge {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 8px 12px;
+    font-size: 13px;
+}
+
 .profile-dropdown .logout-item {
     color: #ffffff !important;
     display: block !important;
@@ -731,6 +749,10 @@ body {
 @media (max-width: 900px) {
     .right_side {
         gap: 10px;
+    }
+
+    body.logged-in #notifBellLink {
+        display: none !important;
     }
 
     .right_side button:not(.lang-btn) {

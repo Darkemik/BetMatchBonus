@@ -27,6 +27,23 @@
     font-size: 14px;
 }
 
+/* Keep the notifications icon consistent on every UserProfile page */
+.profile-sidebar a[href="notifications.php"] i {
+    display: none !important;
+}
+
+.profile-sidebar a[href="notifications.php"]::before {
+    content: "\f0f3";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 14px;
+    line-height: 1;
+    width: 14px;
+    text-align: center;
+    opacity: 0.9;
+    flex-shrink: 0;
+}
+
 .profile-nav-item:hover {
     background-color: #e0e0e0;
     color: #000;
