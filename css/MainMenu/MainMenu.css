@@ -730,14 +730,55 @@ body .simple-footer {
 }
 .not-started-badge i { font-size: 0.8rem; }
 
-.markets-title {
-  color: #fff;
-  font-size: 1.1rem;
+.markets-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 14px;
   padding-bottom: 8px;
   border-bottom: 1px solid rgba(255,255,255,0.1);
 }
+
+.markets-title {
+  color: #fff;
+  font-size: 1.1rem;
+  margin: 0;
+}
 .markets-title i { margin-right: 8px; color: #f5c518; }
+
+.market-filter-group {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.market-filter-btn {
+  border: 1px solid rgba(245,197,24,0.35);
+  background: rgba(245,197,24,0.08);
+  color: #f0f0f0;
+  border-radius: 18px;
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.market-filter-btn:hover {
+  background: rgba(245,197,24,0.2);
+  border-color: rgba(245,197,24,0.7);
+  color: #fff;
+}
+
+.market-filter-btn.active {
+  background: #f5c518;
+  border-color: #f5c518;
+  color: #1a1f2f;
+}
 
 .markets-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 .market-card {
@@ -830,6 +871,19 @@ body .simple-footer {
 
 .no-markets { text-align: center; padding: 30px; color: #888; font-size: 0.9rem; }
 
+.market-filter-empty {
+  display: none;
+  text-align: center;
+  padding: 20px;
+  color: #8b95a7;
+  font-size: 0.9rem;
+}
+
+.market-filter-empty i {
+  color: #f5c518;
+  margin-right: 8px;
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1100px) {
   .right-sidebar { display: none; }
@@ -847,6 +901,15 @@ body .simple-footer {
 }
 @media (max-width: 600px) {
   .match-scoreboard { flex-direction: column; gap: 10px; }
+  .markets-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .market-filter-group {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
 .match-row.highlight {
   background: rgba(76, 175, 80, 0.2) !important;

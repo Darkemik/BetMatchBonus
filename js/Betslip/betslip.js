@@ -429,6 +429,11 @@ document.addEventListener('DOMContentLoaded', function() {
         return ticketItems.filter(item => !!item.marketUnavailable).length;
     }
 
+    function hasBoostedSingleOnlyViolation() {
+        if (!Array.isArray(ticketItems) || ticketItems.length <= 1) return false;
+        return ticketItems.some(item => !!item.isBoosted);
+    }
+
     function isCurrentEventContextWithoutMarkets(matchId, visibleSelectionButtonCount) {
         if (!(matchId > 0)) return false;
         if (visibleSelectionButtonCount > 0) return false;
@@ -1034,6 +1039,13 @@ document.addEventListener('DOMContentLoaded', function() {
             betsContainer.appendChild(el);
         });
 
+        if (hasBoostedSingleOnlyViolation()) {
+            const warningEl = document.createElement('div');
+            warningEl.className = 'betslip-item-warning betslip-combo-lock-warning';
+            warningEl.innerHTML = '<i class="fas fa-ban"></i> Kötés tiltás miatt nem lehet fogadni! Az Oddsűrhajó csak single tétben fogadható.';
+            betsContainer.appendChild(warningEl);
+        }
+
         // Frissítjük az összes elemet az oldalon
         if (betslipCountEl) betslipCountEl.textContent = ticketItems.length;
         const totalOddsEl = document.getElementById('total-odds');
@@ -1285,9 +1297,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const balanceType = getSelectedBalanceType();
         const activeBalance = balanceType === 'bonus' ? getSelectedBonusBalance() : userBalance;
         const unavailableItems = getUnavailableTicketItemsCount();
+        const comboLockViolation = hasBoostedSingleOnlyViolation();
         
         // Letiltás feltételei:
-        if (!isLoggedIn || ticketItems.length === 0 || unavailableItems > 0 || (!freeBetCoversStake && (activeBalance === 0 || activeBalance < stake))) {
+        if (!isLoggedIn || ticketItems.length === 0 || unavailableItems > 0 || comboLockViolation || (!freeBetCoversStake && (activeBalance === 0 || activeBalance < stake))) {
             submitBtn.disabled = true;
             if (!isLoggedIn) {
                 submitBtn.title = t('betslip.mustLogin', 'Be kell jelentkezned a fogadáshoz');
@@ -1295,6 +1308,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitBtn.title = t('betslip.minOneBet', 'Legalább egy fogadás szükséges');
             } else if (unavailableItems > 0) {
                 submitBtn.title = 'Ez a kimenetel már nem fogadható! Távolítsd el vagy módosítsd a választást.';
+            } else if (comboLockViolation) {
+                submitBtn.title = 'Kötés tiltás miatt nem lehet fogadni! Az Oddsűrhajó csak single tétben fogadható.';
             } else if (useFreeBet && !freeBetCoversStake) {
                 submitBtn.title = 'Az ingyenes fogadás feltételei vagy összege nem megfelelő ehhez a szelvényhez.';
             } else if (activeBalance === 0) {
@@ -1332,6 +1347,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (getUnavailableTicketItemsCount() > 0) {
                 BmbPopup.warning('Ez a kimenetel már nem fogadható!', 'Nem fogadható piac');
+                return;
+            }
+
+            if (hasBoostedSingleOnlyViolation()) {
+                BmbPopup.warning('Kötés tiltás miatt nem lehet fogadni! Az Oddsűrhajó csak single tétben fogadható.', 'Kötés tiltás');
                 return;
             }
 

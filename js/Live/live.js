@@ -760,6 +760,13 @@
         }
 
         const markets = matchData.markets || [];
+        const marketFilters = [
+            { key: 'all', label: t('mainMenu.marketFilterAll', 'Összes') },
+            { key: 'goals', label: t('mainMenu.marketFilterGoals', 'Gólok') },
+            { key: 'corners', label: t('mainMenu.marketFilterCorners', 'Szögletek') },
+            { key: 'handicap', label: t('mainMenu.marketFilterHandicap', 'Hendikep') },
+            { key: 'halftime', label: t('mainMenu.marketFilterHalftime', 'Félidő') }
+        ];
         console.log('[LIVE.JS] Render adatok - match:', match.name, 'markets:', markets.length);
 
         let html = `
@@ -787,7 +794,12 @@
                 </div>
             </div>
 
-            <h3 class="markets-title"><i class="fas fa-chart-bar"></i> ${t('mainMenu.bettingMarkets', 'Fogadási piacok')}</h3>
+            <div class="markets-title-row">
+                <h3 class="markets-title"><i class="fas fa-chart-bar"></i> ${t('mainMenu.bettingMarkets', 'Fogadási piacok')}</h3>
+                <div class="market-filter-group" role="tablist" aria-label="Piac szűrők">
+                    ${marketFilters.map((filter, index) => `<button type="button" class="market-filter-btn${index === 0 ? ' active' : ''}" data-market-filter="${filter.key}">${escapeHtml(filter.label)}</button>`).join('')}
+                </div>
+            </div>
         `;
 
         if (markets.length > 0) {
@@ -796,7 +808,9 @@
             markets.forEach(market => {
                 const specialVal = market.specialValue ? ' (' + market.specialValue + ')' : '';
                 const marketFullName = td(market.name || '') + specialVal;
-                html += `<div class="market-card">
+                const marketCategory = getMarketCategory(marketFullName);
+
+                html += `<div class="market-card" data-market-category="${marketCategory}">
                     <div class="market-header"><span class="market-name">${escapeHtml(marketFullName)}</span></div>
                     <div class="market-selections">`;
                 
@@ -824,6 +838,7 @@
             });
             
             html += '</div>';
+            html += '<div class="market-filter-empty"><i class="fas fa-info-circle"></i> ' + t('mainMenu.noMarketsInCategory', 'Nincs elérhető piac ebben a kategóriában.') + '</div>';
         } else {
             html += '<div class="alert alert-info">' + t('live.noMarkets', 'Nincsenek elérhető piacok ehhez a mérkőzéshez.') + '</div>';
         }
@@ -834,6 +849,7 @@
         if (typeof window.refreshAllOddsButtons === 'function') {
             window.refreshAllOddsButtons(50);
         }
+        attachMarketFilterHandlers(matchesContainer);
 
         document.getElementById('back-to-matches').addEventListener('click', function() {
             console.log('[LIVE.JS] Vissza a meccsekhez');
@@ -848,6 +864,92 @@
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    function normalizeMarketText(value) {
+        return (value || '')
+            .toString()
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function getMarketCategory(marketName) {
+        const name = normalizeMarketText(marketName);
+
+        if (!name) return 'other';
+
+        if (name.includes('corner') || name.includes('szoglet')) {
+            return 'corners';
+        }
+
+        if (name.includes('handicap') || name.includes('hendikep')) {
+            return 'handicap';
+        }
+
+        if (
+            name.includes('felido') ||
+            name.includes('elso felido') ||
+            name.includes('1st half') ||
+            name.includes('first half') ||
+            name.includes('half time') ||
+            name.includes('halftime')
+        ) {
+            return 'halftime';
+        }
+
+        if (
+            name.includes('gol') ||
+            name.includes('goal') ||
+            name.includes('btts') ||
+            name.includes('both teams to score') ||
+            name.includes('over') ||
+            name.includes('under')
+        ) {
+            return 'goals';
+        }
+
+        return 'other';
+    }
+
+    function attachMarketFilterHandlers(root) {
+        if (!root) return;
+
+        const filterButtons = root.querySelectorAll('.market-filter-btn');
+        const marketCards = root.querySelectorAll('.market-card[data-market-category]');
+        const emptyCategoryInfo = root.querySelector('.market-filter-empty');
+
+        if (!filterButtons.length || !marketCards.length) return;
+
+        const applyFilter = (category) => {
+            let visibleCount = 0;
+
+            marketCards.forEach(card => {
+                const cardCategory = card.getAttribute('data-market-category') || 'other';
+                const isVisible = category === 'all' || cardCategory === category;
+                card.style.display = isVisible ? '' : 'none';
+                if (isVisible) visibleCount++;
+            });
+
+            filterButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-market-filter') === category);
+            });
+
+            if (emptyCategoryInfo) {
+                emptyCategoryInfo.style.display = visibleCount === 0 ? 'block' : 'none';
+            }
+        };
+
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const category = this.getAttribute('data-market-filter') || 'all';
+                applyFilter(category);
+            });
+        });
+
+        applyFilter('all');
     }
 
     // ===== INICIALIZÁLÁS =====

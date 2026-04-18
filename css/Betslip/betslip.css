@@ -419,6 +419,18 @@
     color: #c8c8c8;
 }
 
+.betslip-combo-lock-warning {
+    background: rgba(233, 69, 96, 0.14);
+    border-color: rgba(233, 69, 96, 0.45);
+    color: #ffd6dc;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.betslip-combo-lock-warning i {
+    color: #ff7b8f;
+}
+
 .betslip-boosted-odd-display {
     display: inline-flex;
     align-items: center;

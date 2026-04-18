@@ -57,6 +57,20 @@ if ($stake < $minBet || count($items) === 0) {
     exit;
 }
 
+$hasBoostedSelection = false;
+foreach ($items as $combinationItem) {
+    if (!empty($combinationItem['isBoosted'])) {
+        $hasBoostedSelection = true;
+        break;
+    }
+}
+
+if ($hasBoostedSelection && $selectionCount > 1) {
+    http_response_code(400);
+    echo json_encode(['status' => 'error', 'message' => 'Kötés tiltás miatt nem lehet fogadni! Az Oddsűrhajó csak single tétben fogadható.']);
+    exit;
+}
+
 foreach ($items as $oddsItem) {
     $itemOdds = isset($oddsItem['odds']) ? (float)$oddsItem['odds'] : 0.0;
     if ($ticketMinOdds === null || $itemOdds < $ticketMinOdds) {
