@@ -1,417 +1,355 @@
-[
+﻿[
     {
-        "letter": "A",
-        "terms": [
-            {
-                "word": "Ázsiai hendikep",
-                "definition": "Ázsiai hendikep esetében az egyik csapat virtuális előnyből indul a másik csapattal szemben a fogadás során. Az ázsiai hendikepnek csak két kimenetele van, döntetlen kimenetel nincs. Az ázsiai hendikepnek több fajtája létezik. A normál ázsiai hendikepnél megkülönböztetünk egész, illetve fél (0,5) számos ázsiai hendikepet, de vannak úgynevezett „dupla” változatok is, amelyeknél a megtett tét két részre osztva vesz részt a fogadásban. Amíg a hagyományos hendikepnél egy fogadás vagy nyertes, vagy vesztes, addig az ázsiai hendikepnél bizonyos eredmények esetén a fogadás 1-es szorzóval kerül figyelembevételre."
-            },
-            {
-                "word": "Ázsiai gólszám",
-                "definition": "Az ázsiai gólszám hasonlít a hagyományos gólszám típusú fogadásokhoz, azzal a különbséggel, hogy itt előfordulhat olyan eredmény, amelynek következtében a fogadás 1-es szorzóval kerül figyelembevételre, vagy a fogadás részben lesz nyertes vagy vesztes."
-            }
-        ]
+        "letter":  "A",
+        "terms":  [
+                      {
+                          "word":  "Ázsiai hendikep",
+                          "definition":  "Ázsiai hendikep esetében az egyik csapat virtuális előnyből indul a másik csapattal szemben a fogadás során. Az ázsiai hendikepnek csak két kimenetele van, döntetlen kimenetel nincs. Az ázsiai hendikepnek több fajtája létezik. A normál ázsiai hendikepnél megkülönböztetünk egész, illetve fél (0,5) számos ázsiai hendikepet, de vannak úgynevezett „dupla” változatok is, amelyeknél a megtett tét két részre osztva vesz részt a fogadásban. Amíg a hagyományos hendikepnél egy fogadás vagy nyertes, vagy vesztes, addig az ázsiai hendikepnél bizonyos eredmények esetén a fogadás 1-es szorzóval kerül figyelembevételre."
+                      },
+                      {
+                          "word":  "Ázsiai gólszám",
+                          "definition":  "Az ázsiai gólszám hasonlít a hagyományos gólszám típusú fogadásokhoz, azzal a különbséggel, hogy itt előfordulhat olyan eredmény, amelynek következtében a fogadás 1-es szorzóval kerül figyelembevételre, vagy a fogadás részben lesz nyertes vagy vesztes."
+                      }
+                  ]
     },
     {
-        "letter": "B",
-        "terms": [
-            {
-                "word": "Befizetés",
-                "definition": "Amennyiben a fogadó befizetés során pénzt helyez el számláján, úgy lehetősége nyílik fogadni a felkínált sporteseményekre. Többféle befizetési opció közül lehet választani: bővebben a „Befizetés” menüpont alatt tájékozódhatsz!"
-            },
-            {
-                "word": "Bejelentkezés",
-                "definition": "Regisztrált fogadóknak a felhasználói név és a jelszó megadásával a bejelentkezés után nyílik lehetősége fogadások megtételére. A fogadó bejelentkezve tudja kezelni számláját, valamint figyelemmel követheti korábbi fogadásait."
-            },
-            {
-                "word": "Bónusz",
-                "definition": "Olyan promóciós jóváírás, amelyet a fogadók előre meghatározott feltételek teljesítése esetén kapnak meg. Ez az összeg a játékos bónusz egyenlegén kerül jóváírásra, és kizárólag fogadások megtételére használható fel, közvetlenül nem vehető ki vagy utalható át más egyenlegre."
-            },
-            {
-                "word": "Belső egyenleg",
-                "definition": "A belső egyenleg a játékos BetMatchBonus számláján nyilvántartott pénzeszközöket tartalmazza. A belső egyenleg három különálló részből áll. Ezek mindegyike más-más típusú egyenlegek, eltérő felhasználási és kifizetési szabályokkal, valamint különböző összegeket is tartalmazhatnak. – Fizetési egyenleg: Itt található a játékos által feltöltött pénz. Szabadon felhasználható fogadások megtételére, valamint bármikor kiutalható a játékos bankszámlájára. – Nyeremény egyenleg: Ide kerülnek a sikeres fogadásokból származó nyeremények, valamint a kifizethetővé vált bónuszösszegek. Felhasználható új fogadások megtételére, valamint bármikor kiutalható a játékos bankszámlájára. – Bónusz egyenleg: Ide kerülnek a promóciók vagy akciók keretein belül jóváírt összegek. Közvetlenül nem kifizethetőek, csak akkor, ha miután a játékos teljesítette az adott bónuszokhoz kapcsolódó feltételeket (pl.: forgatási követelmény, minimum szorzó). Fogadásokat lehet kötni az egyenleg terhére, de az ebből származó nyeremény csak a feltételek teljesítése után kerül át a nyeremény egyenlegre."
-            }
-        ]
+        "letter":  "B",
+        "terms":  [
+                      {
+                          "word":  "Befizetés",
+                          "definition":  "Amennyiben a fogadó befizetés során pénzt helyez el számláján, úgy lehetősége nyílik fogadni a felkínált sporteseményekre. Többféle befizetési opció közül lehet választani: bővebben a „Befizetés” menüpont alatt tájékozódhatsz!"
+                      },
+                      {
+                          "word":  "Bejelentkezés",
+                          "definition":  "Regisztrált fogadóknak a felhasználói név és a jelszó megadásával a bejelentkezés után nyílik lehetősége fogadások megtételére. A fogadó bejelentkezve tudja kezelni számláját, valamint figyelemmel követheti korábbi fogadásait."
+                      },
+                      {
+                          "word":  "Bónusz",
+                          "definition":  "Olyan promóciós jóváírás, amelyet a fogadók előre meghatározott feltételek teljesítése esetén kapnak meg. Ez az összeg a játékos bónusz egyenlegén kerül jóváírásra, és kizárólag fogadások megtételére használható fel, közvetlenül nem vehető ki vagy utalható át más egyenlegre."
+                      },
+                      {
+                          "word":  "Belső egyenleg",
+                          "definition":  "A belső egyenleg a játékos BetMatchBonus számláján nyilvántartott pénzeszközöket tartalmazza. A belső egyenleg három különálló részből áll. Ezek mindegyike más-más típusú egyenlegek, eltérő felhasználási és kifizetési szabályokkal, valamint különböző összegeket is tartalmazhatnak. – Fizetési egyenleg: Itt található a játékos által feltöltött pénz. Szabadon felhasználható fogadások megtételére, valamint bármikor kiutalható a játékos bankszámlájára. – Nyeremény egyenleg: Ide kerülnek a sikeres fogadásokból származó nyeremények, valamint a kifizethetővé vált bónuszösszegek. Felhasználható új fogadások megtételére, valamint bármikor kiutalható a játékos bankszámlájára. – Bónusz egyenleg: Ide kerülnek a promóciók vagy akciók keretein belül jóváírt összegek. Közvetlenül nem kifizethetőek, csak akkor, ha miután a játékos teljesítette az adott bónuszokhoz kapcsolódó feltételeket (pl.: forgatási követelmény, minimum szorzó). Fogadásokat lehet kötni az egyenleg terhére, de az ebből származó nyeremény csak a feltételek teljesítése után kerül át a nyeremény egyenlegre."
+                      }
+                  ]
     },
     {
-        "letter": "C",
-        "terms": [
-            {
-                "word": "Canadian",
-                "definition": "A „Canadian” 26 darab fogadás megtételét jelenti, a fogadó által kiválasztott 5 különböző sportesemény kimenetelére. A „Canadian” 10 db kettes kötésű, 10 db hármas kötésű, 5 db négyes kötésű és 1 db ötös kötésű fogadást tartalmaz. Bármely két választott kimenetel eltalálása esetén a fogadás már nyereményre jogosít."
-            },
-            {
-                "word": "Cash out",
-                "definition": "A Cash Out használatával megjátszott fogadásaidat még az esemény vége előtt, saját döntésedre lezárhatod, ezzel pedig biztosíthatod a nyereményedet. A felkínált nyeremény összege függ attól, hogy a megfogadott kimenetel bekövetkezésére éppen mekkora esély van."
-            },
-            {
-                "word": "Cash out (részleges)",
-                "definition": "A részleges Cash Out használatával a fogadásod aktuális értékének egy részét váltod vissza, de a fogadásod nem zárul le, csak a tétje és az elérhető maximális nyeremény összege csökken. A szelvény tehát továbbra is játékban marad, ugyanakkor az eredetinél kisebb téttel és kisebb elérhető nyereménnyel – utóbbit már a csökkentett tét és az odds szorzata határozza meg."
-            },
-            {
-                "word": "Cash out (automatikus)",
-                "definition": "Az automatikus Cash Out arra ad lehetőséget, hogy amikor a fogadásod elér egy általad előre beállított értéket, a Cash Out automatikusan végbe menjen."
-            }
-        ]
+        "letter":  "C",
+        "terms":  [
+                      {
+                          "word":  "Cash out",
+                          "definition":  "A Cash Out használatával megjátszott fogadásaidat még az esemény vége előtt, saját döntésedre lezárhatod, ezzel pedig biztosíthatod a nyereményedet. A felkínált nyeremény összege függ attól, hogy a megfogadott kimenetel bekövetkezésére éppen mekkora esély van."
+                      },
+                      {
+                          "word":  "Cash out (részleges)",
+                          "definition":  "A részleges Cash Out használatával a fogadásod aktuális értékének egy részét váltod vissza, de a fogadásod nem zárul le, csak a tétje és az elérhető maximális nyeremény összege csökken. A szelvény tehát továbbra is játékban marad, ugyanakkor az eredetinél kisebb téttel és kisebb elérhető nyereménnyel – utóbbit már a csökkentett tét és az odds szorzata határozza meg."
+                      },
+                      {
+                          "word":  "Cash out (automatikus)",
+                          "definition":  "Az automatikus Cash Out arra ad lehetőséget, hogy amikor a fogadásod elér egy általad előre beállított értéket, a Cash Out automatikusan végbe menjen."
+                      }
+                  ]
     },
     {
-        "letter": "D",
-        "terms": [
-            {
-                "word": "Döntetlennél a tét visszajár",
-                "definition": "A „Döntetlennél a tét visszajár” típusú fogadási sorok olyan két kimeneteles fogadási lehetőségek, ahol csak arra lehet fogadni, hogy ki nyeri meg az adott mérkőzést. Nyerésről akkor beszélhetünk, ha az általunk megfogadott csapat megnyeri a mérkőzést. Fogadói szempontból előnye az, hogy döntetlen eredmény esetén a tét visszajár, ekkor a fogadási naplóban 1-es nyereményszorzónak megfelelő összegű nyeremény kerül feltüntetésre."
-            },
-            {
-                "word": "Dupla kiszálló",
-                "definition": "Darts sportban a 0 érték elérése a dupla mezőbe dobott nyíllal. Pl.: 30 pont kidobása csak a 15-ös szám-szektor dupla mezőjébe dobott nyíllal lehetséges. (D15)"
-            }
-        ]
+        "letter":  "D",
+        "terms":  [
+                      {
+                          "word":  "Döntetlennél a tét visszajár",
+                          "definition":  "A „Döntetlennél a tét visszajár” típusú fogadási sorok olyan két kimeneteles fogadási lehetőségek, ahol csak arra lehet fogadni, hogy ki nyeri meg az adott mérkőzést. Nyerésről akkor beszélhetünk, ha az általunk megfogadott csapat megnyeri a mérkőzést. Fogadói szempontból előnye az, hogy döntetlen eredmény esetén a tét visszajár, ekkor a fogadási naplóban 1-es nyereményszorzónak megfelelő összegű nyeremény kerül feltüntetésre."
+                      },
+                      {
+                          "word":  "Dupla kiszálló",
+                          "definition":  "Darts sportban a 0 érték elérése a dupla mezőbe dobott nyíllal. Pl.: 30 pont kidobása csak a 15-ös szám-szektor dupla mezőjébe dobott nyíllal lehetséges. (D15)"
+                      }
+                  ]
     },
     {
-        "letter": "E",
-        "terms": [
-            {
-                "word": "Egyenleg",
-                "definition": "Az egyenleg a játékos BetMatchBonus-fiókján található pénzügyi keret, amelyből fogadásokat tehet és amely tartalmazza az elérhető pénzeszközeit. Az egyenleg három részre oszlik: fizetési egyenleg, nyeremény egyenleg, bónusz egyenleg."
-            },
-            {
-                "word": "Eredmények",
-                "definition": "Az „Eredmények” menüpont alatt megkeresheted a fogadási ajánlatban is szereplő események eredményét."
-            },
-            {
-                "word": "Élő fogadás",
-                "definition": "Fogadási ajánlatunkban „élő” fogadási lehetőségekkel is találkozhatsz, így az egyes kiválasztott sportesemények különböző kimeneteleinek a bekövetkezésére még az adott sportesemény ideje alatt is fogadhatsz. A nyereményszorzók a történések függvényében változnak."
-            },
-            {
-                "word": "Élő eredménytábla",
-                "definition": "Az eredménytábla statisztikai adatai, eredményei tájékoztató jellegűek, azok valóságtartalmáért az SzZrt. nem vállal felelősséget, nem képezhetik felszólamlás vagy reklamáció alapját."
-            }
-        ]
+        "letter":  "E",
+        "terms":  [
+                      {
+                          "word":  "Egyenleg",
+                          "definition":  "Az egyenleg a játékos BetMatchBonus-fiókján található pénzügyi keret, amelyből fogadásokat tehet és amely tartalmazza az elérhető pénzeszközeit. Az egyenleg három részre oszlik: fizetési egyenleg, nyeremény egyenleg, bónusz egyenleg."
+                      },
+                      {
+                          "word":  "Eredmények",
+                          "definition":  "Az „Eredmények” menüpont alatt megkeresheted a fogadási ajánlatban is szereplő események eredményét."
+                      },
+                      {
+                          "word":  "Élő fogadás",
+                          "definition":  "Fogadási ajánlatunkban „élő” fogadási lehetőségekkel is találkozhatsz, így az egyes kiválasztott sportesemények különböző kimeneteleinek a bekövetkezésére még az adott sportesemény ideje alatt is fogadhatsz. A nyereményszorzók a történések függvényében változnak."
+                      },
+                      {
+                          "word":  "Élő eredménytábla",
+                          "definition":  "Az eredménytábla statisztikai adatai, eredményei tájékoztató jellegűek, azok valóságtartalmáért az SzZrt. nem vállal felelősséget, nem képezhetik felszólamlás vagy reklamáció alapját."
+                      }
+                  ]
     },
     {
-        "letter": "F",
-        "terms": [
-            {
-                "word": "Felelős játékszervezés",
-                "definition": "A felelős játékszervezés a játékszervező olyan tudatos, a törvényi kötelezettségen is túlmutató tevékenységeinek összessége, amellyel igyekszik megóvni fogadóit a túlzásba vitt szerencsejáték káros következményeitől. Bővebben a \"Felelősségteljes játék\" menüpont alatt!"
-            },
-            {
-                "word": "Felhasználónév",
-                "definition": "A fogadó a regisztrációkor választott felhasználói neve (és jelszava) segítségével tud bejelentkezni a fogadási honlapra, így az azonosításnak köszönhetően biztonságosan tudja kezelni számláját."
-            },
-            {
-                "word": "Fogadásszervező",
-                "definition": "A fogadásszervezőnek engedélye van sporteseményekkel kapcsolatos fogadási lehetőségeket fogadásra felkínálni a fogadók számára."
-            },
-            {
-                "word": "Fogadószelvény-szerkesztő felület",
-                "definition": "A fogadási honlap jobb felső sarkánál található fogadószelvény-szerkesztő felületen láthatók a kiválasztott fogadási események és az ezekhez kapcsolódó nyereményszorzók. Tét elhelyezésére is itt van lehetőség, és ennek ismeretében már a fogadás megkötése előtt láthatóvá válik a megnyerhető nyeremény nagysága. Választható önálló (egy esemény kimenetelére történő) fogadás, de kötésben történő és kombinációs fogadások összeállítására is van lehetőség. Ha a fogadó még a fogadás megkötése előtt meggondolja magát, ezen a felületen törölhet egy-egy kiválasztott eseményt fogadásából."
-            },
-            {
-                "word": "Felfüggesztés",
-                "definition": "A fogadásszervező indokolt esetben jogosult fogadási eseményre vagy annak kimenetelére bármikor felfüggeszteni a fogadást. Egy felfüggesztett fogadási esemény, kimenetel újra megnyitható, további fogadásra felajánlható."
-            },
-            {
-                "word": "Felkészülési mérkőzés",
-                "definition": "Felkészülési mérkőzés megnevezés alatt jellemzően azok a fogadásra kínált események szerepelnek, amelyek a párosításban résztvevő szereplőkhöz köthető nemzeti és nemzetközi bajnokságokhoz/kupákhoz nem kapcsolódóan kerülnek megrendezésre."
-            },
-            {
-                "word": "Frame",
-                "definition": "Snooker sportban a játékszakasz elnevezése, mely a kezdő lökéstől a fekete golyó „lerakásig” tart. A frame-et az nyeri, aki több pontot gyűjt. A frame-ek száma előre meghatározott (19, 35). A legtöbb frame-et elérő játékos a mérkőzés győztese."
-            },
-            {
-                "word": "Forgatási követelmény",
-                "definition": "Egy adott bónuszösszeget csak akkor lehet átváltani kifizethető nyereményre, ha a játékos meghatározott összegben már fogadást tett belőle az előre meghatározott feltételek szerint. Gyakran minimum szorzóra vonatkozó feltételeknek is meg kell felelniük. Csak azok a fogadások számítanak bele a forgatásba, amelyek megfelelnek a promóciós feltételeknek. Példa: A játékos kap 10.000 Ft bónuszt és a promóció szerint 5x-ös forgatási követelmény vonatkozik rá minimum 1,40-es szorzójú fogadásokkal. A játékosnak legalább 50.000 Ft értékű tétet kell megjátszania (10.000 Ft x 5), olyan fogadásokkal, amelyek szorzója legalább 1,40. Csak ezután kerülhet át a bónuszösszeg a kifizethető nyeremény egyenlegre."
-            },
-            {
-                "word": "Fogadási napló",
-                "definition": "A BetMatchBonus fogadás felületén a játékos saját fogadási tevékenységének részletes, időrendben rögzített áttekintése."
-            }
-        ]
+        "letter":  "F",
+        "terms":  [
+                      {
+                          "word":  "Felelős játékszervezés",
+                          "definition":  "A felelős játékszervezés a játékszervező olyan tudatos, a törvényi kötelezettségen is túlmutató tevékenységeinek összessége, amellyel igyekszik megóvni fogadóit a túlzásba vitt szerencsejáték káros következményeitől. Bővebben a \"Felelősségteljes játék\" menüpont alatt!"
+                      },
+                      {
+                          "word":  "Felhasználónév",
+                          "definition":  "A fogadó a regisztrációkor választott felhasználói neve (és jelszava) segítségével tud bejelentkezni a fogadási honlapra, így az azonosításnak köszönhetően biztonságosan tudja kezelni számláját."
+                      },
+                      {
+                          "word":  "Fogadásszervező",
+                          "definition":  "A fogadásszervezőnek engedélye van sporteseményekkel kapcsolatos fogadási lehetőségeket fogadásra felkínálni a fogadók számára."
+                      },
+                      {
+                          "word":  "Fogadószelvény-szerkesztő felület",
+                          "definition":  "A fogadási honlap jobb felső sarkánál található fogadószelvény-szerkesztő felületen láthatók a kiválasztott fogadási események és az ezekhez kapcsolódó nyereményszorzók. Tét elhelyezésére is itt van lehetőség, és ennek ismeretében már a fogadás megkötése előtt láthatóvá válik a megnyerhető nyeremény nagysága. Választható önálló (egy esemény kimenetelére történő) fogadás, de kötésben történő és kombinációs fogadások összeállítására is van lehetőség. Ha a fogadó még a fogadás megkötése előtt meggondolja magát, ezen a felületen törölhet egy-egy kiválasztott eseményt fogadásából."
+                      },
+                      {
+                          "word":  "Felfüggesztés",
+                          "definition":  "A fogadásszervező indokolt esetben jogosult fogadási eseményre vagy annak kimenetelére bármikor felfüggeszteni a fogadást. Egy felfüggesztett fogadási esemény, kimenetel újra megnyitható, további fogadásra felajánlható."
+                      },
+                      {
+                          "word":  "Felkészülési mérkőzés",
+                          "definition":  "Felkészülési mérkőzés megnevezés alatt jellemzően azok a fogadásra kínált események szerepelnek, amelyek a párosításban résztvevő szereplőkhöz köthető nemzeti és nemzetközi bajnokságokhoz/kupákhoz nem kapcsolódóan kerülnek megrendezésre."
+                      },
+                      {
+                          "word":  "Frame",
+                          "definition":  "Snooker sportban a játékszakasz elnevezése, mely a kezdő lökéstől a fekete golyó „lerakásig” tart. A frame-et az nyeri, aki több pontot gyűjt. A frame-ek száma előre meghatározott (19, 35). A legtöbb frame-et elérő játékos a mérkőzés győztese."
+                      },
+                      {
+                          "word":  "Forgatási követelmény",
+                          "definition":  "Egy adott bónuszösszeget csak akkor lehet átváltani kifizethető nyereményre, ha a játékos meghatározott összegben már fogadást tett belőle az előre meghatározott feltételek szerint. Gyakran minimum szorzóra vonatkozó feltételeknek is meg kell felelniük. Csak azok a fogadások számítanak bele a forgatásba, amelyek megfelelnek a promóciós feltételeknek. Példa: A játékos kap 10.000 Ft bónuszt és a promóció szerint 5x-ös forgatási követelmény vonatkozik rá minimum 1,40-es szorzójú fogadásokkal. A játékosnak legalább 50.000 Ft értékű tétet kell megjátszania (10.000 Ft x 5), olyan fogadásokkal, amelyek szorzója legalább 1,40. Csak ezután kerülhet át a bónuszösszeg a kifizethető nyeremény egyenlegre."
+                      },
+                      {
+                          "word":  "Fogadási napló",
+                          "definition":  "A BetMatchBonus fogadás felületén a játékos saját fogadási tevékenységének részletes, időrendben rögzített áttekintése."
+                      }
+                  ]
     },
     {
-        "letter": "G",
-        "terms": [
-            {
-                "word": "Goliath",
-                "definition": "A „Goliath” 247 db fogadás megtételét jelenti, a fogadó által választott 8 különböző sportesemény kimenetelére. A „Goliath” 28 db kettes kötésű, 56 db hármas kötésű, 70 db négyes kötésű, 56 db ötös kötésű, 28 db hatos kötésű, 8 db hetes kötésű és 1 db nyolcas kötésű fogadást tartalmaz. Bármely két választott kimenetel eltalálása esetén a fogadás már nyereményre jogosít."
-            }
-        ]
+        "letter":  "H",
+        "terms":  [
+                      {
+                          "word":  "Három kimenetelű fogadási lehetőség",
+                          "definition":  "Ez a fajta fogadási lehetőség három lehetséges kimenetelt tartalmaz, de a háromból jellemzően csak az egyik válik nyertessé. Klasszikus példája ennek a labdarúgás, ahol ugyan két mérkőző csapat van, de döntetlen is bekövetkezhet, mint eredmény."
+                      },
+                      {
+                          "word":  "Hendikep fogadás",
+                          "definition":  "A fogadás szervezője – fogadási szempontból – kezdeti előnyt adhat az egyik mérkőző félnek, amit aztán hozzászámol a tényleges végeredményhez a fogadás eredményének meghatározásakor."
+                      },
+                      {
+                          "word":  "Holtverseny",
+                          "definition":  "Holtversenyről akkor beszélhetünk, ha két vagy több versenyző ugyanazt a helyezést éri el és köztük különbséget tenni nem lehetséges."
+                      }
+                  ]
     },
     {
-        "letter": "H",
-        "terms": [
-            {
-                "word": "Három kimenetelű fogadási lehetőség",
-                "definition": "Ez a fajta fogadási lehetőség három lehetséges kimenetelt tartalmaz, de a háromból jellemzően csak az egyik válik nyertessé. Klasszikus példája ennek a labdarúgás, ahol ugyan két mérkőző csapat van, de döntetlen is bekövetkezhet, mint eredmény."
-            },
-            {
-                "word": "Heinz",
-                "definition": "A „Heinz” 57 darab fogadás megtételét jelenti a fogadó által választott 6 különböző sportesemény kimenetelére. A „Heinz” 15 db kettes kötésű, 20 db hármas kötésű, 15 db négyes kötésű, 6 db ötös kötésű és 1db hatos kötésű fogadást tartalmaz. Bármely két választott kimenetel eltalálása esetén a fogadás már nyereményre jogosít."
-            },
-            {
-                "word": "Hendikep fogadás",
-                "definition": "A fogadás szervezője – fogadási szempontból – kezdeti előnyt adhat az egyik mérkőző félnek, amit aztán hozzászámol a tényleges végeredményhez a fogadás eredményének meghatározásakor."
-            },
-            {
-                "word": "Holtverseny",
-                "definition": "Holtversenyről akkor beszélhetünk, ha két vagy több versenyző ugyanazt a helyezést éri el és köztük különbséget tenni nem lehetséges."
-            }
-        ]
+        "letter":  "I",
+        "terms":  [
+                      {
+                          "word":  "Időkérés",
+                          "definition":  "Néhány sportágban lehetőség van mérkőzés közben a csapat edzőjének – taktikai okokból – időt kérnie, mely során a játékosokkal közvetlenül kommunikálhat, eközben a mérkőzés futó ideje áll (pl.: kézilabda, kosárlabda, vízilabda)."
+                      },
+                      {
+                          "word":  "Inning",
+                          "definition":  "Baseball sportban a játékrész elnevezése. A játékot kilenc játékrészben (inning) játsszák. Egy játékrész alatt mindkét csapat egyszer-egyszer kerül sorra, amikor megpróbálhatja a labdát elütni és pontot szerezni, miközben a másik csapat dob és védi a mezőket."
+                      }
+                  ]
     },
     {
-        "letter": "I",
-        "terms": [
-            {
-                "word": "Időkérés",
-                "definition": "Néhány sportágban lehetőség van mérkőzés közben a csapat edzőjének – taktikai okokból – időt kérnie, mely során a játékosokkal közvetlenül kommunikálhat, eközben a mérkőzés futó ideje áll (pl.: kézilabda, kosárlabda, vízilabda)."
-            },
-            {
-                "word": "Inning",
-                "definition": "Baseball sportban a játékrész elnevezése. A játékot kilenc játékrészben (inning) játsszák. Egy játékrész alatt mindkét csapat egyszer-egyszer kerül sorra, amikor megpróbálhatja a labdát elütni és pontot szerezni, miközben a másik csapat dob és védi a mezőket."
-            }
-        ]
+        "letter":  "J",
+        "terms":  [
+                      {
+                          "word":  "Játszma",
+                          "definition":  "Másnéven „szett” a játék egy jól meghatározott részegysége."
+                      },
+                      {
+                          "word":  "Jelszó",
+                          "definition":  "A fogadó az általa választott jelszava (és felhasználói neve) segítségével tud bejelentkezni a fogadási honlapra, így az azonosításnak köszönhetően biztonságosan tudja kezelni számláját."
+                      }
+                  ]
     },
     {
-        "letter": "J",
-        "terms": [
-            {
-                "word": "Játszma",
-                "definition": "Másnéven „szett” a játék egy jól meghatározott részegysége."
-            },
-            {
-                "word": "Jelszó",
-                "definition": "A fogadó az általa választott jelszava (és felhasználói neve) segítségével tud bejelentkezni a fogadási honlapra, így az azonosításnak köszönhetően biztonságosan tudja kezelni számláját."
-            }
-        ]
+        "letter":  "K",
+        "terms":  [
+                      {
+                          "word":  "Két kimenetelű fogadási lehetőség",
+                          "definition":  "Ez a fajta fogadási lehetőség két lehetséges kimenetelt tartalmaz, de a kettőből csak az egyik válik nyertessé. Jellemző ez olyan sportágakra történő fogadások esetében, ahol nincs döntetlen (például: tenisz), illetve a speciális fogadási lehetőségeknél."
+                      },
+                      {
+                          "word":  "Kifizetés",
+                          "definition":  "A fogadó a belső egyenlegén jóváírt nyereményét a szervező által nyilvántartott, magyarországi bankban vezetett forint alapú bankszámlájára utaltathatja át."
+                      },
+                      {
+                          "word":  "Kijelentkezés",
+                          "definition":  "Kijelentkezés után az újabb belépésig nincs lehetőség fogadásokat kötni. A fogadó a számlájához nem férhet hozzá, mivel ebben az esetben nincs azonosítva."
+                      },
+                      {
+                          "word":  "Kötésben történő fogadás",
+                          "definition":  "Kötésben történő fogadás esetén egy fogadáson belül egyidejűleg két, vagy több kimenetelre történik a fogadás. Ezzel a módszerrel viszonylag kisebb tét mellett is nagyobb nyeremény érhető el. A megfogadott nyereményszorzókat összeszorozva kapjuk meg az eredő oddsot, ami a téttel megszorozva megmutatja a várható nyereményt. A fogadás csak abban az esetben válik nyertessé, ha a fogadó minden megfogadott kimenetele bekövetkezik."
+                      },
+                      {
+                          "word":  "Kötéstiltás",
+                          "definition":  "Azt jelenti, hogy bizonyos fogadási eseményeket nem lehet egyazon szelvényen (egy fogadáson belül) kombinált fogadásként együtt megjátszani."
+                      },
+                      {
+                          "word":  "Kiemelt ajánlatok",
+                          "definition":  "Az aktuális fogadási ajánlatból kigyűjtött, fogadói szempontból kiemelt figyelmet élvező eseménycsoportok. Az itt helyet kapó fogadási események túlnyomó része a megjelenést követően viszonylag rövid időn belül megrendezésre kerül."
+                      },
+                      {
+                          "word":  "Ki végez előrébb?",
+                          "definition":  "Egyes eseményekhez köthető fogadási piac, ahol a nyertes tipphez azt kell eltalálni, hogy a fogadási ajánlatban felkínált párosításban található két szereplő közül az adott versenyen melyik végez előrébb, a jobbnak számító pozícióban."
+                      },
+                      {
+                          "word":  "Ki jut tovább?",
+                          "definition":  "Arra vonatkozik, hogy egy adott párharc vagy kieséses rendszerű forduló végén melyik csapat vagy versenyző jut a következő körbe. Nem a mérkőzés eredményére vonatkozik, hanem a (például oda-visszavágós) párharc továbbjutójára."
+                      }
+                  ]
     },
     {
-        "letter": "K",
-        "terms": [
-            {
-                "word": "Két kimenetelű fogadási lehetőség",
-                "definition": "Ez a fajta fogadási lehetőség két lehetséges kimenetelt tartalmaz, de a kettőből csak az egyik válik nyertessé. Jellemző ez olyan sportágakra történő fogadások esetében, ahol nincs döntetlen (például: tenisz), illetve a speciális fogadási lehetőségeknél."
-            },
-            {
-                "word": "Kifizetés",
-                "definition": "A fogadó a belső egyenlegén jóváírt nyereményét a szervező által nyilvántartott, magyarországi bankban vezetett forint alapú bankszámlájára utaltathatja át."
-            },
-            {
-                "word": "Kijelentkezés",
-                "definition": "Kijelentkezés után az újabb belépésig nincs lehetőség fogadásokat kötni. A fogadó a számlájához nem férhet hozzá, mivel ebben az esetben nincs azonosítva."
-            },
-            {
-                "word": "Kombinált fogadás",
-                "definition": "A kombinált fogadással megfogadható kombinációtípusok: 2/3, 2/4, 3/4, 2/5, 3/5, 4/5, 2/6, 3/6, 4/6, 5/6, 2/7, 3/7, 4/7, 5/7, 6/7, 2/8, 3/8, 4/8, 5/8, 6/8, 7/8 kombináció, Canadian, Goliath, Heinz, Lucky 15, Lucky 31, Lucky 63, Patent, Super Heinz, Trixie, Yankee. Ezen fogadási típusok jellemzőiről bővebb információk is találhatók szótárunkban."
-            },
-            {
-                "word": "Kötésben történő fogadás",
-                "definition": "Kötésben történő fogadás esetén egy fogadáson belül egyidejűleg két, vagy több kimenetelre történik a fogadás. Ezzel a módszerrel viszonylag kisebb tét mellett is nagyobb nyeremény érhető el. A megfogadott nyereményszorzókat összeszorozva kapjuk meg az eredő oddsot, ami a téttel megszorozva megmutatja a várható nyereményt. A fogadás csak abban az esetben válik nyertessé, ha a fogadó minden megfogadott kimenetele bekövetkezik."
-            },
-            {
-                "word": "Kötéstiltás",
-                "definition": "Azt jelenti, hogy bizonyos fogadási eseményeket nem lehet egyazon szelvényen (egy fogadáson belül) kombinált fogadásként együtt megjátszani."
-            },
-            {
-                "word": "Kiemelt ajánlatok",
-                "definition": "Az aktuális fogadási ajánlatból kigyűjtött, fogadói szempontból kiemelt figyelmet élvező eseménycsoportok. Az itt helyet kapó fogadási események túlnyomó része a megjelenést követően viszonylag rövid időn belül megrendezésre kerül."
-            },
-            {
-                "word": "Ki végez előrébb?",
-                "definition": "Egyes eseményekhez köthető fogadási piac, ahol a nyertes tipphez azt kell eltalálni, hogy a fogadási ajánlatban felkínált párosításban található két szereplő közül az adott versenyen melyik végez előrébb, a jobbnak számító pozícióban."
-            },
-            {
-                "word": "Ki jut tovább?",
-                "definition": "Arra vonatkozik, hogy egy adott párharc vagy kieséses rendszerű forduló végén melyik csapat vagy versenyző jut a következő körbe. Nem a mérkőzés eredményére vonatkozik, hanem a (például oda-visszavágós) párharc továbbjutójára."
-            }
-        ]
+        "letter":  "L",
+        "terms":  [
+                      {
+                          "word":  "Leg",
+                          "definition":  "Egységnyi játék neve a dartsban (Kiírásnak megfelelően pl. 501-ről, pontosan a 0 érték elérése). A versenykiírásnak megfelelő számú „leg” elérése jelent egy szett pontot. A kiírásnak megfelelő szett-pont elérése jelenti a győzelmet."
+                      }
+                  ]
     },
     {
-        "letter": "L",
-        "terms": [
-            {
-                "word": "Lucky 15",
-                "definition": "A „Lucky 15” 15 darab fogadás megtételét jelenti, a fogadó által választott 4 különböző sportesemény kimenetelére. A „Lucky 15” 4 db önálló (egyes kötésű), 6 db kettes kötésű, 4 db hármas kötésű és 1 db négyes kötésű fogadást tartalmaz. Bármely kiválasztott kimenetel eltalálása esetén a fogadás már nyereményre jogosít."
-            },
-            {
-                "word": "Lucky 31",
-                "definition": "A „Lucky 31” 31 darab fogadás megtételét jelenti a fogadó által választott 5 különböző sportesemény kimenetelére. A „Lucky 31” 5 db önálló (egyes kötésű), 10 db kettes kötésű, 10 db hármas kötésű, 5 db négyes kötésű és 1 db ötös kötésű fogadást tartalmaz. Bármely kiválasztott kimenetel eltalálása esetén a fogadás már nyereményre jogosít."
-            },
-            {
-                "word": "Lucky 63",
-                "definition": "A „Lucky 63” 63 darab fogadás megtételét jelenti a fogadó által választott 6 különböző sportesemény kimenetelére. A „Lucky 63” 6 db önálló (egyes kötésű), 15 db kettes kötésű, 20 db hármas kötésű, 15 db négyes kötésű, 6 db ötös kötés és 1 db hatos kötésű fogadást tartalmaz. Bármely kiválasztott kimenetel eltalálása esetén a fogadás már nyereményre jogosít."
-            },
-            {
-                "word": "Leg",
-                "definition": "Egységnyi játék neve a dartsban (Kiírásnak megfelelően pl. 501-ről, pontosan a 0 érték elérése). A versenykiírásnak megfelelő számú „leg” elérése jelent egy szett pontot. A kiírásnak megfelelő szett-pont elérése jelenti a győzelmet."
-            }
-        ]
+        "letter":  "NY",
+        "terms":  [
+                      {
+                          "word":  "Nyereményszorzó (odds)",
+                          "definition":  "A fogadásszervező a fogadási ajánlatban szereplő valamennyi fogadási lehetőség fogadásra felajánlott kimeneteléhez nyereményszorzót rendel. A fogadó a nyereményszorzó, illetőleg a tét ismeretében meg tudja határozni a várható nyereményét. Amennyiben egy adott kimenetel bekövetkezésének nagy az esélye, akkor az ehhez a kimenetelhez tartozó nyereményszorzó az esélyhez igazodva kisebb lesz. Az előzetesen esélytelenebb kimenetelhez viszont nagyobb szorzó tartozik. Fogadási ajánlatunkban deciminális (európai) nyereményszorzó formátumot használjuk. Az így magadott számot (oddsot) kell összeszorozni a tét összegével, hogy kiderüljön a várható nyeremény nagysága. Ha például 2,50-es nyereményszorzó mellett 1.000 forint tét tartozik, akkor a várható nyeremény 2,50 x 1.000 forint, azaz 2.500 forint. Az egy egységnyi fogadással megnyerhető legnagyobb nyeremény összege a mindenkor hatályos jogszabályban előírt mérték, de legfeljebb 2.000.000 (kétmillió) forint."
+                      },
+                      {
+                          "word":  "Nyereményfelvétel – bankszámlaszám megadása",
+                          "definition":  "A BetMatchBonuson elért nyeremény kifizetése kizárólag átutalással történik, az ügyfél által megadott, saját névre szóló bankszámlaszámra. A kifizetéshez a játékosnak hitelesített regisztrációval kell rendelkezni. A bankszámlaszámot a profilban lehet megadni vagy módosítani, utóbbi csak akkor fogadható el, ha megegyezik a felhasználó nevével. Nyereménykifizetés nem automatikus, a játékosnak külön kell kifizetési kérelmet indítania. A nyeremény csak a fizetési és nyeremény egyenlegről vehető ki, a bónusz egyenlegről nem. A BetMatchBonus nem utal ki pénzt harmadik fél számlájára, kizárólag saját névre szóló bankszámlaszám érvényes."
+                      }
+                  ]
     },
     {
-        "letter": "NY",
-        "terms": [
-            {
-                "word": "Nyereményszorzó (odds)",
-                "definition": "A fogadásszervező a fogadási ajánlatban szereplő valamennyi fogadási lehetőség fogadásra felajánlott kimeneteléhez nyereményszorzót rendel. A fogadó a nyereményszorzó, illetőleg a tét ismeretében meg tudja határozni a várható nyereményét. Amennyiben egy adott kimenetel bekövetkezésének nagy az esélye, akkor az ehhez a kimenetelhez tartozó nyereményszorzó az esélyhez igazodva kisebb lesz. Az előzetesen esélytelenebb kimenetelhez viszont nagyobb szorzó tartozik. Fogadási ajánlatunkban deciminális (európai) nyereményszorzó formátumot használjuk. Az így magadott számot (oddsot) kell összeszorozni a tét összegével, hogy kiderüljön a várható nyeremény nagysága. Ha például 2,50-es nyereményszorzó mellett 1.000 forint tét tartozik, akkor a várható nyeremény 2,50 x 1.000 forint, azaz 2.500 forint. Az egy egységnyi fogadással megnyerhető legnagyobb nyeremény összege a mindenkor hatályos jogszabályban előírt mérték, de legfeljebb 2.000.000 (kétmillió) forint."
-            },
-            {
-                "word": "Nyereményfelvétel – bankszámlaszám megadása",
-                "definition": "A BetMatchBonuson elért nyeremény kifizetése kizárólag átutalással történik, az ügyfél által megadott, saját névre szóló bankszámlaszámra. A kifizetéshez a játékosnak hitelesített regisztrációval kell rendelkezni. A bankszámlaszámot a profilban lehet megadni vagy módosítani, utóbbi csak akkor fogadható el, ha megegyezik a felhasználó nevével. Nyereménykifizetés nem automatikus, a játékosnak külön kell kifizetési kérelmet indítania. A nyeremény csak a fizetési és nyeremény egyenlegről vehető ki, a bónusz egyenlegről nem. A BetMatchBonus nem utal ki pénzt harmadik fél számlájára, kizárólag saját névre szóló bankszámlaszám érvényes."
-            }
-        ]
+        "letter":  "O",
+        "terms":  [
+                      {
+                          "word":  "Outright (hosszú távú) fogadás",
+                          "definition":  "Olyan fogadástípus, melynek során jellemzően egy hosszabb, összetettebb sorozat, bajnokság, e-sport verseny, e-sport versenysorozat, illetve egyéb esemény, eseménysorozat (pl. filmekkel, zenével kapcsolatos díjak, stb…) végső győztesére lehet fogadni, a fogadásra felajánlott listából. (Például: Melyik csapat nyeri az NB I-es labdarúgó-bajnokságot?). Az Outright fogadásoknak vannak olyan formái is, amikor arra lehet fogadni, hogy egy versengés során kik végeznek például a dobogón, vagy kik esnek ki valamely bajnokságból, versenyről."
+                      },
+                      {
+                          "word":  "Odds",
+                          "definition":  "Nyereményszorzó szám, amely megmutatja, hogy mennyi nyereményre számíthat a játékos, ha sikeresen tippel egy adott kimenetelre."
+                      }
+                  ]
     },
     {
-        "letter": "O",
-        "terms": [
-            {
-                "word": "Outright (hosszú távú) fogadás",
-                "definition": "Olyan fogadástípus, melynek során jellemzően egy hosszabb, összetettebb sorozat, bajnokság, e-sport verseny, e-sport versenysorozat, illetve egyéb esemény, eseménysorozat (pl. filmekkel, zenével kapcsolatos díjak, stb…) végső győztesére lehet fogadni, a fogadásra felajánlott listából. (Például: Melyik csapat nyeri az NB I-es labdarúgó-bajnokságot?). Az Outright fogadásoknak vannak olyan formái is, amikor arra lehet fogadni, hogy egy versengés során kik végeznek például a dobogón, vagy kik esnek ki valamely bajnokságból, versenyről."
-            },
-            {
-                "word": "Odds",
-                "definition": "Nyereményszorzó szám, amely megmutatja, hogy mennyi nyereményre számíthat a játékos, ha sikeresen tippel egy adott kimenetelre."
-            },
-            {
-                "word": "Országos napi minimum-hőmérséklet",
-                "definition": "Olyan kétkimeneteles fogadási lehetőség, ahol arra kell tippelni, hogy az adott napi minimum-hőmérséklet a megadott értéknél magasabb vagy alacsonyabb lesz. Negatív számok esetében a „Kevesebb, mint -X celsius fok” lehetőség az adott értéknél alacsonyabb hőmérsékletet, a „-X celsius fok vagy több” lehetőség pedig az adott értéknél magasabb napi minimum-hőmérsékletet jelöli. Például: a „Kevesebb, mint -7,5 celsius fok” kimenetelre tett fogadások abban az esetben válnak nyertessé, ha a napi minimum-hőmérséklet nem éri el a -7,5 celsius fokot (pl. a napi minimum-hőmérséklet -8 celsius fok lesz), míg a „-7,5 celsius fok vagy több” esetében akkor lesz nyertes a fogadás, ha a napi minimum-hőmérséklet meghaladja a -7,5 fokot (pl. a napi minimum-hőmérséklet -5 celsius fok lesz)."
-            },
-            {
-                "word": "Országos napi maximum-hőmérséklet",
-                "definition": "Olyan kétkimeneteles fogadási lehetőség, ahol arra kell tippelni, hogy az adott napi maximum-hőmérséklet a megadott értéknél magasabb vagy alacsonyabb lesz. Negatív számok esetében a „Kevesebb, mint -X celsius fok” lehetőség az adott értéknél alacsonyabb hőmérsékletet, a „-X celsius fok vagy több” lehetőség pedig az adott értéknél magasabb napi maximum-hőmérsékletet jelöli. Például: a „Kevesebb, mint -7,5 celsius fok” kimenetelre tett fogadások abban az esetben válnak nyertessé, ha a napi maximum-hőmérséklet nem éri el a -7,5 celsius fokot (pl. a napi maximum-hőmérséklet -8 celsius fok lesz), míg a „-7,5 celsius fok vagy több” esetében akkor lesz nyertes a fogadás, ha a napi maximum-hőmérséklet meghaladja a -7,5 fokot (pl. a napi maximum-hőmérséklet -5 celsius fok lesz)."
-            }
-        ]
+        "letter":  "Ö",
+        "terms":  [
+                      {
+                          "word":  "Önálló (egyes kötésű) fogadás",
+                          "definition":  "Önálló (kötés nélküli) fogadás a legegyszerűbb fogadási típus. Ilyen esetben egy fogadáson belül csupán egy kimenetelre történik a fogadás. A fogadó a várható nyereményének a nagyságát a megfogadott nyereményszorzó és a tét összeszorzása révén számolhatja ki."
+                      }
+                  ]
     },
     {
-        "letter": "Ö",
-        "terms": [
-            {
-                "word": "Önálló (egyes kötésű) fogadás",
-                "definition": "Önálló (kötés nélküli) fogadás a legegyszerűbb fogadási típus. Ilyen esetben egy fogadáson belül csupán egy kimenetelre történik a fogadás. A fogadó a várható nyereményének a nagyságát a megfogadott nyereményszorzó és a tét összeszorzása révén számolhatja ki."
-            }
-        ]
+        "letter":  "P",
+        "terms":  [
+                      {
+                          "word":  "Pole pozíció",
+                          "definition":  "Forma-1 sportágban az időmérő edzés utolsó szakaszában legjobb időeredményt elért versenyző foglalja el a legkedvezőbb rajtpozíciót. (Első helyről indulhat az aktuális nagydíjon.)"
+                      },
+                      {
+                          "word":  "Playoff (rájátszás)",
+                          "definition":  "Néhány sportág versenykiírásában a végső helyezések eldöntésére irányuló lebonyolítási rend. Az alapszakaszban elért helyezések alapján párosítják a rájátszásban szereplő csapatokat. Pl.: Amerikai foci – NFL, Kosárlabda – NBA, Jégkorong – NHL, stb."
+                      },
+                      {
+                          "word":  "Piacok",
+                          "definition":  "Fogadási ajánlatban szereplő sportesemények fogadási lehetőségei."
+                      }
+                  ]
     },
     {
-        "letter": "P",
-        "terms": [
-            {
-                "word": "Patent",
-                "definition": "A „Patent” 7 darab fogadás megtételét jelenti, a fogadó által választott 3 különböző sportesemény kimenetelére. A „Patent” 3 db önálló (egyes kötésű), 3 db kettes kötésű, és 1 db hármas kötésű fogadást tartalmaz. Bármely kiválasztott kimenetel eltalálása esetén a fogadás már nyereményre jogosít."
-            },
-            {
-                "word": "Pole pozíció",
-                "definition": "Forma-1 sportágban az időmérő edzés utolsó szakaszában legjobb időeredményt elért versenyző foglalja el a legkedvezőbb rajtpozíciót. (Első helyről indulhat az aktuális nagydíjon.)"
-            },
-            {
-                "word": "Playoff (rájátszás)",
-                "definition": "Néhány sportág versenykiírásában a végső helyezések eldöntésére irányuló lebonyolítási rend. Az alapszakaszban elért helyezések alapján párosítják a rájátszásban szereplő csapatokat. Pl.: Amerikai foci – NFL, Kosárlabda – NBA, Jégkorong – NHL, stb."
-            },
-            {
-                "word": "Piacok",
-                "definition": "Fogadási ajánlatban szereplő sportesemények fogadási lehetőségei."
-            }
-        ]
+        "letter":  "R",
+        "terms":  [
+                      {
+                          "word":  "Regisztráció",
+                          "definition":  "A fogadónak mielőtt fogadást szeretne kötni regisztrálnia kell a fogadási honlapon, megadva az ott kért adatokat. Ekkor megnyitja a fogadási számláját, majd a bejelentkezés, illetőleg befizetés után kötheti meg az első fogadását."
+                      },
+                      {
+                          "word":  "Rendes játékidő",
+                          "definition":  "Az adott sportág szabályai szerint meghatározott, az extra játékrészek (például döntés célját szolgáló hosszabbítások/bűntetőrúgások/dobások) nélküli játékidő. A legtöbb fogadási esemény – ha másként nincs jelezve – kizárólag a rendes játékidő alatt elért eredményt veszi figyelembe."
+                      },
+                      {
+                          "word":  "Részleges érvénytelenítés",
+                          "definition":  "Részleges érvénytelenítés indokolt esetekben történhet; ekkor az érintett fogadások esetében az esemény megfogadott kimeneteleire vonatkozó odds 1,00-ás értékkel kerül figyelembevételre. Például, ha egy fogadási esemény a fogadási ajánlatban meghirdetett kezdési időpontnál korábban kezdődik, akkor a tényleges kezdési időpont után megtett fogadások részlegesen érvénytelenek."
+                      }
+                  ]
     },
     {
-        "letter": "R",
-        "terms": [
-            {
-                "word": "Regisztráció",
-                "definition": "A fogadónak mielőtt fogadást szeretne kötni regisztrálnia kell a fogadási honlapon, megadva az ott kért adatokat. Ekkor megnyitja a fogadási számláját, majd a bejelentkezés, illetőleg befizetés után kötheti meg az első fogadását."
-            },
-            {
-                "word": "Rendes játékidő",
-                "definition": "Az adott sportág szabályai szerint meghatározott, az extra játékrészek (például döntés célját szolgáló hosszabbítások/bűntetőrúgások/dobások) nélküli játékidő. A legtöbb fogadási esemény – ha másként nincs jelezve – kizárólag a rendes játékidő alatt elért eredményt veszi figyelembe."
-            },
-            {
-                "word": "Részleges érvénytelenítés",
-                "definition": "Részleges érvénytelenítés indokolt esetekben történhet; ekkor az érintett fogadások esetében az esemény megfogadott kimeneteleire vonatkozó odds 1,00-ás értékkel kerül figyelembevételre. Például, ha egy fogadási esemény a fogadási ajánlatban meghirdetett kezdési időpontnál korábban kezdődik, akkor a tényleges kezdési időpont után megtett fogadások részlegesen érvénytelenek."
-            }
-        ]
+        "letter":  "S",
+        "terms":  [
+                      {
+                          "word":  "Speciális fogadás",
+                          "definition":  "Az SzZrt. fogadási ajánlatában olyan speciális fogadási lehetőségek is szerepelnek, amelyeknél egy adott sporteseménynek nem csupán a végeredményére, hanem egyes felkínált eseményeinek, történéseinek a bekövetkezésére (például: Lesz-e 11-es a mérkőzésen?) is lehet fogadásokat kötni."
+                      },
+                      {
+                          "word":  "Speciális – Ki szerez több pontot?",
+                          "definition":  "Egy olyan fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy a fogadásban érintett két résztvevő közül a párosításban elsőként szereplő (H), vagy a második helyen szereplő (V) fél szerez több pontot – nem egymás ellen játszva – az adott fordulóban, illetve amennyiben azonos számú pontot szereznek, akkor a fogadás szempontjából döntetlenre (D) végeznek."
+                      },
+                      {
+                          "word":  "Statisztikák",
+                          "definition":  "A statisztikák segítséget nyújthatnak a fogadóknak ahhoz, hogy – a fogadási honlapunkon található ilyen elnevezésű menüpont alatt – sportágakra, csapatokra, sportolókra vonatkozó adatokra, korábbi eredményekre tudjanak rákeresni, fogadásaik minél sikeresebb összeállítása érdekében."
+                      }
+                  ]
     },
     {
-        "letter": "S",
-        "terms": [
-            {
-                "word": "Speciális fogadás",
-                "definition": "Az SzZrt. fogadási ajánlatában olyan speciális fogadási lehetőségek is szerepelnek, amelyeknél egy adott sporteseménynek nem csupán a végeredményére, hanem egyes felkínált eseményeinek, történéseinek a bekövetkezésére (például: Lesz-e 11-es a mérkőzésen?) is lehet fogadásokat kötni."
-            },
-            {
-                "word": "Speciális – Ki szerez több pontot?",
-                "definition": "Egy olyan fogadási lehetőség, ahol a fogadónak azt kell megtippelnie, hogy a fogadásban érintett két résztvevő közül a párosításban elsőként szereplő (H), vagy a második helyen szereplő (V) fél szerez több pontot – nem egymás ellen játszva – az adott fordulóban, illetve amennyiben azonos számú pontot szereznek, akkor a fogadás szempontjából döntetlenre (D) végeznek."
-            },
-            {
-                "word": "Statisztikák",
-                "definition": "A statisztikák segítséget nyújthatnak a fogadóknak ahhoz, hogy – a fogadási honlapunkon található ilyen elnevezésű menüpont alatt – sportágakra, csapatokra, sportolókra vonatkozó adatokra, korábbi eredményekre tudjanak rákeresni, fogadásaik minél sikeresebb összeállítása érdekében."
-            },
-            {
-                "word": "Super Heinz",
-                "definition": "A „Super Heinz” 120 darab fogadás megtételét jelenti, a fogadó által választott 7 különböző sportesemény kimenetelére. A „Super Heinz” 21 db kettes kötésű, 35 db hármas kötésű, 35 db négyes kötésű, 21 db ötös kötésű, 7 db hatos kötésű és 1 db hetes kötésű fogadást tartalmaz. Bármely két választott kimenetel eltalálása esetén a fogadás már nyereményre jogosít."
-            }
-        ]
+        "letter":  "SZ",
+        "terms":  [
+                      {
+                          "word":  "Számla",
+                          "definition":  "A fogadó a regisztráció során választott felhasználói névvel és jelszóval bejelentkezve férhet hozzá a számlájához. A bejelentkezést követően a fogadó itt befizetéseinek, nyereményeinek, illetve a korábbi fogadásainak az alakulását is nyomon követheti."
+                      },
+                      {
+                          "word":  "Szelvény ajánlók",
+                          "definition":  "A fogadásszervező által tematikusan (sportáganként, várható nyeremény alapján, azonos kimenetelek szerint, stb.) összeállított konkrét fogadási szelvények, melyek a „Szelvény ajánló” menüpontban kiválasztva is megfogadhatóak. A meghatározott eseménylistán illetve kimeneteleken, valamint a téten és a kombináció típusán is változtatni lehet a fogadó igénye szerint a fogadás megtétele előtt."
+                      },
+                      {
+                          "word":  "Szuperodds",
+                          "definition":  "A BetMatchBonus által időszakosan kínált kiemelt nyereményszorzó."
+                      }
+                  ]
     },
     {
-        "letter": "SZ",
-        "terms": [
-            {
-                "word": "Számla",
-                "definition": "A fogadó a regisztráció során választott felhasználói névvel és jelszóval bejelentkezve férhet hozzá a számlájához. A bejelentkezést követően a fogadó itt befizetéseinek, nyereményeinek, illetve a korábbi fogadásainak az alakulását is nyomon követheti."
-            },
-            {
-                "word": "Szelvény ajánlók",
-                "definition": "A fogadásszervező által tematikusan (sportáganként, várható nyeremény alapján, azonos kimenetelek szerint, stb.) összeállított konkrét fogadási szelvények, melyek a „Szelvény ajánló” menüpontban kiválasztva is megfogadhatóak. A meghatározott eseménylistán illetve kimeneteleken, valamint a téten és a kombináció típusán is változtatni lehet a fogadó igénye szerint a fogadás megtétele előtt."
-            },
-            {
-                "word": "Szuperodds",
-                "definition": "A BetMatchBonus által időszakosan kínált kiemelt nyereményszorzó."
-            }
-        ]
+        "letter":  "T",
+        "terms":  [
+                      {
+                          "word":  "Tét",
+                          "definition":  "A tét az a forintban meghatározott pénzösszeg, amivel a fogadó a kiválasztott eseményre, eseményekre fogad. Az egységnyi fogadás során megfogadható legkisebb tétösszeg önálló fogadás esetén 100 forint, míg kombinált fogadás esetén legalább 100 forint tétet kell megfogadni kombinációnként."
+                      },
+                      {
+                          "word":  "Tie-break (super tie-break)",
+                          "definition":  "A tie-break a teniszben rövidítést jelent, 6:6-os állásnál a játszma (szett) győztesének eldöntésére irányuló játék. A szuper tie-break (döntő játék) a játékok számára vonatkozó fogadási események esetében egy játéknak minősül."
+                      },
+                      {
+                          "word":  "Touchdown",
+                          "definition":  "Az amerikai foci pontozásának legfontosabb eleme, amely akkor következik be, ha valaki a játékosok közül az ellenfél célterületére (End Zone) viszi be a labdát, vagy az irányító a célterületen álló társának dobja a labdát, aki mindkét lábával érinti a földet az elkapott labdával a kezében."
+                      }
+                  ]
     },
     {
-        "letter": "T",
-        "terms": [
-            {
-                "word": "Tét",
-                "definition": "A tét az a forintban meghatározott pénzösszeg, amivel a fogadó a kiválasztott eseményre, eseményekre fogad. Az egységnyi fogadás során megfogadható legkisebb tétösszeg önálló fogadás esetén 100 forint, míg kombinált fogadás esetén legalább 100 forint tétet kell megfogadni kombinációnként."
-            },
-            {
-                "word": "Trixie",
-                "definition": "A „Trixie” 4 darab fogadás megtételét jelenti a fogadó által választott 3 különböző sportesemény kimenetelére. A „Trixie” 3 db kettes kötésű, és 1 db hármas kötésű fogadást tartalmaz. Bármely két választott kimenetel eltalálása esetén a fogadás már nyereményre jogosít."
-            },
-            {
-                "word": "Tie-break (super tie-break)",
-                "definition": "A tie-break a teniszben rövidítést jelent, 6:6-os állásnál a játszma (szett) győztesének eldöntésére irányuló játék. A szuper tie-break (döntő játék) a játékok számára vonatkozó fogadási események esetében egy játéknak minősül."
-            },
-            {
-                "word": "Touchdown",
-                "definition": "Az amerikai foci pontozásának legfontosabb eleme, amely akkor következik be, ha valaki a játékosok közül az ellenfél célterületére (End Zone) viszi be a labdát, vagy az irányító a célterületen álló társának dobja a labdát, aki mindkét lábával érinti a földet az elkapott labdával a kezében."
-            }
-        ]
+        "letter":  "Ü",
+        "terms":  [
+                      {
+                          "word":  "Ügyfélszolgálat",
+                          "definition":  "Amennyiben egy fogadónak bármilyen gondja adódna a fogadásokkal kapcsolatban, vagy kérdése merülne fel a fogadási honlap tartalmát illetően, az elérhetőségek valamelyikén kapcsolatba léphet az SzZrt. ügyfélszolgálati munkatársaival, akik segíteni tudnak felmerült probléma megoldásában, illetve kérdések megválaszolásában."
+                      }
+                  ]
     },
     {
-        "letter": "Ü",
-        "terms": [
-            {
-                "word": "Ügyfélszolgálat",
-                "definition": "Amennyiben egy fogadónak bármilyen gondja adódna a fogadásokkal kapcsolatban, vagy kérdése merülne fel a fogadási honlap tartalmát illetően, az elérhetőségek valamelyikén kapcsolatba léphet az SzZrt. ügyfélszolgálati munkatársaival, akik segíteni tudnak felmerült probléma megoldásában, illetve kérdések megválaszolásában."
-            }
-        ]
-    },
-    {
-        "letter": "V",
-        "terms": [
-            {
-                "word": "Visszalépés",
-                "definition": "Ha egy fogadásra kínált párosításból az egyik résztvevő az esemény kezdete előtt visszalép, az esemény megfogadott kimeneteleire vonatkozó odds 1,00-ás értékkel kerül figyelembevételre."
-            }
-        ]
-    },
-    {
-        "letter": "Y",
-        "terms": [
-            {
-                "word": "Yankee",
-                "definition": "A „Yankee” 11 darab fogadás megtételét jelenti, a fogadó által választott 4 különböző sportesemény kimenetelére. A „Yankee” 6 db kettes kötésű, 4 db hármas kötésű és 1 db négyes kötésű fogadást tartalmaz. Bármely két választott kimenetel eltalálása esetén a fogadás már nyereményre jogosít."
-            }
-        ]
+        "letter":  "V",
+        "terms":  [
+                      {
+                          "word":  "Visszalépés",
+                          "definition":  "Ha egy fogadásra kínált párosításból az egyik résztvevő az esemény kezdete előtt visszalép, az esemény megfogadott kimeneteleire vonatkozó odds 1,00-ás értékkel kerül figyelembevételre."
+                      }
+                  ]
     }
 ]

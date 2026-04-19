@@ -29,6 +29,17 @@ $typeLabels = [
     'password_change' => 'Jelszó módosítás'
 ];
 
+$typeLabelKeys = [
+    'login' => 'userProfile.activityLog.typeLogin',
+    'logout' => 'userProfile.activityLog.typeLogout',
+    'bet' => 'userProfile.activityLog.typeBet',
+    'deposit' => 'userProfile.activityLog.typeDeposit',
+    'withdrawal' => 'userProfile.activityLog.typeWithdrawal',
+    'bonus' => 'userProfile.activityLog.typeBonus',
+    'profile_update' => 'userProfile.activityLog.typeProfileUpdate',
+    'password_change' => 'userProfile.activityLog.typePasswordChange'
+];
+
 $typeIcons = [
     'login' => 'fa-sign-in-alt',
     'logout' => 'fa-sign-out-alt',
@@ -63,7 +74,7 @@ foreach ($activities as $a) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Napló | BetMatchBonus</title>
+    <title data-i18n="userProfile.activityLog.pageTitle">Napló | BetMatchBonus</title>
     <link rel="stylesheet" href="../../css/RootColor/root.css">
     <link rel="stylesheet" href="../../css/Main/layout.css">
     <link rel="stylesheet" href="../../css/UserProfile/user_profile.css">
@@ -124,36 +135,37 @@ foreach ($activities as $a) {
         <div class="row">
             <div class="col-md-3">
                 <nav class="profile-sidebar">
-                    <a href="personal_data.php" class="profile-nav-item"><i class="fas fa-user"></i> <span>Személyes Adatok</span></a>
-                    <a href="change_password.php" class="profile-nav-item"><i class="fas fa-key"></i> <span>Jelszó Módosítás</span></a>
-                    <a href="deposit.php" class="profile-nav-item"><i class="fas fa-plus-circle"></i> <span>Befizetés</span></a>
-                    <a href="withdrawal.php" class="profile-nav-item"><i class="fas fa-minus-circle"></i> <span>Kifizetés</span></a>
-                    <a href="transaction_history.php" class="profile-nav-item"><i class="fas fa-history"></i> <span>Tranzakciótörténet</span></a>
-                    <a href="my_bonuses.php" class="profile-nav-item"><i class="fas fa-gift"></i> <span>Bónuszaim</span></a>
-                    <a href="activity_log.php" class="profile-nav-item active"><i class="fas fa-list"></i> <span>Napló</span></a>
+                    <a href="personal_data.php" class="profile-nav-item"><i class="fas fa-user"></i> <span data-i18n="auth.personalData">Személyes Adatok</span></a>
+                    <a href="change_password.php" class="profile-nav-item"><i class="fas fa-key"></i> <span data-i18n="auth.changePassword">Jelszó Módosítás</span></a>
+                    <a href="deposit.php" class="profile-nav-item"><i class="fas fa-plus-circle"></i> <span data-i18n="auth.deposit">Befizetés</span></a>
+                    <a href="withdrawal.php" class="profile-nav-item"><i class="fas fa-minus-circle"></i> <span data-i18n="auth.withdrawal">Kifizetés</span></a>
+                    <a href="transaction_history.php" class="profile-nav-item"><i class="fas fa-history"></i> <span data-i18n="auth.transactionHistory">Tranzakciótörténet</span></a>
+                    <a href="my_bonuses.php" class="profile-nav-item"><i class="fas fa-gift"></i> <span data-i18n="auth.myBonuses">Bónuszaim</span></a>
+                    <a href="activity_log.php" class="profile-nav-item active"><i class="fas fa-list"></i> <span data-i18n="auth.activityLog">Napló</span></a>
                     <a href="notifications.php" class="profile-nav-item"><i class="fas fa-bell"></i> <span data-i18n="auth.notifications">Értesítések</span></a>
-                    <a href="#" class="profile-nav-item logout profile-logout-btn" onclick="event.preventDefault();fetch('/BetMatchBonus/backend/Auth/logout.php',{method:'POST'}).then(function(){window.location.href='/BetMatchBonus/frontend/MainMenu/MainMenu.php';});"><i class="fas fa-sign-out-alt"></i> <span>Kijelentkezés</span></a>
+                    <a href="#" class="profile-nav-item logout profile-logout-btn" onclick="event.preventDefault();fetch('/BetMatchBonus/backend/Auth/logout.php',{method:'POST'}).then(function(){window.location.href='/BetMatchBonus/frontend/MainMenu/MainMenu.php';});"><i class="fas fa-sign-out-alt"></i> <span data-i18n="auth.logout">Kijelentkezés</span></a>
                 </nav>
             </div>
             <div class="col-md-9">
                 <div class="profile-content">
-                    <h1><i class="fas fa-list"></i> Tevékenységnapló <span class="log-count-badge"><?= count($activities) ?> bejegyzés</span></h1>
+                    <h1><i class="fas fa-list"></i> <span data-i18n="userProfile.activityLog.heading">Tevékenységnapló</span> <span class="log-count-badge"><?= count($activities) ?> <span data-i18n="userProfile.activityLog.entries">bejegyzés</span></span></h1>
 
                     <?php if (empty($activities)): ?>
                         <div class="log-empty">
                             <i class="fas fa-clipboard-list"></i>
-                            <p>Még nincs tevékenységi bejegyzés.</p>
+                            <p data-i18n="userProfile.activityLog.empty">Még nincs tevékenységi bejegyzés.</p>
                         </div>
                     <?php else: ?>
                         <!-- Szűrő gombok -->
                         <div class="log-filter-bar">
-                            <button class="log-filter-btn active" data-filter="all">Összes</button>
+                            <button class="log-filter-btn active" data-filter="all" data-i18n="userProfile.activityLog.filterAll">Összes</button>
                             <?php
                             $usedTypes = array_unique(array_column($activities, 'activity_type'));
                             foreach ($usedTypes as $t):
                                 $label = $typeLabels[$t] ?? ucfirst($t);
+                                $labelKey = $typeLabelKeys[$t] ?? '';
                             ?>
-                                <button class="log-filter-btn" data-filter="<?= htmlspecialchars($t) ?>"><?= htmlspecialchars($label) ?></button>
+                                <button class="log-filter-btn" data-filter="<?= htmlspecialchars($t) ?>"<?php if ($labelKey): ?> data-i18n="<?= htmlspecialchars($labelKey) ?>"<?php endif; ?>><?= htmlspecialchars($label) ?></button>
                             <?php endforeach; ?>
                         </div>
 
@@ -170,12 +182,13 @@ foreach ($activities as $a) {
                                 $dayLabel = $dt->format('Y. m. d.') . ' — ' . ['Hétfő','Kedd','Szerda','Csütörtök','Péntek','Szombat','Vasárnap'][(int)$dt->format('N') - 1];
                             }
                             ?>
-                            <div class="log-day-header"><?= $dayLabel ?></div>
+                            <div class="log-day-header" data-log-date="<?= htmlspecialchars($day) ?>"><?= $dayLabel ?></div>
                             <?php foreach ($dayActivities as $a):
                                 $type = $a['activity_type'] ?? 'unknown';
                                 $icon = $typeIcons[$type] ?? 'fa-circle';
                                 $color = $typeColors[$type] ?? '#666';
                                 $label = $typeLabels[$type] ?? ucfirst($type);
+                                $labelKey = $typeLabelKeys[$type] ?? '';
                                 $time = date('H:i', strtotime($a['created_at']));
                             ?>
                             <div class="log-entry" data-type="<?= htmlspecialchars($type) ?>">
@@ -183,8 +196,8 @@ foreach ($activities as $a) {
                                     <i class="fas <?= $icon ?>"></i>
                                 </div>
                                 <div class="log-body">
-                                    <div class="log-type"><?= htmlspecialchars($label) ?></div>
-                                    <div class="log-desc"><?= htmlspecialchars($a['description'] ?? '') ?></div>
+                                    <div class="log-type"<?php if ($labelKey): ?> data-i18n="<?= htmlspecialchars($labelKey) ?>"<?php endif; ?>><?= htmlspecialchars($label) ?></div>
+                                    <div class="log-desc" data-log-desc data-log-type="<?= htmlspecialchars($type) ?>" data-original-desc="<?= htmlspecialchars((string)($a['description'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($a['description'] ?? '') ?></div>
                                     <div class="log-time"><i class="far fa-clock"></i> <?= $time ?></div>
                                 </div>
                             </div>
@@ -199,8 +212,78 @@ foreach ($activities as $a) {
 
     <?php require_once "../Components/footer.php"; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../js/Main/language.js"></script>
+    <script src="../../js/Main/layout.js"></script>
     <script src="../../js/UserProfile/user_profile.js"></script>
     <script>
+    function translateLogDescription(text, lang) {
+        if (!text || lang !== 'en') return text;
+
+        let out = String(text);
+        const replacements = [
+            [/Sikeres bejelentkezés\.?/gi, 'Successful login.'],
+            [/Kijelentkezés\.?/gi, 'Logged out.'],
+            [/Fogadás leadva/gi, 'Bet placed'],
+            [/Tét:/gi, 'Stake:'],
+            [/típus:/gi, 'type:'],
+            [/Normál/gi, 'Normal'],
+            [/Befizetés/gi, 'Deposit'],
+            [/Kifizetés/gi, 'Withdrawal'],
+            [/Bónusz/gi, 'Bonus'],
+            [/Profil frissítés/gi, 'Profile update'],
+            [/Jelszó módosítás/gi, 'Password change']
+        ];
+
+        replacements.forEach(function (pair) {
+            out = out.replace(pair[0], pair[1]);
+        });
+        return out;
+    }
+
+    function formatLogDayLabel(dateStr, lang) {
+        const d = new Date(dateStr + 'T00:00:00');
+        if (Number.isNaN(d.getTime())) return dateStr;
+
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const target = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        const diffDays = Math.round((today - target) / 86400000);
+
+        if (diffDays === 0) return (window.i18n && window.i18n('userProfile.activityLog.today', lang === 'en' ? 'Today' : 'Ma')) || (lang === 'en' ? 'Today' : 'Ma');
+        if (diffDays === 1) return (window.i18n && window.i18n('userProfile.activityLog.yesterday', lang === 'en' ? 'Yesterday' : 'Tegnap')) || (lang === 'en' ? 'Yesterday' : 'Tegnap');
+
+        const weekdays = lang === 'en'
+            ? ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+            : ['Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat', 'Vasárnap'];
+
+        const dayName = weekdays[(d.getDay() + 6) % 7];
+        if (lang === 'en') {
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return yyyy + '-' + mm + '-' + dd + ' — ' + dayName;
+        }
+
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return yyyy + '. ' + mm + '. ' + dd + '. — ' + dayName;
+    }
+
+    function applyActivityLogI18n() {
+        const lang = (typeof window.i18nLang === 'function') ? window.i18nLang() : 'hu';
+
+        document.querySelectorAll('[data-log-date]').forEach(function (el) {
+            const dateStr = el.getAttribute('data-log-date');
+            el.textContent = formatLogDayLabel(dateStr, lang);
+        });
+
+        document.querySelectorAll('[data-log-desc]').forEach(function (el) {
+            const original = el.getAttribute('data-original-desc') || '';
+            el.textContent = translateLogDescription(original, lang);
+        });
+    }
+
     document.querySelectorAll('.log-filter-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.log-filter-btn').forEach(b => b.classList.remove('active'));
@@ -220,6 +303,11 @@ foreach ($activities as $a) {
             });
         });
     });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        setTimeout(applyActivityLogI18n, 0);
+    });
+    window.addEventListener('languageChanged', applyActivityLogI18n);
     </script>
     <?php include '../../frontend/Components/chatbot.php'; ?>
 </body>

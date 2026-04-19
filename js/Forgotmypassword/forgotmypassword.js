@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
+  const t = (key, fallback) => (typeof window.i18n === 'function' ? window.i18n(key, fallback) : (fallback || key));
+
   // Forgotpassword form submit
   const forgotPasswordForm = document.getElementById('forgotPasswordForm');
   const forgotResult = document.getElementById('forgotPasswordResult');
@@ -12,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       if (!email || !username) {
         forgotResult.style.color = 'red';
-        forgotResult.textContent = 'E-mail cím és felhasználónév megadása kötelező!';
+        forgotResult.textContent = t('forgotPassword.requiredFields', 'E-mail cím és felhasználónév megadása kötelező!');
         return;
       }
 
@@ -28,12 +30,12 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(function (data) {
           if (!data.success) {
             forgotResult.style.color = 'red';
-            forgotResult.textContent = data.message || 'Hiba történt.';
+            forgotResult.textContent = data.message || t('forgotPassword.errorGeneric', 'Hiba történt.');
             return;
           }
 
           forgotResult.style.color = 'green';
-          forgotResult.textContent = data.message || 'E-mail sikeresen elküldve! Kérjük ellenőrizd a postafiókod.';
+          forgotResult.textContent = data.message || t('forgotPassword.successSent', 'E-mail sikeresen elküldve! Kérjük ellenőrizd a postafiókod.');
 
           // 2 másodperc után bezárjuk a modalt
           setTimeout(() => {
@@ -45,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .catch(function (err) {
           console.error(err);
           forgotResult.style.color = 'red';
-          forgotResult.textContent = 'Hiba történt a kérés során.';
+          forgotResult.textContent = t('forgotPassword.requestError', 'Hiba történt a kérés során.');
         });
     });
   }
@@ -63,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       if (!email || !birthdate) {
         forgotUsernameResult.style.color = 'red';
-        forgotUsernameResult.textContent = 'E-mail cím és születési dátum megadása kötelező!';
+        forgotUsernameResult.textContent = t('forgotUsername.requiredFields', 'E-mail cím és születési dátum megadása kötelező!');
         return;
       }
 
@@ -79,12 +81,12 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(function (data) {
           if (!data.success) {
             forgotUsernameResult.style.color = 'red';
-            forgotUsernameResult.textContent = data.message || 'Hiba történt.';
+            forgotUsernameResult.textContent = data.message || t('forgotUsername.errorGeneric', 'Hiba történt.');
             return;
           }
 
           forgotUsernameResult.style.color = 'green';
-          forgotUsernameResult.textContent = data.message || 'E-mail sikeresen elküldve! Kérjük ellenőrizd a postafiókod.';
+          forgotUsernameResult.textContent = data.message || t('forgotUsername.successSent', 'E-mail sikeresen elküldve! Kérjük ellenőrizd a postafiókod.');
 
           // 2 másodperc után bezárjuk a modalt
           setTimeout(() => {
@@ -96,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .catch(function (err) {
           console.error(err);
           forgotUsernameResult.style.color = 'red';
-          forgotUsernameResult.textContent = 'Hiba történt a kérés során.';
+          forgotUsernameResult.textContent = t('forgotUsername.requestError', 'Hiba történt a kérés során.');
         });
     });
   }

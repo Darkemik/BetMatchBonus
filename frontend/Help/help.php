@@ -24,13 +24,13 @@
     <?php include '../../frontend/Components/helpaside.php'; ?>
         <!-- Fő tartalom (középső rész)-->
         <main class="main-content">
-            <h1>Kérdésed van vagy problémád?</h1>
+            <h1 data-i18n="helpPage.title">Kérdésed van vagy problémád?</h1>
             <br>
-            <h4>Keress minket bizalommal emailen keresztül! </h4>
+            <h4 data-i18n="helpPage.subtitle">Keress minket bizalommal emailen keresztül!</h4>
             <br>
-            <h5>Ügyfélszolgálat: ugyfelszolgalat@betmatchbonus.hu</h5>
+            <h5 data-i18n-html="helpPage.customerServiceHtml">Ügyfélszolgálat: ugyfelszolgalat@betmatchbonus.hu</h5>
             <br>
-            <p class="additional-info">Ha további információkra van szükséged, használd a bal oldali menüpontokat.</p>
+            <p class="additional-info" data-i18n="helpPage.additionalInfo">Ha további információkra van szükséged, használd a bal oldali menüpontokat.</p>
         </main>
 
         <?php include '../../frontend/Components/promokartya.php'; ?>

@@ -1,0 +1,246 @@
+﻿[
+    {
+        "category":  "American Football",
+        "rules":  [
+                      "Goal of the competition: After the kickoff, the running back of the receiving team runs with the ball as far as he can, and the attack starts from that place. The team\u0027s offensive unit must hide the ball at least 10 yards out of a maximum of four possibilities.",
+                      "Number of competitors: Two teams of 11 each play in a tie, but due to the specifics of the game, the squad consists of 53 players, with separate teams in attack and defense. each other.",
+                      "Test duration: 4-15 minutes, with 3 time-outs per half.",
+                      "Determination of the winner: The team that scores more points during the duration of the match wins, if the score is equal after four quarters, overtime follows.",
+                      "Touchdown (6 points): It is scored when one of the players brings the ball into the opponent\u0027s goal line.",
+                      "Meżyngól (3 points): This occurs if the attacking team does not make 10 yards in three attempts and they choose to shoot at the goal on the fourth.",
+                      "Safety (2 points): The defending team scores when the attacking team\u0027s ball man is mounted on its own goal line.",
+                      "Special betting options: Handicap +/- X, Points X"
+                  ]
+    },
+    {
+        "category":  "Aussie Rules",
+        "rules":  [
+                      "Goal of the competition: Play for a goal. A goal is defined as the ball passing between the two bars of the opponent\u0027s goal.",
+                      "Number of competitors: Two teams of 18 players play, with four substitutes per team.",
+                      "Match duration: 4-20 minutes of pure game time.",
+                      "Determination of the winner: The winner is the team that achieves a higher score at the end of the fourth quarter.",
+                      "Scoring possibilities: A goal (6 points) is when the ball goes between the two longer inner goalposts. The shot (1 point) - when the ball goes out between an inside and the shorter outside goal post.",
+                      "Special betting options: Points X"
+                  ]
+    },
+    {
+        "category":  "Table tennis",
+        "rules":  [
+                      "Goal of the competition: The player who was the last to pass the ball into the opponent\u0027s half of the field with a correct approach scores a point.",
+                      "Number of competitors: Two (singles) or four players (doubles).",
+                      "Duration of the match: Until the game won according to the competition rules.",
+                      "Determination of the winner: The winner is the competitor who first reaches the number of games won in the competition.",
+                      "Rules: A game lasts up to 11 points. The receiver must see the organ from the open palm all the way.",
+                      "In a doubles game, when serving, the ball must only be passed to the host\u0027s half of the court. In doubles, the players take turns serving."
+                  ]
+    },
+    {
+        "category":  "Baseball",
+        "rules":  [
+                      "Goal of the competition: The goal of the attacking team is for the outfielder to run around the field to the fourth home base. The task of the defense team is to stop this.",
+                      "Number of competitors: Two nine-person teams play against each other.",
+                      "Match duration: A match consists of nine innings, in the event of a tie, overtime may result.",
+                      "Winner\u0027s decision: The team that scores more points at the end of nine innings wins.",
+                      "Scoring possibilities: The team whose player runs around the field and runs from the third base to the fourth, home base, scores a point.",
+                      "Rules: There are four bases on the playground. The game is played in nine innings. The teams change places if the defending team has eliminated three players from the opposing team."
+                  ]
+    },
+    {
+        "category":  "Curling",
+        "rules":  [
+                      "Goal of the competition: The team whose stones fall closest to the center of the designated circle at the end of the game gets a point.",
+                      "Number of competitors: Two teams of four, mixed doubles teams of two.",
+                      "Match duration: A match can consist of ten ends (game halves).",
+                      "Determination of the winner: The team that has more points at the end of the last end wins. If the score is tied, the match will be decided by playing an extra end.",
+                      "Scoring possibilities: The team gets as many points as its stone is closer to the center than the nearest stone of the opponent.",
+                      "Rules: An end consists of 8-8 pieces."
+                  ]
+    },
+    {
+        "category":  "Darts",
+        "rules":  [
+                      "Aim of the competition: To achieve the highest total points possible (maximum 180). The players take turns throwing 3-3 arrows.",
+                      "Number of players: Two players against each other, in the case of a doubles competition, two players per team.",
+                      "Match duration: In darts, you have to win legs and sets (a leg usually starts with 501 points).",
+                      "Decision of the winner: The player who wins the predetermined number of sets wins the match.",
+                      "Scoring options: The board is divided into 20 equal lanes, from 1 to 20, with double and triple lanes. In order to win the leg, it is usually necessary to have a double take-out.",
+                      "Special betting options: Number of 180s X, Which player will reach more 180s?"
+                  ]
+    },
+    {
+        "category":  "Floorball",
+        "rules":  [
+                      "Goal of the competition: Floorball is a ball game similar to ice hockey, the goal of the teams is to score goals.",
+                      "Number of competitors: Each team has five scorers and one goalkeeper on the field.",
+                      "Match duration: A match consists of 20-minute periods with clear playing time, with 10-minute breaks in between.",
+                      "Winner\u0027s decision: The team that scores more goals wins the match.",
+                      "Scoring possibilities: Scoring a goal by putting the ball into the goal.",
+                      "Special betting options: Gólszám X"
+                  ]
+    },
+    {
+        "category":  "Formula 1",
+        "rules":  [
+                      "Competition goal: To complete the given race distance as quickly as possible.",
+                      "Number of competitors: There are currently 10 teams competing in the series, with 2 competitors per team.",
+                      "Duration of competition: The competition weekend consists of two free practice sessions on Friday, one free practice session on Saturday, timed practice and the race on Sunday.",
+                      "Winner\u0027s decision: The competitor who completes the race the fastest wins the given grand prize.",
+                      "Possibilities for earning points: Reaching one of the first 10 places.",
+                      "Special betting options: How many competitors will place in the race?"
+                  ]
+    },
+    {
+        "category":  "Futsal",
+        "rules":  [
+                      "Goal of the competition: The goal of the teams is to score a goal.",
+                      "Number of players: A team consists of four players and a goalkeeper, with a maximum of 7 substitutes.",
+                      "Duration of the match: The match consists of two halves of 20 minutes each, measured with clear game time.",
+                      "Winner\u0027s decision: The team that scores more goals during the game wins the match.",
+                      "Scoring possibilities: Scoring a goal by sending the ball into the opponent\u0027s goal.",
+                      "Rules: The ball must be put into play by the team entitled to it within 4 seconds. There is no throw-in, only a side kick."
+                  ]
+    },
+    {
+        "category":  "Lawn football",
+        "rules":  [
+                      "Goal of the competition: The goal of the teams is to score a goal.",
+                      "Number of players: Two 11-man teams (one goalkeeper and 10 scorers) play against each other in lawn football.",
+                      "Duration of the match: The playing time of outdoor lawn volleyball is 35 minutes twice, with a 5-minute break.",
+                      "Winner\u0027s decision: The team that scores more goals during the game wins the match.",
+                      "Scoring possibilities: Scoring a goal by sending the ball into the opponent\u0027s goal.",
+                      "Rules: Goalkeepers can only reach the ball with the ball. The goalkeeper can reach the ball with any part of his body."
+                  ]
+    },
+    {
+        "category":  "Ice puck",
+        "rules":  [
+                      "Goal of the competition: The goal of the teams is to score a goal.",
+                      "Number of competitors: There are 5 goalscorers and one goalkeeper on the field at the same time from one team.",
+                      "Duration of the match: The match consists of three periods of 20 minutes each.",
+                      "Winner\u0027s decision: The match is won by the team that scores more goals during the game.",
+                      "Scoring possibilities: Scoring a goal by sending the puck into the opponent\u0027s goal.",
+                      "Rules: The players direct the puck on the ice with the help of a puck. A legal goal can only be scored with the pass."
+                  ]
+    },
+    {
+        "category":  "Handball",
+        "rules":  [
+                      "Goal of the competition: The goal of the teams is to score a goal.",
+                      "Number of competitors: There are 6 goalscorers and one goalkeeper on the field at the same time from one team.",
+                      "Match duration: The match consists of two 30-minute halves.",
+                      "Winner\u0027s decision: The match is won by the team that scores more goals during the game.",
+                      "Scoring possibilities: Scoring a goal by sending the ball into the opponent\u0027s goal.",
+                      "Rules: Players can touch the ball with any body part above the knee. Possession of the ball is only allowed if it is snapped every three steps or every three seconds."
+                  ]
+    },
+    {
+        "category":  "Basketball",
+        "rules":  [
+                      "Goal of the competition: The goal of the teams during the scoring is to get the ball into the opponent\u0027s basket.",
+                      "Number of competitors: There are 5 players from one team on the field at the same time.",
+                      "Game duration: A game in the NBA consists of four quarters of 12 minutes each.",
+                      "Winner\u0027s decision: The match is won by the team that scores more points during the game.",
+                      "Scoring possibilities: Two-point field goal, 3-point throw, and one-point free throw.",
+                      "Rules: Without bouncing the basketball, the ball cannot be moved more than one step."
+                  ]
+    },
+    {
+        "category":  "Football",
+        "rules":  [
+                      "Goal of the competition: The goal of the teams is to score a goal.",
+                      "Number of competitors: There are 10 goal scorers and one goalkeeper on the field at a time from one team.",
+                      "Duration of the match: The match consists of two halves of 45 minutes each.",
+                      "Winner\u0027s decision: The match is won by the team that scores more goals during the game.",
+                      "Scoring possibilities: Scoring a goal by sending the ball into the opponent\u0027s goal.",
+                      "Rules: A team can have a maximum of eleven players on the playing field at the same time. A goal is scored when the ball crosses the goal line with its full length."
+                  ]
+    },
+    {
+        "category":  "Rugby",
+        "rules":  [
+                      "Goal of the competition: Both teams try to score as many points as possible by carrying, passing, dribbling and placing the ball.",
+                      "Number of competitors: In the EU version, 15-man teams compete against each other, in the rugby league version, 13-man teams compete.",
+                      "Duration of the match: The game consists of two halves of 40 minutes each.",
+                      "Winner\u0027s decision: The match is won by the team that scores more points during the game.",
+                      "Scoring possibilities: Goal clearance (5 points), reward shot (2 points), drop shot (3 points), penalty shot (3 points).",
+                      "Rules: The ball can only be passed backwards, it can only be carried forward or kicked."
+                  ]
+    },
+    {
+        "category":  "Volleyball",
+        "rules":  [
+                      "Goal of the competition: The goal of the teams during the match is to pass the ball to the other team\u0027s half of the court so that the players of the other team cannot pass it back.",
+                      "Number of competitors: There are six players from one team on the field at the same time.",
+                      "Duration of the match: The match lasts up to three won games. To win a game, you need to score 25 points.",
+                      "Winner\u0027s decision: The match is won by the team that wins 3 games first.",
+                      "Scoring possibilities: If the ball falls on one side of the court, the opponent gets a point.",
+                      "Rules: Both teams can touch the ball three times before passing it to the other side of the court."
+                  ]
+    },
+    {
+        "category":  "Snooker",
+        "rules":  [
+                      "Purpose of the competition: The goal of the players is to place the balls on the table in the pockets and collect as many points as possible.",
+                      "Number of competitors: A match is played by two players or, in rarer cases, by two teams against each other.",
+                      "Match duration: A match lasts until winning a predetermined number of frames, depending on the competition.",
+                      "Determining the winner: Whoever wins more frames is the winner of the match.",
+                      "Scoring options: Red balls are worth one point, charcoal balls are worth two to seven points.",
+                      "Rules: The first shot must be completed in such a way that the beginner places the cue ball in the D-field."
+                  ]
+    },
+    {
+        "category":  "Beach soccer",
+        "rules":  [
+                      "Goal of the competition: The goal of the teams is to score a goal.",
+                      "Number of competitors: A team consists of 4 goal scorers and a goalkeeper.",
+                      "Duration of the match: The playing time is 12 minutes three times, the interval cannot be more than 1 minute.",
+                      "Winner\u0027s decision: The match is won by the team that scores more goals during the game.",
+                      "Scoring possibilities: Scoring a goal by sending the ball into the opponent\u0027s goal.",
+                      "Rules: There is only immediate freedom. The penalty must be taken from 8 meters away."
+                  ]
+    },
+    {
+        "category":  "Beach volleyball",
+        "rules":  [
+                      "Goal of the competition: The goal of the teams during the match is to pass the ball to the other team\u0027s half of the field so that the players of the other team cannot pass it back.",
+                      "Number of players: In beach volleyball, 2 teams of two play against each other.",
+                      "Match duration: A match consists of a maximum of 3 games. The games are played up to 21 points, but the last one is played only up to 15.",
+                      "Winner\u0027s decision: The match is won by the team that wins 2 games first.",
+                      "Scoring opportunities: Passing the ball to the other team\u0027s half, forcing the opponent to make a mistake.",
+                      "Rules: Teams cannot touch the ball more than three times, and the same person cannot touch the ball twice in a row."
+                  ]
+    },
+    {
+        "category":  "Tennis",
+        "rules":  [
+                      "Purpose of the competition: The purpose of the game is to keep the ball on the court, possibly so that the opponent is not able to do so.",
+                      "Number of competitors: In tennis, two players (singles) or two players each (doubles) play against each other.",
+                      "Match duration: A singles match can last up to two or three won sets.",
+                      "Determining the winner: The match is won by the player or pair that first reaches the number of sets won by the rules.",
+                      "Scoring possibilities: Passing the ball to the other player\u0027s half of the field, so that the other player cannot pass it back.",
+                      "Rules: A tennis match consists of ball runs, games, and sets. To win the game, you must win at least four rounds."
+                  ]
+    },
+    {
+        "category":  "Badminton",
+        "rules":  [
+                      "Goal of the competition: The server must hit the ball in such a way that it lands on the receiver\u0027s side without interference.",
+                      "Number of competitors: In badminton, two players (singles) or two players each (doubles) play against each other.",
+                      "Duration of the match: Each game is played to 21 points, the match is played until two games are won.",
+                      "Winner\u0027s decision: The player/pair who reaches the two winning games first wins the match.",
+                      "Scoring opportunities: The ball lands in the opponent\u0027s court, or if the opponent makes a mistake.",
+                      "Rules: When serving, the ball must be hit below the waist line, the ball must not be thrown up."
+                  ]
+    },
+    {
+        "category":  "Water polo",
+        "rules":  [
+                      "Goal of the competition: The goal of the teams is to score a goal.",
+                      "Number of competitors: Two teams of 7-7 players (six goal scorers + a goalkeeper) compete against each other.",
+                      "Duration of the match: The match consists of 8-minute quarters measured with clear playing time.",
+                      "Winner\u0027s decision: The team that scores more goals wins the match.",
+                      "Scoring possibilities: You can score a goal from anywhere in action, or from a goal kick in a fixed position or from 5 meters away.",
+                      "Rules: The ball may be touched with any part of the body. A team has 30 seconds to attack."
+                  ]
+    }
+]

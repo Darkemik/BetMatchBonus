@@ -67,6 +67,39 @@ document.addEventListener('DOMContentLoaded', function () {
       return (typeof window.i18nLang === 'function' && window.i18nLang() === 'en') ? 'en-US' : 'hu-HU';
   }
 
+  function formatDateTimeForUi(value) {
+      if (!value) return '-';
+
+      const toUiString = (date) => date.toLocaleString(getUiLocale(), {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+      }).replace(',', '');
+
+      const directDate = new Date(value);
+      if (!Number.isNaN(directDate.getTime())) {
+          return toUiString(directDate);
+      }
+
+      const match = String(value).match(/^(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{1,2}):(\d{2})$/);
+      if (match) {
+          const parsedDate = new Date(
+              parseInt(match[1], 10),
+              parseInt(match[2], 10) - 1,
+              parseInt(match[3], 10),
+              parseInt(match[4], 10),
+              parseInt(match[5], 10)
+          );
+          if (!Number.isNaN(parsedDate.getTime())) {
+              return toUiString(parsedDate);
+          }
+      }
+
+      return String(value);
+  }
+
   function getEventIdFromCurrentUrl() {
       const params = new URLSearchParams(window.location.search);
       const eventId = parseInt(params.get('eventId'), 10);
@@ -253,11 +286,16 @@ document.addEventListener('DOMContentLoaded', function () {
           name.includes('szabalytalansag') ||
           name.includes('foul') ||
           name.includes('fault') ||
+          name.includes('buntetolap') ||
+          name.includes('lapok') ||
           name.includes('sarga lap') ||
           name.includes('piros lap') ||
           name.includes('lapok szama') ||
           name.includes('cards') ||
-          name.includes('booking')
+          name.includes('card') ||
+          name.includes('booking') ||
+          name.includes('bookings') ||
+          name.includes('disciplinary')
       ) {
           return 'fouls';
       }
@@ -1026,6 +1064,16 @@ document.addEventListener('DOMContentLoaded', function () {
           return;
       }
 
+      const localizedStartTime = formatDateTimeForUi(match.startUtc || match.startTime);
+      const rawScore = (match.score || '').toString().trim();
+      const normalizedRawScore = normalizeSearchText(rawScore);
+      const hasReliableScore = (match.scoreKnown !== false)
+          && normalizedRawScore !== 'nincs hiteles adat'
+          && normalizedRawScore !== 'no reliable data';
+      const scoreLabel = hasReliableScore
+          ? (rawScore || '- - -')
+          : t('mainMenu.noReliableData', 'Nincs hiteles adat');
+
       const markets = data.markets || [];
       const userBets = data.userBets || [];
 
@@ -1038,14 +1086,14 @@ document.addEventListener('DOMContentLoaded', function () {
               <div class="match-meta">
                   <span class="meta-item"><i class="fas fa-globe-europe"></i> ${escapeHtml(td(match.country || t('mainMenu.unknown', 'Ismeretlen')))}</span>
                   <span class="meta-item"><i class="fas fa-trophy"></i> ${escapeHtml(td(match.championship || t('mainMenu.unknown', 'Ismeretlen')))}</span>
-                  <span class="meta-item"><i class="fas fa-calendar-alt"></i> ${escapeHtml(match.startTime || '-')}</span>
+                  <span class="meta-item"><i class="fas fa-calendar-alt"></i> ${escapeHtml(localizedStartTime)}</span>
               </div>
               <div class="match-scoreboard">
                   <div class="team-side home-side">
                       <span class="team-name-big">${escapeHtml(match.homeTeam || '')}</span>
                   </div>
                   <div class="score-center">
-                      <div class="score-big finished-score-big">${escapeHtml(match.score || '- - -')}</div>
+                      <div class="score-big finished-score-big">${escapeHtml(scoreLabel)}</div>
                       <div class="finished-badge"><i class="fas fa-flag-checkered"></i> ${t('mainMenu.finished', 'Vége')}</div>
                   </div>
                   <div class="team-side away-side">
@@ -1061,13 +1109,13 @@ document.addEventListener('DOMContentLoaded', function () {
       html += `<div class="info-card">
           <div class="info-card-icon"><i class="fas fa-futbol"></i></div>
           <div class="info-card-label">${t('mainMenu.finalResult', 'Végeredmény')}</div>
-          <div class="info-card-value">${escapeHtml(match.score || '- - -')}</div>
+          <div class="info-card-value">${escapeHtml(scoreLabel)}</div>
       </div>`;
 
       html += `<div class="info-card">
           <div class="info-card-icon"><i class="fas fa-calendar-alt"></i></div>
           <div class="info-card-label">${t('mainMenu.matchDate', 'Dátum')}</div>
-          <div class="info-card-value">${escapeHtml(match.startTime || '-')}</div>
+          <div class="info-card-value">${escapeHtml(localizedStartTime)}</div>
       </div>`;
 
       html += `<div class="info-card">
@@ -1325,6 +1373,7 @@ document.addEventListener('DOMContentLoaded', function () {
               attachMatchClickHandlers();
               applyPagination();
               if (typeof window.applyI18n === 'function') window.applyI18n(matchesContainer);
+              applyDynamicTranslations(matchesContainer);
               scheduleColumnsSync();
 
               // Vissza gomb kezelése
@@ -1485,6 +1534,8 @@ document.addEventListener('DOMContentLoaded', function () {
                   const comboOdds = parseFloat(tip.comboOdds || 0).toFixed(2);
                   let picksHtml = '';
                   picks.forEach(p => {
+                                    const marketText = td(p.market || '');
+                                    const pickText = td(p.pick || '');
                       picksHtml += `
                           <div class="tip-combo-pick"
                                data-event-id="${tip.eventId}"
@@ -1495,8 +1546,8 @@ document.addEventListener('DOMContentLoaded', function () {
                              data-market-id="${parseInt(p.marketId || 0)}"
                              data-selection-id="${parseInt(p.selectionId || 0)}"
                                data-odd="${parseFloat(p.odds).toFixed(2)}">
-                              <span class="tip-combo-market">${escapeHtml(p.market)}</span>
-                              <span class="tip-combo-value">${escapeHtml(p.pick)} <span class="tip-combo-odd">${parseFloat(p.odds).toFixed(2)}</span></span>
+                                                            <span class="tip-combo-market">${escapeHtml(marketText)}</span>
+                                                            <span class="tip-combo-value">${escapeHtml(pickText)} <span class="tip-combo-odd">${parseFloat(p.odds).toFixed(2)}</span></span>
                           </div>`;
                   });
                   html += `

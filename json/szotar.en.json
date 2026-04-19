@@ -1,0 +1,355 @@
+﻿[
+    {
+        "letter":  "A",
+        "terms":  [
+                      {
+                          "word":  "Asian Handicap",
+                          "definition":  "In the case of Asian Handicap, one team starts with a virtual advantage over the other team during betting. The Asian handicap has only two outcomes, there is no tie outcome. There are several types of Asian handicap. With the normal Asian handicap, we distinguish between whole and half (0.5) many Asian handicaps, but there are also so-called \"double\" versions, in which the placed bet is divided into two parts in the betting. While in the traditional handicap a bet is either a winner or a loser, in the case of certain results in the Asian handicap the bet is taken into account with a multiplier of 1."
+                      },
+                      {
+                          "word":  "Asian goal number",
+                          "definition":  "Asian Goal Score is similar to traditional goal score bets, with the difference that there may be an outcome that results in the bet being settled at odds of 1, or the bet will be partially won or lost."
+                      }
+                  ]
+    },
+    {
+        "letter":  "B",
+        "terms":  [
+                      {
+                          "word":  "Payment",
+                          "definition":  "If the bettor deposits money into his account during the deposit, he has the opportunity to bet on the sports events offered. You can choose from several payment options: you can find more information under the \"Deposit\" menu item!"
+                      },
+                      {
+                          "word":  "Login",
+                          "definition":  "Registered bettors can place bets by entering their username and password after logging in. The bettor can manage his account while logged in, as well as monitor his previous bets."
+                      },
+                      {
+                          "word":  "Bonus",
+                          "definition":  "A promotional credit that bettors receive when pre-determined conditions are met. This amount is credited to the player\u0027s bonus balance and can only be used for placing bets, it cannot be directly withdrawn or transferred to another balance."
+                      },
+                      {
+                          "word":  "Internal balance",
+                          "definition":  "The internal balance includes the funds registered on the player\u0027s BetMatchBonus account. The internal balance consists of three separate parts. Each of these are different types of balances, with different usage and payment rules, and may contain different amounts. – Payment balance: This is where the money uploaded by the player can be found. It can be freely used to place bets and can be transferred to the player\u0027s bank account at any time. – Winnings balance: Winnings from successful bets and bonus amounts that have become payable are entered here. It can be used to place new bets and can be transferred to the player\u0027s bank account at any time. – Bonus balance: Amounts credited within the framework of promotions or sales are entered here. They cannot be paid directly, only after the player has fulfilled the conditions related to the given bonuses (e.g.: spin requirement, minimum multiplier). Bets can be made against the balance, but the resulting winnings will only be transferred to the winnings balance after the conditions have been met."
+                      }
+                  ]
+    },
+    {
+        "letter":  "C",
+        "terms":  [
+                      {
+                          "word":  "Cash out",
+                          "definition":  "You can close your bets played using Cash Out even before the end of the event, at your own discretion, and thus secure your prize. The amount of the prize offered depends on the chance of the promised outcome occurring."
+                      },
+                      {
+                          "word":  "Cash out (partial)",
+                          "definition":  "By using the partial Cash Out, you get back a part of the current value of your bet, but your bet is not closed, only your bet and the amount of the maximum possible win are reduced. The coupon therefore remains in play, but at the same time with a smaller bet than the original and with a smaller available prize - the latter is already determined by the product of the reduced bet and the odds."
+                      },
+                      {
+                          "word":  "Cash out (automatic)",
+                          "definition":  "Automatic Cash Out allows you to automatically cash out when your bet reaches a pre-set value."
+                      }
+                  ]
+    },
+    {
+        "letter":  "D",
+        "terms":  [
+                      {
+                          "word":  "In case of a draw, the bet is refunded",
+                          "definition":  "Betting lines of the \"Tie return\" type are two-outcome betting options where you can only bet on who will win the given match. We can talk about a win if the team we bet on wins the match. The advantage from the bettor\u0027s point of view is that in the event of a draw, the bet will be returned, in which case a prize corresponding to the prize multiplier of 1 will be indicated in the betting log."
+                      },
+                      {
+                          "word":  "Double exit",
+                          "definition":  "In the sport of darts, reaching the value 0 with the dart thrown into the double field. E.g.: Throwing 30 points is only possible with an arrow thrown into the double field of number sector 15. (D15)"
+                      }
+                  ]
+    },
+    {
+        "letter":  "E",
+        "terms":  [
+                      {
+                          "word":  "Balance",
+                          "definition":  "The balance is the financial limit in the player\u0027s BetMatchBonus account from which bets can be placed and which includes the available funds. The balance is divided into three parts: payment balance, prize balance, bonus balance."
+                      },
+                      {
+                          "word":  "Results",
+                          "definition":  "You can find the results of the events included in the betting offer under the \"Results\" menu item."
+                      },
+                      {
+                          "word":  "Live betting",
+                          "definition":  "In our betting offer, you can also find \"live\" betting options, so you can bet on the occurrence of different outcomes of each selected sports event even during the given sports event. The winning odds vary depending on the events."
+                      },
+                      {
+                          "word":  "Live scoreboard",
+                          "definition":  "The statistical data and results of the scoreboard are of an informative nature, for their truthfulness the SzZrt. assumes no responsibility, cannot form the basis of objections or complaints."
+                      }
+                  ]
+    },
+    {
+        "letter":  "F",
+        "terms":  [
+                      {
+                          "word":  "Responsible game organization",
+                          "definition":  "Responsible gaming organization is the totality of the gaming organizer\u0027s conscious activities, which go beyond the legal obligation, with which they try to protect their bettors from the harmful consequences of excessive gambling. Read more under the \"Responsible gaming\" menu item!"
+                      },
+                      {
+                          "word":  "Username",
+                          "definition":  "The bettor can log in to the betting website using the user name (and password) he chose during registration, so he can safely manage his account thanks to the identification."
+                      },
+                      {
+                          "word":  "Bet organizer",
+                          "definition":  "The betting organizer has permission to offer betting options related to sports events to bettors."
+                      },
+                      {
+                          "word":  "Ticket editor interface",
+                          "definition":  "The selected betting events and the winning odds associated with them can be seen on the bet slip editing interface in the upper right corner of the betting website. It is also possible to place a bet here, and knowing this, the size of the prize that can be won becomes visible even before the bet is placed. It is possible to choose an independent bet (on the outcome of an event), but it is also possible to put together bet and combination bets. If the bettor changes his mind even before placing the bet, he can delete a selected event from his bet on this interface."
+                      },
+                      {
+                          "word":  "Suspension",
+                          "definition":  "In justified cases, the betting organizer is entitled to suspend betting at any time for a betting event or its outcome. A suspended betting event or outcome can be reopened and offered for further betting."
+                      },
+                      {
+                          "word":  "Preparation match",
+                          "definition":  "Under the term preparation match, the events offered for betting are typically included, which are not related to the national and international championships/cups related to the players participating in the pairing."
+                      },
+                      {
+                          "word":  "Frame",
+                          "definition":  "In the sport of snooker, the name of the game period, which lasts from the initial stroke to the \"laying down\" of the black ball. Whoever collects more points wins the frame. The number of frames is predetermined (19, 35). The player with the most frames is the winner of the match."
+                      },
+                      {
+                          "word":  "Shooting requirement",
+                          "definition":  "A specific bonus amount can only be converted into a payoutable prize if the player has already bet a certain amount of it according to the predetermined conditions. They often also have to meet minimum multiplier conditions. Only bets that meet the promotion conditions will count towards the draw. Example: The player receives a HUF 10,000 bonus and, according to the promotion, a 5x spin requirement applies to him with bets with a minimum multiplier of 1.40. The player must play a bet worth at least HUF 50,000 (HUF 10,000 x 5), with bets that have a multiplier of at least 1.40. Only then can the bonus amount be transferred to the payout balance."
+                      },
+                      {
+                          "word":  "Reception log",
+                          "definition":  "A detailed, chronological overview of the player\u0027s own betting activity on the BetMatchBonus betting interface."
+                      }
+                  ]
+    },
+    {
+        "letter":  "H",
+        "terms":  [
+                      {
+                          "word":  "Three-outcome betting options",
+                          "definition":  "This type of betting option has three possible outcomes, but typically only one of the three will become a winner. A classic example of this is soccer, where there are two competing teams, but a draw can also occur as a result."
+                      },
+                      {
+                          "word":  "Handicap betting",
+                          "definition":  "The organizer of the bet can - from a betting point of view - give an initial advantage to one of the competing parties, which he then adds to the actual final result when determining the outcome of the bet."
+                      },
+                      {
+                          "word":  "A tie",
+                          "definition":  "We can speak of a tie if two or more competitors reach the same position and it is not possible to differentiate between them."
+                      }
+                  ]
+    },
+    {
+        "letter":  "I",
+        "terms":  [
+                      {
+                          "word":  "Time request",
+                          "definition":  "In some sports, it is possible for the coach of the team to ask for time during the match - for tactical reasons - during which he can communicate directly with the players, while the match is running (e.g. handball, basketball, water polo)."
+                      },
+                      {
+                          "word":  "Innings",
+                          "definition":  "In the sport of baseball, the name of the inning. The game is played in nine innings. During an inning, each team gets one turn to try to hit the ball and score while the other team pitches and defends the fields."
+                      }
+                  ]
+    },
+    {
+        "letter":  "J",
+        "terms":  [
+                      {
+                          "word":  "Play it",
+                          "definition":  "In other words, a \"set\" is a well-defined part of the game."
+                      },
+                      {
+                          "word":  "Password",
+                          "definition":  "The bettor can log in to the betting website using the password (and username) of his choice, so he can safely manage his account thanks to the identification."
+                      }
+                  ]
+    },
+    {
+        "letter":  "K",
+        "terms":  [
+                      {
+                          "word":  "Two-outcome betting options",
+                          "definition":  "This type of bet has two possible outcomes, but only one of the two will become a winner. This is typical for bets on sports where there is no draw (for example: tennis) and for special betting options."
+                      },
+                      {
+                          "word":  "Payment",
+                          "definition":  "The bettor can transfer his winnings credited to his internal balance to the forint-based bank account registered by the organizer in a Hungarian bank."
+                      },
+                      {
+                          "word":  "Checkout",
+                          "definition":  "After logging out, it is not possible to place bets until you log in again. The recipient cannot access your account as it is not identified in this case."
+                      },
+                      {
+                          "word":  "Bet in binding",
+                          "definition":  "In the case of tied betting, the bet is placed on two or more outcomes at the same time within one bet. With this method, even with a relatively small bet, a larger prize can be achieved. The resulting odds are obtained by multiplying the accepted prize multipliers, which, multiplied by the bet, shows the expected prize. The bet becomes a winner only if all the bettor\u0027s predicted outcomes occur."
+                      },
+                      {
+                          "word":  "Binding prohibition",
+                          "definition":  "It means that certain betting events cannot be played together as a combined bet on the same slip (within one bet)."
+                      },
+                      {
+                          "word":  "Featured offers",
+                          "definition":  "Event groups selected from the current betting offer and receiving special attention from the bettor\u0027s point of view. The majority of the betting events taking place here take place within a relatively short time after the publication."
+                      },
+                      {
+                          "word":  "Who will finish first?",
+                          "definition":  "A betting market linked to certain events, where for the winning tip you have to guess which of the two players in the pairing offered in the betting offer will finish ahead in the given competition, in the position considered to be better."
+                      },
+                      {
+                          "word":  "Who will go further?",
+                          "definition":  "It refers to which team or contestant will advance to the next round at the end of a given duel or knockout round. It does not apply to the result of the match, but to the winner of the (for example, round-robin) duel."
+                      }
+                  ]
+    },
+    {
+        "letter":  "L",
+        "terms":  [
+                      {
+                          "word":  "leg",
+                          "definition":  "The name of a unit game in darts (According to the listing, e.g. from 501, reaching exactly the value 0). Achieving the number of \"legs\" corresponding to the competition description means a set point. Achieving a set point corresponding to the announcement means victory."
+                      }
+                  ]
+    },
+    {
+        "letter":  "NY",
+        "terms":  [
+                      {
+                          "word":  "Odds",
+                          "definition":  "The betting organizer assigns a winning multiplier to the outcome offered for betting of all the betting options included in the betting offer. The bettor can determine his expected winnings by knowing the winning multiplier and the bet. If the chance of a particular outcome occurring is high, then the winning multiplier for this outcome will be smaller in line with the chance. On the other hand, a previously less likely outcome has a higher multiplier. We use a decimal (European) winning multiplier format in our betting offer. The number thus won (odds) must be multiplied by the amount of the bet to reveal the size of the expected prize. If, for example, a 1,000 forint bet is due with a winning multiplier of 2.50, then the expected prize is 2.50 x 1,000 forints, i.e. 2,500 forints. The amount of the largest prize that can be won with a single bet is the amount prescribed by the legislation in force at all times, but no more than HUF 2,000,000 (two million)."
+                      },
+                      {
+                          "word":  "Withdrawal of prize - enter bank account number",
+                          "definition":  "BetMatchBonus winnings are paid out exclusively by bank transfer to the customer\u0027s own bank account number. In order to make a payment, the player must have a verified registration. The bank account number can be entered or changed in the profile, the latter can only be accepted if it matches the user\u0027s name. Prize payout is not automatic, the player must initiate a separate payout request. The prize can only be withdrawn from the payment and prize balance, not from the bonus balance. BetMatchBonus does not transfer money to a third party account, only a bank account number in your own name is valid."
+                      }
+                  ]
+    },
+    {
+        "letter":  "O",
+        "terms":  [
+                      {
+                          "word":  "Outright (long-term) betting",
+                          "definition":  "A type of bet during which you can typically bet on the final winner of a longer, more complex series, championship, e-sports competition, e-sports competition series, or other event or series of events (e.g. awards related to films, music, etc.), from the list offered for betting. (For example: Which team wins the NB I football championship?). There are also forms of Outright betting where you can bet on who will finish on the podium during a competition, for example, or who will be eliminated from a league or competition."
+                      },
+                      {
+                          "word":  "Odds",
+                          "definition":  "A winning multiplier number that shows how much a player can expect to win if they successfully bet on a particular outcome."
+                      }
+                  ]
+    },
+    {
+        "letter":  "Ö",
+        "terms":  [
+                      {
+                          "word":  "Independent (single binding) bet",
+                          "definition":  "Stand-alone (no strings attached) bet is the simplest type of bet. In such a case, the bet is placed on only one outcome within a bet. The bettor can calculate the size of his expected winnings by multiplying the agreed win multiplier and the bet."
+                      }
+                  ]
+    },
+    {
+        "letter":  "P",
+        "terms":  [
+                      {
+                          "word":  "Pole position",
+                          "definition":  "In the Formula 1 sport, the competitor who achieved the best time result in the last stage of qualifying practice takes the most favorable starting position. (You can start from first place in the current Grand Prix.)"
+                      },
+                      {
+                          "word":  "Playoffs",
+                          "definition":  "The procedure for deciding the final positions in the competition notices of some sports. Teams in the playoffs are paired based on their regular season standings. E.g.: American football - NFL, Basketball - NBA, Ice hockey - NHL, etc."
+                      },
+                      {
+                          "word":  "Markets",
+                          "definition":  "Betting options for sports events included in the betting offer."
+                      }
+                  ]
+    },
+    {
+        "letter":  "R",
+        "terms":  [
+                      {
+                          "word":  "Registration",
+                          "definition":  "Before placing a bet, the bettor must register on the betting website, providing the information requested there. You then open your betting account, and after logging in or making a payment, you can place your first bet."
+                      },
+                      {
+                          "word":  "Regular game time",
+                          "definition":  "Playing time without extra periods (for example, overtime/penalty kicks/throw-ins for the purpose of decision) determined according to the rules of the given sport. Most betting events - unless otherwise indicated - only take into account results achieved during normal playing time."
+                      },
+                      {
+                          "word":  "Partial cancellation",
+                          "definition":  "Partial cancellation may occur in justified cases; then, in the case of the relevant bets, the odds for the agreed outcomes of the event are taken into account with a value of 1.00. For example, if a betting event starts earlier than the start time advertised in the betting offer, bets placed after the actual start time will be partially void."
+                      }
+                  ]
+    },
+    {
+        "letter":  "S",
+        "terms":  [
+                      {
+                          "word":  "Special bet",
+                          "definition":  "Szrt. its betting offer also includes special betting options, where you can place bets not only on the final result of a given sporting event, but also on the occurrence of some of the offered events and happenings (for example: Will there be 11 in the match?)."
+                      },
+                      {
+                          "word":  "Special - Who will score more points?",
+                          "definition":  "A betting opportunity where the bettor has to guess that the first (H) or the second (V) party in the pairing of the two participants involved in the bet will score more points - not playing against each other - in the given round, or if they score the same number of points, they will end up in a tie (D) from the point of view of the bet."
+                      },
+                      {
+                          "word":  "Statistics",
+                          "definition":  "Statistics can help bettors to search for data and previous results on sports, teams and athletes under the menu item of this name on our betting website, in order to make their bets as successful as possible."
+                      }
+                  ]
+    },
+    {
+        "letter":  "SZ",
+        "terms":  [
+                      {
+                          "word":  "Invoice",
+                          "definition":  "The recipient can access their account by logging in with the username and password chosen during registration. After logging in, the bettor can also track the progress of his deposits, winnings, and previous bets here."
+                      },
+                      {
+                          "word":  "Section recommenders",
+                          "definition":  "Specific betting slips compiled by the betting organizer thematically (by sport, based on expected winnings, according to identical outcomes, etc.), which can also be bet by selecting the \"Recommending Slip\" menu item. The defined list of events and outcomes, as well as the bet and combination type can be changed according to the bettor\u0027s wishes before placing the bet."
+                      },
+                      {
+                          "word":  "Super odds",
+                          "definition":  "Featured multiplier offered periodically by BetMatchBonus."
+                      }
+                  ]
+    },
+    {
+        "letter":  "T",
+        "terms":  [
+                      {
+                          "word":  "Bet",
+                          "definition":  "The bet is the amount of money specified in forints with which the bettor bets on the selected event or events. The smallest bet that can be placed during a unit bet is HUF 100 in the case of a single bet, while in the case of a combined bet, a bet of at least HUF 100 must be placed per combination."
+                      },
+                      {
+                          "word":  "Tie-break (super tie-break)",
+                          "definition":  "Tie-break is an abbreviation in tennis, a game aimed at deciding the winner of the game (set) at 6:6. A super tie-break (deciding game) is considered one game for betting events involving the number of games."
+                      },
+                      {
+                          "word":  "Touchdown",
+                          "definition":  "The most important element of scoring in American football, which occurs when one of the players brings the ball into the opponent\u0027s end zone (End Zone), or the manager throws the ball to a teammate standing in the end zone, who touches the ground with both feet with the caught ball in hand."
+                      }
+                  ]
+    },
+    {
+        "letter":  "Ü",
+        "terms":  [
+                      {
+                          "word":  "Customer service",
+                          "definition":  "If a bettor has any problems with betting or has questions about the content of the betting website, they can contact SzZrt using one of the contact details. with its customer service staff, who can help solve problems and answer questions."
+                      }
+                  ]
+    },
+    {
+        "letter":  "V",
+        "terms":  [
+                      {
+                          "word":  "Step back",
+                          "definition":  "If one of the participants from a pairing offered for betting withdraws before the start of the event, the odds for the accepted outcomes of the event will be taken into account with a value of 1.00."
+                      }
+                  ]
+    }
+]

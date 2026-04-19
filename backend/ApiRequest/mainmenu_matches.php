@@ -270,7 +270,7 @@ while ($row = $res->fetch_assoc()):
     if (!isset($leagues[$leagueKey])) {
         $leagues[$leagueKey] = [
             'league_name' => $champName ?: 'Egyéb',
-            'country' => $countryName ?: 'Nemzetközi',
+            'country' => $countryName ?: ($lang === 'en' ? 'International' : 'Nemzetközi'),
             'matches' => [],
         ];
     }
@@ -339,7 +339,7 @@ $stmt->close();
                                 <span class="live-dot"></span>
                                 <span class="live-time-value"><?php echo $m['timeDisplay']; ?></span>
                             <?php elseif ($m['startUtcDt'] <= $nowDt): ?>
-                                <span class="status-upcoming">Hamarosan</span>
+                                <span class="status-upcoming"><?php echo $lang === 'en' ? 'Starting soon' : 'Hamarosan'; ?></span>
                             <?php else: ?>
                                 <span class="start-time"><?php echo $m['dayLabel'] . ' ' . $m['startFormatted']; ?></span>
                             <?php endif; ?>

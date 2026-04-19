@@ -477,11 +477,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                             <?php echo number_format($withdrawable, 0, ',', ' '); ?> FT
                         </div>
                         <?php if (!$can_withdraw): ?>
-                            <div style="font-size:0.8rem; color:#dc3545; margin-top:6px;">
+                            <div style="font-size:0.8rem; color:#dc3545; margin-top:6px;" data-i18n-html="userProfile.withdrawal.minRequiredInfo">
                                 <i class="fas fa-info-circle"></i> A kifizetéshez legalább <strong><?php echo number_format($minWithdrawal, 0, ',', ' '); ?> FT</strong> nyereményegyenleg szükséges.
                             </div>
                         <?php else: ?>
-                            <div style="font-size:0.8rem; color:#666; margin-top:6px;">
+                            <div style="font-size:0.8rem; color:#666; margin-top:6px;" data-i18n-html="userProfile.withdrawal.winningsOnlyInfo">
                                 Kifizetés csak a nyereményegyenlegből lehetséges. Minimum: <strong><?php echo number_format($minWithdrawal, 0, ',', ' '); ?> FT</strong>
                             </div>
                         <?php endif; ?>
@@ -517,7 +517,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                     </div>
 
                     <?php if (!$data_verified): ?>
-                    <div class="alert alert-danger" role="alert">
+                    <div class="alert alert-danger" role="alert" data-i18n-html="userProfile.withdrawal.verifyRequiredHtml">
                         <i class="fas fa-exclamation-triangle"></i>
                         A kifizetéshez először az adminnak ellenőriznie kell a személyes adataidat. Kérjük, a <a href="personal_data.php" class="alert-link">Személyes Adatok</a> oldalon kérd az ellenőrzést.
                     </div>
@@ -532,7 +532,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                     
                     <?php if (!empty($error_message)): ?>
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <?php echo $error_message; ?>
+                            <?php if ($error_message === "A kifizetéshez először az adminnak ellenőriznie kell a személyes adataidat! Kérjük, a Személyes Adatok oldalon kérd az ellenőrzést."): ?>
+                                <span data-i18n="userProfile.withdrawal.verifyRequiredPlain">A kifizetéshez először az adminnak ellenőriznie kell a személyes adataidat! Kérjük, a Személyes Adatok oldalon kérd az ellenőrzést.</span>
+                            <?php else: ?>
+                                <?php echo $error_message; ?>
+                            <?php endif; ?>
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     <?php endif; ?>
@@ -574,7 +578,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                         <div class="withdrawal-field mb-3">
                             <label for="account_holder"><i class="fas fa-user"></i> <span data-i18n="userProfile.withdrawal.accountHolder">Számlán szereplő név</span></label>
                             <input type="text" class="form-control" id="account_holder" name="account_holder" required value="<?php echo htmlspecialchars($registered_full_name); ?>" readonly style="background:#f0f0f0;cursor:not-allowed;">
-                            <div class="field-hint" style="color:#007bff;"><i class="fas fa-info-circle"></i> A regisztrációkor megadott név kerül felhasználásra.</div>
+                            <div class="field-hint" style="color:#007bff;" data-i18n-html="userProfile.withdrawal.registeredNameUsed"><i class="fas fa-info-circle"></i> A regisztrációkor megadott név kerül felhasználásra.</div>
                         </div>
 
                         <div class="withdrawal-field mb-3">
@@ -587,7 +591,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                         <div style="background:#f0f7ff;border:1px solid #c2dbf5;border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
                             <label style="font-size:0.85rem;font-weight:600;color:#333;cursor:pointer;display:flex;align-items:center;gap:8px;margin:0;">
                                 <input type="checkbox" class="form-check-input" id="saveBankCheck" style="width:18px;height:18px;margin:0;" <?php echo $savedBankPayment ? 'checked' : ''; ?>>
-                                <span><i class="fas fa-save"></i> Bankszámla adatok mentése</span>
+                                <span data-i18n-html="userProfile.withdrawal.saveBankData"><i class="fas fa-save"></i> Bankszámla adatok mentése</span>
                             </label>
                         </div>
 

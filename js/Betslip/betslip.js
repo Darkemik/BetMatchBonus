@@ -888,7 +888,10 @@ document.addEventListener('DOMContentLoaded', function() {
             renderTicket();
 
             if (hasNewUnavailable) {
-                BmbPopup.warning('Ez a kimenetel már nem fogadható!', 'Piac lezárva');
+                BmbPopup.warning(
+                    t('betslip.selectionNotBettable', 'Ez a kimenetel már nem fogadható!'),
+                    t('betslip.marketClosedTitle', 'Piac lezárva')
+                );
             }
 
             return true;
@@ -1338,7 +1341,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="betslip-item-market">${escapeHtml(td(item.market))}</div>
                 <div class="betslip-item-pick">${escapeHtml(td(item.pick))}</div>
                 <div class="betslip-item-odds">${oddsHtml}${item.isDailyTip ? ' <span class="daily-tip-badge">Napi tipp</span>' : ''}</div>
-                ${isUnavailable ? '<div class="betslip-item-warning"><i class="fas fa-lock"></i> Ez a kimenetel már nem fogadható!</div>' : ''}
+                ${isUnavailable ? `<div class="betslip-item-warning"><i class="fas fa-lock"></i> ${t('betslip.selectionNotBettable', 'Ez a kimenetel már nem fogadható!')}</div>` : ''}
             `;
             betsContainer.appendChild(el);
         });
@@ -1628,7 +1631,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (ticketItems.length === 0) {
                 submitBtn.title = t('betslip.minOneBet', 'Legalább egy fogadás szükséges');
             } else if (unavailableItems > 0) {
-                submitBtn.title = 'Ez a kimenetel már nem fogadható! Távolítsd el vagy módosítsd a választást.';
+                submitBtn.title = t('betslip.selectionNotBettableHint', 'Ez a kimenetel már nem fogadható! Távolítsd el vagy módosítsd a választást.');
             } else if (comboLockViolation) {
                 submitBtn.title = hasBoostedSingleOnlyViolation()
                     ? 'Kötés tiltás miatt nem lehet fogadni! Az Oddsűrhajó csak single tétben fogadható.'
@@ -1671,7 +1674,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             if (getUnavailableTicketItemsCount() > 0) {
-                BmbPopup.warning('Ez a kimenetel már nem fogadható!', 'Nem fogadható piac');
+                BmbPopup.warning(
+                    t('betslip.selectionNotBettable', 'Ez a kimenetel már nem fogadható!'),
+                    t('betslip.marketUnavailableTitle', 'Nem fogadható piac')
+                );
                 return;
             }
 

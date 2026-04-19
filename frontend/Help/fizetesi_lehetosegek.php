@@ -31,36 +31,35 @@ $_minWith = get_setting_int('min_withdrawal', 6000);
 
         <!-- Fő tartalom (középső rész)-->
         <main class="main-content">
-            <h1>Fizetési lehetőségek</h1>
+            <h1 data-i18n="helpStatic.payment.title">Fizetési lehetőségek</h1>
 
-            <div class="help-menu-container">
+            <div class="help-menu-container" data-i18n="helpStatic.payment.intro">
                 A BetMatchBonus felületén a befizetés és a kifizetés biztonságos, ellenőrzött folyamatban történik.
                 A tranzakciók aktuális állapotát a profilodban, a Tranzakciótörténet menüpontban követheted.
             </div>
 
-            <h4>Befizetés</h4>
+            <h4 data-i18n="helpStatic.payment.depositTitle">Befizetés</h4>
             <div class="additional-info">
-                <strong>Elérhető mód:</strong> bankkártyás fizetés (demo kártya-feldolgozás).<br>
-                <strong>Minimum összeg:</strong> <?php echo number_format($_minDep, 0, ',', ' '); ?> FT<br>
-                <strong>Maximum összeg:</strong> <?php echo number_format($_maxDep, 0, ',', ' '); ?> FT<br>
-                A sikeres befizetés után az egyenleg azonnal frissül.
+                <strong data-i18n="helpStatic.payment.availableMethodLabel">Elérhető mód:</strong> <span data-i18n="helpStatic.payment.depositMethod">bankkártyás fizetés (demo kártya-feldolgozás).</span><br>
+                <strong data-i18n="helpStatic.payment.minAmountLabel">Minimum összeg:</strong> <?php echo number_format($_minDep, 0, ',', ' '); ?> FT<br>
+                <strong data-i18n="helpStatic.payment.maxAmountLabel">Maximum összeg:</strong> <?php echo number_format($_maxDep, 0, ',', ' '); ?> FT<br>
+                <span data-i18n="helpStatic.payment.depositAfterText">A sikeres befizetés után az egyenleg azonnal frissül.</span>
             </div>
 
-            <h4>Kifizetés</h4>
+            <h4 data-i18n="helpStatic.payment.withdrawalTitle">Kifizetés</h4>
             <div class="additional-info">
-                <strong>Elérhető mód:</strong> banki átutalás.<br>
-                <strong>Minimum kifizetés:</strong> <?php echo number_format($_minWith, 0, ',', ' '); ?> FT<br>
-                Kifizetés kizárólag a <strong>nyereményegyenlegből</strong> kezdeményezhető,
-                a bónusz egyenleg közvetlenül nem utalható ki.
+                <strong data-i18n="helpStatic.payment.availableMethodLabel">Elérhető mód:</strong> <span data-i18n="helpStatic.payment.withdrawalMethod">banki átutalás.</span><br>
+                <strong data-i18n="helpStatic.payment.minWithdrawalLabel">Minimum kifizetés:</strong> <?php echo number_format($_minWith, 0, ',', ' '); ?> FT<br>
+                <span data-i18n="helpStatic.payment.withdrawalOnlyPrefix">Kifizetés kizárólag a</span> <strong data-i18n="helpStatic.payment.winningsBalanceBold">nyereményegyenlegből</strong> <span data-i18n="helpStatic.payment.withdrawalOnlySuffix">kezdeményezhető, a bónusz egyenleg közvetlenül nem utalható ki.</span>
             </div>
 
-            <h4>Fontos tudnivalók</h4>
+            <h4 data-i18n="helpStatic.payment.importantTitle">Fontos tudnivalók</h4>
             <div class="help-menu-container">
                 <ul style="margin: 0; padding-left: 18px;">
-                    <li>A számlatulajdonos nevének egyeznie kell a regisztrációkor megadott teljes névvel.</li>
-                    <li>A hibás vagy hiányos banki adatok késleltethetik vagy elutasíthatják a kifizetést.</li>
-                    <li>A befizetett és nyereményegyenleg összesített értékét a Befizetés és Kifizetés oldalon is látod.</li>
-                    <li>Aktív bónusz esetén a kapcsolódó feltételek (forgatás, minimum kötés, minimum odds) kötelezőek.</li>
+                    <li data-i18n="helpStatic.payment.important1">A számlatulajdonos nevének egyeznie kell a regisztrációkor megadott teljes névvel.</li>
+                    <li data-i18n="helpStatic.payment.important2">A hibás vagy hiányos banki adatok késleltethetik vagy elutasíthatják a kifizetést.</li>
+                    <li data-i18n="helpStatic.payment.important3">A befizetett és nyereményegyenleg összesített értékét a Befizetés és Kifizetés oldalon is látod.</li>
+                    <li data-i18n="helpStatic.payment.important4">Aktív bónusz esetén a kapcsolódó feltételek (forgatás, minimum kötés, minimum odds) kötelezőek.</li>
                 </ul>
             </div>
         </main>

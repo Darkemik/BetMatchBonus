@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Segítség | BetMatchBonus</title>
+    <title>Help | BetMatchBonus</title>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../../css/Main/layout.css?v=<?= time() ?>">
@@ -24,7 +24,7 @@
 
         <!-- Fő tartalom (középső rész)-->
         <main class="main-content">
-            <h1>Szótár</h1>
+            <h1 data-i18n="helpMenu.dictionary">Szótár</h1>
             <div id="szotarContainer"></div>
         </main>
 
@@ -42,7 +42,7 @@
     <script src="../../js/Register/registermodal2.js"></script>
     <script src="../../js/Main/language.js"></script>
     <script src="../../js/Main/layout.js"></script>
-    <script src="../../js/Help/szotar.js"></script>
+    <script src="../../js/Help/szotar.js?v=<?= time() ?>"></script>
     <?php include '../../frontend/Components/chatbot.php'; ?>
 </body>
 

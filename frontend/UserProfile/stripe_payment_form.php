@@ -49,7 +49,7 @@ if ($amount < $minDep || $amount > $maxDep) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bankkártya Adatok | BetMatchBonus</title>
+    <title data-i18n="userProfile.deposit.paymentDetailsTitle">Bankkártya Adatok | BetMatchBonus</title>
     <link rel="stylesheet" href="../../css/RootColor/root.css">
     <link rel="stylesheet" href="../../css/Main/layout.css">
     <link rel="stylesheet" href="../../css/UserProfile/user_profile.css">
@@ -393,11 +393,11 @@ if ($amount < $minDep || $amount > $maxDep) {
             </div>
             <div class="card-bottom">
                 <div>
-                    <div class="card-label">Fióktulajdonos</div>
+                    <div class="card-label" data-i18n="userProfile.deposit.accountOwner">Fióktulajdonos</div>
                     <div class="card-holder-name" id="cardHolderDisplay">PAYPAL FIÓK</div>
                 </div>
                 <div style="text-align:right;">
-                    <div class="card-label">Típus</div>
+                    <div class="card-label" data-i18n="userProfile.deposit.type">Típus</div>
                     <div class="card-expiry-value">PAYPAL</div>
                 </div>
             </div>
@@ -410,11 +410,11 @@ if ($amount < $minDep || $amount > $maxDep) {
             </div>
             <div class="card-bottom">
                 <div>
-                    <div class="card-label">Kártyatulajdonos</div>
+                    <div class="card-label" data-i18n="userProfile.deposit.cardOwner">Kártyatulajdonos</div>
                     <div class="card-holder-name" id="cardHolderDisplay">NÉV</div>
                 </div>
                 <div style="text-align:right;">
-                    <div class="card-label">Lejárat</div>
+                    <div class="card-label" data-i18n="userProfile.deposit.expiry">Lejárat</div>
                     <div class="card-expiry-value" id="cardExpiryDisplay">MM/YY</div>
                 </div>
             </div>
@@ -425,7 +425,7 @@ if ($amount < $minDep || $amount > $maxDep) {
         <div class="payment-form-card">
 
             <div class="amount-display">
-                <span class="amount-label">Befizetési összeg</span>
+                <span class="amount-label" data-i18n="userProfile.deposit.amount">Befizetési összeg</span>
                 <span class="amount-value"><?php echo number_format($amount, 0, ',', ' '); ?> FT</span>
             </div>
 
@@ -434,13 +434,13 @@ if ($amount < $minDep || $amount > $maxDep) {
                 <div class="paypal-login-box">
                     <div class="paypal-logo">
                         <i class="fab fa-paypal"></i>
-                        <span>Jelentkezz be a PayPal fiókoddal</span>
+                        <span data-i18n="userProfile.deposit.loginWithPaypal">Jelentkezz be a PayPal fiókoddal</span>
                     </div>
                     <?php if ($savedPayment && !empty($savedPayment['paypal_email'])): ?>
-                    <div class="saved-card-badge" id="savedPaypalBadge" title="Kattints a mentett adatok betöltéséhez">
+                    <div class="saved-card-badge" id="savedPaypalBadge" title="Kattints a mentett adatok betöltéséhez" data-i18n-title="userProfile.deposit.loadSavedDataTitle">
                         <i class="fab fa-paypal"></i>
-                        Mentett PayPal: <?php echo htmlspecialchars($savedPayment['paypal_email']); ?>
-                        <span class="saved-card-delete" id="deleteSavedPaypal" title="Mentett PayPal törlése"><i class="fas fa-times-circle"></i></span>
+                        <span class="js-saved-paypal-text" data-email="<?php echo htmlspecialchars($savedPayment['paypal_email'], ENT_QUOTES, 'UTF-8'); ?>">Mentett PayPal: <?php echo htmlspecialchars($savedPayment['paypal_email']); ?></span>
+                        <span class="saved-card-delete" id="deleteSavedPaypal" title="Mentett PayPal törlése" data-i18n-title="userProfile.deposit.deleteSavedPaypalTitle"><i class="fas fa-times-circle"></i></span>
                     </div>
                     <?php endif; ?>
                     <form method="POST" action="../../backend/ApiRequest/stripe_payment_process.php" id="paypalForm">
@@ -448,16 +448,16 @@ if ($amount < $minDep || $amount > $maxDep) {
                         <input type="hidden" name="payment_method" value="paypal">
 
                         <div class="mb-3">
-                            <label for="paypalEmail" style="font-weight:600;color:#333;font-size:0.85rem;">PayPal email cím</label>
+                            <label for="paypalEmail" style="font-weight:600;color:#333;font-size:0.85rem;" data-i18n="userProfile.deposit.paypalEmail">PayPal email cím</label>
                             <input type="email" class="form-control" id="paypalEmail" name="paypal_email"
                                 placeholder="pelda@email.com" required>
                         </div>
 
                         <div class="mb-3">
-                            <label for="paypalPassword" style="font-weight:600;color:#333;font-size:0.85rem;">PayPal jelszó</label>
+                            <label for="paypalPassword" style="font-weight:600;color:#333;font-size:0.85rem;" data-i18n="userProfile.deposit.paypalPassword">PayPal jelszó</label>
                             <div class="input-group">
                                 <input type="password" class="form-control" id="paypalPassword" name="paypal_password"
-                                    placeholder="Jelszó" required>
+                                    placeholder="Jelszó" data-i18n-placeholder="auth.password" required>
                                 <button type="button" class="btn btn-outline-secondary" id="togglePaypalPw" tabindex="-1">
                                     <i class="fas fa-eye"></i>
                                 </button>
@@ -467,23 +467,23 @@ if ($amount < $minDep || $amount > $maxDep) {
                         <div class="save-payment-bar">
                             <label>
                                 <input type="checkbox" class="form-check-input" id="savePaypalCheck" <?php echo ($savedPayment && !empty($savedPayment['paypal_email'])) ? 'checked' : ''; ?>>
-                                <span><i class="fas fa-save"></i> PayPal email mentése</span>
+                                <span data-i18n-html="userProfile.deposit.savePaypalEmail"><i class="fas fa-save"></i> PayPal email mentése</span>
                             </label>
                         </div>
 
                         <button type="submit" class="pay-btn paypal-btn">
-                            <i class="fab fa-paypal"></i>&nbsp; Befizetés — <?php echo number_format($amount, 0, ',', ' '); ?> FT
+                            <i class="fab fa-paypal"></i>&nbsp; <span data-i18n="userProfile.deposit.payNow">Befizetés</span> — <?php echo number_format($amount, 0, ',', ' '); ?> FT
                         </button>
-                        <a href="deposit.php" class="back-btn" style="margin-top:10px;"><i class="fas fa-arrow-left"></i>&nbsp; Vissza</a>
+                        <a href="deposit.php" class="back-btn" style="margin-top:10px;"><i class="fas fa-arrow-left"></i>&nbsp; <span data-i18n="common.back">Vissza</span></a>
                     </form>
                 </div>
             <?php else: ?>
                 <!-- Kártya form (Visa / Mastercard) -->
                 <?php if ($savedPayment && !empty($savedPayment['card_number'])): ?>
-                <div class="saved-card-badge" id="savedCardBadge" title="Kattints a mentett adatok betöltéséhez">
+                <div class="saved-card-badge" id="savedCardBadge" title="Kattints a mentett adatok betöltéséhez" data-i18n-title="userProfile.deposit.loadSavedDataTitle">
                     <i class="fas fa-credit-card"></i>
-                    Mentett kártya: •••• <?php echo htmlspecialchars(substr($savedPayment['card_number'], -4)); ?> (<?php echo htmlspecialchars($savedPayment['card_expiry']); ?>)
-                    <span class="saved-card-delete" id="deleteSavedCard" title="Mentett kártya törlése"><i class="fas fa-times-circle"></i></span>
+                    <span class="js-saved-card-text" data-last4="<?php echo htmlspecialchars(substr($savedPayment['card_number'], -4), ENT_QUOTES, 'UTF-8'); ?>" data-expiry="<?php echo htmlspecialchars($savedPayment['card_expiry'], ENT_QUOTES, 'UTF-8'); ?>">Mentett kártya: •••• <?php echo htmlspecialchars(substr($savedPayment['card_number'], -4)); ?> (<?php echo htmlspecialchars($savedPayment['card_expiry']); ?>)</span>
+                    <span class="saved-card-delete" id="deleteSavedCard" title="Mentett kártya törlése" data-i18n-title="userProfile.deposit.deleteSavedCardTitle"><i class="fas fa-times-circle"></i></span>
                 </div>
                 <?php endif; ?>
                 <form method="POST" action="../../backend/ApiRequest/stripe_payment_process.php" id="cardForm">
@@ -491,16 +491,16 @@ if ($amount < $minDep || $amount > $maxDep) {
                     <input type="hidden" name="payment_method" value="<?php echo htmlspecialchars($method); ?>">
 
                     <div class="mb-3">
-                        <label for="cardholderName">Kártyatulajdonos neve</label>
+                        <label for="cardholderName" data-i18n="userProfile.deposit.cardholderName">Kártyatulajdonos neve</label>
                         <input type="text" class="form-control" id="cardholderName" name="cardholder_name"
                             value="<?php echo htmlspecialchars($registered_full_name); ?>"
                             readonly style="background:rgba(255,255,255,0.04);cursor:not-allowed;"
                             required maxlength="50">
-                        <small style="color:#999;font-size:11px;">A regisztrációkor megadott név kerül felhasználásra.</small>
+                        <small style="color:#999;font-size:11px;" data-i18n-html="userProfile.withdrawal.registeredNameUsed">A regisztrációkor megadott név kerül felhasználásra.</small>
                     </div>
 
                     <div class="mb-3">
-                        <label for="cardNumber">Kártyaszám</label>
+                        <label for="cardNumber" data-i18n="userProfile.deposit.cardNumber">Kártyaszám</label>
                         <input type="text" class="form-control" id="cardNumber" name="card_number"
                             placeholder="0000 0000 0000 0000" maxlength="19" inputmode="numeric" required>
                     </div>
@@ -508,7 +508,7 @@ if ($amount < $minDep || $amount > $maxDep) {
                     <div class="row">
                         <div class="col-6">
                             <div class="mb-3">
-                                <label for="cardExpiry">Lejárat</label>
+                                <label for="cardExpiry" data-i18n="userProfile.deposit.expiry">Lejárat</label>
                                 <input type="text" class="form-control" id="cardExpiry" name="card_expiry"
                                     placeholder="MM/YY" required maxlength="5">
                             </div>
@@ -525,20 +525,20 @@ if ($amount < $minDep || $amount > $maxDep) {
                     <div class="save-payment-bar">
                         <label>
                             <input type="checkbox" class="form-check-input" id="saveCardCheck" <?php echo $savedPayment ? 'checked' : ''; ?>>
-                            <span><i class="fas fa-save"></i> Fizetési adatok mentése</span>
+                            <span data-i18n-html="userProfile.deposit.savePaymentData"><i class="fas fa-save"></i> Fizetési adatok mentése</span>
                         </label>
                     </div>
 
                     <button type="submit" class="pay-btn <?php echo $method; ?>-btn">
-                        <i class="fas fa-lock"></i>&nbsp; Befizetés — <?php echo number_format($amount, 0, ',', ' '); ?> FT
+                        <i class="fas fa-lock"></i>&nbsp; <span data-i18n="userProfile.deposit.payNow">Befizetés</span> — <?php echo number_format($amount, 0, ',', ' '); ?> FT
                     </button>
-                    <a href="deposit.php" class="back-btn"><i class="fas fa-arrow-left"></i>&nbsp; Vissza</a>
+                    <a href="deposit.php" class="back-btn"><i class="fas fa-arrow-left"></i>&nbsp; <span data-i18n="common.back">Vissza</span></a>
                 </form>
             <?php endif; ?>
 
             <div class="security-footer">
                 <i class="fas fa-shield-alt"></i>
-                <span>Biztonságos, titkosított fizetés</span>
+                <span data-i18n="userProfile.deposit.securePaymentShort">Biztonságos, titkosított fizetés</span>
             </div>
         </div>
     </div>
@@ -546,8 +546,31 @@ if ($amount < $minDep || $amount > $maxDep) {
     <?php require_once "../Components/footer.php"; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../js/Main/language.js"></script>
+    <script src="../../js/Main/layout.js"></script>
     <script>
+    function i18nT(key, fallback) {
+        return (typeof window.i18n === 'function') ? window.i18n(key, fallback) : (fallback || key);
+    }
+
     (function() {
+        var refreshSavedBadges = function() {
+            var savedCardText = document.querySelector('.js-saved-card-text');
+            if (savedCardText) {
+                var last4 = savedCardText.getAttribute('data-last4') || '0000';
+                var expiry = savedCardText.getAttribute('data-expiry') || 'MM/YY';
+                savedCardText.textContent = i18nT('userProfile.deposit.savedCardPrefix', 'Saved card') + ': •••• ' + last4 + ' (' + expiry + ')';
+            }
+
+            var savedPaypalText = document.querySelector('.js-saved-paypal-text');
+            if (savedPaypalText) {
+                var email = savedPaypalText.getAttribute('data-email') || '';
+                savedPaypalText.textContent = i18nT('userProfile.deposit.savedPaypalPrefix', 'Saved PayPal') + ': ' + email;
+            }
+        };
+
+        refreshSavedBadges();
+
         // Kártyaszám formázás + kártya frissítés
         var numInput = document.getElementById('cardNumber');
         var numDisplay = document.getElementById('cardNumberDisplay');
@@ -575,7 +598,7 @@ if ($amount < $minDep || $amount > $maxDep) {
 
         if (nameInput) {
             nameInput.addEventListener('input', function() {
-                nameDisplay.textContent = this.value.toUpperCase() || 'NÉV';
+                nameDisplay.textContent = this.value.toUpperCase() || i18nT('userProfile.deposit.cardNameDefault', 'NAME');
             });
             // Trigger display update for readonly pre-filled name
             if (nameInput.value) {
@@ -592,13 +615,6 @@ if ($amount < $minDep || $amount > $maxDep) {
             numInput.dispatchEvent(new Event('input'));
         }
         <?php endif; ?>
-        <?php if ($savedPayment && !empty($savedPayment['card_expiry'])): ?>
-        if (expInput) {
-            expInput.value = <?php echo json_encode($savedPayment['card_expiry']); ?>;
-            expInput.dispatchEvent(new Event('input'));
-        }
-        <?php endif; ?>
-
         // Lejárat formázás
         var expInput = document.getElementById('cardExpiry');
         var expDisplay = document.getElementById('cardExpiryDisplay');
@@ -612,6 +628,11 @@ if ($amount < $minDep || $amount > $maxDep) {
                 this.value = val;
                 expDisplay.textContent = val || 'MM/YY';
             });
+
+            <?php if ($savedPayment && !empty($savedPayment['card_expiry'])): ?>
+            expInput.value = <?php echo json_encode($savedPayment['card_expiry']); ?>;
+            expInput.dispatchEvent(new Event('input'));
+            <?php endif; ?>
         }
 
         // CVC csak szám
@@ -637,14 +658,14 @@ if ($amount < $minDep || $amount > $maxDep) {
                 var num = document.getElementById('cardNumber').value.replace(/\D/g, '');
                 if (num.length !== 16) {
                     e.preventDefault();
-                    alert('A kártyaszámnak pontosan 16 számjegyből kell állnia!');
+                    alert(i18nT('userProfile.deposit.cardNumberLengthError', 'Card number must be exactly 16 digits.'));
                     return;
                 }
 
                 var exp = document.getElementById('cardExpiry').value;
                 if (!/^\d{2}\/\d{2}$/.test(exp)) {
                     e.preventDefault();
-                    alert('Hibás lejárati dátum! Használd: MM/YY');
+                    alert(i18nT('userProfile.deposit.expiryFormatError', 'Invalid expiry date! Use: MM/YY'));
                     return;
                 }
 
@@ -653,7 +674,7 @@ if ($amount < $minDep || $amount > $maxDep) {
                 var year = parseInt(parts[1]);
                 if (month < 1 || month > 12) {
                     e.preventDefault();
-                    alert('Érvénytelen hónap!');
+                    alert(i18nT('userProfile.deposit.invalidMonth', 'Invalid month!'));
                     return;
                 }
 
@@ -662,14 +683,14 @@ if ($amount < $minDep || $amount > $maxDep) {
                 var curMonth = now.getMonth() + 1;
                 if (year < curYear || (year === curYear && month < curMonth)) {
                     e.preventDefault();
-                    alert('A kártya lejárt!');
+                    alert(i18nT('userProfile.deposit.cardExpired', 'Card has expired!'));
                     return;
                 }
 
                 var cvc = document.getElementById('cardCVC').value;
                 if (cvc.length < 3) {
                     e.preventDefault();
-                    alert('A CVC legalább 3 számjegy!');
+                    alert(i18nT('userProfile.deposit.cvcLengthError', 'CVC must be at least 3 digits.'));
                     return;
                 }
             });
@@ -687,7 +708,7 @@ if ($amount < $minDep || $amount > $maxDep) {
                 ppEmailDisplay.textContent = this.value || 'pelda@email.com';
                 // Fiók név = email @ előtti rész
                 var parts = this.value.split('@');
-                ppHolderDisplay.textContent = (parts[0] || 'PAYPAL FIÓK').toUpperCase();
+                ppHolderDisplay.textContent = (parts[0] || i18nT('userProfile.deposit.paypalAccountDefault', 'PAYPAL ACCOUNT')).toUpperCase();
             });
 
             // Auto-fill saved PayPal email
@@ -770,7 +791,7 @@ if ($amount < $minDep || $amount > $maxDep) {
         if (deleteSavedCard) {
             deleteSavedCard.addEventListener('click', function(e) {
                 e.stopPropagation();
-                if (confirm('Biztosan törölni szeretnéd a mentett kártyaadatokat?')) {
+                if (confirm(i18nT('userProfile.deposit.confirmDeleteSavedCard', 'Are you sure you want to delete saved card details?'))) {
                     fetch('../../backend/ApiRequest/delete_payment_method.php', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
@@ -793,7 +814,7 @@ if ($amount < $minDep || $amount > $maxDep) {
         if (deleteSavedPaypal) {
             deleteSavedPaypal.addEventListener('click', function(e) {
                 e.stopPropagation();
-                if (confirm('Biztosan törölni szeretnéd a mentett PayPal adatokat?')) {
+                if (confirm(i18nT('userProfile.deposit.confirmDeleteSavedPaypal', 'Are you sure you want to delete saved PayPal details?'))) {
                     fetch('../../backend/ApiRequest/delete_payment_method.php', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
@@ -845,6 +866,7 @@ if ($amount < $minDep || $amount > $maxDep) {
                 <?php endif; ?>
             });
         }
+
     })();
     </script>
 

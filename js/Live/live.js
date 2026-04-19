@@ -39,9 +39,13 @@
         return Number.isFinite(eventId) && eventId > 0 ? eventId : null;
     }
 
+    function getUiLocale() {
+        return (typeof window.i18nLang === 'function' && window.i18nLang() === 'en') ? 'en-US' : 'hu-HU';
+    }
+
     function applyDynamicTranslations(root) {
         if (!root) return;
-        root.querySelectorAll('.country-name, .league-name, .league-country, .league-title, .market-name, .selection-name, .sport-name').forEach(el => {
+        root.querySelectorAll('.country-name, .league-name, .league-country, .league-title, .market-name, .selection-name, .sport-name, .live-time-value, .live-time-big').forEach(el => {
             el.textContent = td(el.textContent);
         });
     }
@@ -785,7 +789,7 @@
 
         const markets = matchData.markets || [];
         const startDateTimeText = match.startUtc
-            ? new Date(match.startUtc).toLocaleString('hu-HU', {
+            ? new Date(match.startUtc).toLocaleString(getUiLocale(), {
                 year: 'numeric',
                 month: '2-digit',
                 day: '2-digit',
@@ -794,11 +798,12 @@
             }).replace(',', '')
             : '-';
         const marketFilters = [
-            { key: 'all', label: t('mainMenu.marketFilterAll', 'Összes') },
-            { key: 'goals', label: t('mainMenu.marketFilterGoals', 'Gólok') },
-            { key: 'corners', label: t('mainMenu.marketFilterCorners', 'Szögletek') },
-            { key: 'handicap', label: t('mainMenu.marketFilterHandicap', 'Hendikep') },
-            { key: 'halftime', label: t('mainMenu.marketFilterHalftime', 'Félidő') }
+            { key: 'all', icon: 'fa-layer-group', label: t('mainMenu.marketFilterAll', 'Összes') },
+            { key: 'goals', icon: 'fa-futbol', label: t('mainMenu.marketFilterGoals', 'Gólok') },
+            { key: 'corners', icon: 'fa-location-arrow', label: t('mainMenu.marketFilterCorners', 'Szögletek') },
+            { key: 'handicap', icon: 'fa-scale-balanced', label: t('mainMenu.marketFilterHandicap', 'Hendikep') },
+            { key: 'halftime', icon: 'fa-stopwatch', label: t('mainMenu.marketFilterHalftime', 'Félidő') },
+            { key: 'fouls', icon: 'fa-ban', label: t('mainMenu.marketFilterFouls', 'Szabálytalanságok') }
         ];
         console.log('[LIVE.JS] Render adatok - match:', match.name, 'markets:', markets.length);
 
@@ -830,7 +835,7 @@
             <div class="markets-title-row">
                 <h3 class="markets-title"><i class="fas fa-chart-bar"></i> ${t('mainMenu.bettingMarkets', 'Fogadási piacok')}</h3>
                 <div class="market-filter-group" role="tablist" aria-label="Piac szűrők">
-                    ${marketFilters.map((filter, index) => `<button type="button" class="market-filter-btn${index === 0 ? ' active' : ''}" data-market-filter="${filter.key}">${escapeHtml(filter.label)}</button>`).join('')}
+                    ${marketFilters.map((filter, index) => `<button type="button" class="market-filter-btn${index === 0 ? ' active' : ''}" data-market-filter="${filter.key}"><i class="fas ${filter.icon}" aria-hidden="true"></i><span>${escapeHtml(filter.label)}</span></button>`).join('')}
                 </div>
             </div>
         `;
@@ -914,6 +919,24 @@
         const name = normalizeMarketText(marketName);
 
         if (!name) return 'other';
+
+        if (
+            name.includes('szabalytalansag') ||
+            name.includes('foul') ||
+            name.includes('fault') ||
+            name.includes('buntetolap') ||
+            name.includes('lapok') ||
+            name.includes('sarga lap') ||
+            name.includes('piros lap') ||
+            name.includes('lapok szama') ||
+            name.includes('cards') ||
+            name.includes('card') ||
+            name.includes('booking') ||
+            name.includes('bookings') ||
+            name.includes('disciplinary')
+        ) {
+            return 'fouls';
+        }
 
         if (name.includes('corner') || name.includes('szoglet')) {
             return 'corners';
@@ -1208,7 +1231,7 @@
         // Üres állapot
         if (visible.length === 0) {
             if (!container.querySelector('.score-feed-empty')) {
-                container.innerHTML = '<div class="score-feed-empty"><i class="fas fa-futbol"></i>Még nincs eredmény változás</div>';
+                container.innerHTML = '<div class="score-feed-empty"><i class="fas fa-futbol"></i>' + t('live.noScoreChanges', 'Még nincs eredmény változás') + '</div>';
             }
             return;
         }
@@ -1230,7 +1253,7 @@
                 setTimeout(() => {
                     el.remove();
                     if (!container.querySelector('.goal-toast')) {
-                        container.innerHTML = '<div class="score-feed-empty"><i class="fas fa-futbol"></i>Még nincs eredmény változás</div>';
+                        container.innerHTML = '<div class="score-feed-empty"><i class="fas fa-futbol"></i>' + t('live.noScoreChanges', 'Még nincs eredmény változás') + '</div>';
                     }
                 }, 400);
             }
@@ -1279,17 +1302,19 @@
             // Sport-specifikus ikon és szöveg
             const icon = item.sportIcon ? `<i class="fas ${escapeHtml(item.sportIcon)}"></i>` : '⚽';
             const label = currentSportId === 66 ? 'GÓL!'
-                        : currentSportId === 67 ? 'KOSÁR!'
-                        : currentSportId === 70 ? 'GÓL!'
-                        : currentSportId === 73 ? 'GÓL!'
-                        : currentSportId === 78 ? 'PONT!'
-                        : currentSportId === 77 ? 'PONT!'
-                        : 'PONT!';
+                        : currentSportId === 67 ? t('live.feedBasketLabel', 'KOSÁR!')
+                        : currentSportId === 70 ? t('live.feedGoalLabel', 'GÓL!')
+                        : currentSportId === 73 ? t('live.feedGoalLabel', 'GÓL!')
+                        : currentSportId === 78 ? t('live.feedPointLabel', 'PONT!')
+                        : currentSportId === 77 ? t('live.feedPointLabel', 'PONT!')
+                        : t('live.feedPointLabel', 'PONT!');
+
+            const localizedLabel = currentSportId === 66 ? t('live.feedGoalLabel', 'GÓL!') : label;
 
             el.innerHTML = `
                 <span class="goal-toast-icon">${icon}</span>
                 <div class="goal-toast-body">
-                    <div class="goal-toast-title">${label} <strong>${escapeHtml(item.goalTeam || '')}</strong></div>
+                    <div class="goal-toast-title">${localizedLabel} <strong>${escapeHtml(item.goalTeam || '')}</strong></div>
                     <div class="goal-toast-match">${escapeHtml(home)} <span class="goal-toast-score">${escapeHtml(item.score)}</span> ${escapeHtml(away)} <span class="goal-toast-time">${escapeHtml(item.liveTime || '')}</span></div>
                 </div>
                 <span class="goal-toast-elapsed" data-ts="${item.ts || 0}"></span>
@@ -1301,7 +1326,7 @@
                 dismissedIds.add(item.id);
                 el.remove();
                 if (!container.querySelector('.goal-toast')) {
-                    container.innerHTML = '<div class="score-feed-empty"><i class="fas fa-futbol"></i>Még nincs eredmény változás</div>';
+                    container.innerHTML = '<div class="score-feed-empty"><i class="fas fa-futbol"></i>' + t('live.noScoreChanges', 'Még nincs eredmény változás') + '</div>';
                 }
             });
 
@@ -1329,7 +1354,7 @@
         section.style.display = '';
 
         if (items.length === 0) {
-            list.innerHTML = '<div class="upcoming-empty"><i class="fas fa-clock" style="font-size:18px;opacity:0.4;display:block;margin-bottom:6px;"></i><span>Nincs közelgő meccs</span></div>';
+            list.innerHTML = '<div class="upcoming-empty"><i class="fas fa-clock" style="font-size:18px;opacity:0.4;display:block;margin-bottom:6px;"></i><span>' + t('live.noUpcomingMatches', 'Nincs közelgő meccs') + '</span></div>';
             return;
         }
 
@@ -1368,12 +1393,12 @@
             if (!ts) return;
             const diff = nowSec - ts;
             if (diff < 0) {
-                el.textContent = 'Most';
+                el.textContent = t('live.justNow', 'Most');
             } else if (diff < 60) {
-                el.textContent = diff + ' mp';
+                el.textContent = diff + ' ' + t('live.secondsShort', 'mp');
             } else {
                 const min = Math.floor(diff / 60);
-                el.textContent = min + ' perce';
+                el.textContent = min + ' ' + t('live.minutesAgo', 'perce');
             }
         });
     }

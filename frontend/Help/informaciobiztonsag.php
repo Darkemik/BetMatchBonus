@@ -24,40 +24,40 @@
 
         <!-- Fő tartalom (középső rész)-->
         <main class="main-content">
-            <h1>Információbiztonság</h1>
+            <h1 data-i18n="helpStatic.infoSecurity.title">Információbiztonság</h1>
 
-            <div class="help-menu-container">
+            <div class="help-menu-container" data-i18n="helpStatic.infoSecurity.intro">
                 A BetMatchBonus rendszere több szintű technikai és működési védelemmel óvja a felhasználói adatokat.
                 Célunk, hogy a fiókhasználat, a tranzakciók és a személyes adatok kezelése biztonságos, átlátható és ellenőrizhető legyen.
             </div>
 
-            <h4>Fiókvédelem</h4>
+            <h4 data-i18n="helpStatic.infoSecurity.accountTitle">Fiókvédelem</h4>
             <div class="additional-info">
                 <ul style="margin: 0; padding-left: 18px;">
-                    <li>Erős, egyedi jelszót használj, amit más oldalon nem alkalmazol.</li>
-                    <li>Nyilvános vagy közös eszközön mindig jelentkezz ki a használat után.</li>
-                    <li>Rendszeresen ellenőrizd a profil- és tranzakciós előzményeidet.</li>
-                    <li>Gyanús aktivitás esetén azonnal változtass jelszót.</li>
+                    <li data-i18n="helpStatic.infoSecurity.account1">Erős, egyedi jelszót használj, amit más oldalon nem alkalmazol.</li>
+                    <li data-i18n="helpStatic.infoSecurity.account2">Nyilvános vagy közös eszközön mindig jelentkezz ki a használat után.</li>
+                    <li data-i18n="helpStatic.infoSecurity.account3">Rendszeresen ellenőrizd a profil- és tranzakciós előzményeidet.</li>
+                    <li data-i18n="helpStatic.infoSecurity.account4">Gyanús aktivitás esetén azonnal változtass jelszót.</li>
                 </ul>
             </div>
 
-            <h4>Adatkezelési biztonság</h4>
+            <h4 data-i18n="helpStatic.infoSecurity.dataTitle">Adatkezelési biztonság</h4>
             <div class="additional-info">
                 <ul style="margin: 0; padding-left: 18px;">
-                    <li>A rendszer a jogosultsághoz kötött hozzáférés elvét alkalmazza.</li>
-                    <li>Az érzékeny műveletek (pl. bejelentkezés, pénzmozgás) naplózva vannak.</li>
-                    <li>A személyes adatok kezelését vonatkozó adatvédelmi szabályzat szerint végezzük.</li>
-                    <li>Szokatlan viselkedés esetén a fiók védelmi ellenőrzés alá kerülhet.</li>
+                    <li data-i18n="helpStatic.infoSecurity.data1">A rendszer a jogosultsághoz kötött hozzáférés elvét alkalmazza.</li>
+                    <li data-i18n="helpStatic.infoSecurity.data2">Az érzékeny műveletek (pl. bejelentkezés, pénzmozgás) naplózva vannak.</li>
+                    <li data-i18n="helpStatic.infoSecurity.data3">A személyes adatok kezelését vonatkozó adatvédelmi szabályzat szerint végezzük.</li>
+                    <li data-i18n="helpStatic.infoSecurity.data4">Szokatlan viselkedés esetén a fiók védelmi ellenőrzés alá kerülhet.</li>
                 </ul>
             </div>
 
-            <h4>Felhasználói biztonsági tippek</h4>
+            <h4 data-i18n="helpStatic.infoSecurity.tipsTitle">Felhasználói biztonsági tippek</h4>
             <div class="help-menu-container">
                 <ul style="margin: 0; padding-left: 18px;">
-                    <li>Soha ne add meg belépési adataidat üzenetben vagy telefonon.</li>
-                    <li>Csak megbízható hálózaton lépj be a fiókodba.</li>
-                    <li>Ellenőrizd a böngésző címsorát, és csak hivatalos oldalon jelentkezz be.</li>
-                    <li>Ha adathalászatra gyanakszol, ne kattints a linkre, és vedd fel a kapcsolatot az ügyfélszolgálattal.</li>
+                    <li data-i18n="helpStatic.infoSecurity.tip1">Soha ne add meg belépési adataidat üzenetben vagy telefonon.</li>
+                    <li data-i18n="helpStatic.infoSecurity.tip2">Csak megbízható hálózaton lépj be a fiókodba.</li>
+                    <li data-i18n="helpStatic.infoSecurity.tip3">Ellenőrizd a böngésző címsorát, és csak hivatalos oldalon jelentkezz be.</li>
+                    <li data-i18n="helpStatic.infoSecurity.tip4">Ha adathalászatra gyanakszol, ne kattints a linkre, és vedd fel a kapcsolatot az ügyfélszolgálattal.</li>
                 </ul>
             </div>
         </main>

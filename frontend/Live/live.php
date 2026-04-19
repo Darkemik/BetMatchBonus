@@ -105,7 +105,7 @@ require_once "../../backend/connect.php";
                 <div class="live-search-wrapper">
                     <div class="live-search-box">
                         <i class="fas fa-search live-search-icon"></i>
-                        <input type="text" id="liveSearchInput" class="live-search-input" placeholder="Keresés csapat vagy bajnokság neve alapján..." autocomplete="off">
+                        <input type="text" id="liveSearchInput" class="live-search-input" placeholder="Keresés csapat vagy bajnokság neve alapján..." data-i18n-placeholder="mainMenu.searchPlaceholder" autocomplete="off">
                         <button type="button" id="liveSearchClear" class="live-search-clear" style="display:none;">
                             <i class="fas fa-times"></i>
                         </button>
@@ -130,7 +130,7 @@ require_once "../../backend/connect.php";
                     <div class="score-feed-panel" id="score-feed-panel">
                         <div class="panel-header panel-header-live">
                             <span class="live-ticker-dot"></span>
-                            <span>📊 Eredmény feed</span>
+                            <span data-i18n="live.resultFeedTitle">📊 Eredmény feed</span>
                         </div>
                         <div class="score-feed-list" id="goal-toast-container"></div>
                     </div>

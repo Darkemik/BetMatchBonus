@@ -24,85 +24,84 @@
 
         <!-- Fő tartalom (középső rész)-->
         <main class="main-content">
-            <h1>Adatkezelési tájékoztató</h1>
+            <h1 data-i18n="helpStatic.privacy.title">Adatkezelési tájékoztató</h1>
 
-            <div class="help-menu-container">
+            <div class="help-menu-container" data-i18n="helpStatic.privacy.intro">
                 Jelen tájékoztató célja, hogy közérthetően bemutassa, hogyan kezeljük a felhasználói adatokat a
                 BetMatchBonus rendszerében. Az adatkezelés során törekszünk az átláthatóságra, a biztonságra és a
                 jogszabályi megfelelésre.
             </div>
 
-            <h4>1. Milyen adatokat kezelünk?</h4>
+            <h4 data-i18n="helpStatic.privacy.s1Title">1. Milyen adatokat kezelünk?</h4>
             <div class="additional-info">
-                A szolgáltatás működtetéséhez és a felhasználói fiók kezeléséhez az alábbi adatkörök kerülhetnek
-                kezelésre:
+                <span data-i18n="helpStatic.privacy.s1Intro">A szolgáltatás működtetéséhez és a felhasználói fiók kezeléséhez az alábbi adatkörök kerülhetnek kezelésre:</span>
                 <ul style="margin: 10px 0 0; padding-left: 18px;">
-                    <li>fiókadatok: felhasználónév, e-mail cím, jelszóhoz kapcsolódó technikai adatok,</li>
-                    <li>profiladatok: teljes név, kapcsolódó azonosító adatok,</li>
-                    <li>pénzügyi adatok: befizetés/kifizetés tranzakciók, egyenlegek,</li>
-                    <li>fogadási adatok: szelvények, tétek, oddsok, eredmények,</li>
-                    <li>technikai adatok: munkamenet- és naplóadatok, biztonsági események.</li>
+                    <li data-i18n="helpStatic.privacy.s1Item1">fiókadatok: felhasználónév, e-mail cím, jelszóhoz kapcsolódó technikai adatok,</li>
+                    <li data-i18n="helpStatic.privacy.s1Item2">profiladatok: teljes név, kapcsolódó azonosító adatok,</li>
+                    <li data-i18n="helpStatic.privacy.s1Item3">pénzügyi adatok: befizetés/kifizetés tranzakciók, egyenlegek,</li>
+                    <li data-i18n="helpStatic.privacy.s1Item4">fogadási adatok: szelvények, tétek, oddsok, eredmények,</li>
+                    <li data-i18n="helpStatic.privacy.s1Item5">technikai adatok: munkamenet- és naplóadatok, biztonsági események.</li>
                 </ul>
             </div>
 
-            <h4>2. Az adatkezelés céljai</h4>
+            <h4 data-i18n="helpStatic.privacy.s2Title">2. Az adatkezelés céljai</h4>
             <div class="additional-info">
-                Az adatokat különösen az alábbi célokból kezeljük:
+                <span data-i18n="helpStatic.privacy.s2Intro">Az adatokat különösen az alábbi célokból kezeljük:</span>
                 <ul style="margin: 10px 0 0; padding-left: 18px;">
-                    <li>felhasználói fiók létrehozása és kezelése,</li>
-                    <li>fogadási szolgáltatás biztosítása és tranzakciók feldolgozása,</li>
-                    <li>jogi kötelezettségek teljesítése (pl. számviteli, panaszkezelési kötelezettségek),</li>
-                    <li>visszaélések megelőzése, rendszerbiztonság fenntartása,</li>
-                    <li>ügyfélszolgálati megkeresések kezelése.</li>
+                    <li data-i18n="helpStatic.privacy.s2Item1">felhasználói fiók létrehozása és kezelése,</li>
+                    <li data-i18n="helpStatic.privacy.s2Item2">fogadási szolgáltatás biztosítása és tranzakciók feldolgozása,</li>
+                    <li data-i18n="helpStatic.privacy.s2Item3">jogi kötelezettségek teljesítése (pl. számviteli, panaszkezelési kötelezettségek),</li>
+                    <li data-i18n="helpStatic.privacy.s2Item4">visszaélések megelőzése, rendszerbiztonság fenntartása,</li>
+                    <li data-i18n="helpStatic.privacy.s2Item5">ügyfélszolgálati megkeresések kezelése.</li>
                 </ul>
             </div>
 
-            <h4>3. Az adatkezelés jogalapja</h4>
+            <h4 data-i18n="helpStatic.privacy.s3Title">3. Az adatkezelés jogalapja</h4>
             <div class="help-menu-container">
-                Az adatkezelés jogalapja az eset jellegétől függően:
+                <span data-i18n="helpStatic.privacy.s3Intro">Az adatkezelés jogalapja az eset jellegétől függően:</span>
                 <ul style="margin: 10px 0 0; padding-left: 18px;">
-                    <li>szerződés teljesítése (felhasználói fiók és szolgáltatás nyújtása),</li>
-                    <li>jogi kötelezettség teljesítése,</li>
-                    <li>jogos érdek (pl. csalásmegelőzés, rendszerbiztonság),</li>
-                    <li>hozzájárulás, ahol a jogszabály ezt megköveteli.</li>
+                    <li data-i18n="helpStatic.privacy.s3Item1">szerződés teljesítése (felhasználói fiók és szolgáltatás nyújtása),</li>
+                    <li data-i18n="helpStatic.privacy.s3Item2">jogi kötelezettség teljesítése,</li>
+                    <li data-i18n="helpStatic.privacy.s3Item3">jogos érdek (pl. csalásmegelőzés, rendszerbiztonság),</li>
+                    <li data-i18n="helpStatic.privacy.s3Item4">hozzájárulás, ahol a jogszabály ezt megköveteli.</li>
                 </ul>
             </div>
 
-            <h4>4. Adatmegőrzési idő</h4>
-            <div class="additional-info">
+            <h4 data-i18n="helpStatic.privacy.s4Title">4. Adatmegőrzési idő</h4>
+            <div class="additional-info" data-i18n="helpStatic.privacy.s4Text">
                 Az adatokat csak a szükséges ideig tároljuk. Az adatmegőrzés időtartamát a szolgáltatás működése,
                 a jogszabályi kötelezettségek, valamint a jogos érdek alapján határozzuk meg.
                 A megőrzési idő lejárta után az adatokat töröljük vagy anonimizáljuk.
             </div>
 
-            <h4>5. Adatbiztonság</h4>
-            <div class="additional-info">
+            <h4 data-i18n="helpStatic.privacy.s5Title">5. Adatbiztonság</h4>
+            <div class="additional-info" data-i18n="helpStatic.privacy.s5Text">
                 Megfelelő technikai és szervezési intézkedésekkel védjük az adatokat az illetéktelen hozzáférés,
                 módosítás, nyilvánosságra hozatal vagy elvesztés ellen. A biztonsági kontrollok folyamatosan
                 felülvizsgálatra kerülnek.
             </div>
 
-            <h4>6. Érintetti jogok</h4>
+            <h4 data-i18n="helpStatic.privacy.s6Title">6. Érintetti jogok</h4>
             <div class="help-menu-container">
-                A felhasználókat az adatkezeléssel kapcsolatban több jog is megilleti, különösen:
+                <span data-i18n="helpStatic.privacy.s6Intro">A felhasználókat az adatkezeléssel kapcsolatban több jog is megilleti, különösen:</span>
                 <ul style="margin: 10px 0 0; padding-left: 18px;">
-                    <li>tájékoztatáshoz való jog,</li>
-                    <li>hozzáféréshez való jog,</li>
-                    <li>helyesbítéshez való jog,</li>
-                    <li>törléshez való jog (jogszabályi keretek között),</li>
-                    <li>adatkezelés korlátozásához való jog,</li>
-                    <li>tiltakozáshoz való jog,</li>
-                    <li>adathordozhatósághoz való jog.</li>
+                    <li data-i18n="helpStatic.privacy.s6Item1">tájékoztatáshoz való jog,</li>
+                    <li data-i18n="helpStatic.privacy.s6Item2">hozzáféréshez való jog,</li>
+                    <li data-i18n="helpStatic.privacy.s6Item3">helyesbítéshez való jog,</li>
+                    <li data-i18n="helpStatic.privacy.s6Item4">törléshez való jog (jogszabályi keretek között),</li>
+                    <li data-i18n="helpStatic.privacy.s6Item5">adatkezelés korlátozásához való jog,</li>
+                    <li data-i18n="helpStatic.privacy.s6Item6">tiltakozáshoz való jog,</li>
+                    <li data-i18n="helpStatic.privacy.s6Item7">adathordozhatósághoz való jog.</li>
                 </ul>
             </div>
 
-            <h4>7. Kapcsolat és jogérvényesítés</h4>
-            <div class="additional-info">
+            <h4 data-i18n="helpStatic.privacy.s7Title">7. Kapcsolat és jogérvényesítés</h4>
+            <div class="additional-info" data-i18n="helpStatic.privacy.s7Text">
                 Adatkezeléssel kapcsolatos kérdés vagy kérelem esetén kérjük, vedd fel a kapcsolatot ügyfélszolgálatunkkal.
                 Panasz esetén jogosult vagy a hatáskörrel rendelkező felügyeleti hatósághoz fordulni.
             </div>
 
-            <div class="help-menu-container">
+            <div class="help-menu-container" data-i18n="helpStatic.privacy.footerNote">
                 A tájékoztató tartalmát időről időre frissíthetjük, hogy az megfeleljen a szolgáltatás fejlődésének
                 és a mindenkori jogszabályi környezetnek.
             </div>

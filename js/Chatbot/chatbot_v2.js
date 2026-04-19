@@ -612,8 +612,9 @@
         popup.type = 'button';
         popup.id = 'chatbotStartupPopup';
         popup.className = 'chatbot-startup-popup';
-        popup.innerHTML = '<i class="fas fa-robot" style="margin-right:6px;"></i> Hi! I am BMB Assistant. Need help with anything?';
-        popup.setAttribute('aria-label', 'BMB Assistant message');
+        popup.innerHTML = '<i class="fas fa-robot" style="margin-right:6px;"></i> ' +
+            t('chatbot.startupPopup', 'Szia! A BMB Asszisztens vagyok. Segíthetek valamiben?');
+        popup.setAttribute('aria-label', t('chatbot.startupPopupAria', 'BMB Asszisztens üzenet'));
 
         popup.addEventListener('click', function () {
             if (startupPopupHideTimer) { clearTimeout(startupPopupHideTimer); startupPopupHideTimer = null; }

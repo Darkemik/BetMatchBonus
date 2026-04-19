@@ -24,42 +24,42 @@
 
         <!-- Fő tartalom (középső rész)-->
         <main class="main-content">
-            <h1>Játékosvédelem</h1>
+            <h1 data-i18n="helpStatic.playerProtection.title">Játékosvédelem</h1>
 
-            <div class="help-menu-container">
+            <div class="help-menu-container" data-i18n="helpStatic.playerProtection.intro">
                 A BetMatchBonus elkötelezett a felelős játékszervezés mellett.
                 A fogadás szórakozás, nem megélhetési forma.
                 Kérjük, mindig tudatosan, előre meghatározott kerettel és kontrollált döntésekkel játssz.
             </div>
 
-            <h4>Felelős játék alapelvei</h4>
+            <h4 data-i18n="helpStatic.playerProtection.principlesTitle">Felelős játék alapelvei</h4>
             <div class="additional-info">
                 <ul style="margin: 0; padding-left: 18px;">
-                    <li>Csak olyan összeget használj, amelynek elvesztése nem okoz problémát.</li>
-                    <li>Állíts be saját napi/heti pénzügyi keretet, és tartsd magad hozzá.</li>
-                    <li>Ne próbáld visszanyerni az elvesztett összegeket gyors, impulzív fogadásokkal.</li>
-                    <li>Alkohol vagy erős érzelmi állapot alatt ne hozz fogadási döntéseket.</li>
+                    <li data-i18n="helpStatic.playerProtection.principle1">Csak olyan összeget használj, amelynek elvesztése nem okoz problémát.</li>
+                    <li data-i18n="helpStatic.playerProtection.principle2">Állíts be saját napi/heti pénzügyi keretet, és tartsd magad hozzá.</li>
+                    <li data-i18n="helpStatic.playerProtection.principle3">Ne próbáld visszanyerni az elvesztett összegeket gyors, impulzív fogadásokkal.</li>
+                    <li data-i18n="helpStatic.playerProtection.principle4">Alkohol vagy erős érzelmi állapot alatt ne hozz fogadási döntéseket.</li>
                 </ul>
             </div>
 
-            <h4>Figyelmeztető jelek</h4>
+            <h4 data-i18n="helpStatic.playerProtection.warningTitle">Figyelmeztető jelek</h4>
             <div class="additional-info">
-                Érdemes szünetet tartani, ha az alábbiak közül többet is tapasztalsz:
+                <span data-i18n="helpStatic.playerProtection.warningIntro">Érdemes szünetet tartani, ha az alábbiak közül többet is tapasztalsz:</span>
                 <ul style="margin: 10px 0 0; padding-left: 18px;">
-                    <li>a játék miatt romlik a koncentrációd, alvásod vagy hangulatod,</li>
-                    <li>egyre magasabb tétekkel játszol ugyanazért az élményért,</li>
-                    <li>elrejted környezeted elől a fogadási aktivitásodat,</li>
-                    <li>pénzügyi nehézség mellett is folytatod a játékot.</li>
+                    <li data-i18n="helpStatic.playerProtection.warning1">a játék miatt romlik a koncentrációd, alvásod vagy hangulatod,</li>
+                    <li data-i18n="helpStatic.playerProtection.warning2">egyre magasabb tétekkel játszol ugyanazért az élményért,</li>
+                    <li data-i18n="helpStatic.playerProtection.warning3">elrejted környezeted elől a fogadási aktivitásodat,</li>
+                    <li data-i18n="helpStatic.playerProtection.warning4">pénzügyi nehézség mellett is folytatod a játékot.</li>
                 </ul>
             </div>
 
-            <h4>Mit tehetsz azonnal?</h4>
+            <h4 data-i18n="helpStatic.playerProtection.actionsTitle">Mit tehetsz azonnal?</h4>
             <div class="help-menu-container">
                 <ul style="margin: 0; padding-left: 18px;">
-                    <li>Tarts legalább 24-48 órás szünetet, és értékeld újra a játékhoz való viszonyodat.</li>
-                    <li>Csökkentsd az aktivitásodat, és használj alacsonyabb téteket.</li>
-                    <li>Beszélj valakivel, akiben megbízol (családtag, barát, szakember).</li>
-                    <li>Ha szükséges, kérj professzionális segítséget játékfüggőséggel foglalkozó szervezetektől.</li>
+                    <li data-i18n="helpStatic.playerProtection.action1">Tarts legalább 24-48 órás szünetet, és értékeld újra a játékhoz való viszonyodat.</li>
+                    <li data-i18n="helpStatic.playerProtection.action2">Csökkentsd az aktivitásodat, és használj alacsonyabb téteket.</li>
+                    <li data-i18n="helpStatic.playerProtection.action3">Beszélj valakivel, akiben megbízol (családtag, barát, szakember).</li>
+                    <li data-i18n="helpStatic.playerProtection.action4">Ha szükséges, kérj professzionális segítséget játékfüggőséggel foglalkozó szervezetektől.</li>
                 </ul>
             </div>
         </main>

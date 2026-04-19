@@ -1,0 +1,326 @@
+﻿[
+    {
+        "category":  "REGISTRATION, LOGIN",
+        "questions":  [
+                          {
+                              "question":  "How can I authenticate my e-mail address?",
+                              "answer":  "After registration, we will send a letter to the email address you provided, which contains a link to verify the email address. By clicking on the link, the email address provided during registration will be authenticated. If the email has not arrived, it is worth checking the spam folder. In case of need, contact customer service!"
+                          },
+                          {
+                              "question":  "Can I register with other details?",
+                              "answer":  "You can only register in your own name, using the personal data found in your documents."
+                          },
+                          {
+                              "question":  "Can I change my username?",
+                              "answer":  "No, the username cannot be changed."
+                          },
+                          {
+                              "question":  "What are the registration conditions?",
+                              "answer":  "On the BetMatchBonus site, only bettors who have turned 18 years of age, have a place of residence in Hungary and have a HUF-denominated bank account in a Hungarian bank can register. At the time of registration, all players must accept the Participation Rules and the data protection policy."
+                          },
+                          {
+                              "question":  "How can I register?",
+                              "answer":  "Click on the Registration button in the upper right corner, then enter the required data. At the end of the registration, we will send an activation link to your email address."
+                          },
+                          {
+                              "question":  "What can I do if I entered the wrong data during registration?",
+                              "answer":  "After logging in, you can change your data in the Settings/Personal data menu, except for the username and sales data. These can be repaired by customer service."
+                          },
+                          {
+                              "question":  "Can I change my password?",
+                              "answer":  "You can change your password in the profile menu. After entering the old password, a new password must be entered and then approved with the code received by email."
+                          },
+                          {
+                              "question":  "What must be declared during registration?",
+                              "answer":  "You must declare that you participate in your own name, provide your own data, accept the Rules of Participation and the data management policy."
+                          },
+                          {
+                              "question":  "Can I register more than once?",
+                              "answer":  "No, each player can create only one registration. If you have problems logging in, contact our customer service."
+                          },
+                          {
+                              "question":  "There have been changes in my personal data. What can I do?",
+                              "answer":  "You must modify the changes within 5 days in the Settings/Personal data menu. The slice data can only be corrected by customer service."
+                          }
+                      ]
+    },
+    {
+        "category":  "HOW DO I BET?",
+        "questions":  [
+                          {
+                              "question":  "Can I use master intelligence during my bets?",
+                              "answer":  "BetMatchBonus forbids the use of any kind of artificial intelligence, and any device, software or service that plays without human intervention or reduces human decision-making urgency, or automated decision-making, or real-time advice (\"bots\"), and takes all steps to prevent and detect the use of such tools interest."
+                          },
+                          {
+                              "question":  "What should I do if my bet is closed but the prize is not claimed?",
+                              "answer":  "If the conclusion of a winning bet has already taken place, but the prize has not been included in the \"Prize balance\", then our email customer service can help you with the matter."
+                          },
+                          {
+                              "question":  "How many events can I combine in one bet?",
+                              "answer":  "A minimum of 1 and a maximum of 50 betting events can be accepted in one bet."
+                          },
+                          {
+                              "question":  "What\u0027s my partner?",
+                              "answer":  "The number of bets shows that each bet accepted by the bettor contains how many accepted outcomes."
+                          },
+                          {
+                              "question":  "What is multiple knitting?",
+                              "answer":  "It is called multiple betting if the outcome of several sports events is betted on one ticket at the same time. Then the winning multipliers are multiplied. Example: A bettor bets HUF 1,000 on 3 events, where in all three cases he bets on the victory of the home team. Barcelona â€“ Real Madrid (H â€“ 1.35), FerencvĂˇros â€“ Ăjpest (H â€“ 1.40), Bologna â€“ Milan (H â€“ 2.45). HUF 630 will be added to your ``Winning balance\u0027\u0027."
+                          },
+                          {
+                              "question":  "Can multiple betting options for a match be bet in all cases?",
+                              "answer":  "Among the betting options included in the betting offer, betting options belonging to the same sports event may be banned."
+                          },
+                          {
+                              "question":  "Can the winning multipliers be changed?",
+                              "answer":  "The winning multiplier of any bettable outcome belonging to any betting event can be changed. In such a case, for the possible outcomes of the given betting event, for the bets placed before the prize multiplier change(s), the winning multipliers valid at the time of placing the bet, the winning multipliers made after the prize multiplier change(s) for bets, the modified prize multipliers are valid. During a live bet, the winning odds are constantly changing based on the situations, situations, and events of the sports event."
+                          },
+                          {
+                              "question":  "How long does it take to settle bets?",
+                              "answer":  "We will try to settle the bets as soon as possible after the completion of the promised events, their official results and their control. The deadline for determining the result is the 48th hour after the end of the betting event for the last person affected by the bet."
+                          },
+                          {
+                              "question":  "How do I know I\u0027ve won?",
+                              "answer":  "After logging in, you can view both open and closed bets under the ``Diary\u0027\u0027 menu item. If a closed bet is a winner, the winning amount can be seen in connection with it."
+                          },
+                          {
+                              "question":  "Is there a maximum prize?",
+                              "answer":  "Yes. The amount of the largest prize that can be won with a single bet is the legal amount, i.e. HUF 2,000,000."
+                          },
+                          {
+                              "question":  "Is there a maximum bet?",
+                              "answer":  "Yes. The amount of the largest bet is the amount provided for in the legislation in force at all times, but no more than HUF 100,000 per single bet."
+                          },
+                          {
+                              "question":  "Can the bet be withdrawn if I change my mind?",
+                              "answer":  "Not. Bets already placed in games cannot be withdrawn or changed. Therefore, in any case, even before approving the bet, you must make sure whether you have selected the desired event and winning multiplier. With the cash out function, however, you can withdraw from your bet after placing the bet, but before the end of the events - if the cash out can reach your bet."
+                          },
+                          {
+                              "question":  "Is there a minimum bet?",
+                              "answer":  "Yes. The minimum bet that can be placed during a bet is HUF 100 as a standard and also in the case of a combined bet."
+                          },
+                          {
+                              "question":  "How can I bet?",
+                              "answer":  "After logging in, scroll to the desired sport, then select the desired sports event and click on the multiplier. The tip or tips will be visible on the right side of the screen, in the ``Slideshow\u0027\u0027. Then enter the amount you want to play as a bet. If you have this, you can send your slip to the game by pressing the \"Accept\" button."
+                          },
+                          {
+                              "question":  "How can I bet live?",
+                              "answer":  "After logging in, you can access the events that can be accepted in advance by clicking on the page at the top of the screen. For sports, after selecting the sports event, it is necessary to click on the multiplier. The tip or tips will be visible on the right side of the screen in the ``Slice\u0027\u0027. Then enter the amount you want to play as a bet. If you have this, you can send your slip to the game by pressing the \"Accept\" button."
+                          },
+                          {
+                              "question":  "Where do I see my bets?",
+                              "answer":  "After logging in, you can view and retrieve your bets in the \"Diary\" section. By clicking on the \"More\" button, you can find even more details about your open or calculated bet. For estimated bets, the search can also be started for a predetermined period of time. Bets can be found in the betting log in the order they were sent to games."
+                          }
+                      ]
+    },
+    {
+        "category":  "WHAT BETTING POSSIBILITIES (MARKETS) ARE THERE?",
+        "questions":  [
+                          {
+                              "question":  "Both teams score a goal",
+                              "answer":  "A betting opportunity where the bettor has to guess whether both teams involved in the bet will score at least one goal in the match. \u003cbr\u003e For this betting option, the following two outcomes are required: \u003cbr\u003e â€“ Yes â€“ The bet is won if both teams score at least one goal in the match. \u003cbr\u003e â€“ No â€“ The bet is won if either of the two teams does not score a goal, or if the match does not score at all."
+                          },
+                          {
+                              "question":  "Both teams score a goal or there will be more than 2.5 goals",
+                              "answer":  "In this betting market, the outcome of ``Yes\u0027\u0027 becomes a win if one or possibly both of the two possible events come true. If none of the two bets come true, the ``No\u0027\u0027 outcome will be the winner. \u003cbr\u003e The ``Yes\u0027\u0027 outcome becomes a winner if \u003cbr\u003e - both teams score a goal in the match, \u003cbr\u003e - there will be more than 2.5 goals in the match, \u003cbr\u003e - both teams will score a goal and there will be more than 2.5 goals in the match \u003cbr\u003e In all other cases, the result is ``No\u0027\u0027."
+                          },
+                          {
+                              "question":  "A winning difference",
+                              "answer":  "A mixed betting opportunity, where the bettor must guess at the same time that of the two teams touched in the bet, the winning team will be the winning team (home team) or the second team team (away team). match, or the match ends in a draw, in addition, if the match also wins, the winning team wins with a goal difference. \u003cbr\u003e For this betting option, in the case of handball, the following seven outcomes are required: \u003cbr\u003e â€“ Tie â€“ Win, the bet is settled if the match ends in a draw.\u003cbr\u003e â€“ Home team wins by more than 10 goals â€“ The bet is won if the home team wins the match by scoring at least 11 goals more than the opponent. \u003cbr\u003e â€“ Home team wins with 6-10 goals â€“ The bet is won if the home team wins the match in such a way that it scores more than its opponent by at least 6 and at most 10 goals. \u003cbr\u003e â€“ Home team wins by 1-5 goals â€“ The bet is won if the home team wins the match in such a way that it scores more than its opponent by a maximum of 5 goals. \u003cbr\u003e â€“ Away team wins by 1-5 goals â€“ The bet is won if the away team wins the match in such a way that it scores more than its opponent by a maximum of 5 goals. \u003cbr\u003e â€“ Away team wins with 6-10 goals â€“ The bet is won if the away team wins the match in such a way that it scores more than its opponent by at least 6 and at most 10 goals. \u003cbr\u003e â€“ Away team wins by more than 10 goals â€“ The bet is won if the away team wins the match by scoring at least 11 more goals than its opponent."
+                          },
+                          {
+                              "question":  "Winning margin (in case of basketball)",
+                              "answer":  "A mixed betting opportunity, where the bettor must guess at the same time that of the two teams touched in the bet, the winning team will be the winning team (home team) or the second team team (away team). match, and also the point difference of the winning team. (In the case of basketball, there are betting options for which, in the event of a draw, extra time will be used to win the match.) \u003cbr\u003e For this betting option, the six outcomes below Please note: \u003cbr\u003e â€“ Home team wins by more than 10 points â€“ The bet is won if the home team wins the match by scoring at least 11 points more than the opponent. \u003cbr\u003e â€“ Home team wins by 6-10 points â€“ The bet is won if the home team wins the match in such a way that it scores at least 6 but no more than 10 points more than its opponent. \u003cbr\u003e â€“ Home team wins by 1-5 points â€“ The bet is won if the home team wins the match in such a way that it achieves a maximum of 5 points more than its opponent.\u003cbr\u003e â€“ Away team wins by 1-5 points â€“ The bet is won if the bet if the visiting team wins the match in such a way that it achieves a maximum of 5 points more than its opponent. \u003cbr\u003e â€“ Away team wins by 6-10 points â€“ The bet is won if the away team wins the match in such a way that it scores more than its opponent by at least 6, but not more than 10 points. \u003cbr\u003e â€“ Away team wins by more than 10 points â€“ The bet is won if the away team wins the match by scoring at least 11 points more than its opponent."
+                          },
+                          {
+                              "question":  "Number of points (more/less) bet possible",
+                              "answer":  "A betting opportunity where the bettor has to guess that the total points of the two participants in the given match will be above (more) or below (less) a certain value. For example: â€žPoints 154.5â€ť \u003cbr\u003e The following two outcomes are required for this betting option: \u003cbr\u003eâ€“ Less than 154.5 â€“ The bet is won if 154 or less than 154 points are scored in the match. \u003cbr\u003e â€“ More than 154.5 â€“ The bet is won if 155 or more points are scored in the match."
+                          },
+                          {
+                              "question":  "Accurate result",
+                              "answer":  "A mixed betting opportunity, where the bettor has to guess exactly from the point of view of the team that plays first or second in the pairing, out of the two participants involved in the bet (roughly) the result of the match, and if the match ends in a tie, then exactly (roughly) what the result will be. Among the outcomes offered for betting, not all possible (numerical) outcome outcomes require any explanation, therefore, these can be guessed together in such a way that the \"Other\" outcome must be chosen. \u003cbr\u003e This type of betting option (in the case of the Bayern Munich - Juventus match) can be placed, for example, in the following form: \u003cbr\u003e â€œExact resultâ€ť \u003cbr\u003e â€“ Bayern Munich 1:0 \u003cbr\u003e â€“ Bayern Munich 2:0 \u003cbr\u003e â€“ Bayern Munich 2:1 \u003cbr\u003e â€“ Bayern Munich 3:0 \u003cbr\u003e â€“ Bayern Munich 3:1 \u003cbr\u003e â€“ Bayern Munich 3:2 \u003cbr\u003e â€“ Bayern Munich 4:0 \u003cbr\u003e â€“ Bayern Munich 4:1 \u003cbr\u003e â€“ Bayern Munich 4:2 \u003cbr\u003e - Bayern Munich 5:0 - Bayern Munich 5:1 - Bayern Munich 6:0 - Draw 0:0 - Draw 1:1 - Draw 2:2 - Draw 3:3 - Juventus 1:0 - Juventus 2:0 \u003cbr\u003e - Juventus 2:1 - Juventus 3:0 - Juventus 3:1 - Juventus 3:2 - Juventus 4:0 - Juventus 4:1 - Juventus 4:2 - Juventus 5:0 - Juventus 5:1 - Juventus 6:0 - Other"
+                          },
+                          {
+                              "question":  "Exact result - 1st half/Final result",
+                              "answer":  "A mixed betting option, where the bettor has to guess the result of the 1st half, as well as the result of the match itself (in regular game time). Among the outcomes offered for betting, not all possible (numerical) outcome outcomes need to be explained, therefore these can be guessed together in such a way that the outcome \"4+\" must be chosen. This type of betting option (in the case of the Brazil - Croatia match) can be submitted in the following form, for example: \"Exact result - 1st half/Final result\" \u003cbr\u003e Draw 0:0/Draw 0:0 \u003cbr\u003e Draw 0:0/Brazil 1:0 \u003cbr\u003e Draw 0:0/Brazil 2:0 \u003cbr\u003e Draw 0:0/Brazil 2:1 \u003cbr\u003e Draw 0:0/Brazil 3:0 \u003cbr\u003e Draw 0:0/Draw 1:1 \u003cbr\u003e Draw 0:0/Croatia 1:0 \u003cbr\u003e Draw 0:0/Croatia 2:0 \u003cbr\u003e Draw 0:0/Croatia 2:1 \u003cbr\u003e Draw 0:0/Croatia 3:0 \u003cbr\u003e Draw 0:0/4+ Brazil \u003cbr\u003e 1:0/Brazil 1:0 Brazil \u003cbr\u003e 1:0/Brazil 2:0 Brazil \u003cbr\u003e 1:0/Brazil 2:1 Brazil \u003cbr\u003e 1:0/Brazil 3:0 Brazil \u003cbr\u003e 1:0/Draw 1:1 Brazil \u003cbr\u003e 1:0/Croatia 2:1 Brazil \u003cbr\u003e 1:0/4+ Brazil 2:0/Brazil \u003cbr\u003e 2:1 Brazil 2:0/Brazil 3:0 Brazil \u003cbr\u003e 2:0/4+Brazil 2:1/Brazil \u003cbr\u003e 2:1 Brazil 2:1/4+ Brazil \u003cbr\u003e 3:0/Brazil 3:0 Brazil \u003cbr\u003e 3:0/4+ Draw 1:1/Draw \u003cbr\u003e 1:1 Draw 1:1/Brazil \u003cbr\u003e 2:1 Draw 1:1/Croatia \u003cbr\u003e 2:1 Draw 1:1/4+ Croatia \u003cbr\u003e 1:0/Croatia 1:0 Croatia \u003cbr\u003e 1:0/Croatia 2:0 Croatia \u003cbr\u003e 1:0/Croatia 2:1 Croatia \u003cbr\u003e 1:0/Croatia 3:0 Croatia \u003cbr\u003e 1:0/Draw 1:1 Croatia \u003cbr\u003e 1:0/Brazil 2:1 Croatia \u003cbr\u003e 1:0/4+ Croatia 2:0/Croatia \u003cbr\u003e 2:1 Croatia 2:0/Croatia 3:0 Croatia \u003cbr\u003e 2:0/4+Croatia 2:1/Croatia \u003cbr\u003e 2:1 Croatia 2:1/4+ Croatia \u003cbr\u003e 3:0/Croatia 3:0 Croatia \u003cbr\u003e 3:0/4+ 4+/4+ Among these outcomes, win the one that contains the name of the team that won the 1st half and the exact result, or if the match is the 1st half If the match ends in a draw, the exact result, the name of the team that won the match and the exact result, or if the match ends in a draw, the exact result is also written in the following sentence taking into account In cases where someone has chosen the option \"4+\" regarding the result of the 1st half or the match, the winner will be awarded if in the selected period (1st half or the match at the end) - regardless of the distribution of goals - four or more goals were scored. (For example, ``4+\u0027\u0027 should be marked if someone wants to bet on a 2-2 draw or a 5-2 win.)"
+                          },
+                          {
+                              "question":  "The number of away team goals",
+                              "answer":  "A betting option where the bettor has to guess how many goals the second team in the match will score in the match between the two teams touched in the bet. \u003cbr\u003e For this betting option, in the case of football, the following four outcomes are required: \u003cbr\u003e â€“ 0 â€“ The bet is won if the two teams touched in the bet are among the The second team in the doubles does not score a goal in the match. \u003cbr\u003e â€“ 1 â€“ The bet is won if the second team between the two teams touched in the bet scores only 1 goal in the match. \u003cbr\u003e â€“ 2 â€“ The bet is won if the second-placed team in the match between the two teams touched in the bet scores exactly 2 goals in the match. \u003cbr\u003eâ€“ 3+ â€“ The bet is won if the second team between the two teams in the bet scores at least 3 goals in the match."
+                          },
+                          {
+                              "question":  "Away team plays the match without a goal",
+                              "answer":  "A betting opportunity where the bettor has to guess whether the second team from the two participants touched in the bet will score at least one goal in the match or not. \u003cbr\u003e For this betting option, the following two outcomes are required: \u003cbr\u003e â€“ Yes â€“ The bet is won if the two participants touched in the bet are matched. The second-placed team does not score a single goal in the match. \u003cbr\u003e â€“ No â€“ The bet is won if the second team in the match between the two participants touched in the bet scores (any number of) goals in the match."
+                          },
+                          {
+                              "question":  "Which quarter will have more points?",
+                              "answer":  "A betting opportunity where the bettor has to guess in which quarter of the basketball match - the first, second, third or fourth - the most points will be scored, or you can also bet on the same number in any two quarters the number of points scored by the two halves of the match, in which both teams score less in the next half than in the first half, or if the two sides have the same number of points in any three quarters The total number of points scored by each half of the game, in which fewer points are scored in the next half of the game than in the first three, in addition to the fact that the same number of points are scored in all four halves of the game, and the match ends with a pointless draw. \u003cbr\u003e For this betting option, the following five outcomes are required: \u003cbr\u003e â€“ 1st quarter â€“ The bet is won if more points are scored in the 1st quarter of the match than in the second, third, and in the fourth. \u003cbr\u003e â€“ 2nd quarter â€“ The bet is won if more points are scored in the 2nd quarter of the match than in the first, third or fourth. \u003cbr\u003e â€“ 3rd quarter â€“ The bet is won if more points are scored in the 3rd quarter of the match than in the first, second or fourth. \u003cbr\u003e â€“ 4th quarter â€“ The bet is won if more points are scored in the 4th quarter of the match than in the first, second or third. \u003cbr\u003e â€“ more identical quarters â€“ The bet is won if the same number of points is scored in any two quarters, while in the next two quarters the score is less than that achieved in those two separately, or if in each of the three quarters, the same number of points are scored, whereas in the next game, the two score less than what was achieved separately in those three quarters, or perhaps the same number of points is achieved in all four quarters together Half a dozen, or no points at all."
+                          },
+                          {
+                              "question":  "1X2",
+                              "answer":  "A betting option where the bettor must predict that the match will be won by the first (1) or the second (2) of the two participants involved in the bet, or the match is not decided, it ends in a draw (X)."
+                          },
+                          {
+                              "question":  "Asian score",
+                              "answer":  "The Asian goal number is similar to traditional goal number tip bets, with the difference that here a result may occur, as a result of which the bet is taken into account with a multiplier of 1, or the bet there will be a winner or a loser in part. Separate from the normal Asian goal number, we offer whole or half-digit Asian goal numbers. With the traditional goal score, a bet is either a winner or a loser. On the other hand, in the case of certain results, the bet with a prize multiplier of 1 is taken into account for the Asian goal score. In the case of a double Asian score, the bet consists of a whole and a half Asian score, as if both values ​​had been bet with a half bet. In all cases, its marking is quarter-pointed (ending in â€¦.25 or â€¦..75) depending on which half or whole number the offered difference falls on. Further information can be found in No. 3 of the participation regulations. in Annex B (2). The specified limit values ​​can be whole, half or quarter goals: â€˘ Asian whole number goals (2, 3, 4): If exactly as many goals are scored in the match as the specified number, the bet is returned. â€˘ Half-digit Asian goals (2.5, 3.5): There is no possibility of return, the bet can only win or lose. â€˘ Quarter Goals Scores (2.25, 2.75): The bet is divided into two parts, and the bet can be partly won or partly lost. Examples: â€˘ More than 2 goals: The bet wins if more than 2 goals are scored; the bet returns if exactly 2 goals are scored; lose if less than 2 goals are scored. â€˘ More than 2.5 goals: The bet wins if at least 3 goals are scored; you lose if there are 2 or less goals.â€˘ More than 2.25 goals: Half of the bet is placed on the \"more than 2 goals\" and the other half on the \"more than 2.5 goals\" bet. If 2 goals are scored, half of the bet is returned, the other half is lost; if 3 or more goals are scored, the entire bet is won; if less than 2 goals are scored, the entire bet is lost."
+                          },
+                          {
+                              "question":  "Asian handicap",
+                              "answer":  "In the case of an Asian handicap, one team starts with a virtual advantage over the other team during the bet. The Asian handicap has only two outcomes, there is no tied outcome. Separate from the normal Asian handicap, we distinguish Asian handicaps of whole or half (0.5) numbers. While a bet with the traditional handicap is either a winner or a loser, with the Asian handicap, in case of certain results, the bet is taken into account with a multiplier of 1. In the case of the double Asian handicap, the bet consists of a full and a half Asian handicap, as if both values ​​had been bet with half and half bets. In all cases, its marking is quarter-pointed (ending in â€¦.25 or â€¦..75) depending on which half or whole number the offered difference falls on. Further information can be found in No. 3 of the participation regulations. in Annex B (2)."
+                          },
+                          {
+                              "question":  "Half 1X2",
+                              "answer":  "A betting opportunity where the bettor must guess whether the leading party (1) or the second (2) of the two participants in the bet will win the match. 1st half, or is the match a draw at that time (X)."
+                          },
+                          {
+                              "question":  "Doubt",
+                              "answer":  "A betting option where the bettor has to guess the outcome of the match (1X2), with the caveat that in this case, there are two types of outcomes for each outcome. \u003cbr\u003e For this betting option, the following three outcomes are required (in the case of a Bayern Munich - Juventus match): \u003cbr\u003e - Bayern Munich or Draw - Win if Bayern Munich wins and the match, or if the match ends in a draw the match does not end in a draw.) \u003cbr\u003eâ€“ Juventus or Draw â€“ Win The bet is placed if Juventus wins the match, or if the match ends in a draw."
+                          },
+                          {
+                              "question":  "Fearful doubt",
+                              "answer":  "A betting option where the bettor has to guess the result (1X2) of the half-time of the match indicated in the bet, with the caveat that in this case, there are two types of results for each outcome. \u003cbr\u003e For this betting option, the following three outcomes are required (in the case of a Bayern Munich - Juventus match): \u003cbr\u003e - Bayern Munich or Draw - Win if Bayern Munich wins and the indicated half, or if the match is a draw at that time it is a draw then.) \u003cbr\u003e â€“ Juventus or Draw â€“ Win the bet is placed if Juventus wins the indicated half, or if the match is a draw at that time."
+                          },
+                          {
+                              "question":  "In which half will there be more goals?",
+                              "answer":  "A betting option where the bettor has to guess whether more goals will be scored in the first or second half of the match, or whether the same number of goals will be scored in both halves. \u003cbr\u003e For this betting option, the following three outcomes are required: \u003cbr\u003e â€“ in the 1st half â€“ The bet is won if the two teams involved in the bet together have more score a goal in the first half of the match than in the second. \u003cbr\u003e â€“ Same amount â€“ The bet is won if the two teams involved in the bet together score exactly the same number of goals in the first half of the match as in the second. \u003cbr\u003e â€“ In the 2nd half â€“ The bet is won if the two participating teams in the bet together score more goals in the second half of the match than in the first."
+                          },
+                          {
+                              "question":  "Odds of winning (more/less)",
+                              "answer":  "A betting option where the bettor has to guess that the total number of goals scored by the two participants in the bet will be above (more) or below (less) a certain value. For example: \"My score is 2.5\". The following two outcomes are required for this betting option: â€“ Less than 2.5 â€“ The bet is won if 1 or 2 goals are scored, or if no goals are scored in the match. â€“ More than 2.5 â€“ The bet is won if 3 or more goals are scored in the match."
+                          },
+                          {
+                              "question":  "Bet on the number of points (six outcomes)",
+                              "answer":  "A betting possibility where the bettor has to guess exactly what the total number of goals scored by the two participants will be in the match. For this betting option, in the case of football, the following six outcomes are required: \u003cbr\u003e â€“ 0 â€“ Win, the bet is settled if no goal is scored in the match.\u003cbr\u003e â€“ 1 â€“ Win then. the bet is settled if exactly 1 goal is scored in the match. \u003cbr\u003e â€“ 2 â€“ The bet is won if, in any distribution, exactly 2 goals are scored in the match. \u003cbr\u003e â€“ 3 â€“ The bet is won if â€“ in any distribution â€“ exactly 3 goals are scored in the match. \u003cbr\u003e â€“ 4 â€“ The bet is won if â€“ in any distribution â€“ exactly 4 goals are scored in the match. \u003cbr\u003e â€“ 5 â€“ The bet is won if â€“ in any distribution â€“ exactly 5 goals are scored in the match. \u003cbr\u003e â€“ 6+ â€“ The bet is won if â€“ in any distribution â€“ at least 6 goals are scored in the match."
+                          },
+                          {
+                              "question":  "Gólsám tipus (four outcomes) betting option",
+                              "answer":  "A betting possibility where the bettor has to guess what the total number of goals scored by the two participants in the bet will be in the match, with the caveat that in this case at least two my score belongs. \u003cbr\u003e For this betting option, in the case of football, the following four outcomes are required: \u003cbr\u003e â€“ 0-1 â€“ The bet is won if there is no goal in the match, or if exactly 1 it is cut by gol. \u003cbr\u003e â€“ 2-3 â€“ The bet is won if â€“ in any distribution â€“ 2 or 3 goals are scored in the match. \u003cbr\u003e â€“ 4-5 â€“ The bet is won if â€“ in any distribution â€“ 4 or 5 goals are scored in the match. \u003cbr\u003e â€“ 6+ â€“ The bet is won if â€“ in any distribution â€“ at least 6 goals are scored in the match."
+                          },
+                          {
+                              "question":  "Half-goal type (out of three) betting option",
+                              "answer":  "A betting option where the bettor has to guess the exact number of goals scored by the two participants in the bet in the half indicated in the bet. \u003cbr\u003e For this betting option, in the case of football, the following three outcomes are required: \u003cbr\u003e â€“ 0 â€“ The bet is won if no goal is scored in the half indicated in the bet. \u003cbr\u003e â€“ 1 â€“ The bet is won if exactly 1 goal is scored in the half indicated in the bet. \u003cbr\u003e â€“ 2+ â€“ The bet is won if â€“ in any distribution â€“ at least 2 goals are scored in the half indicated in the bet."
+                          },
+                          {
+                              "question":  "Number of penalty sheets",
+                              "answer":  "The number of penalty cards can be determined based on the number of yellow card(s) and red card(s) distributed in the given match. If a player receives a yellow card, it counts as a penalty card. If a player receives a red card, it counts as two penalty cards. If a player receives a yellow card and a red card, it counts as three penalty cards in total. If a player receives two yellow cards followed by a red card, it also counts as three penalty cards in total. It is therefore important to know that a player can receive a maximum of three penalty cards during a match. \u003cbr\u003e During the match, only during regular play, the penalty cards distributed to the players on the field are counted in determining the result. Except for the one following the first half - to the players on the field at the end of the first half of the match - penalty cards are awarded, which must be counted in the 2nd half."
+                          },
+                          {
+                              "question":  "Which team scores the first goal?",
+                              "answer":  "A betting option where the bettor has to guess that between the two teams touched in the bet, the first goal will be scored in the match, or that the second-placed team will score the first goal in the match. \u003cbr\u003e For this betting option, the following three outcomes are required (in the case of a Bayern Munich - Juventus match): \u003cbr\u003e - Bayern Munich - Win, the bet is settled if the match starts first. goal is scored by Bayern Munich. \u003cbr\u003e â€“ No goal â€“ Win the bet if the match ends with a 0-0 result. \u003cbr\u003e â€“ Juventus â€“ Win the bet if a Juventus scores the first goal of the match."
+                          },
+                          {
+                              "question":  "Which team scores the last goal?",
+                              "answer":  "A betting possibility where the bettor has to guess that the last goal of the match will be scored by the team that is in second place among the two teams touched in the bet. \u003cbr\u003e For this betting option, the following three outcomes are required (in the case of a Bayern Munich - Juventus match): \u003cbr\u003e - Bayern Munich - Win, the bet is placed if the match is the last goal is scored by Bayern Munich. \u003cbr\u003e â€“ No goal â€“ Win the bet if the match ends with a 0-0 result. \u003cbr\u003e â€“ Juventus â€“ Win the bet if a Juventus scored the last goal of the match."
+                          },
+                          {
+                              "question":  "The number of goals for the home team",
+                              "answer":  "A betting option where the bettor has to guess how many goals the underdog will score in the match between the two teams touched in the bet. \u003cbr\u003e For this betting option, in the case of football, the following four outcomes are required: \u003cbr\u003e â€“ 0 â€“ The bet is won if the two teams touched in the bet are among the In doubles, the winning team does not score a goal in the match. \u003cbr\u003e â€“ 1 â€“ The bet will be won if, between the two teams touched in the bet, the team with the lowest score in the match scores only 1 goal. \u003cbr\u003e â€“ 2 â€“ The bet is won if, between the two teams touched in the bet, the team with the lowest score in the match scores exactly 2 goals. \u003cbr\u003e â€“ 3+ â€“ The bet is won if the team with the lowest score between the two teams in the bet scores at least 3 goals in the match."
+                          },
+                          {
+                              "question":  "Home team plays the match without conceding a goal",
+                              "answer":  "A betting possibility where the bettor has to guess whether the team with the lowest score among the two participants in the bet will score at least one goal in the match or not. \u003cbr\u003e For this betting option, the following two outcomes are required: \u003cbr\u003e â€“ Yes â€“ The bet is won if the two participants touched in the bet are matched. The winning team does not score a single goal in the match. \u003cbr\u003e â€“ No â€“ The bet is won if the team with the lowest score among the two participants in the bet scores (any number of) goals in the match."
+                          },
+                          {
+                              "question":  "1st half - Exact result",
+                              "answer":  "A mixed betting opportunity, where the bettor has to guess exactly from the point of view of the team that plays first or second in the pairing, out of the two participants involved in the bet (arbitrarily) what is the result of the 1st half, and if the 1st half ends in a draw, then exactly (arbitrarily) what will be the result. Among the outcomes offered for betting, not all possible (numerical) outcome outcomes require any explanation, therefore, these can be guessed together in such a way that the \"Other\" outcome must be chosen. \u003cbr\u003e This type of betting option (in the case of the Bayern Munich - Juventus match) can be placed, for example, in the following form: \u003cbr\u003e â€ž1st half â€“ Exact resultâ€ť \u003cbr\u003e â€“ Bayern Munich 1:0 - Bayern Munich 2:0 - Bayern Munich 2:1 - Draw 0:0 - Draw 1:1 - Draw 2:2 - Juventus 1:0 - Juventus 2:0 - Juventus 2:1 - Other \u003cbr\u003e Among these outcomes, the one that contains the name of the team that won the 1st half and the exact (by number of points) result will win, or if the match is tied, the 1st leg follow, even then the exact (numerical) result. In all cases when the 1st half of the match ends with a result that is not detailed in the betting option - therefore, among the outcomes offered for betting, you cannot find one that contains the name of the winning team or the draw designation and, in connection with this, the exact (numerical) result at the same time - then the \"Other\" outcome will win (In this example, three different Bayern Munich and Juventus wins, respectively. a draw is also included, but if Bayern Munich wins the 1st half 3:1 or Juventus 4:0, or the 1st half ends 3:3, then in the latter three cases, the \"Other\" outcome will be the winner.) No the winning bet is the one with only the name of the team that wins the 1st half, or the name of the draw, but the exact (numerical) result does not match the actual one. Similarly, the bet with the exact one is not a winner The (random) result is listed, but the name of the winning team does not match the actual one."
+                          },
+                          {
+                              "question":  "Outright betting option",
+                              "answer":  "A betting opportunity where the bettor must guess that a longer, more complex sports competition, sports competition series, e-sports competition, e-sports competition series (a championship, tournament, championship round consisting of several matches, races, rounds, etc.), or who wins other events, series of events (e.g. prizes related to films, music, etc...). \u003cbr\u003e for example, you can bet on the winner of football championships, tennis tournaments, as well as during the rounds, qualifying matches, etc.) Win among the outcomes offered for betting, which contains the name of the winner. \u003cbr\u003e If not all possible winners are listed among the outcomes offered for betting, then this outcome can be guessed in such a way that the \"Other\" outcome must be selected."
+                          },
+                          {
+                              "question":  "Result of the game + number of points (more/less) betting possibility",
+                              "answer":  "A betting opportunity where the bettor has to guess what the result of the given game piece will be and whether the total points of the two participants will be above (more) or below (less) a certain value. For example: \"The result of the game period + Points 94.5 - 1st half\" If the duration of the game period (e.g. quarter, third, half) does not require a separate explanation for the bet if possible, then the bet applies to the entire match. For example, in this betting option, if the bettor chooses the result \"Home and more than 94.5\", then the bet will be a winner if the 1st half is the home team wins and both teams score at least 95 points in total."
+                          },
+                          {
+                              "question":  "Handicap tipping (two outcomes) betting option",
+                              "answer":  "A betting opportunity, during which one of the two participants involved in the bet starts with an advantage over the other - with respect to the given bet. The size and scope of the determined benefit is requested in advance. For example: Handicap - 7.5 \u003cbr\u003e This betting option requires the following two outcomes (in case of Virtus Bologna - Avellino match): \u003cbr\u003e - Virtus Bologna -7.5 - Win then the bet is if Virtus Bologna wins the match with at least 8 goals. \u003cbr\u003e â€“ Avellino +7.5 â€“ The bet will be won if Virtus Bologna wins the match with a maximum of 7 goals, or in all cases when it does not win."
+                          },
+                          {
+                              "question":  "Handicap tipping (three outcomes) betting option",
+                              "answer":  "A betting opportunity, during which one of the two participants involved in the bet starts with an advantage over the other - with respect to the given bet. The size and scope of the determined benefit is requested in advance. For example: Handicap 0:2 \u003cbr\u003e For this betting option, the following three outcomes are required (in the case of Bayern Munich - Juventus match): \u003cbr\u003e Bayern Munich - Win then the bet if Bayern Munich wins the match by 3 goals or more. \u003cbr\u003eâ€“ Juventus â€“ Win the bet if Bayern Munich wins the match by 1 goal, or in all cases where they do not win."
+                          },
+                          {
+                              "question":  "1st half - Handicap tip (two outcomes) betting option",
+                              "answer":  "A betting opportunity, during which one of the two participants touched in the bet, one of them - with reference to the given betting opportunity - starts with an advantage over the other in terms of the result of the 1st half. The size and scope of the determined benefit is requested in advance. For example: â€ž1. half-time â€“ Handicap -0.5â€ť \u003cbr\u003e For this betting option, the following two outcomes are required (in the case of Washington â€“ Chicago match): \u003cbr\u003e â€“ Washington -0.5 â€“ Win the bet if Washington wins the 1st half of the match by at least 1 point. \u003cbr\u003eâ€“ Chicago +0.5 â€“ The bet is won if Chicago wins the 1st half of the match by at least 1 point, or if the match is tied at that time."
+                          },
+                          {
+                              "question":  "Betting events for the 2nd half",
+                              "answer":  "The betting events belonging to the 2nd half refer exclusively to the results and events achieved in the second half and not to the entire match. \u003cbr\u003e Example: In the betting event \"1X2 - 2nd half\", if the match ended 2-1, the first half was 2-1, and the second half was 0-0, then the in the event of a bet, the winning outcome will be the \"tie\"."
+                          },
+                          {
+                              "question":  "In which third will there be more goals?",
+                              "answer":  "A betting opportunity where the bettor has to guess in which third of the ice hockey match - the first, the second or the third - the most goals will be scored, or it is also possible to bet that the number of goals will be the same in any two thirds the number of goals scored by two halves of the goal together, while the number of goals scored in the next half is less than the one scored in the first half, even if the number is the same in all three halves a goal is scored, or the match ends in a goalless draw. \u003cbr\u003e For this betting option, the following four outcomes are required: \u003cbr\u003e â€“ 1st period The bet is won if more goals are scored in the 1st period of the match than in the second, or \u003cbr\u003e â€“ 2nd period The bet is won if more goals are scored in the 2nd period of the match than in the first or third period. \u003cbr\u003e â€“ 3rd period Win the bet if more goals are scored in the 3rd period of the match than in the first or the second. \u003cbr\u003e â€“ more identical periods The bet is won if the scores are the same in any two periods a number of goals are scored, while in the next half of the game the two teams score less than the number of goals scored separately, or perhaps the same number of goals are scored together in all three thirds, or no goals are scored at all."
+                          },
+                          {
+                              "question":  "Betting events related to statistical data, e.g. goal-scoring attempt / shot hitting the goal / offside / fouls / goal kicks, assists, goalscorers:",
+                              "answer":  "In the process of determining the results, organizations, companies, and event organizers dealing with statistical data determine what counts as a goal-scoring attempt, a shooter hitting the goal, an offside, an irregularity, They shoot, assist or score goals."
+                          }
+                      ]
+    },
+    {
+        "category":  "CRIME REPORT",
+        "questions":  [
+                          {
+                              "question":  "Can I claim several bonus offers at the same time?",
+                              "answer":  "Yes, if the conditions of participation do not specify that you can only claim one of two or more simultaneous bonuses at the same time. It is important to know that the fulfillment of bonuses takes place in the order of the request, so if you fulfill the conditions of several bonuses with one bet, it will always count towards the rotation of the bonus requested earliest in time."
+                          },
+                          {
+                              "question":  "How can I claim my top-up bonus?",
+                              "answer":  "You can activate the upload bonus by entering your bonus code on the Payment sub-page or selecting the bonus by clicking on the gift box icon. Whichever method you choose, the bonus will be activated with your deposit."
+                          },
+                          {
+                              "question":  "Why did I fail to claim the bonus?",
+                              "answer":  "It may happen that you have entered your bonus code incorrectly and that is why you cannot claim it."
+                          },
+                          {
+                              "question":  "What happens if I cancel my bonus?",
+                              "answer":  "If you cancel the bonus, you will lose the entire amount in your bonus balance, so you will also lose any winnings you may have achieved. A bonus can only be claimed once, it cannot be restored after cancellation."
+                          },
+                          {
+                              "question":  "Why can\u0027t I bet on every event from my bonus?",
+                              "answer":  "There are bonuses that you can use for a specific event or a specific championship. You can find it in the conditions of participation."
+                          },
+                          {
+                              "question":  "What does the filming requirement mean?",
+                              "answer":  "The wagering requirement means how many times you have to wager your bonus in order for your winnings to be transferred to your winnings balance. If you participated in a HUF 1,000 bonus and the turnover requirement is 2x, then you must turnover your bonus worth a total of HUF 2,000 to fulfill this condition."
+                          },
+                          {
+                              "question":  "Do I have to redeem my bonus immediately after the request?",
+                              "answer":  "It is not necessary, the terms of participation of the given bonus offer provide information about the deadline for requesting the bonus and fulfilling the turnover requirements."
+                          },
+                          {
+                              "question":  "Do I have to roll over the bonus in one sum?",
+                              "answer":  "The wagering requirements are always included in the conditions of participation, you can track the fulfillment of the given bonus offer in the My Bonuses menu."
+                          },
+                          {
+                              "question":  "Can I use my bonus for several bets at the same time so that it is included in the turnover conditions?",
+                              "answer":  "No, per event, only the first placed bet is included in the fulfillment of the filming conditions."
+                          },
+                          {
+                              "question":  "Can I only bet from the bonus or can I also use my own balance?",
+                              "answer":  "You can bet from the bonus as well as from your own balance, but remember that this only counts towards the fulfillment of the wagering requirements up to the amount of the given bonus. This means that if you receive a bonus of HUF 2,500 without making a bet worth HUF 3,000, it counts up to HUF 2,500 towards the fulfillment of the wagering requirements."
+                          },
+                          {
+                              "question":  "If you want to bet from the bonus, is any amount included in the wagering requirements?",
+                              "answer":  "No, the bonus amount is always included in the fulfillment of the conditions of rotation. Therefore, if you receive a bonus of HUF 1,000 but place a bet worth HUF 3,000, up to HUF 1,000 will be added to the fulfillment of the wagering requirements."
+                          },
+                          {
+                              "question":  "If I want to bet from a bonus, why do I get a message that I don\u0027t have enough money in my balance?",
+                              "answer":  "In this case, one of the rotation requirements is not met, so the bet would be charged to your paid balance - however, this is not enough. Such a case, for example, if the odds conditions specified in the rotation requirements are not met or your slip is a contains an event that you have already bet on."
+                          },
+                          {
+                              "question":  "How can it happen that part of my winnings is applied to my bonus balance and the other part to my winnings balance?",
+                              "answer":  "The reason for this is that the winnings from the bet made from the bonus balance are applied to the bonus balance, and the winnings from the bets paid and made from the winnings balance are applied to the winnings balance. In this case, you made your bet not only from the bonus balance (since the amount you bet for was not available). You have no option to decide whether you want to bet from bonus or paid-in and/or prize balance. If your bet meets the bonus offer\u0027s participation conditions, the system will primarily deduct the bet from your bonus balance."
+                          },
+                          {
+                              "question":  "Why hasn\u0027t my entire winnings been transferred to my winnings balance?",
+                              "answer":  "Every bonus has a limit on how much you can transfer to your prize balance, you can always find this in the conditions of participation."
+                          },
+                          {
+                              "question":  "What happens to my winnings if I bet from a bonus and one of my bets was assessed as a loss for the first time and then changed to a winner?",
+                              "answer":  "In this case, the prize will not be added to the completed bonus amount."
+                          }
+                      ]
+    }
+]

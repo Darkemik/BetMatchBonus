@@ -107,7 +107,7 @@ require_once "../../backend/connect.php";
                 <div class="esport-search-wrapper">
                     <div class="esport-search-box">
                         <i class="fas fa-search esport-search-icon"></i>
-                        <input type="text" id="esportSearchInput" class="esport-search-input" placeholder="Keresés csapat vagy bajnokság neve alapján..." autocomplete="off">
+                        <input type="text" id="esportSearchInput" class="esport-search-input" placeholder="Keresés csapat vagy bajnokság neve alapján..." data-i18n-placeholder="mainMenu.searchPlaceholder" autocomplete="off">
                         <button type="button" id="esportSearchClear" class="esport-search-clear" style="display:none;" aria-label="Keresés törlése">
                             <i class="fas fa-times"></i>
                         </button>
@@ -116,7 +116,7 @@ require_once "../../backend/connect.php";
 
                 <div class="tabs-container">
                     <button class="tab-button active" data-tab="today">
-                        <i class="fas fa-calendar-day"></i> <span data-i18n="esport.allTodayMatches">Összes mai meccs</span>
+                        <i class="fas fa-calendar-day"></i> <span data-i18n="esport.allTodayMatches">Összes meccs</span>
                         <span class="esport-today-count" id="esport-today-badge">-</span>
                     </button>
                     <button class="tab-button" data-tab="live">

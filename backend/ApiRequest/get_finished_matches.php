@@ -177,7 +177,7 @@ $stmt->execute();
 $res = $stmt->get_result();
 
 if (!$res || $res->num_rows === 0) {
-    echo '<div class="no-matches"><i class="fas fa-flag-checkered" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i>Nincs lejátszott meccs az elmúlt 3 napban.</div>';
+    echo '<div class="no-matches"><i class="fas fa-flag-checkered" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i><span data-i18n="mainMenu.noFinishedMatches">Nincs lejátszott meccs az elmúlt 3 napban.</span></div>';
     $stmt->close();
     exit;
 }
@@ -188,6 +188,7 @@ $leagues = [];
 
 $todayBp = (new DateTime('now', new DateTimeZone('Europe/Budapest')))->format('Y-m-d');
 $yesterdayBp = (new DateTime('-1 day', new DateTimeZone('Europe/Budapest')))->format('Y-m-d');
+$tomorrowBp = (new DateTime('+1 day', new DateTimeZone('Europe/Budapest')))->format('Y-m-d');
 
 while ($row = $res->fetch_assoc()):
     $matchName = trim((string)$row['match_name']);
@@ -213,10 +214,16 @@ while ($row = $res->fetch_assoc()):
     $startUtcDt = new DateTime((string)$row['start_utc'], new DateTimeZone('UTC'));
     $startUtcDt->setTimezone(new DateTimeZone('Europe/Budapest'));
     $matchDay = $startUtcDt->format('Y-m-d');
+    $dayLabelKey = '';
     if ($matchDay === $todayBp) {
         $dayLabel = 'Ma';
+        $dayLabelKey = 'mainMenu.todayShort';
     } elseif ($matchDay === $yesterdayBp) {
         $dayLabel = 'Tegnap';
+        $dayLabelKey = 'mainMenu.yesterdayShort';
+    } elseif ($matchDay === $tomorrowBp) {
+        $dayLabel = 'Holnap';
+        $dayLabelKey = 'mainMenu.tomorrowShort';
     } else {
         $dayLabel = $startUtcDt->format('m.d.');
     }
@@ -224,6 +231,7 @@ while ($row = $res->fetch_assoc()):
 
     $homeScore = $row['home_score'];
     $awayScore = $row['away_score'];
+    $hasScore = ($homeScore !== null && $awayScore !== null);
     $scoreDisplay = ($homeScore !== null && $awayScore !== null)
         ? (int)$homeScore . ' - ' . (int)$awayScore
         : 'Nincs adat';
@@ -254,7 +262,9 @@ while ($row = $res->fetch_assoc()):
         'showVs' => $showVsFormat,
         'matchName' => $matchName,
         'score' => $scoreDisplay,
+        'hasScore' => $hasScore,
         'dayLabel' => $dayLabel,
+        'dayLabelKey' => $dayLabelKey,
         'startFormatted' => $startFormatted,
     ];
 endwhile;
@@ -276,7 +286,7 @@ if (!empty($leagues)) {
 ?>
 
 <?php if (empty($leagues)): ?>
-    <div class="no-matches"><i class="fas fa-flag-checkered" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i>Nincs lejátszott meccs az elmúlt 3 napban.</div>
+    <div class="no-matches"><i class="fas fa-flag-checkered" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i><span data-i18n="mainMenu.noFinishedMatches">Nincs lejátszott meccs az elmúlt 3 napban.</span></div>
 <?php else: ?>
     <?php foreach ($leagues as $leagueKey => $leagueData):
         $matches = $leagueData['matches'];
@@ -314,13 +324,24 @@ if (!empty($leagues)) {
                             <?php endif; ?>
                         </td>
                         <td>
-                            <span class="match-score finished-score"><?php echo htmlspecialchars($m['score']); ?></span>
+                            <?php if (!empty($m['hasScore'])): ?>
+                                <span class="match-score finished-score"><?php echo htmlspecialchars($m['score']); ?></span>
+                            <?php else: ?>
+                                <span class="match-score finished-score" data-i18n="mainMenu.noData">Nincs adat</span>
+                            <?php endif; ?>
                         </td>
                         <td>
-                            <span class="start-time"><?php echo $m['dayLabel'] . ' ' . $m['startFormatted']; ?></span>
+                            <span class="start-time">
+                                <?php if (!empty($m['dayLabelKey'])): ?>
+                                    <span class="start-day" data-i18n="<?php echo htmlspecialchars($m['dayLabelKey']); ?>"><?php echo htmlspecialchars($m['dayLabel']); ?></span>
+                                <?php else: ?>
+                                    <span class="start-day"><?php echo htmlspecialchars($m['dayLabel']); ?></span>
+                                <?php endif; ?>
+                                <span class="start-clock"><?php echo htmlspecialchars($m['startFormatted']); ?></span>
+                            </span>
                         </td>
                         <td class="live-time-cell">
-                            <span class="status-finished"><i class="fas fa-check-circle"></i> Vége</span>
+                            <span class="status-finished"><i class="fas fa-check-circle"></i> <span data-i18n="mainMenu.finished">Vége</span></span>
                         </td>
                     </tr>
                 <?php endforeach; ?>

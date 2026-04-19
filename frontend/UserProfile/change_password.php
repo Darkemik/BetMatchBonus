@@ -134,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
-                            <small class="form-text text-muted">Legalább <?php echo get_setting_int('min_password_length', 7); ?> karakter hosszú kell legyen</small>
+                            <small class="form-text text-white" data-i18n="userProfile.changePassword.minLengthHint">Legalább <?php echo get_setting_int('min_password_length', 7); ?> karakter hosszú kell legyen</small>
                         </div>
                         
                         <div class="form-group mb-3">

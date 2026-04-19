@@ -38,6 +38,10 @@ document.addEventListener("DOMContentLoaded", () => {
         return Number.isFinite(eventId) && eventId > 0 ? eventId : null;
     }
 
+    function getUiLangCode() {
+        return (typeof window.i18nLang === 'function' && window.i18nLang() === 'en') ? 'en' : 'hu';
+    }
+
     function isMobileViewport() {
         return !!(mobileViewportQuery && mobileViewportQuery.matches);
     }
@@ -474,7 +478,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const clearBtn = document.getElementById('esportSearchClear');
         if (!input) return;
 
-        input.placeholder = 'Keresés csapat vagy bajnokság neve alapján...';
+        input.placeholder = t('mainMenu.searchPlaceholder', 'Keresés csapat vagy bajnokság neve alapján...');
         if (clearBtn) {
             clearBtn.setAttribute('aria-label', t('live.clearSearch', 'Keresés törlése'));
         }
@@ -594,16 +598,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
         var sportIds = getSportIdsToFetch();
         var gameParam = getGameTagParam();
+        var langParam = '&lang=' + encodeURIComponent(getUiLangCode());
 
         var liveFetch = fetch("../../backend/ApiRequest/get_matches_live.php").then(function(res) { return res.json(); });
         // Mindig lekérjük az összes sport adatait a számláló navhoz (szűrés nélkül)
         var allTodayFetches = ESPORT_SPORT_IDS.map(function(sid) {
-            return fetch("../../backend/ApiRequest/mainmenu_matches.php?sport_id=" + sid)
+            return fetch("../../backend/ApiRequest/mainmenu_matches.php?sport_id=" + sid + langParam)
                 .then(function(res) { return res.text(); });
         });
         // Ha game_tag szűrés aktív, külön lekérjük a szűrt adatot is
         var filteredFetch = (currentEsportId === 145 && currentGameTag !== null)
-            ? fetch("../../backend/ApiRequest/mainmenu_matches.php?sport_id=145" + gameParam).then(function(res) { return res.text(); })
+            ? fetch("../../backend/ApiRequest/mainmenu_matches.php?sport_id=145" + gameParam + langParam).then(function(res) { return res.text(); })
             : Promise.resolve(null);
 
         Promise.all([liveFetch, Promise.all(allTodayFetches), filteredFetch])

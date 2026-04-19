@@ -25,11 +25,12 @@
         <!-- Fő tartalom (középső rész)-->
         <main class="main-content">
             <section class="container py-4">
-                <h1 class="h4 mb-3">Új funkció videó</h1>
+                <h1 class="h4 mb-3" data-i18n="helpNewFeature.title">Új funkció videó</h1>
                 <div class="ratio ratio-16x9 rounded overflow-hidden shadow-sm">
                     <iframe
                         src="https://www.youtube.com/embed/_pMgNJjNodo"
                         title="Új funkció bemutató videó"
+                        data-i18n-title="helpNewFeature.iframeTitle"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                         referrerpolicy="strict-origin-when-cross-origin"
                         allowfullscreen>

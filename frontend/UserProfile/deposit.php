@@ -352,7 +352,7 @@ $bonus_stmt->close();
 
                         <div class="deposit-info-bar">
                             <i class="fas fa-shield-alt"></i>
-                            <span>A befizetés biztonságosan, titkosított kapcsolaton keresztül kerül feldolgozásra. Minimális: <strong><?php echo number_format($minDeposit, 0, ',', ' '); ?> FT</strong> | Maximális: <strong><?php echo number_format($maxDeposit, 0, ',', ' '); ?> FT</strong></span>
+                            <span data-i18n-html="userProfile.deposit.secureInfo">A befizetés biztonságosan, titkosított kapcsolaton keresztül kerül feldolgozásra. Minimális: <strong><?php echo number_format($minDeposit, 0, ',', ' '); ?> FT</strong> | Maximális: <strong><?php echo number_format($maxDeposit, 0, ',', ' '); ?> FT</strong></span>
                         </div>
 
                         <button type="submit" class="deposit-submit-btn">

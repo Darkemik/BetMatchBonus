@@ -4,12 +4,36 @@ require_once dirname(__DIR__) . '/connect.php';
 header('Content-Type: application/json; charset=utf-8');
 date_default_timezone_set('Europe/Budapest');
 
+$lang = (isset($_GET['lang']) && strtolower((string)$_GET['lang']) === 'en') ? 'en' : 'hu';
+
 $isWeekday = ((int)date('N') <= 5);
 
 $isGuest = !isset($_SESSION['user_id']);
 $userId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
 $todayFrom = date('Y-m-d 00:01:00'); // fallback, per-bonus override below
 $tomorrowFrom = date('Y-m-d 00:01:00', strtotime('+1 day'));
+
+function localizeBonusDescription($desc, $lang, $bonusTrigger) {
+    $source = trim((string)$desc);
+    $huFreeBet = 'Ha egy legalább 5.000 Ft-os fogadásod veszít (min. odds: 1.80), visszakapsz 30%-ot Free Bet formájában. Naponta egyszer aktiválódik automatikusan a vesztes szelvény lezárásakor. A kapott Free Bet-et bármilyen fogadásra felhasználhatod.';
+    $enFreeBet = 'If a bet of at least 5,000 Ft loses (min. odds: 1.80), you get 30% back as a Free Bet. It is automatically activated once per day when the losing ticket is settled. You can use the received Free Bet on any bet.';
+
+    if ($lang === 'en') {
+        if ((string)$bonusTrigger === 'BET') {
+            return $enFreeBet;
+        }
+
+        if ($source !== '' && mb_stripos($source, 'Ha egy legalább 5.000 Ft-os fogadásod veszít') !== false) {
+            return $enFreeBet;
+        }
+    }
+
+    if ($lang === 'hu' && (string)$bonusTrigger === 'BET') {
+        return $huFreeBet;
+    }
+
+    return $source;
+}
 
 // Sémakompatibilitás: régebbi DB-ben egyes oszlopok hiányozhatnak.
 $hasImageUrlCol = false;
@@ -129,7 +153,7 @@ if ($result) {
         $bonusAmount = (float)($row['bonus_amount'] ?? 0);
         $minDeposit = (float)($row['min_deposit'] ?? 0);
 
-        $amountText = 'Bónusz ajánlat';
+        $amountText = $lang === 'en' ? 'Bonus offer' : 'Bónusz ajánlat';
         if ($matchPercent > 0 && $maxBonusAmount > 0) {
             $amountText = number_format($matchPercent, 0, '', ' ') . '% max ' . number_format($maxBonusAmount, 0, '', ' ') . ' FT';
         } elseif ($bonusAmount > 0) {
@@ -139,13 +163,15 @@ if ($result) {
         $conditionText = '';
         $bonusTrigger = $row['bonus_trigger'] ?? 'DEPOSIT';
         if ($bonusTrigger === 'BET') {
-            $conditionText = 'Min. tét: ' . number_format($minDeposit, 0, '', ' ') . ' FT';
+            $conditionText = ($lang === 'en' ? 'Min. stake: ' : 'Min. tét: ') . number_format($minDeposit, 0, '', ' ') . ' FT';
         } else {
-            $conditionText = 'Min. befizetés: ' . number_format($minDeposit, 0, '', ' ') . ' FT';
+            $conditionText = ($lang === 'en' ? 'Min. deposit: ' : 'Min. befizetés: ') . number_format($minDeposit, 0, '', ' ') . ' FT';
         }
         if ($isStepBonus) {
-            $conditionText .= ' | Több lépcsős bónusz';
+            $conditionText .= $lang === 'en' ? ' | Multi-step bonus' : ' | Több lépcsős bónusz';
         }
+
+        $longDescription = localizeBonusDescription($row['description'] ?? '', $lang, $row['bonus_trigger'] ?? 'DEPOSIT');
 
         $bonuses[] = [
             'id' => $row['id'],
@@ -154,8 +180,8 @@ if ($result) {
             'amount' => $amountText,
             'condition' => $conditionText,
             'isStepBonus' => $isStepBonus,
-            'status' => $isGuest ? null : 'AKTÍV',
-            'longDescription' => $row['description'],
+            'status' => $isGuest ? null : ($lang === 'en' ? 'ACTIVE' : 'AKTÍV'),
+            'longDescription' => $longDescription,
             'image' => !empty($row['image_url']) ? $row['image_url'] : '../../img/logo.png',
             'hasExistingBonus' => $hasExistingBonus,
             'sportRestriction' => ($sportRestriction && $sportRestriction !== 'ANY') ? $sportRestriction : null,

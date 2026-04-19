@@ -21,7 +21,7 @@ $unreadStmt->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Értesítések | BetMatchBonus</title>
+    <title data-i18n="userProfile.notifications.pageTitle">Értesítések | BetMatchBonus</title>
     <link rel="stylesheet" href="../../css/RootColor/root.css">
     <link rel="stylesheet" href="../../css/Main/layout.css">
     <link rel="stylesheet" href="../../css/UserProfile/user_profile.css">
@@ -114,14 +114,14 @@ $unreadStmt->close();
             <div class="col-md-9">
                 <div class="profile-content">
                     <div class="notif-header">
-                        <h1 style="margin:0;"><i class="fas fa-bell"></i> Értesítések</h1>
+                        <h1 style="margin:0;"><i class="fas fa-bell"></i> <span data-i18n="userProfile.notifications.heading">Értesítések</span></h1>
                         <div class="d-flex gap-2 align-items-center">
                             <div class="notif-filter-btns btn-group">
-                                <button class="btn btn-outline-primary btn-sm active" data-filter="all">Összes</button>
-                                <button class="btn btn-outline-primary btn-sm" data-filter="unread">Olvasatlan</button>
+                                <button class="btn btn-outline-primary btn-sm active" data-filter="all" data-i18n="userProfile.notifications.filterAll">Összes</button>
+                                <button class="btn btn-outline-primary btn-sm" data-filter="unread" data-i18n="userProfile.notifications.filterUnread">Olvasatlan</button>
                             </div>
-                            <button class="btn btn-outline-success btn-sm" id="markAllBtn" title="Összes olvasottnak jelölése" style="display:none;">
-                                <i class="fas fa-check-double"></i> Mind olvasott
+                            <button class="btn btn-outline-success btn-sm" id="markAllBtn" title="Összes olvasottnak jelölése" data-i18n-title="userProfile.notifications.markAllReadTitle" style="display:none;">
+                                <i class="fas fa-check-double"></i> <span data-i18n="userProfile.notifications.markAllRead">Mind olvasott</span>
                             </button>
                         </div>
                     </div>
@@ -141,19 +141,33 @@ $unreadStmt->close();
     <?php include '../Components/footer.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../js/Main/language.js"></script>
+    <script src="../../js/Main/layout.js"></script>
     <script src="../../js/UserProfile/user_profile.js"></script>
     <script>
     const NOTIF_API = '../../backend/ApiRequest/UserProfile/get_notifications.php';
     let allNotifications = [];
     let currentFilter = 'all';
 
-    const TYPE_LABELS = {
-        ANNOUNCEMENT: 'Közlemény',
-        SYSTEM: 'Rendszer',
-        BONUS: 'Bónusz',
-        DEPOSIT: 'Befizetés',
-        WITHDRAWAL: 'Kifizetés'
-    };
+    function t(key, fallback) {
+        return (window.i18n ? window.i18n(key, fallback) : fallback);
+    }
+
+    function getCurrentLang() {
+        return (typeof window.i18nLang === 'function') ? window.i18nLang() : 'hu';
+    }
+
+    function getTypeLabel(type) {
+        const map = {
+            ANNOUNCEMENT: t('userProfile.notifications.typeAnnouncement', 'Közlemény'),
+            SYSTEM: t('userProfile.notifications.typeSystem', 'Rendszer'),
+            BONUS: t('userProfile.notifications.typeBonus', 'Bónusz'),
+            DEPOSIT: t('userProfile.notifications.typeDeposit', 'Befizetés'),
+            WITHDRAWAL: t('userProfile.notifications.typeWithdrawal', 'Kifizetés')
+        };
+        return map[type] || type;
+    }
+
     const TYPE_ICONS = {
         ANNOUNCEMENT: 'fa-bullhorn',
         SYSTEM: 'fa-cog',
@@ -171,7 +185,7 @@ $unreadStmt->close();
             renderNotifications();
         } catch {
             document.getElementById('notifLoader').innerHTML =
-                '<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Hiba az értesítések betöltésekor.</div>';
+                '<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> ' + t('userProfile.notifications.loadError', 'Hiba az értesítések betöltésekor.') + '</div>';
         }
     }
 
@@ -193,13 +207,13 @@ $unreadStmt->close();
             container.innerHTML = `
                 <div class="notif-empty">
                     <i class="fas fa-bell-slash"></i>
-                    <p>${currentFilter === 'unread' ? 'Nincs olvasatlan értesítésed.' : 'Még nincsenek értesítéseid.'}</p>
+                    <p>${currentFilter === 'unread' ? t('userProfile.notifications.noUnread', 'Nincs olvasatlan értesítésed.') : t('userProfile.notifications.noNotifications', 'Még nincsenek értesítéseid.')}</p>
                 </div>`;
             return;
         }
 
         container.innerHTML = filtered.map(n => {
-            const typeLabel = TYPE_LABELS[n.type] || n.type;
+            const typeLabel = getTypeLabel(n.type);
             const typeIcon = TYPE_ICONS[n.type] || 'fa-info-circle';
             const timeAgo = formatTimeAgo(n.created_at);
             return `
@@ -256,16 +270,17 @@ $unreadStmt->close();
     }
 
     function formatTimeAgo(dateStr) {
+        const lang = getCurrentLang();
         const date = new Date(dateStr);
         const now = new Date();
         const diff = Math.floor((now - date) / 1000);
 
-        if (diff < 60) return 'Most';
-        if (diff < 3600) return Math.floor(diff / 60) + ' perce';
-        if (diff < 86400) return Math.floor(diff / 3600) + ' órája';
-        if (diff < 604800) return Math.floor(diff / 86400) + ' napja';
+        if (diff < 60) return t('userProfile.notifications.timeNow', 'Most');
+        if (diff < 3600) return Math.floor(diff / 60) + ' ' + t('userProfile.notifications.timeMinutesAgo', 'perce');
+        if (diff < 86400) return Math.floor(diff / 3600) + ' ' + t('userProfile.notifications.timeHoursAgo', 'órája');
+        if (diff < 604800) return Math.floor(diff / 86400) + ' ' + t('userProfile.notifications.timeDaysAgo', 'napja');
 
-        return date.toLocaleDateString('hu-HU', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        return date.toLocaleDateString(lang === 'en' ? 'en-US' : 'hu-HU', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     }
 
     function escHtml(str) {
@@ -287,6 +302,9 @@ $unreadStmt->close();
     document.getElementById('markAllBtn').addEventListener('click', markAllRead);
 
     loadNotifications();
+    window.addEventListener('languageChanged', function () {
+        renderNotifications();
+    });
     </script>
 </body>
 </html>
