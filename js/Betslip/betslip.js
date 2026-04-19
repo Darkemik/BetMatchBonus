@@ -46,6 +46,21 @@ document.addEventListener('DOMContentLoaded', function() {
         return (parseFloat(value) || 0).toFixed(2).replace('.', ',');
     }
 
+    function getCurrentLang() {
+        const stored = String(localStorage.getItem('lang') || '').toLowerCase();
+        if (stored === 'en' || stored === 'hu') return stored;
+        return (typeof window.i18nLang === 'function' && window.i18nLang() === 'en') ? 'en' : 'hu';
+    }
+
+    function localizePickText(text) {
+        const src = String(text || '');
+        if (getCurrentLang() !== 'en') return src;
+
+        return src
+            .replace(/\bfelett\b/gi, 'over')
+            .replace(/\balatt\b/gi, 'under');
+    }
+
     function normalizeLiveKeyPart(value) {
         return String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
     }
@@ -131,28 +146,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
             let liveText = '';
             let liveTextClass = 'trend-neutral';
+            const lang = getCurrentLang();
             if (update.status === 'WON') {
                 row.classList.add('live-won');
-                liveText = 'Lezárva: nyertes';
+                liveText = (lang === 'en') ? 'Settled: won' : 'Lezárva: nyertes';
                 liveTextClass = 'trend-up';
             } else if (update.status === 'LOST') {
                 row.classList.add('live-lost');
-                liveText = 'Lezárva: vesztes';
+                liveText = (lang === 'en') ? 'Settled: lost' : 'Lezárva: vesztes';
                 liveTextClass = 'trend-down';
             } else if (update.live_odds && Number(update.live_odds) > 0) {
                 const liveOdds = parseFloat(update.live_odds).toFixed(2);
                 if (update.trend === 'up') {
-                    liveText = 'Live odds javult: ' + liveOdds;
+                    liveText = (lang === 'en' ? 'Live odds improved: ' : 'Live odds javult: ') + liveOdds;
                     liveTextClass = 'trend-up';
                 } else if (update.trend === 'down') {
-                    liveText = 'Live odds romlott: ' + liveOdds;
+                    liveText = (lang === 'en' ? 'Live odds worsened: ' : 'Live odds romlott: ') + liveOdds;
                     liveTextClass = 'trend-down';
                 } else {
-                    liveText = 'Live odds változatlan: ' + liveOdds;
+                    liveText = (lang === 'en' ? 'Live odds unchanged: ' : 'Live odds változatlan: ') + liveOdds;
                     liveTextClass = 'trend-flat';
                 }
             } else {
-                liveText = 'Live odds adat nem elérhető';
+                liveText = (lang === 'en') ? 'Live odds data unavailable' : 'Live odds adat nem elérhető';
                 liveTextClass = 'trend-neutral';
             }
 
@@ -2092,7 +2108,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 ${navMatchId ? '<i class="fas fa-external-link-alt elozmeny-match-link-icon"></i>' : ''}
                             </div>
                             <div class="elozmeny-market">${escapeHtml(item.market)}</div>
-                            <div class="elozmeny-pick">${t('betslip.tipLabel', 'Tipp:')} <strong>${escapeHtml(item.pick)}</strong> @ ${parseFloat(item.odds).toFixed(2)}</div>
+                            <div class="elozmeny-pick">${t('betslip.tipLabel', 'Tipp:')} <strong>${escapeHtml(localizePickText(item.pick))}</strong> @ ${parseFloat(item.odds).toFixed(2)}</div>
                             <div class="elozmeny-live-meta" style="display:none"></div>
                         </div>
                     `;
