@@ -25,6 +25,7 @@ require_once "../../backend/connect.php";
     <?php include '../../frontend/Components/cookie_consent.php'; ?>
     <?php include '../../frontend/Components/disclaimer.php'; ?>
 
+    
     <header class="header">
         <div class="header-top-row">
             <button class="navbar-toggler navbar-dark" type="button" data-bs-toggle="collapse"
