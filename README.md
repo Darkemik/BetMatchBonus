@@ -49,7 +49,6 @@ A **BetMatchBonus** egy PHP + MySQL alapú sportfogadási webalkalmazás demó/p
    - `php backend/connect.php`
 6. Ezt követően futtasd az összesített adatfrissítést:
    - `php backend/refresh_all.php`
-7. Ellenőrizd, hogy a `backend/uploads/` könyvtár írható.
 
 ## Futtatás
 
