@@ -61,7 +61,7 @@ A **BetMatchBonus** egy PHP + MySQL alapú sportfogadási webalkalmazás demó/p
 > Fontos: fejlesztés előtt ellenőrizd a `backend/DataBase/seed_admins.php` tartalmát, és használj saját, biztonságos admin fiókadatokat.
 ## Adatfrissítés / karbantartás
 
-A `backend/refresh_all.php` (köznapi hivatkozásban gyakran „refreshall.php”) script több feladatot futtat egyben:
+A `backend/refresh_all.php` script több feladatot futtat egyben:
 
 - bónusz státuszok frissítése,
 - sportadatok szinkronizálása,
