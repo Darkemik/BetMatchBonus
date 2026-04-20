@@ -60,6 +60,240 @@ function decodeSyncOutput(string $output): array
     throw new RuntimeException('Érvénytelen sync JSON kimenet: ' . $short);
 }
 
+function normalizeBonusToken(string $value): string
+{
+    $value = mb_strtolower(trim($value), 'UTF-8');
+    $value = strtr($value, [
+        'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ö' => 'o', 'ő' => 'o',
+        'ú' => 'u', 'ü' => 'u', 'ű' => 'u',
+    ]);
+    $value = preg_replace('/[^a-z0-9]+/', '', $value);
+    return $value ?? '';
+}
+
+function buildBonusLookup(mysqli $conn): array
+{
+    $rows = [];
+    $byCodeNorm = [];
+
+    $res = $conn->query('SELECT id, code, name FROM BonusCodes');
+    if ($res) {
+        while ($row = $res->fetch_assoc()) {
+            $id = (int)($row['id'] ?? 0);
+            if ($id <= 0) {
+                continue;
+            }
+
+            $code = (string)($row['code'] ?? '');
+            $name = (string)($row['name'] ?? '');
+
+            $entry = [
+                'id' => $id,
+                'code' => $code,
+                'name' => $name,
+                'code_norm' => normalizeBonusToken($code),
+                'name_norm' => normalizeBonusToken($name),
+            ];
+            $rows[] = $entry;
+
+            if ($entry['code_norm'] !== '' && !isset($byCodeNorm[$entry['code_norm']])) {
+                $byCodeNorm[$entry['code_norm']] = $id;
+            }
+        }
+    }
+
+    return ['rows' => $rows, 'by_code_norm' => $byCodeNorm];
+}
+
+function resolveBonusIdFromSlug(string $slug, array $lookup): int
+{
+    $slugNorm = normalizeBonusToken($slug);
+    if ($slugNorm === '') {
+        return 0;
+    }
+
+    $byCodeNorm = $lookup['by_code_norm'] ?? [];
+    $rows = $lookup['rows'] ?? [];
+
+    $aliasToCode = [
+        'weekdays' => 'BONUSZHETKOZNAP5K',
+        'weekend' => 'HETVEGI5K',
+        'darts' => 'DARTSBONUSZ5K',
+        'cashback' => 'CASHBACK30',
+        'daily' => 'TOP_REWARD_DAILY',
+        'nb1' => 'NB1DERBY',
+        'esport' => 'ESPORT5K',
+        'admin' => '__ADMIN_BONUS__',
+    ];
+
+    if (isset($aliasToCode[$slugNorm])) {
+        $codeNorm = normalizeBonusToken($aliasToCode[$slugNorm]);
+        if (isset($byCodeNorm[$codeNorm])) {
+            return (int)$byCodeNorm[$codeNorm];
+        }
+    }
+
+    if ($slugNorm === 'bmbbirthday') {
+        foreach ($rows as $r) {
+            $nameNorm = (string)($r['name_norm'] ?? '');
+            if (strpos($nameNorm, 'betmatch') !== false && strpos($nameNorm, 'szuletesnapi') !== false) {
+                return (int)$r['id'];
+            }
+        }
+    }
+
+    if ($slugNorm === 'birthday') {
+        foreach ($rows as $r) {
+            $nameNorm = (string)($r['name_norm'] ?? '');
+            if (strpos($nameNorm, 'szuletesnapi') !== false && strpos($nameNorm, 'betmatch') === false) {
+                return (int)$r['id'];
+            }
+        }
+    }
+
+    if (isset($byCodeNorm[$slugNorm])) {
+        return (int)$byCodeNorm[$slugNorm];
+    }
+
+    foreach ($rows as $r) {
+        $nameNorm = (string)($r['name_norm'] ?? '');
+        if ($nameNorm !== '' && strpos($nameNorm, $slugNorm) !== false) {
+            return (int)$r['id'];
+        }
+    }
+
+    return 0;
+}
+
+/**
+ * Feltöltött bónusz képek visszaszinkronizálása az adatbázisba.
+ *
+ * Fájlnév minták:
+ *   - bonus_{bonusId}_...ext
+ *   - bonusz_{slug}.ext (pl. bonusz_weekdays.jpg)
+ */
+function syncBonusImagesFromUploads(mysqli $conn): array
+{
+    $uploadDir = __DIR__ . '/uploads/bonuses';
+    if (!is_dir($uploadDir)) {
+        return [
+            'status' => 'skipped',
+            'updated' => 0,
+            'matched' => 0,
+            'missing_bonus' => 0,
+            'invalid_names' => 0,
+            'message' => 'uploads/bonuses mappa nem található',
+        ];
+    }
+
+    $files = glob($uploadDir . '/*.{jpg,jpeg,png,gif,svg,webp,JPG,JPEG,PNG,GIF,SVG,WEBP}', GLOB_BRACE);
+    if (!$files) {
+        return [
+            'status' => 'ok',
+            'updated' => 0,
+            'matched' => 0,
+            'missing_bonus' => 0,
+            'invalid_names' => 0,
+            'message' => 'Nincs szinkronizálható bónuszkép',
+        ];
+    }
+
+    $latestByBonusId = [];
+    $bonusLookup = buildBonusLookup($conn);
+    $invalidNames = 0;
+
+    foreach ($files as $filePath) {
+        $filename = basename($filePath);
+        $bonusId = 0;
+
+        if (preg_match('/^bonus_(\d+)(?:_|\.).+/i', $filename, $matches)) {
+            $bonusId = (int)$matches[1];
+        } elseif (preg_match('/^bonusz?_([a-z0-9_-]+)\.[a-z0-9]+$/i', $filename, $matches)) {
+            $bonusId = resolveBonusIdFromSlug((string)$matches[1], $bonusLookup);
+        }
+
+        if ($bonusId <= 0) {
+            $invalidNames++;
+            continue;
+        }
+
+        $mtime = @filemtime($filePath) ?: 0;
+        if (!isset($latestByBonusId[$bonusId]) || $mtime >= $latestByBonusId[$bonusId]['mtime']) {
+            $latestByBonusId[$bonusId] = [
+                'filename' => $filename,
+                'mtime' => $mtime,
+            ];
+        }
+    }
+
+    if (!$latestByBonusId) {
+        return [
+            'status' => 'ok',
+            'updated' => 0,
+            'matched' => 0,
+            'missing_bonus' => 0,
+            'invalid_names' => $invalidNames,
+            'message' => 'Nincs feldolgozható bónuszkép fájlnév minta alapján',
+        ];
+    }
+
+    $selectStmt = $conn->prepare('SELECT image_url, code FROM BonusCodes WHERE id = ? LIMIT 1');
+    $updateStmt = $conn->prepare('UPDATE BonusCodes SET image_url = ? WHERE id = ?');
+    if (!$selectStmt || !$updateStmt) {
+        throw new RuntimeException('DB statement hiba a bónusz képszinkron közben: ' . $conn->error);
+    }
+
+    $updated = 0;
+    $matched = 0;
+    $missingBonus = 0;
+
+    foreach ($latestByBonusId as $bonusId => $item) {
+        $expectedUrl = '../../backend/uploads/bonuses/' . $item['filename'];
+
+        $selectStmt->bind_param('i', $bonusId);
+        $selectStmt->execute();
+        $row = $selectStmt->get_result()->fetch_assoc();
+
+        if (!$row) {
+            $missingBonus++;
+            continue;
+        }
+
+        $bonusCode = (string)($row['code'] ?? '');
+        if ($bonusCode === '__ADMIN_FREEBET__') {
+            $matched++;
+            continue;
+        }
+
+        $currentUrl = (string)($row['image_url'] ?? '');
+        if ($currentUrl === $expectedUrl) {
+            $matched++;
+            continue;
+        }
+
+        $updateStmt->bind_param('si', $expectedUrl, $bonusId);
+        if (!$updateStmt->execute()) {
+            throw new RuntimeException('DB update hiba (bonus_id=' . $bonusId . '): ' . $updateStmt->error);
+        }
+
+        if ($updateStmt->affected_rows >= 0) {
+            $updated++;
+        }
+    }
+
+    $selectStmt->close();
+    $updateStmt->close();
+
+    return [
+        'status' => 'ok',
+        'updated' => $updated,
+        'matched' => $matched,
+        'missing_bonus' => $missingBonus,
+        'invalid_names' => $invalidNames,
+        'message' => 'Bónuszképek szinkron kész',
+    ];
+}
+
 // ── 0. SEED CHECK — Ha üresek a táblák, automatikusan feltölti ──
 try {
     $needPostal = $conn->query("SHOW TABLES LIKE 'PostalCodes'")->num_rows === 0
@@ -137,6 +371,28 @@ try {
 } catch (Throwable $e) {
     $hasError = true;
     $results[] = ['step' => 'Bónusz frissítés', 'status' => 'hiba', 'message' => $e->getMessage()];
+}
+
+// ── 1/B. BÓNUSZ KÉPEK SZINKRON (UPLOADS → DB) ──
+$stepStart = microtime(true);
+try {
+    $imgSync = syncBonusImagesFromUploads($conn);
+    $results[] = [
+        'step' => 'Bónusz képek szinkron',
+        'status' => ($imgSync['status'] ?? 'ok') === 'ok' ? 'ok' : 'ok',
+        'message' => sprintf(
+            '%s | frissítve: %d, már egyezett: %d, hiányzó bónusz: %d, érvénytelen fájlnév: %d',
+            $imgSync['message'] ?? 'Kész',
+            (int)($imgSync['updated'] ?? 0),
+            (int)($imgSync['matched'] ?? 0),
+            (int)($imgSync['missing_bonus'] ?? 0),
+            (int)($imgSync['invalid_names'] ?? 0)
+        ),
+        'ms' => round((microtime(true) - $stepStart) * 1000),
+    ];
+} catch (Throwable $e) {
+    $hasError = true;
+    $results[] = ['step' => 'Bónusz képek szinkron', 'status' => 'hiba', 'message' => $e->getMessage()];
 }
 
 // ── 2. SPORTADATOK SZINKRONIZÁLÁSA (API → DB) ───
