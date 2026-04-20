@@ -172,7 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
             market.selections.forEach(function(sel) {
                 const oddsValue = parseFloat(sel.odds) || 0;
                 const isLockedByOdds = oddsValue <= 1;
-                const state = window.BetslipLogic ? window.BetslipLogic.getButtonState(homeTeam, awayTeam, sel.name, marketFullName) : null;
+                const state = window.BetslipLogic ? window.BetslipLogic.getButtonState(homeTeam, awayTeam, sel.name, marketFullName, currentMatchId || 0) : null;
                 const stateClass = state ? ' ' + state : '';
                 const lockClass = isLockedByOdds ? ' disabled market-locked' : '';
                 const isDisabled = (state === 'disabled' || isLockedByOdds) ? ' disabled' : '';

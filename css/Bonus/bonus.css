@@ -2,6 +2,25 @@
     display: none !important;
 }
 
+/* Keep all bonus-page text readable on dark backgrounds. */
+.bonus-page,
+.bonus-page p,
+.bonus-page span,
+.bonus-page div,
+.bonus-page li,
+.bonus-page strong,
+.bonus-page b,
+.bonus-page h1,
+.bonus-page h2,
+.bonus-page h3,
+.bonus-page h4,
+.bonus-page h5,
+.bonus-page h6,
+.bonus-page a,
+.bonus-page button {
+    color: #f5f7ff;
+}
+
 .bonus-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -76,7 +95,7 @@
 .doboz-back-title {
     font-weight: 700;
     font-size: 1.1rem;
-    color: #ffa200;
+    color: #ffd27a;
     margin: 0;
 }
 
@@ -86,11 +105,45 @@
     overflow-y: auto;
 }
 
+/* Enforce high contrast text in the back-side description content. */
+.doboz-back-body,
+.doboz-back-body *,
+.doboz-back-body .bonus-back-list,
+.doboz-back-body .bonus-back-list li,
+.doboz-back-body .doboz-back-text {
+    color: #f5f7ff !important;
+}
+
 .doboz-back-text {
     color: #ffffff;
     font-size: 0.88rem;
     line-height: 1.7;
     margin: 0;
+}
+
+.bonus-back-list {
+    margin: 12px 0 0 20px;
+    padding: 0;
+    color: #f5f7ff;
+    font-size: 0.88rem;
+    line-height: 1.7;
+}
+
+.bonus-back-list li {
+    margin-bottom: 10px;
+    color: #f5f7ff;
+}
+
+.bonus-back-list li:last-child {
+    margin-bottom: 0;
+}
+
+.bonus-back-important {
+    margin-top: 14px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: rgba(255, 162, 0, 0.1);
+    border-left: 3px solid rgba(255, 162, 0, 0.75);
 }
 
 .doboz-back-footer {
@@ -102,7 +155,7 @@
 .doboz-back-close {
     padding: 10px 16px;
     background: transparent;
-    color: #7eb8e8;
+    color: #cce7ff;
     border: 1px solid rgba(126, 184, 232, 0.3);
     border-radius: 10px;
     cursor: pointer;
@@ -114,7 +167,7 @@
 
 .doboz-back-close:hover {
     background: rgba(126, 184, 232, 0.1);
-    color: #c5dff5;
+    color: #e6f3ff;
     border-color: rgba(126, 184, 232, 0.6);
 }
 
@@ -170,7 +223,7 @@
 .doboz-cim {
     font-weight: 700;
     font-size: 1.05rem;
-    color: #f0f0f0;
+    color: #f7f9ff;
     margin: 0;
     letter-spacing: 0.3px;
 }
@@ -181,7 +234,7 @@
     border-radius: 0 8px 8px 0;
     padding: 10px 12px;
     font-size: 0.86rem;
-    color: #b0b8c8;
+    color: #edf2ff;
     line-height: 1.5;
     flex: 0 0 auto;
     overflow: visible;
@@ -204,7 +257,7 @@
 }
 
 .bonus-meta-info {
-    color: #9ee3ff;
+    color: #d4f0ff;
     background: rgba(95, 180, 255, 0.12);
     border-left: 3px solid rgba(95, 180, 255, 0.9);
 }
@@ -244,7 +297,7 @@
 .tobb-info-gomb {
     padding: 9px 16px;
     background: transparent;
-    color: #7eb8e8;
+    color: #cce7ff;
     border: 1px solid rgba(126, 184, 232, 0.3);
     border-radius: 10px;
     cursor: pointer;
@@ -256,7 +309,7 @@
 
 .tobb-info-gomb:hover {
     background: rgba(126, 184, 232, 0.1);
-    color: #c5dff5;
+    color: #e6f3ff;
     border-color: rgba(126, 184, 232, 0.6);
     transform: translateY(-2px);
 }

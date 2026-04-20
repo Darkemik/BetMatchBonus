@@ -547,6 +547,38 @@ foreach ($current_bonuses as $cb) {
                 if (src === 'Vesztes fogadás cashback (30% Free Bet)') {
                     return (window.i18n ? window.i18n('userProfile.myBonuses.lossBetCashbackName', 'Losing Bet Cashback (30% Free Bet)') : 'Losing Bet Cashback (30% Free Bet)');
                 }
+                const weekdayPattern = /^B[ÓO]NUSZ\s+H[ÉE]TK[ÖO]ZNAP/i;
+                if (weekdayPattern.test(src)) {
+                    return src.replace(weekdayPattern, 'Weekday Bonus');
+                }
+                const dailyTopPattern = /^Napi\s+Top\s+Jutalom/i;
+                if (dailyTopPattern.test(src)) {
+                    return src.replace(dailyTopPattern, 'Daily Top Reward');
+                }
+                const nb1Pattern = /^NB1\s+DERBY\s+B[ÓO]NUSZ/i;
+                if (nb1Pattern.test(src)) {
+                    return src.replace(nb1Pattern, 'NB1 Derby Bonus');
+                }
+                const birthdayPattern = /^SZ[ÜU]LET[ÉE]SNAPI\s+B[ÓO]NUSZ/i;
+                if (birthdayPattern.test(src)) {
+                    return src.replace(birthdayPattern, 'Birthday Bonus');
+                }
+                const betmatchBirthdayPattern = /^BETMATCH\s+SZ[ÜU]LET[ÉE]SNAPI\s+B[ÓO]NUSZ/i;
+                if (betmatchBirthdayPattern.test(src)) {
+                    return src.replace(betmatchBirthdayPattern, 'BetMatch Birthday Bonus');
+                }
+                const weekendPattern = /^H[ÉE]TV[ÉE]GI\s+B[ÓO]NUSZ/i;
+                if (weekendPattern.test(src)) {
+                    return src.replace(weekendPattern, 'Weekend Bonus');
+                }
+                const esportPattern = /^ESPORT\s+B[ÓO]NUSZ/i;
+                if (esportPattern.test(src)) {
+                    return src.replace(esportPattern, 'Esport Bonus');
+                }
+                const adminBonusPattern = /^ADMIN\s+B[ÓO]NUSZ/i;
+                if (adminBonusPattern.test(src)) {
+                    return src.replace(adminBonusPattern, 'Admin Bonus');
+                }
                 const dartsPattern = /^DARTS\s+B[ÓO]NUSZ\s*\(([^)]+)\)$/i;
                 const match = src.match(dartsPattern);
                 if (!match) return src;
@@ -563,8 +595,53 @@ foreach ($current_bonuses as $cb) {
 
                 const normalizedTitle = String(rawTitle || '').trim();
                 const isDartsBonus = /^DARTS\s+B[ÓO]NUSZ\s*\(([^)]+)\)$/i.test(normalizedTitle);
+                const isNb1DerbyBonus = /^NB1\s+DERBY\s+B[ÓO]NUSZ/i.test(normalizedTitle);
+                const isWeekdayBonus = /^B[ÓO]NUSZ\s+H[ÉE]TK[ÖO]ZNAP/i.test(normalizedTitle);
+                const isDailyTopBonus = /^Napi\s+Top\s+Jutalom/i.test(normalizedTitle);
+                const isWeekendBonus = /^H[ÉE]TV[ÉE]GI\s+B[ÓO]NUSZ/i.test(normalizedTitle);
+                const isEsportBonus = /^ESPORT\s+B[ÓO]NUSZ/i.test(normalizedTitle);
+                const isBirthdayBonus = /^SZ[ÜU]LET[ÉE]SNAPI\s+B[ÓO]NUSZ/i.test(normalizedTitle);
+                const isBetmatchBirthdayBonus = /^BETMATCH\s+SZ[ÜU]LET[ÉE]SNAPI\s+B[ÓO]NUSZ/i.test(normalizedTitle);
+                const isAdminFreeBet = /^ADMIN\s+FREE\s+BET/i.test(normalizedTitle);
+                const isAdminBonus = /^ADMIN\s+B[ÓO]NUSZ/i.test(normalizedTitle);
+
+                if (isWeekdayBonus && src.includes('Hétfőtől péntekig minden nap elérhető feltöltési bónusz')) {
+                    return 'Weekday deposit bonus available every day from Monday to Friday. How can you activate it? 1) Deposit at least 3,000 FT to your account. 2) You receive 100% of your deposit as bonus, up to 5,000 FT. Example: 3,000 FT deposit = 3,000 FT bonus, 5,000 FT deposit = 5,000 FT bonus, 10,000 FT deposit = 5,000 FT bonus (max). 3) The received bonus must be wagered 3 times before it becomes withdrawable. So if you received a 5,000 FT bonus, you need to place bets worth 15,000 FT. 4) The maximum winnings are 5x the bonus amount (25,000 FT). Important: This bonus can only be activated on weekdays (Monday to Friday), from 08:00 in the morning; it is not available on weekends.';
+                }
+
+                if (isDailyTopBonus && src.includes('Automatikus napi jutalom a top befizető, top fogadó és top nyertes számára')) {
+                    return 'Automatic daily reward for the top depositor, top bettor, and top winner.';
+                }
                 if (isDartsBonus && src.includes('Darts rajongóknak szóló exkluzív bónusz')) {
                     return 'Exclusive bonus for darts fans! How to get it? 1) Place a bet worth at least 10,000 FT only on darts matches. 2) Your bet must include at least 2 events (2-leg combo) with a minimum total odds of 2.00. 3) After your bet is settled and evaluated, you receive 5,000 FT bonus money to your bonus balance. 4) The received 5,000 FT bonus must be wagered 2x (10,000 FT wager volume) before it becomes withdrawable. 5) Maximum withdrawable amount from this bonus is 5x (25,000 FT). Important: after activation, you have 48 hours to use this bonus.';
+                }
+
+                if (isNb1DerbyBonus && src.includes('Az NB1 legnagyobb derbiéhez kapcsolódó exkluzív élő fogadási bónusz')) {
+                    return 'Exclusive live betting bonus for the biggest NB1 derby! How to get it? 1) Wait until the Ujpest FC vs Ferencvarosi TC match starts. 2) During the match (as a live bet), place at least a 5,000 FT bet with minimum 2.00 odds. 3) After your bet is settled, you receive a 5,000 FT Free Bet reward. 4) For Free Bets, the stake is not refunded; only the net winnings are paid out. 5) The maximum withdrawable amount from this bonus is 5x (25,000 FT). Important: valid only for live betting, pre-match bets do not count.';
+                }
+
+                if (isWeekendBonus && src.includes('Hétvégi extra — szombaton és vasárnap elérhető ingyenes fogadás')) {
+                    return 'Weekend extra Free Bet available on Saturday and Sunday! How does it work? 1) Deposit at least 5,000 FT on Saturday or Sunday. 2) In return, you receive a 5,000 FT Free Bet. 3) The Free Bet must be used in a 2-leg combo (at least 2 events). 4) Total odds must be at least 2.00, and each event must have minimum 1.40 odds. 5) No wagering requirement - winnings are withdrawable immediately (the stake is not refunded, only the net winnings are paid). 6) The maximum withdrawable amount from this bonus is 5x (25,000 FT). Tip: use it for the biggest weekend matches!';
+                }
+
+                if (isEsportBonus && src.includes('Esport rajongóknak szóló bónusz')) {
+                    return 'Bonus for esports fans - CS2, League of Legends, Dota 2, and other esports matches! How does it work? 1) Place a bet of at least 5,000 FT on any esports match. 2) The bet must include at least 3 events (3-leg combo). 3) Each event must have minimum 1.30 odds, and total odds must reach at least 3.00. 4) After your bet is settled, you receive 5,000 FT bonus money. 5) The bonus must be wagered 3 times (15,000 FT total stake). 6) The maximum withdrawable amount from this bonus is 5x (25,000 FT). Try esports betting and claim the extra bonus!';
+                }
+
+                if (isBirthdayBonus && src.includes('Boldog születésnapot! Ajándékunk neked')) {
+                    return 'Happy Birthday! Our gift for you: a 5,000 FT bonus on your special day. How can you claim it? 1) On your birthday (based on your registration date), request the bonus in your profile or via customer support. 2) After approval, 5,000 FT bonus money is credited to your bonus balance. 3) You can bet with this bonus on any sport and any match - there are no sport restrictions. 4) There is no wagering requirement, so your winnings become withdrawable immediately. 5) The maximum withdrawable amount from this bonus is 5x (25,000 FT). You can claim it once every year on your birthday!';
+                }
+
+                if (isBetmatchBirthdayBonus && src.includes('A BetMatchBonus születésnapi különleges promóciója')) {
+                    return 'BetMatchBonus birthday special promotion - available in limited quantity! How does it work? 1) On the BetMatchBonus anniversary, the first 500 users who claim it receive a 5,000 FT bonus. 2) Request the bonus in your profile or via customer support - first come, first served. 3) You can bet with this bonus on any sport and any match - there are no sport restrictions. 4) There is no wagering requirement, so your winnings become withdrawable immediately. 5) The maximum withdrawable amount from this bonus is 5x (25,000 FT). Important: only 500 bonuses are available in total, so do not miss it!';
+                }
+
+                if (isAdminFreeBet || src.includes('Admin által adott free bet')) {
+                    return 'Free Bet granted manually by an admin.';
+                }
+
+                if (isAdminBonus || src.includes('Admin által manuálisan adott bónusz pénz')) {
+                    return 'Bonus money manually granted by an admin to the user\'s bonus balance.';
                 }
 
                 return src;
@@ -640,6 +717,38 @@ foreach ($current_bonuses as $cb) {
             const src = String(raw || '').trim();
             if (src === 'Vesztes fogadás cashback (30% Free Bet)') {
                 return (window.i18n ? window.i18n('userProfile.myBonuses.lossBetCashbackName', 'Losing Bet Cashback (30% Free Bet)') : 'Losing Bet Cashback (30% Free Bet)');
+            }
+            const weekdayPattern = /^B[ÓO]NUSZ\s+H[ÉE]TK[ÖO]ZNAP/i;
+            if (weekdayPattern.test(src)) {
+                return src.replace(weekdayPattern, 'Weekday Bonus');
+            }
+            const dailyTopPattern = /^Napi\s+Top\s+Jutalom/i;
+            if (dailyTopPattern.test(src)) {
+                return src.replace(dailyTopPattern, 'Daily Top Reward');
+            }
+            const nb1Pattern = /^NB1\s+DERBY\s+B[ÓO]NUSZ/i;
+            if (nb1Pattern.test(src)) {
+                return src.replace(nb1Pattern, 'NB1 Derby Bonus');
+            }
+            const birthdayPattern = /^SZ[ÜU]LET[ÉE]SNAPI\s+B[ÓO]NUSZ/i;
+            if (birthdayPattern.test(src)) {
+                return src.replace(birthdayPattern, 'Birthday Bonus');
+            }
+            const betmatchBirthdayPattern = /^BETMATCH\s+SZ[ÜU]LET[ÉE]SNAPI\s+B[ÓO]NUSZ/i;
+            if (betmatchBirthdayPattern.test(src)) {
+                return src.replace(betmatchBirthdayPattern, 'BetMatch Birthday Bonus');
+            }
+            const weekendPattern = /^H[ÉE]TV[ÉE]GI\s+B[ÓO]NUSZ/i;
+            if (weekendPattern.test(src)) {
+                return src.replace(weekendPattern, 'Weekend Bonus');
+            }
+            const esportPattern = /^ESPORT\s+B[ÓO]NUSZ/i;
+            if (esportPattern.test(src)) {
+                return src.replace(esportPattern, 'Esport Bonus');
+            }
+            const adminBonusPattern = /^ADMIN\s+B[ÓO]NUSZ/i;
+            if (adminBonusPattern.test(src)) {
+                return src.replace(adminBonusPattern, 'Admin Bonus');
             }
             const dartsPattern = /^DARTS\s+B[ÓO]NUSZ\s*\(([^)]+)\)$/i;
             const match = src.match(dartsPattern);

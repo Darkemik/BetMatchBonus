@@ -208,8 +208,45 @@ document.addEventListener('DOMContentLoaded', function() {
         let minOddsPerEvent = null;
         const selectionCount = ticketItems.length;
         const hasDailyTip = ticketItems.some(item => item.isDailyTip);
+        const ignoredOddsIndexes = new Set();
 
-        ticketItems.forEach(item => {
+        const ignoreLowerOddsFromPair = (idxA, idxB) => {
+            const oddsA = parseFloat(ticketItems[idxA] && ticketItems[idxA].odds) || 0;
+            const oddsB = parseFloat(ticketItems[idxB] && ticketItems[idxB].odds) || 0;
+
+            if (oddsA >= oddsB) {
+                ignoredOddsIndexes.add(idxB);
+            } else {
+                ignoredOddsIndexes.add(idxA);
+            }
+        };
+
+        // Speciális szabály: 1X2 döntetlen + összes gól 0,5 alatt ugyanazon meccsen
+        // esetén a döntetlen ne szorzódjon bele, csak a 0,5 alatti odds számítson.
+        for (let i = 0; i < ticketItems.length; i++) {
+            for (let j = i + 1; j < ticketItems.length; j++) {
+                if (!isSameSelectionEvent(ticketItems[i], ticketItems[j])) continue;
+
+                const a = analyzeComboSelection(ticketItems[i]);
+                const b = analyzeComboSelection(ticketItems[j]);
+                const aNoGoalEquivalent = a.isNoGoalEquivalentPick;
+                const bNoGoalEquivalent = b.isNoGoalEquivalentPick;
+
+                if ((a.is1X2 && a.isDrawPick && bNoGoalEquivalent) || (b.is1X2 && b.isDrawPick && aNoGoalEquivalent)) {
+                    ignoreLowerOddsFromPair(i, j);
+                } else if (aNoGoalEquivalent && bNoGoalEquivalent) {
+                    ignoreLowerOddsFromPair(i, j);
+                } else if ((aNoGoalEquivalent && b.isLastGoalNoGoalPick) || (bNoGoalEquivalent && a.isLastGoalNoGoalPick)) {
+                    ignoreLowerOddsFromPair(i, j);
+                } else if ((a.isTeamWinPick && b.isOverHalfGoalTotal) || (b.isTeamWinPick && a.isOverHalfGoalTotal)) {
+                    ignoreLowerOddsFromPair(i, j);
+                }
+            }
+        }
+
+        ticketItems.forEach((item, idx) => {
+            if (ignoredOddsIndexes.has(idx)) return;
+
             const itemOdds = parseFloat(item.odds) || 0;
             if (itemOdds > 0) {
                 totalOdds *= itemOdds;
@@ -430,7 +467,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         },
 
-        getButtonState: function(homeTeam, awayTeam, pick, market) {
+        getButtonState: function(homeTeam, awayTeam, pick, market, matchId) {
             var inTicket = ticketItems.some(function(item) {
                 return item.homeTeam === homeTeam && 
                        item.awayTeam === awayTeam && 
@@ -454,7 +491,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 awayTeam: awayTeam,
                 pick: pick,
                 market: market,
-                matchId: 0
+                matchId: parseInt(matchId, 10) || 0
             };
             if (findMarketComboConflictWithCandidate(candidateItem)) {
                 return 'disabled';
@@ -516,6 +553,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const away = normalizeComboText(item && item.awayTeam);
 
         const is1X2 = window.BetslipLogic.is1X2Market(item && item.market);
+        const is1X2GoalsComboMarket = market.includes('1x2 & golok szama') || market.includes('1x2 and goals') || market.includes('1x2 + goals');
+        const is1X2BttsComboMarket = market.includes('1x2 - mindket csapat szerez golt') || market.includes('1x2 & mindket csapat szerez golt') || market.includes('1x2 and both teams to score') || market.includes('1x2 & both teams to score');
+        const is1X2GoalsBttsComboMarket = (market.includes('1x2 & golok szama') || market.includes('1x2 and goals')) && (market.includes('mindket csapat szerez golt') || market.includes('both teams to score') || market.includes('btts'));
+        const isAnyRestricted1X2ComboMarket = is1X2GoalsComboMarket || is1X2BttsComboMarket || is1X2GoalsBttsComboMarket;
+        const isPlain1X2Market = is1X2 && !isAnyRestricted1X2ComboMarket;
         const isCorrectScore = window.BetslipLogic.isCorrectScoreMarket(item && item.market);
 
         const hasGoalWord = market.includes('gol') || market.includes('goal');
@@ -523,8 +565,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const isTeamToScore = market.includes('melyik csapat szerez golt') || market.includes('which team scores');
         const isHalfTimeFullTime = market.includes('felido/vegeredmeny') || market.includes('1. felido/vegeredmeny') || market.includes('half time/full time') || market.includes('1st half/full time');
         const isHalfTime = (market.includes('felido') || market.includes('half time') || market.includes('1st half')) && !isHalfTimeFullTime;
+        const isHandicap = market.includes('hendikep') || market.includes('handicap');
+        const isDoubleChance = market.includes('ketesely') || market.includes('ketsely') || market.includes('double chance');
+        const isDrawNoBet = market.includes('draw no bet') ||
+            market.includes('dnb') ||
+            (market.includes('dontetlennel') &&
+                market.includes('tet') &&
+                (market.includes('vissza jar') || market.includes('visszajar')));
         const isPlayerToScore = market.includes('jatekos golt szerez') || market.includes('player to score') || market.includes('goalscorer') || market.includes('anytime scorer');
         const isFirstLastGoal = market.includes('elso gol') || market.includes('1. gol') || market.includes('first goal') || market.includes('utolso gol') || market.includes('last goal');
+        const isLastGoalMarket = market.includes('utolso gol') || market.includes('last goal');
+        const isFirstGoalHowMarket = (market.includes('hogyan szerzik') && (market.includes('elso gol') || market.includes('1. gol'))) || market.includes('how is the first goal scored');
+        const isFirstGoalTime10Market = (market.includes('mikor szerzik') && (market.includes('elso gol') || market.includes('1. gol')) && market.includes('10 perces')) || market.includes('when is the first goal scored') && market.includes('10-minute');
+        const isFirstGoalTime15Market = (market.includes('mikor szerzik') && (market.includes('elso gol') || market.includes('1. gol')) && market.includes('15 perces')) || market.includes('when is the first goal scored') && market.includes('15-minute');
+        const isPenaltyGoalMarket = market.includes('buntetobol golt szerez') || market.includes('penalty goal');
+        const isOwnGoalMarket = market.includes('lesz ongol') || market.includes('will there be an own goal');
+        const isSubScorerMarket = market.includes('cserejatekos szerez golt') || market.includes('substitute scores');
         const isWinToNil = market.includes('kapott gol nelkuli gyozelem') || market.includes('kapott gol nelkul') || market.includes('win to nil') || market.includes('clean sheet');
         const isGeneralScoringMarket = market.includes('golt szerez') || market.includes('to score') || market.includes('scores');
 
@@ -557,15 +613,44 @@ document.addEventListener('DOMContentLoaded', function() {
             market.includes('match under') ||
             market.includes('over/under')
         ) && !isTeamGoalsMarket;
+        const isGoalsRangeMarket = (market.includes('golok szama') && market.includes('tartomany')) || market.includes('goals range');
+        const isOddGoalsMarket = hasGoalWord && (market.includes('paratlan') || market.includes('odd'));
 
         const isGoalRelated = isTotalGoalsMarket || isTeamGoalsMarket || isBtts || isTeamToScore || isPlayerToScore || isFirstLastGoal || isWinToNil || isGeneralScoringMarket;
         const lineValue = parseGoalsLine((item && item.pick) || (item && item.market) || '');
+        const isUnderHalfGoalTotal = isTotalGoalsMarket && isUnderPick && lineValue !== null && lineValue <= 0.5;
+        const isUnderOneHalfGoalTotal = isTotalGoalsMarket && isUnderPick && lineValue !== null && lineValue > 0.5 && lineValue <= 1.5;
+        const isOverHalfGoalTotal = isTotalGoalsMarket && isOverPick && lineValue !== null && lineValue >= 0.5;
+        const isPositiveTotalGoalsLine = isTotalGoalsMarket && lineValue !== null && lineValue > 0 && !isUnderHalfGoalTotal;
 
         const isTeamToScoreHomePick = isTeamToScore && (isHomePick || pick.includes('hazai') || pick.includes('home'));
         const isTeamWinPick = is1X2 && (isHomePick || isAwayPick);
+        const isDrawPick = is1X2 && (pick === 'x' || pick === 'draw' || pick.includes('dontetlen'));
+        const isDoubleChanceHomeAwayPick = isDoubleChance && (pick === '12' || pick.includes('hazai vagy vendeg') || pick.includes('home or away'));
+        const isFirstGoalMarket = market.includes('elso gol') || market.includes('1. gol') || market.includes('first goal');
+        const isFirstGoalNoGoalPick = isFirstGoalMarket && (pick.includes('egyik sem') || pick.includes('none') || pick.includes('nincs gol') || pick.includes('no goal'));
+        const isTeamToScoreNoGoalPick = isTeamToScore && (pick.includes('egyik sem') || pick.includes('none') || pick.includes('nincs gol') || pick.includes('no goal'));
+        const isGoalsRangeNoGoalPick = isGoalsRangeMarket && (pick.includes('nincs gol') || pick.includes('no goal') || pick.includes('egyik sem') || pick.includes('none'));
+        const isTotalGoalsExactZeroPick = isTotalGoalsMarket && /^0(?:[\.,]0+)?$/.test(pick);
+        const isNoGoalEquivalentPick = isUnderHalfGoalTotal || isFirstGoalNoGoalPick || isTeamToScoreNoGoalPick || isGoalsRangeNoGoalPick || isTotalGoalsExactZeroPick;
+        const isFirstGoalHowOrTimingMarket = isFirstGoalHowMarket || isFirstGoalTime10Market || isFirstGoalTime15Market;
+        const isLastGoalHomeAwayPick = isLastGoalMarket && (isHomePick || isAwayPick || pick.includes('hazai') || pick.includes('vendeg') || pick.includes('home') || pick.includes('away'));
+        const isLastGoalNoGoalPick = isLastGoalMarket && (pick.includes('egyik sem') || pick.includes('none') || pick.includes('nincs gol') || pick.includes('no goal'));
+        const isWillBeGoalMarketSelection =
+            (isBtts && isYesPick) ||
+            (isTeamToScore && !isNoPick && !isTeamToScoreNoGoalPick) ||
+            (isTotalGoalsMarket && isOverPick && lineValue !== null && lineValue >= 0) ||
+            (isFirstGoalMarket && !isFirstGoalNoGoalPick) ||
+            isLastGoalHomeAwayPick ||
+            isPenaltyGoalMarket ||
+            (isOwnGoalMarket && isYesPick) ||
+            (isSubScorerMarket && isYesPick) ||
+            ((market.includes('lesz gol') || market.includes('will there be a goal')) && isYesPick);
 
         return {
             is1X2,
+            isPlain1X2Market,
+            isAnyRestricted1X2ComboMarket,
             isCorrectScore,
             isGoalRelated,
             isTotalGoalsMarket,
@@ -573,6 +658,9 @@ document.addEventListener('DOMContentLoaded', function() {
             isBtts,
             isHalfTimeFullTime,
             isHalfTime,
+            isHandicap,
+            isDoubleChance,
+            isDrawNoBet,
             isPlayerToScore,
             isFirstLastGoal,
             isWinToNil,
@@ -581,8 +669,25 @@ document.addEventListener('DOMContentLoaded', function() {
             isUnderPick,
             isYesPick,
             isNoPick,
+            isUnderHalfGoalTotal,
+            isUnderOneHalfGoalTotal,
+            isOverHalfGoalTotal,
+            isPositiveTotalGoalsLine,
+            isOddGoalsMarket,
             isTeamToScoreHomePick,
             isTeamWinPick,
+            isDrawPick,
+            isDoubleChanceHomeAwayPick,
+            isFirstGoalNoGoalPick,
+            isTeamToScoreNoGoalPick,
+            isGoalsRangeNoGoalPick,
+            isTotalGoalsExactZeroPick,
+            isNoGoalEquivalentPick,
+            isFirstGoalHowMarket,
+            isFirstGoalHowOrTimingMarket,
+            isLastGoalHomeAwayPick,
+            isLastGoalNoGoalPick,
+            isWillBeGoalMarketSelection,
             lineValue
         };
     }
@@ -612,13 +717,91 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const a = analyzeComboSelection(itemA);
         const b = analyzeComboSelection(itemB);
+        const aNoGoalEquivalent = a.isNoGoalEquivalentPick;
+        const bNoGoalEquivalent = b.isNoGoalEquivalentPick;
 
         if (a.isCorrectScore || b.isCorrectScore) {
             return 'Kötés tiltás: pontos eredmény piac más piaccal nem köthető ugyanazon a meccsen.';
         }
 
-        if ((a.is1X2 && b.isGoalRelated) || (b.is1X2 && a.isGoalRelated)) {
-            return 'Kötés tiltás: 1X2 piac gólpiaccal nem köthető ugyanazon a meccsen.';
+        if ((a.isPlain1X2Market && b.isAnyRestricted1X2ComboMarket) || (b.isPlain1X2Market && a.isAnyRestricted1X2ComboMarket)) {
+            return 'Kötés tiltás: 1X2 piac nem köthető 1X2 kombinált gól/BTTS piaccal ugyanazon a meccsen.';
+        }
+
+        if ((a.is1X2 && b.isDoubleChance) || (b.is1X2 && a.isDoubleChance)) {
+            return 'Kötés tiltás: 1X2 és Kétesély piac nem köthető ugyanazon a meccsen.';
+        }
+
+        if ((a.is1X2 && b.isHandicap) || (b.is1X2 && a.isHandicap)) {
+            return 'Kötés tiltás: 1X2 és hendikep piac nem köthető ugyanazon a meccsen.';
+        }
+
+        if ((a.is1X2 && b.isDrawNoBet) || (b.is1X2 && a.isDrawNoBet)) {
+            return 'Kötés tiltás: 1X2 és Döntetlennél a tét vissza jár piac nem köthető ugyanazon a meccsen.';
+        }
+
+        if ((a.isUnderHalfGoalTotal && b.isDoubleChanceHomeAwayPick) || (b.isUnderHalfGoalTotal && a.isDoubleChanceHomeAwayPick)) {
+            return 'Kötés tiltás: Gólok száma 0,5 alatt nem köthető Kétesély Hazai vagy Vendég (12) opcióval ugyanazon a meccsen.';
+        }
+
+        if ((a.isUnderHalfGoalTotal && b.isDrawNoBet) || (b.isUnderHalfGoalTotal && a.isDrawNoBet)) {
+            return 'Kötés tiltás: Gólok száma 0,5 alatt nem köthető a Döntetlennél a tét vissza jár piac opcióival ugyanazon a meccsen.';
+        }
+
+        if ((a.isTeamWinPick && bNoGoalEquivalent) || (b.isTeamWinPick && aNoGoalEquivalent)) {
+            return 'Kötés tiltás: Hazai/Vendég győzelem nem köthető 0,5 alatt / 1. gól Egyik sem / Melyik csapat szerez gólt: Egyik sem piaccal ugyanazon a meccsen.';
+        }
+
+        if ((a.isBtts && a.isYesPick && bNoGoalEquivalent) || (b.isBtts && b.isYesPick && aNoGoalEquivalent)) {
+            return 'Kötés tiltás: BTTS Igen nem köthető 0,5 alatt / 1. gól Egyik sem / Melyik csapat szerez gólt: Egyik sem piaccal ugyanazon a meccsen.';
+        }
+
+        if ((a.isBtts && a.isYesPick && b.isUnderOneHalfGoalTotal) || (b.isBtts && b.isYesPick && a.isUnderOneHalfGoalTotal)) {
+            return 'Kötés tiltás: BTTS Igen nem köthető a gólok száma 1,5 alatt piaccal ugyanazon a meccsen.';
+        }
+
+        if ((a.isBtts && a.isNoPick && bNoGoalEquivalent) || (b.isBtts && b.isNoPick && aNoGoalEquivalent)) {
+            return 'Kötés tiltás: BTTS Nem nem köthető 0,5 alatt / 1. gól Egyik sem / Melyik csapat szerez gólt: Egyik sem piaccal ugyanazon a meccsen.';
+        }
+
+        if (aNoGoalEquivalent && b.isLastGoalHomeAwayPick) {
+            return 'Kötés tiltás: 0,5 alatt / 1. gól Egyik sem / Melyik csapat szerez gólt: Egyik sem piac nem köthető Utolsó gól (Hazai/Vendég) piaccal ugyanazon a meccsen.';
+        }
+
+        if (bNoGoalEquivalent && a.isLastGoalHomeAwayPick) {
+            return 'Kötés tiltás: 0,5 alatt / 1. gól Egyik sem / Melyik csapat szerez gólt: Egyik sem piac nem köthető Utolsó gól (Hazai/Vendég) piaccal ugyanazon a meccsen.';
+        }
+
+        if (aNoGoalEquivalent && b.isPositiveTotalGoalsLine) {
+            return 'Kötés tiltás: 0,5 alatt / 1. gól Egyik sem / Melyik csapat szerez gólt: Egyik sem piac nem köthető 0-nál nagyobb gólok száma piaccal ugyanazon a meccsen.';
+        }
+
+        if (bNoGoalEquivalent && a.isPositiveTotalGoalsLine) {
+            return 'Kötés tiltás: 0,5 alatt / 1. gól Egyik sem / Melyik csapat szerez gólt: Egyik sem piac nem köthető 0-nál nagyobb gólok száma piaccal ugyanazon a meccsen.';
+        }
+
+        if (aNoGoalEquivalent && b.isOddGoalsMarket) {
+            return 'Kötés tiltás: 0,5 alatt / 1. gól Egyik sem / Melyik csapat szerez gólt: Egyik sem piac nem köthető a gólok száma páros/páratlan piaccal ugyanazon a meccsen.';
+        }
+
+        if (bNoGoalEquivalent && a.isOddGoalsMarket) {
+            return 'Kötés tiltás: 0,5 alatt / 1. gól Egyik sem / Melyik csapat szerez gólt: Egyik sem piac nem köthető a gólok száma páros/páratlan piaccal ugyanazon a meccsen.';
+        }
+
+        if (a.isFirstGoalHowMarket && !bNoGoalEquivalent) {
+            return 'Kötés tiltás: Hogyan szerzik az 1. gólt? piac csak a nincs-gól típusú (0,5 alatt / 1. gól Egyik sem / Melyik csapat szerez gólt: Egyik sem) kimenetellel köthető ugyanazon a meccsen.';
+        }
+
+        if (b.isFirstGoalHowMarket && !aNoGoalEquivalent) {
+            return 'Kötés tiltás: Hogyan szerzik az 1. gólt? piac csak a nincs-gól típusú (0,5 alatt / 1. gól Egyik sem / Melyik csapat szerez gólt: Egyik sem) kimenetellel köthető ugyanazon a meccsen.';
+        }
+
+        if (a.isFirstGoalHowOrTimingMarket && b.isWillBeGoalMarketSelection) {
+            return 'Kötés tiltás: 1. gól módja/időzítése piac nem köthető olyan piaccal, ami gól bekövetkezését jelenti ugyanazon a meccsen.';
+        }
+
+        if (b.isFirstGoalHowOrTimingMarket && a.isWillBeGoalMarketSelection) {
+            return 'Kötés tiltás: 1. gól módja/időzítése piac nem köthető olyan piaccal, ami gól bekövetkezését jelenti ugyanazon a meccsen.';
         }
 
         if (a.isTotalGoalsMarket && b.isTotalGoalsMarket && ((a.isOverPick && b.isUnderPick) || (a.isUnderPick && b.isOverPick))) {
@@ -2315,7 +2498,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
 
-                const state = window.BetslipLogic.getButtonState(home, away, pick, market);
+                const matchId = parseInt(btn.getAttribute('data-match-id'), 10) || 0;
+                const state = window.BetslipLogic.getButtonState(home, away, pick, market, matchId);
                 const isLockedByOdds = odds <= 1;
                 
                 btn.classList.remove('active', 'disabled', 'market-locked');

@@ -597,7 +597,7 @@
                     market.selections.forEach(selection => {
                         const oddsValue = parseFloat(selection.odds) || 0;
                         const isLockedByOdds = oddsValue <= 1;
-                        const state = window.BetslipLogic ? window.BetslipLogic.getButtonState(match.homeTeam, match.awayTeam, selection.name, marketFullName) : null;
+                        const state = window.BetslipLogic ? window.BetslipLogic.getButtonState(match.homeTeam, match.awayTeam, selection.name, marketFullName, match.id) : null;
                         const stateClass = state ? ' ' + state : '';
                         const lockClass = isLockedByOdds ? ' disabled market-locked' : '';
                         const isDisabled = (state === 'disabled' || isLockedByOdds) ? ' disabled' : '';
@@ -856,7 +856,7 @@
                     market.selections.forEach(selection => {
                         const oddsValue = parseFloat(selection.odds) || 0;
                         const isLockedByOdds = oddsValue <= 1;
-                        const state = window.BetslipLogic ? window.BetslipLogic.getButtonState(match.homeTeam, match.awayTeam, selection.name, marketFullName) : null;
+                        const state = window.BetslipLogic ? window.BetslipLogic.getButtonState(match.homeTeam, match.awayTeam, selection.name, marketFullName, match.id) : null;
                         const stateClass = state ? ' ' + state : '';
                         const lockClass = isLockedByOdds ? ' disabled market-locked' : '';
                         const isDisabled = (state === 'disabled' || isLockedByOdds) ? ' disabled' : '';
