@@ -490,13 +490,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return normalized.includes('1x2') && (normalized.includes('odds+') || normalized.includes('odds +'));
     }
 
-    function hasOddsPlusSingleOnlyViolation() {
-        if (!Array.isArray(ticketItems) || ticketItems.length <= 1) return false;
-        return ticketItems.some(item => isOddsPlusSingleOnlyMarket(item.market));
-    }
-
     function hasAnySingleOnlyComboViolation() {
-        return hasBoostedSingleOnlyViolation() || hasOddsPlusSingleOnlyViolation();
+        return hasBoostedSingleOnlyViolation();
     }
 
     function normalizeComboText(value) {
@@ -610,6 +605,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function getMarketComboConflictMessage(itemA, itemB) {
         if (!isSameSelectionEvent(itemA, itemB)) return null;
+
+        if (isOddsPlusSingleOnlyMarket(itemA && itemA.market) || isOddsPlusSingleOnlyMarket(itemB && itemB.market)) {
+            return 'Kötés tiltás: az 1X2 - Odds+ ugyanazon a meccsen más piaccal nem köthető.';
+        }
 
         const a = analyzeComboSelection(itemA);
         const b = analyzeComboSelection(itemB);
@@ -1192,13 +1191,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            const addingOddsPlusSingleOnly = isOddsPlusSingleOnlyMarket(market);
-            const hasOddsPlusSingleOnlyInTicket = ticketItems.some(item => isOddsPlusSingleOnlyMarket(item.market));
-            if ((addingOddsPlusSingleOnly && ticketItems.length >= 1) || (!addingOddsPlusSingleOnly && hasOddsPlusSingleOnlyInTicket)) {
-                BmbPopup.warning('Kötés tiltás miatt nem lehet fogadni! Az 1X2 - Odds+ csak single tétben fogadható.', 'Kötés tiltás');
-                return;
-            }
-
             // MÓDOSÍTÁS: Csak akkor blokkoljuk, ha ugyanarról a piacról már van kiválasztás
             // De KÜLÖNBÖZŐ piacokról lehet több fogadás ugyanarról a meccsről
             if (window.BetslipLogic.hasSelectionInMarket(homeTeam, awayTeam, market)) {
@@ -1366,13 +1358,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const warningEl = document.createElement('div');
             warningEl.className = 'betslip-item-warning betslip-combo-lock-warning';
             warningEl.innerHTML = '<i class="fas fa-ban"></i> Kötés tiltás miatt nem lehet fogadni! Az Oddsűrhajó csak single tétben fogadható.';
-            betsContainer.appendChild(warningEl);
-        }
-
-        if (hasOddsPlusSingleOnlyViolation()) {
-            const warningEl = document.createElement('div');
-            warningEl.className = 'betslip-item-warning betslip-combo-lock-warning';
-            warningEl.innerHTML = '<i class="fas fa-ban"></i> Kötés tiltás miatt nem lehet fogadni! Az 1X2 - Odds+ csak single tétben fogadható.';
             betsContainer.appendChild(warningEl);
         }
 
@@ -1649,9 +1634,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (unavailableItems > 0) {
                 submitBtn.title = t('betslip.selectionNotBettableHint', 'Ez a kimenetel már nem fogadható! Távolítsd el vagy módosítsd a választást.');
             } else if (comboLockViolation) {
-                submitBtn.title = hasBoostedSingleOnlyViolation()
-                    ? 'Kötés tiltás miatt nem lehet fogadni! Az Oddsűrhajó csak single tétben fogadható.'
-                    : 'Kötés tiltás miatt nem lehet fogadni! Az 1X2 - Odds+ csak single tétben fogadható.';
+                submitBtn.title = 'Kötés tiltás miatt nem lehet fogadni! Az Oddsűrhajó csak single tétben fogadható.';
             } else if (restrictedMarketComboViolation) {
                 submitBtn.title = marketComboConflict ? marketComboConflict.message : 'Kötés tiltás miatt ez a szelvény nem adható fel.';
             } else if (useFreeBet && !freeBetCoversStake) {
@@ -1699,9 +1682,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (hasAnySingleOnlyComboViolation()) {
                 BmbPopup.warning(
-                    hasBoostedSingleOnlyViolation()
-                        ? 'Kötés tiltás miatt nem lehet fogadni! Az Oddsűrhajó csak single tétben fogadható.'
-                        : 'Kötés tiltás miatt nem lehet fogadni! Az 1X2 - Odds+ csak single tétben fogadható.',
+                    'Kötés tiltás miatt nem lehet fogadni! Az Oddsűrhajó csak single tétben fogadható.',
                     'Kötés tiltás'
                 );
                 return;
