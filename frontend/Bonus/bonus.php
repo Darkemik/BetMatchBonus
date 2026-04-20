@@ -10,7 +10,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <!-- App CSS after vendors -->
     <link rel="stylesheet" href="../../css/Main/layout.css?v=<?= time() ?>">
-    <link rel="stylesheet" href="../../css/Bonus/bonus.css">
+    <link rel="stylesheet" href="../../css/Bonus/bonus.css?v=<?= time() ?>">
     <link rel="stylesheet" href="../../css/RootColor/root.css">
     <link rel="stylesheet" href="../../css/Modal/modal.css">
     <link rel="icon" href="../../img/logo.png" type="image/x-icon">

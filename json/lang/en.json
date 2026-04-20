@@ -161,6 +161,7 @@
     "upcomingMatches": "Upcoming Matches",
     "todayMatches": "Today's Matches",
     "dailyTips": "Daily tips",
+    "noTips": "No tips available.",
     "searchPlaceholder": "Search by team or league name...",
     "dailyTipsBoost": "1.2x multiplier",
     "loading": "Loading...",
@@ -479,7 +480,7 @@
     "cashoutDesc": "With Cash Out, you can close your placed bets before the event ends, securing your winnings at your own discretion",
     "oddsPyramidTitle": "ODDS PYRAMID",
     "oddsPyramidDesc": "Want to increase your winnings? Check our current offers in promotions!",
-    "details": "DETAILS"
+    "details": "CONTINUE"
   },
   "footer": {
     "infoTitle": "INFORMATION",

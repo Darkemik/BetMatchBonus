@@ -15,7 +15,9 @@ require_once dirname(__DIR__) . "/config.php";
 
 header('Content-Type: application/json; charset=utf-8');
 
-$today = date('Y-m-d');
+$tipsWindowTz = new DateTimeZone('Europe/Budapest');
+$targetDateKey = (new DateTime('today', $tipsWindowTz))->format('Y-m-d');
+$tipsPolicyVersion = 2;
 $cacheDir  = dirname(__DIR__) . '/uploads';
 $cacheFile = $cacheDir . '/daily_tips_cache.json';
 
@@ -289,7 +291,13 @@ function refreshTipOddsFromApi($tip) {
 // ha van mai cache, azt használjuk, csak az oddsokat frissítjük API-ból.
 if (file_exists($cacheFile)) {
     $cached = json_decode((string)file_get_contents($cacheFile), true);
-    if (is_array($cached) && ($cached['date'] ?? '') === $today && is_array($cached['tips'] ?? null) && !empty($cached['tips'])) {
+    if (
+        is_array($cached)
+        && ($cached['date'] ?? '') === $targetDateKey
+        && (int)($cached['policyVersion'] ?? 0) === $tipsPolicyVersion
+        && is_array($cached['tips'] ?? null)
+        && !empty($cached['tips'])
+    ) {
         $tipsFromCache = array_map('refreshTipOddsFromApi', $cached['tips']);
         $tipsFromCache = array_values(array_filter($tipsFromCache, 'isDailyTipValid'));
 
@@ -297,7 +305,8 @@ if (file_exists($cacheFile)) {
             // Ha a korábbi cache már tiltott kombinációkat tartalmaz, újrageneráljuk.
         } else {
             file_put_contents($cacheFile, json_encode([
-                'date' => $today,
+                'date' => $targetDateKey,
+                'policyVersion' => $tipsPolicyVersion,
                 'tips' => $tipsFromCache,
             ], JSON_UNESCAPED_UNICODE));
 
@@ -307,9 +316,17 @@ if (file_exists($cacheFile)) {
     }
 }
 
-// 2) Jelöltek lekérdezése (fix napi ablak: ma 00:00 UTC → +3 nap)
-$from = (new DateTime('today 00:00:00', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
-$to   = (new DateTime('+3 days 23:59:59', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
+// 2) Jelöltek lekérdezése (csak aznapi ablak: 00:00–23:59, Budapest idő)
+$fromLocal = new DateTime('today 00:00:00', $tipsWindowTz);
+$toLocal = new DateTime('today 23:59:59', $tipsWindowTz);
+
+$fromUtc = clone $fromLocal;
+$fromUtc->setTimezone(new DateTimeZone('UTC'));
+$toUtc = clone $toLocal;
+$toUtc->setTimezone(new DateTimeZone('UTC'));
+
+$from = $fromUtc->format('Y-m-d H:i:s');
+$to = $toUtc->format('Y-m-d H:i:s');
 
 $priorityOrder = str_replace('comp.', 'ch.', LEAGUE_PRIORITY_SQL);
 
@@ -325,6 +342,17 @@ $esportFilter = '';
 if (!empty($esportIds)) {
     $esportFilter = 'AND m.sport_id NOT IN (' . implode(',', $esportIds) . ')';
 }
+
+// Csak foci meccsek: football/soccer/labdarugas/foci sportnevek és tipikus football api_id.
+$footballFilter = "
+    AND (
+            LOWER(s.name) LIKE '%football%'
+            OR LOWER(s.name) LIKE '%soccer%'
+            OR LOWER(s.name) LIKE '%labdar%'
+            OR LOWER(s.name) LIKE '%foci%'
+            OR s.api_id = 1
+    )
+";
 
 $sql = "
 SELECT 
@@ -345,6 +373,7 @@ WHERE m.start_time BETWEEN ? AND ?
   AND m.name IS NOT NULL AND TRIM(m.name) != ''
   AND m.api_id IS NOT NULL AND m.api_id > 0
   {$esportFilter}
+    {$footballFilter}
   AND ({$priorityOrder}) < 99
 ORDER BY {$priorityOrder}, m.start_time ASC
 LIMIT 120
@@ -354,10 +383,11 @@ $stmt = $conn->prepare($sql);
 if (!$stmt) {
     // Ha a prioritásos query nem ad eleget, fallback: bármely valódi sport
     $sqlFallback = "
-    SELECT m.api_id, m.competition_id, m.name AS match_name, m.start_time AS start_utc,
+        SELECT m.api_id, m.competition_id, m.name AS match_name, m.start_time AS start_utc,
            ch.name AS championship_name, c.name AS country_name
     FROM Events m
     JOIN Competitions ch ON m.competition_id = ch.id
+        JOIN Sports s ON m.sport_id = s.id
     LEFT JOIN Countries c ON ch.country_id = c.id
     WHERE m.start_time BETWEEN ? AND ?
             AND m.start_time > UTC_TIMESTAMP()
@@ -366,6 +396,7 @@ if (!$stmt) {
       AND m.name IS NOT NULL AND TRIM(m.name) != ''
       AND m.api_id > 0
       {$esportFilter}
+            {$footballFilter}
     ORDER BY m.start_time ASC
     LIMIT 120";
     $stmt = $conn->prepare($sqlFallback);
@@ -389,10 +420,11 @@ if (count($candidates) < 20) {
     $existingIds = array_column($candidates, 'api_id');
     $placeholders = !empty($existingIds) ? 'AND m.api_id NOT IN (' . implode(',', array_map('intval', $existingIds)) . ')' : '';
     $sqlExtra = "
-    SELECT m.api_id, m.competition_id, m.name AS match_name, m.start_time AS start_utc,
+        SELECT m.api_id, m.competition_id, m.name AS match_name, m.start_time AS start_utc,
            ch.name AS championship_name, c.name AS country_name
     FROM Events m
     JOIN Competitions ch ON m.competition_id = ch.id
+        JOIN Sports s ON m.sport_id = s.id
     LEFT JOIN Countries c ON ch.country_id = c.id
     WHERE m.start_time BETWEEN ? AND ?
             AND m.start_time > UTC_TIMESTAMP()
@@ -401,6 +433,7 @@ if (count($candidates) < 20) {
       AND m.name IS NOT NULL AND TRIM(m.name) != ''
       AND m.api_id > 0
       {$esportFilter}
+            {$footballFilter}
       {$placeholders}
     ORDER BY m.start_time ASC
     LIMIT 60";
@@ -421,8 +454,8 @@ if (empty($candidates)) {
     exit;
 }
 
-// Csak az első 5 bajnoki táblából (competitionből) válogatunk napi tippet.
-$maxDailyTipTables = 5;
+// Csak az első 3 bajnoki táblából (competitionből) válogatunk napi tippet.
+$maxDailyTipTables = 3;
 $allowedCompetitionIds = [];
 $seenCompetitions = [];
 foreach ($candidates as $row) {
@@ -457,7 +490,7 @@ $selectedIndices = [];
 $pool = range(0, count($candidates) - 1);
 
 for ($i = 0; $i < $tipCount; $i++) {
-    $h = abs(crc32($today . 'tip' . $i));
+    $h = abs(crc32($targetDateKey . 'tip' . $i));
     $idx = $h % count($pool);
     $selectedIndices[] = $pool[$idx];
     array_splice($pool, $idx, 1);
@@ -551,7 +584,7 @@ foreach ($selectedIndices as $si) {
 
         $pair = null;
         $candidateCount = count($pickCandidates);
-        $startIdx = abs(crc32($today . 'pairSeed' . $si)) % $candidateCount;
+        $startIdx = abs(crc32($targetDateKey . 'pairSeed' . $si)) % $candidateCount;
 
         for ($aOffset = 0; $aOffset < $candidateCount; $aOffset++) {
             $aIdx = ($startIdx + $aOffset) % $candidateCount;
@@ -629,7 +662,8 @@ if (!is_dir($cacheDir)) {
     mkdir($cacheDir, 0755, true);
 }
 file_put_contents($cacheFile, json_encode([
-    'date' => $today,
+    'date' => $targetDateKey,
+    'policyVersion' => $tipsPolicyVersion,
     'tips' => $tips,
 ], JSON_UNESCAPED_UNICODE));
 

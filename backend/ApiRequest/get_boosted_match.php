@@ -46,6 +46,7 @@ if ($statusStmt) {
             'success' => false,
             'reason' => 'today_closed',
             'error' => 'A mai Oddsűrhajó már lezárult.',
+            'eventId' => $eventId,
             'secondsUntilNextBoost' => $secondsUntilNextBoost,
             'nextBoostAt' => $nextBoostBp->format(DateTime::ATOM)
         ], JSON_UNESCAPED_UNICODE);

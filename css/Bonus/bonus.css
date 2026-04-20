@@ -2,23 +2,62 @@
     display: none !important;
 }
 
-/* Keep all bonus-page text readable on dark backgrounds. */
-.bonus-page,
-.bonus-page p,
-.bonus-page span,
-.bonus-page div,
-.bonus-page li,
-.bonus-page strong,
-.bonus-page b,
-.bonus-page h1,
-.bonus-page h2,
-.bonus-page h3,
-.bonus-page h4,
-.bonus-page h5,
-.bonus-page h6,
-.bonus-page a,
-.bonus-page button {
+/* Keep bonus content readable, but do not override shared footer colors. */
+.bonus-page #bonusContainer,
+.bonus-page #bonusContainer p,
+.bonus-page #bonusContainer span,
+.bonus-page #bonusContainer div,
+.bonus-page #bonusContainer li,
+.bonus-page #bonusContainer strong,
+.bonus-page #bonusContainer b,
+.bonus-page #bonusContainer h1,
+.bonus-page #bonusContainer h2,
+.bonus-page #bonusContainer h3,
+.bonus-page #bonusContainer h4,
+.bonus-page #bonusContainer h5,
+.bonus-page #bonusContainer h6,
+.bonus-page #bonusContainer a,
+.bonus-page #bonusContainer button {
     color: #f5f7ff;
+}
+
+/* Keep shared footer accents intact on bonus page. */
+.bonus-page .simple-footer .footer-column-title {
+    color: #3498db !important;
+}
+
+.bonus-page .simple-footer .footer-link {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.bonus-page .simple-footer .footer-link:hover {
+    color: #3498db !important;
+}
+
+.bonus-page .simple-footer .responsible-text h2 {
+    color: #e74c3c !important;
+}
+
+.bonus-page .simple-footer .responsible-text p {
+    color: #ffffff !important;
+}
+
+.bonus-page .simple-footer .responsible-extra {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.bonus-page .simple-footer .responsible-extra i {
+    color: #e74c3c !important;
+}
+
+.bonus-page .simple-footer .tudjmegtobbeta {
+    color: #3498db !important;
+}
+
+.bonus-page .simple-footer .footer-payment-label,
+.bonus-page .simple-footer .footer-bottom-bar p,
+.bonus-page .simple-footer .recaptcha-notice {
+    color: rgba(255, 255, 255, 0.6) !important;
 }
 
 .bonus-row {

@@ -161,6 +161,7 @@
     "upcomingMatches": "Közelgő meccsek",
     "todayMatches": "Mai meccsek",
     "dailyTips": "Napi tippek",
+    "noTips": "Nincs elérhető tipp.",
     "searchPlaceholder": "Keresés csapat vagy bajnokság neve alapján...",
     "dailyTipsBoost": "1.2x szorzó",
     "loading": "Betöltés...",
@@ -479,7 +480,7 @@
     "cashoutDesc": "A Cash Out használatával megjátszott fogadásaidat még az esemény vége előtt, saját döntésedre lezárhatod, ezzel pedig biztosíthatod a nyereményedet",
     "oddsPyramidTitle": "ODDSPIRAMIS",
     "oddsPyramidDesc": "Növelnéd a nyereményed? Keress aktuális ajánlatunkat a promóciók között!",
-    "details": "RÉSZLETEK"
+    "details": "TOVÁBB"
   },
   "footer": {
     "infoTitle": "INFORMÁCIÓK",
