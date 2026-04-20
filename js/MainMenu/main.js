@@ -1012,7 +1012,7 @@ document.addEventListener('DOMContentLoaded', function () {
                       const isBoosted = selection.boosted || false;
                       const originalOdds = parseFloat(selection.originalOdds) || 0;
                       const state = window.BetslipLogic
-                          ? window.BetslipLogic.getButtonState(match.homeTeam, match.awayTeam, selection.name, marketFullName)
+                          ? window.BetslipLogic.getButtonState(match.homeTeam, match.awayTeam, selection.name, marketFullName, match.id)
                           : null;
                       const isLockedByOdds = oddsValue <= 1;
                       const stateClass = state ? ' ' + state : '';
@@ -1593,7 +1593,7 @@ document.addEventListener('DOMContentLoaded', function () {
               const market = el.getAttribute('data-market');
               if (!home || !away || !pick || !market) { allActive = false; return; }
               const state = window.BetslipLogic
-                  ? window.BetslipLogic.getButtonState(home, away, pick, market)
+                  ? window.BetslipLogic.getButtonState(home, away, pick, market, parseInt(el.getAttribute('data-event-id'), 10) || 0)
                   : null;
               if (state !== 'active') allActive = false;
           });

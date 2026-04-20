@@ -16,6 +16,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             return 'Losing Bet Cashback (30% Free Bet)';
         }
         if (lang === 'en') {
+            const dailyTopPattern = /^Napi\s+Top\s+Jutalom/i;
+            if (dailyTopPattern.test(src)) {
+                return src
+                    .replace(/^Napi\s+Top\s+Jutalom/i, 'Daily Top Reward')
+                    .replace(/Ft/gi, 'FT');
+            }
+        }
+        if (lang === 'en') {
+            const weekdayPattern = /^B[ÓO]NUSZ\s+H[ÉE]TK[ÖO]ZNAP/i;
+            if (weekdayPattern.test(src)) {
+                return src
+                    .replace(/^B[ÓO]NUSZ\s+H[ÉE]TK[ÖO]ZNAP/i, 'WEEKDAY BONUS')
+                    .replace(/Ft/gi, 'FT');
+            }
+        }
+        if (lang === 'en') {
             const dartsPattern = /^DARTS\s+B[ÓO]NUSZ\s*\(([^)]+)\)$/i;
             const match = src.match(dartsPattern);
             if (match) {
@@ -33,9 +49,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         const src = String(description || '').trim();
         const huText = 'Ha egy legalább 5.000 Ft-os fogadásod veszít (min. odds: 1.80), visszakapsz 30%-ot Free Bet formájában. Naponta egyszer aktiválódik automatikusan a vesztes szelvény lezárásakor. A kapott Free Bet-et bármilyen fogadásra felhasználhatod.';
         const enText = 'If a bet of at least 5,000 Ft loses (min. odds: 1.80), you get 30% back as a Free Bet. It is automatically activated once per day when the losing ticket is settled. You can use the received Free Bet on any bet.';
+        const weekdayEnText = 'Weekday deposit bonus available every day from Monday to Friday. How can you activate it? 1) Deposit at least 3,000 FT to your account. 2) You receive 100% of your deposit as bonus, up to 5,000 FT. Example: 3,000 FT deposit = 3,000 FT bonus, 5,000 FT deposit = 5,000 FT bonus, 10,000 FT deposit = 5,000 FT bonus (max). 3) The received bonus must be wagered 3 times before it becomes withdrawable. So if you received a 5,000 FT bonus, you need to place bets worth 15,000 FT. 4) The maximum winnings are 5x the bonus amount (25,000 FT). Important: This bonus can only be activated on weekdays (Monday to Friday), from 08:00 in the morning; it is not available on weekends.';
+        const dailyTopEnText = 'Automatic daily reward for the top depositor, top bettor, and top winner.';
 
         if (lang === 'en' && (src === huText || src.includes('Ha egy legalább 5.000 Ft-os fogadásod veszít'))) {
             return enText;
+        }
+        if (lang === 'en' && (src.includes('Hétfőtől péntekig minden nap elérhető feltöltési bónusz') || src.includes('kizárólag hétköznapokon'))) {
+            return weekdayEnText;
+        }
+        if (lang === 'en' && (src === 'Automatikus napi jutalom a top befizető, top fogadó és top nyertes számára.' || src.includes('top befizető, top fogadó és top nyertes'))) {
+            return dailyTopEnText;
         }
         return src;
     }

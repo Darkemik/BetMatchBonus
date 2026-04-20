@@ -641,7 +641,7 @@ INSERT INTO BonusCodes
 VALUES
 (
   'BONUSZHETKOZNAP5K',
-  'BÓNUSZ HÉTKÖZNAP (5.000 Ft, 100%, 3x)',
+  'Bónusz Hétköznap (5.000 Ft, 100%, 3x)',
   'Hétfőtől péntekig minden nap elérhető feltöltési bónusz! Hogyan aktiválhatod? 1) Fizess be legalább 3.000 Ft-ot a számládra. 2) A befizetett összeg 100%-át kapod bónuszként, maximum 5.000 Ft-ig. Például: 3.000 Ft befizetés = 3.000 Ft bónusz, 5.000 Ft befizetés = 5.000 Ft bónusz, 10.000 Ft befizetés = 5.000 Ft bónusz (max). 3) A kapott bónusz összeget 3-szorosan kell megforgatnod, mielőtt kifizethetővé válik. Tehát ha 5.000 Ft bónuszt kaptál, 15.000 Ft értékben kell fogadásokat megtenned. 4) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: A bónusz kizárólag hétköznapokon (hétfőtől péntekig), reggel 8 órától aktiválható, hétvégén nem érhető el!',
   2,                          -- WEEKDAYS
   0.00,
@@ -686,7 +686,7 @@ INSERT INTO BonusCodes
 VALUES
 (
   'DARTSBONUSZ5K',
-  'DARTS BÓNUSZ (10.000 Ft fogadás, 5.000 Ft bónusz)',
+  'Darts Bónusz (10.000 Ft fogadás, 5.000 Ft bónusz)',
   'Darts rajongóknak szóló exkluzív bónusz! Hogyan szerezheted meg? 1) Tégy meg egy legalább 10.000 Ft értékű fogadást kizárólag darts mérkőzésekre. 2) A fogadásnak legalább 2 eseményt (2-es kötést) kell tartalmaznia, minimum 2.00-es össz odds-szal. 3) A fogadásod lezárása és kiértékelése után 5.000 Ft bónusz pénzt kapsz a bónusz egyenlegedre. 4) A kapott 5.000 Ft bónuszt 2-szeresen kell megforgatnod (10.000 Ft értékű fogadás), mielőtt kifizethetővé válik. 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: Az aktiválás után 48 órád van a bónusz felhasználására!',
   4,                          -- EVENT_SPECIFIC
   5000.00,
@@ -866,7 +866,7 @@ INSERT INTO BonusCodes
 VALUES
 (
   'NB1DERBY',
-  'NB1 DERBY BÓNUSZ (Újpest-Ferencváros)',
+  'NB1 Derby Bónusz (Újpest-Ferencváros)',
   'Az NB1 legnagyobb derbiéhez kapcsolódó exkluzív élő fogadási bónusz! Hogyan szerezheted meg? 1) Várd meg, amíg elindul az Újpest FC – Ferencvárosi TC mérkőzés. 2) A meccs közben (élő fogadásként) tégy meg egy legalább 5.000 Ft értékű fogadást, minimum 2.00-es odds-szal. 3) A fogadásod lezárása és kiértékelése után 5.000 Ft értékű ingyenes fogadást (Free Bet) kapsz jutalmul. 4) Az ingyenes fogadásnál a tét nem kerül visszafizetésre, csak a tiszta nyereményt kapod. 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: Kizárólag élő fogadásra érvényes, előzetes (pre-match) fogadás nem számít!',
   4,                          -- EVENT_SPECIFIC
   5000.00,
@@ -911,7 +911,7 @@ INSERT INTO BonusCodes
 VALUES
 (
   'ESPORT5K',
-  'ESPORT BÓNUSZ (5.000 Ft bónusz)',
+  'Esport Bónusz (5.000 Ft bónusz)',
   'Esport rajongóknak szóló bónusz — CS2, League of Legends, Dota 2 és más esport mérkőzésekre! Hogyan működik? 1) Tégy meg egy legalább 5.000 Ft értékű fogadást bármely esport mérkőzésre. 2) A fogadásnak legalább 3 eseményt (3-as kötést) kell tartalmaznia. 3) Minden egyes eseménynek minimum 1,30-as odds-szal kell rendelkeznie, és az össz odds-nak el kell érnie a 3.00-at. 4) A fogadásod lezárása és kiértékelése után 5.000 Ft bónusz pénzt kapsz. 5) A kapott bónuszt 3-szorosan kell megforgatnod (15.000 Ft értékű fogadás). 6) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Próbáld ki az esport fogadást és szerezd meg az extra bónuszt!',
   4,                          -- EVENT_SPECIFIC
   5000.00,
@@ -956,7 +956,7 @@ INSERT INTO BonusCodes
 VALUES
 (
   NULL,
-  'SZÜLETÉSNAPI BÓNUSZ (5.000 Ft)',
+  'Születésnapi Bónusz (5.000 Ft)',
   'Boldog születésnapot! Ajándékunk neked: 5.000 Ft bónusz a nagy napodon. Hogyan igényelheted? 1) A születésnapodon (a regisztrációnál megadott dátum alapján) igényeld a bónuszt a profilodban vagy az ügyfélszolgálaton keresztül. 2) Jóváhagyás után 5.000 Ft bónusz pénz kerül a bónusz egyenlegedre. 3) A bónusszal bármilyen sportra, bármilyen mérkőzésre fogadhatsz — nincs sportági megkötés. 4) Nincs forgatási követelmény, tehát a nyereményed azonnal kifizethetővé válik! 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Minden évben egyszer, a születésnapodon igényelheted!',
   7,                          -- ADMIN_BONUS
   5000.00,
@@ -1001,7 +1001,7 @@ INSERT INTO BonusCodes
 VALUES
 (
   NULL,
-  'BETMATCH SZÜLETÉSNAPI BÓNUSZ (első 500)',
+  'BetMatch Születésnapi Bónusz (első 500)',
   'A BetMatchBonus születésnapi különleges promóciója — limitált számban elérhető! Hogyan működik? 1) A BetMatchBonus évfordulóján az első 500 igénylő ügyfél kap 5.000 Ft bónuszt. 2) Igényeld a bónuszt a profilodban vagy az ügyfélszolgálaton keresztül — aki előbb igényli, az kapja meg! 3) A bónusszal bármilyen sportra, bármilyen mérkőzésre fogadhatsz — nincs sportági megkötés. 4) Nincs forgatási követelmény, a nyereményed azonnal kifizethetővé válik! 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: Csak 500 db érhető el összesen, ne habozz!',
   7,                          -- ADMIN_BONUS
   5000.00,
@@ -1046,7 +1046,7 @@ INSERT INTO BonusCodes
 VALUES
 (
   'HETVEGI5K',
-  'HÉTVÉGI BÓNUSZ (5.000 Ft ingyenes fogadás)',
+  'Hétvégi Bónusz (5.000 Ft ingyenes fogadás)',
   'Hétvégi extra — szombaton és vasárnap elérhető ingyenes fogadás! Hogyan aktiválhatod? 1) Szombaton vagy vasárnap fizess be legalább 5.000 Ft-ot. 2) Cserébe 5.000 Ft értékű ingyenes fogadást (Free Bet) kapsz. 3) Az ingyenes fogadást 2-es kötésben (legalább 2 esemény) kell felhasználnod. 4) Az össz odds-nak legalább 2.00-nak kell lennie, és minden eseménynél minimum 1,40-es odds szükséges. 5) Nincs forgatási követelmény — a nyereményed azonnal kifizethetővé válik (a tét összege nem kerül visszafizetésre, csak a nyereményt kapod). 6) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Tipp: Használd a hétvégi nagy meccsekre!',
   6,                          -- WEEKEND
   5000.00,
