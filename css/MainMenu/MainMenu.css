@@ -1160,7 +1160,15 @@ body .simple-footer {
 }
 
 /* Oszlopszélességek: Meccs | Állás | Idő/Státusz */
-.league-matches .matches-table td:nth-child(1) { flex: 1 1 auto; min-width: 0; width: auto; text-align: left; padding-left: 20px; }
+.league-matches .matches-table td:nth-child(1) {
+  flex: 0 1 calc(50% - 72px);
+  max-width: calc(50% - 72px);
+  min-width: 0;
+  width: auto;
+  text-align: left;
+  padding-left: 6px;
+  padding-right: 12px;
+}
 .league-matches .matches-table td:nth-child(2) {
   position: absolute;
   left: 50%;
@@ -1179,10 +1187,10 @@ body .simple-footer {
 /* Meccs cella csapatok elrendezése */
 .league-matches .match-cell {
   white-space: nowrap;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: flex-start;
-  gap: 6px;
+  column-gap: 6px;
   overflow: hidden;
   width: 100%;
 }
@@ -1199,16 +1207,14 @@ body .simple-footer {
 }
 
 .league-matches .match-cell .home-team {
-  flex: 0 1 auto;
-  max-width: 42%;
   text-align: left;
+  justify-self: start;
   padding-right: 0;
 }
 
 .league-matches .match-cell .away-team {
-  flex: 1 1 auto;
-  max-width: none;
-  text-align: left;
+  text-align: right;
+  justify-self: end;
   padding-left: 0;
 }
 
@@ -1389,27 +1395,27 @@ body .simple-footer {
   .league-matches .matches-table td:nth-child(1) {
     flex: 1 1 100%;
     width: 100%;
-    padding-left: 10px;
+    padding-left: 6px;
+    padding-right: 10px;
   }
 
   .league-matches .match-cell {
     white-space: nowrap;
-    display: flex;
-    gap: 4px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    column-gap: 4px;
     overflow: hidden;
   }
 
   .league-matches .match-cell .home-team {
-    flex: 0 1 auto;
-    max-width: 40%;
     text-align: left;
+    justify-self: start;
     padding-right: 0;
   }
 
   .league-matches .match-cell .away-team {
-    flex: 1 1 auto;
-    max-width: none;
-    text-align: left;
+    text-align: right;
+    justify-self: end;
     padding-left: 0;
   }
 

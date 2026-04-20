@@ -8,7 +8,7 @@ A **BetMatchBonus** egy PHP + MySQL alapú sportfogadási webalkalmazás demó/p
 - Élő és eSport oldalak
 - Fogadószelvény kezelés
 - Bónuszok (pl. hétköznapi, szezonális, admin bónusz)
-- Felhasználói fiók: befizetés, kifizetés, tranzakciók, értesítések
+- Felhasználói fiók: személyes adatok, jelszó módosítás, befizetés, kifizetés, tranzakciótörténet, bónuszaim, napló, értesítések
 - Admin panel jogosultságkezeléssel
 - Többnyelvű UI (HU/EN)
 
@@ -16,7 +16,7 @@ A **BetMatchBonus** egy PHP + MySQL alapú sportfogadási webalkalmazás demó/p
 
 - **Backend:** PHP (natív, külön API endpointokkal)
 - **Frontend:** PHP sablonok + JavaScript + Bootstrap + CSS
-- **Adatbázis:** MySQL/MariaDB
+- **Adatbázis:** MySQL
 - **Külső integrációk:** reCAPTCHA v3, SMTP (PHPMailer), külső sport API
 
 ## Könyvtárszerkezet
@@ -31,9 +31,9 @@ A **BetMatchBonus** egy PHP + MySQL alapú sportfogadási webalkalmazás demó/p
 ## Előfeltételek
 
 - PHP 8.x (javasolt)
-- MySQL vagy MariaDB
-- Webszerver (Apache/Nginx, vagy XAMPP/Laragon)
-- Internetkapcsolat a CDN-ekhez és külső API-khoz
+- MySQL
+- Webszerver Apache, XAMPP
+- Internetkapcsolat a külső API-khoz
 
 ## Telepítés (lokális környezet)
 
@@ -42,14 +42,13 @@ A **BetMatchBonus** egy PHP + MySQL alapú sportfogadási webalkalmazás demó/p
 3. Állítsd be legalább ezeket a változókat a `.env` fájlban:
    - `DB_HOST`, `DB_USER`, `DB_PASS`, `DB_NAME`
    - `API_BASE_URL`
-   - (opcionális, de ajánlott) `RECAPTCHA_*`, `MAIL_*`, `SITE_BASE_URL`
+   - `RECAPTCHA_*`, `MAIL_*`, `SITE_BASE_URL`
 4. Importáld az adatbázis sémát:
    - `backend/DataBase/bettingdb.sql`
 5. Az adatbázis importálása után futtasd a kapcsolódási ellenőrzést:
    - `php backend/connect.php`
 6. Ezt követően futtasd az összesített adatfrissítést:
    - `php backend/refresh_all.php`
-7. Ellenőrizd, hogy a `backend/uploads/` könyvtár írható.
 
 ## Futtatás
 
