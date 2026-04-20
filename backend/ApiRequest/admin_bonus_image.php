@@ -74,17 +74,25 @@ $ext = match ($mimeType) {
     'image/webp' => 'webp',
     default => 'png'
 };
-$filename = 'bonus_' . $bonusId . '_' . time() . '.' . $ext;
+$filename = 'bonus_' . $bonusId . '_' . str_replace('.', '', (string)microtime(true)) . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
 $targetPath = $UPLOAD_DIR . $filename;
 
 // Mappa biztosítása
 if (!is_dir($UPLOAD_DIR)) {
-    mkdir($UPLOAD_DIR, 0755, true);
+    if (!mkdir($UPLOAD_DIR, 0755, true) && !is_dir($UPLOAD_DIR)) {
+        echo json_encode(['success' => false, 'error' => 'A célmappa nem hozható létre: ' . $UPLOAD_DIR]);
+        exit;
+    }
+}
+
+if (!is_writable($UPLOAD_DIR)) {
+    echo json_encode(['success' => false, 'error' => 'A célmappa nem írható: ' . $UPLOAD_DIR]);
+    exit;
 }
 
 // Régi fájl törlése (ha nem az alapértelmezett SVG)
 $oldUrl = $bonus['image_url'] ?? '';
-if ($oldUrl !== '' && strpos($oldUrl, '/uploads/bonuses/') !== false) {
+if ($oldUrl !== '' && strpos($oldUrl, 'uploads/bonuses/') !== false) {
     $oldFile = dirname(__DIR__) . str_replace('../../backend', '', $oldUrl);
     // Normalizálás
     $oldFile = $UPLOAD_DIR . basename($oldUrl);
@@ -102,8 +110,22 @@ if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
 // DB frissítés — relatív URL a frontend számára
 $imageUrl = '../../backend/uploads/bonuses/' . $filename;
 $stmt = $conn->prepare("UPDATE BonusCodes SET image_url = ? WHERE id = ?");
+if (!$stmt) {
+    if (file_exists($targetPath)) {
+        unlink($targetPath);
+    }
+    echo json_encode(['success' => false, 'error' => 'Adatbázis prepare hiba: ' . $conn->error]);
+    exit;
+}
 $stmt->bind_param("si", $imageUrl, $bonusId);
-$stmt->execute();
+if (!$stmt->execute()) {
+    $stmt->close();
+    if (file_exists($targetPath)) {
+        unlink($targetPath);
+    }
+    echo json_encode(['success' => false, 'error' => 'Adatbázis frissítési hiba: ' . $conn->error]);
+    exit;
+}
 $stmt->close();
 
 echo json_encode([

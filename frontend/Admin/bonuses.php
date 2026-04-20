@@ -42,23 +42,114 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_bonus_id'])) {
     if ($edit_code === '') $edit_code = null;
     if ($edit_daily_start === '') $edit_daily_start = null;
 
-    $editStmt = $conn->prepare("
-        UPDATE BonusCodes 
-        SET code = ?, name = ?, description = ?, match_percent = ?, max_bonus_amount = ?,
-            min_deposit = ?, wagering_multiplier = ?, max_win_multiplier = ?, daily_start_time = ?
-        WHERE id = ?
-    ");
-    $editStmt->bind_param("sssdddddsi",
-        $edit_code, $edit_name, $edit_desc, $edit_match_percent, $edit_max_bonus,
-        $edit_min_deposit, $edit_wagering, $edit_max_win, $edit_daily_start, $edit_id
-    );
+    $newImageUrl = null;
+    $imageUploadError = null;
+    if (isset($_FILES['edit_bonus_image']) && (int)($_FILES['edit_bonus_image']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+        $imgFile = $_FILES['edit_bonus_image'];
+        if ((int)$imgFile['error'] !== UPLOAD_ERR_OK) {
+            $imageUploadError = 'Kép feltöltési hiba (kód: ' . (int)$imgFile['error'] . ').';
+        } else {
+            $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml', 'image/webp'];
+            $maxSize = 2 * 1024 * 1024;
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $mimeType = $finfo->file($imgFile['tmp_name']);
 
-    if ($editStmt->execute()) {
-        $success_msg = "Bónusz (#$edit_id) sikeresen frissítve az adatbázisban!";
-    } else {
-        $error_msg = "Hiba történt a bónusz mentésekor: " . $editStmt->error;
+            if (!in_array($mimeType, $allowedTypes, true)) {
+                $imageUploadError = 'Nem támogatott képtípus. (JPG, PNG, GIF, SVG, WebP)';
+            } elseif ((int)$imgFile['size'] > $maxSize) {
+                $imageUploadError = 'A kép túl nagy. Maximum 2 MB.';
+            } else {
+                $ext = match ($mimeType) {
+                    'image/jpeg' => 'jpg',
+                    'image/png' => 'png',
+                    'image/gif' => 'gif',
+                    'image/svg+xml' => 'svg',
+                    'image/webp' => 'webp',
+                    default => 'png'
+                };
+
+                $uploadDir = __DIR__ . '/../../backend/uploads/bonuses/';
+                if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
+                    $imageUploadError = 'A képmappa nem hozható létre.';
+                } elseif (!is_writable($uploadDir)) {
+                    $imageUploadError = 'A képmappa nem írható.';
+                } else {
+                    $filename = 'bonus_' . $edit_id . '_' . str_replace('.', '', (string)microtime(true)) . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+                    $targetPath = $uploadDir . $filename;
+                    if (!move_uploaded_file($imgFile['tmp_name'], $targetPath)) {
+                        $imageUploadError = 'A kép mentése sikertelen.';
+                    } else {
+                        $newImageUrl = '../../backend/uploads/bonuses/' . $filename;
+
+                        $oldStmt = $conn->prepare("SELECT image_url FROM BonusCodes WHERE id = ? LIMIT 1");
+                        if ($oldStmt) {
+                            $oldStmt->bind_param("i", $edit_id);
+                            $oldStmt->execute();
+                            $oldRow = $oldStmt->get_result()->fetch_assoc();
+                            $oldStmt->close();
+                            $oldUrl = (string)($oldRow['image_url'] ?? '');
+                            if ($oldUrl !== '' && strpos($oldUrl, 'uploads/bonuses/') !== false) {
+                                $oldPath = $uploadDir . basename($oldUrl);
+                                if (is_file($oldPath)) {
+                                    @unlink($oldPath);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
-    $editStmt->close();
+
+    if ($imageUploadError !== null) {
+        $error_msg = $imageUploadError;
+    } else {
+        if ($newImageUrl !== null) {
+            $editStmt = $conn->prepare(" 
+                UPDATE BonusCodes 
+                SET code = ?, name = ?, description = ?, image_url = ?, match_percent = ?, max_bonus_amount = ?,
+                    min_deposit = ?, wagering_multiplier = ?, max_win_multiplier = ?, daily_start_time = ?
+                WHERE id = ?
+            ");
+            $editStmt->bind_param(
+                "ssssddddssi",
+                $edit_code,
+                $edit_name,
+                $edit_desc,
+                $newImageUrl,
+                $edit_match_percent,
+                $edit_max_bonus,
+                $edit_min_deposit,
+                $edit_wagering,
+                $edit_max_win,
+                $edit_daily_start,
+                $edit_id
+            );
+        } else {
+            $editStmt = $conn->prepare(" 
+                UPDATE BonusCodes 
+                SET code = ?, name = ?, description = ?, match_percent = ?, max_bonus_amount = ?,
+                    min_deposit = ?, wagering_multiplier = ?, max_win_multiplier = ?, daily_start_time = ?
+                WHERE id = ?
+            ");
+            $editStmt->bind_param("sssdddddsi",
+                $edit_code, $edit_name, $edit_desc, $edit_match_percent, $edit_max_bonus,
+                $edit_min_deposit, $edit_wagering, $edit_max_win, $edit_daily_start, $edit_id
+            );
+        }
+
+        if ($editStmt && $editStmt->execute()) {
+            $success_msg = "Bónusz (#$edit_id) sikeresen frissítve az adatbázisban!";
+            if ($newImageUrl !== null) {
+                $success_msg .= " A kép is frissítve lett.";
+            }
+        } else {
+            $error_msg = "Hiba történt a bónusz mentésekor: " . ($editStmt ? $editStmt->error : $conn->error);
+        }
+        if ($editStmt) {
+            $editStmt->close();
+        }
+    }
 }
 
 // Gombnyomásra bónusz státusz módosítása (Aktiválás / Inaktiválás)
@@ -332,7 +423,7 @@ $bonuses = $conn->query("
                 <h5 class="mb-0"><i class="fas fa-edit"></i> Bónusz szerkesztése</h5>
                 <button type="button" class="btn btn-sm btn-outline-secondary" id="closeEditPanel">&times;</button>
             </div>
-            <form method="POST" id="editBonusForm">
+            <form method="POST" id="editBonusForm" enctype="multipart/form-data">
                 <input type="hidden" name="edit_bonus_id" id="editBonusId">
 
                 <div class="mb-2">
@@ -358,7 +449,7 @@ $bonuses = $conn->query("
                              style="max-width:100%; max-height:140px; border-radius:8px; background:#0a1628; padding:8px; display:none;">
                     </div>
                     <div class="d-flex gap-2">
-                        <input type="file" class="form-control form-control-sm" id="bonusImageFile" 
+                           <input type="file" class="form-control form-control-sm" id="bonusImageFile" name="edit_bonus_image"
                                accept="image/jpeg,image/png,image/gif,image/svg+xml,image/webp" style="flex:1;">
                         <button type="button" class="btn btn-sm btn-info" id="uploadBonusImageBtn" disabled>
                             <i class="fas fa-upload"></i> Feltöltés
@@ -492,7 +583,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Kép előnézet betöltése
             var imgUrl = this.dataset.imageUrl || '';
             if (imgUrl) {
-                bonusImageThumb.src = imgUrl;
+                bonusImageThumb.src = imgUrl + (imgUrl.indexOf('?') === -1 ? '?' : '&') + 't=' + Date.now();
                 bonusImageThumb.style.display = 'block';
             } else {
                 bonusImageThumb.style.display = 'none';
@@ -546,11 +637,24 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             body: formData
         })
-        .then(function(r) { return r.json(); })
+        .then(function(r) {
+            if (!r.ok) {
+                return r.text().then(function(txt) {
+                    throw new Error('HTTP ' + r.status + ': ' + (txt || 'ismeretlen válasz'));
+                });
+            }
+            return r.text().then(function(txt) {
+                try {
+                    return JSON.parse(txt);
+                } catch (e) {
+                    throw new Error('Érvénytelen JSON válasz: ' + txt);
+                }
+            });
+        })
         .then(function(data) {
             if (data.success) {
                 imageUploadStatus.innerHTML = '<span style="color:#4caf50;"><i class="fas fa-check-circle"></i> ' + data.message + '</span>';
-                bonusImageThumb.src = data.image_url;
+                bonusImageThumb.src = data.image_url + '?t=' + Date.now();
                 bonusImageThumb.style.display = 'block';
                 // Frissítjük az edit gomb data attribútumát is
                 var editBtn = document.querySelector('.btn-edit-bonus[data-id="' + bonusId + '"]');
@@ -561,7 +665,7 @@ document.addEventListener('DOMContentLoaded', function() {
             uploadBonusImageBtn.disabled = false;
         })
         .catch(function(err) {
-            imageUploadStatus.innerHTML = '<span style="color:#e94560;"><i class="fas fa-exclamation-triangle"></i> Hálózati hiba.</span>';
+            imageUploadStatus.innerHTML = '<span style="color:#e94560;"><i class="fas fa-exclamation-triangle"></i> Feltöltési hiba: ' + err.message + '</span>';
             uploadBonusImageBtn.disabled = false;
         });
     });
