@@ -577,6 +577,37 @@ document.addEventListener('DOMContentLoaded', function () {
       createLoadMoreBtn(groups.length);
   }
 
+  function attachLeagueToggleHandlers(container) {
+      const target = container || matchesContainer;
+      if (!target) return;
+
+      const headers = target.querySelectorAll('.league-group .league-header');
+      headers.forEach(header => {
+          if (header.dataset.toggleBound === '1') return;
+          header.dataset.toggleBound = '1';
+
+          const toggleGroup = () => {
+              const group = header.closest('.league-group');
+              if (!group) return;
+              group.classList.toggle('expanded');
+              header.setAttribute('aria-expanded', group.classList.contains('expanded') ? 'true' : 'false');
+          };
+
+          header.addEventListener('click', function (e) {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleGroup();
+          });
+
+          header.addEventListener('keydown', function (e) {
+              if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  toggleGroup();
+              }
+          });
+      });
+  }
+
   function createLoadMoreBtn(totalCount) {
       const existing = matchesContainer.querySelector('.load-more-btn-wrapper');
       if (existing) existing.remove();
@@ -613,6 +644,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // ========== MECCSEK BETÖLTÉSE (CENTER) ==========
   function loadMatches(sportId) {
       if (!matchesContainer) return;
+      clearBoostedCountdownTimer();
       isMatchDetailsView = false;
       updateSortToggleVisibility();
 
@@ -653,6 +685,7 @@ document.addEventListener('DOMContentLoaded', function () {
               matchesContainer.innerHTML = html;
               filterNARows();
               sortMatchesByPriority();
+              attachLeagueToggleHandlers(matchesContainer);
               attachMatchClickHandlers();
               attachOddsButtonHandlers();
               applyPagination();
@@ -1335,6 +1368,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function loadFinishedMatches(sportId) {
       if (!matchesContainer) return;
+      clearBoostedCountdownTimer();
       isMatchDetailsView = false;
       setFinishedViewMode(true);
 
@@ -1357,7 +1391,7 @@ document.addEventListener('DOMContentLoaded', function () {
       // Cím frissítése
       if (centerTitle) {
           const sport = sportsData.find(s => s.sport_api_id === normalizedSportId);
-          const sportName = sport ? sport.sport_name : '';
+          const sportName = sport ? td(sport.sport_name) : '';
           const prefix = sportName ? escapeHtml(sportName) + ' — ' : '';
           centerTitle.innerHTML = '<i class="fas fa-flag-checkered"></i> ' + prefix + t('mainMenu.finishedMatchesTitle', 'Lejátszott meccsek (utolsó 3 nap)');
       }
@@ -1370,6 +1404,7 @@ document.addEventListener('DOMContentLoaded', function () {
               matchesContainer.innerHTML = backHtml + html;
 
               filterNARows();
+              attachLeagueToggleHandlers(matchesContainer);
               attachMatchClickHandlers();
               applyPagination();
               if (typeof window.applyI18n === 'function') window.applyI18n(matchesContainer);
@@ -1408,10 +1443,57 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // ========== ODDSŰRHAJÓ ==========
+  let boostedCountdownTimer = null;
+
+  function clearBoostedCountdownTimer() {
+      if (boostedCountdownTimer) {
+          clearInterval(boostedCountdownTimer);
+          boostedCountdownTimer = null;
+      }
+  }
+
+  function formatCountdown(seconds) {
+      const total = Math.max(0, parseInt(seconds, 10) || 0);
+      const hours = Math.floor(total / 3600);
+      const minutes = Math.floor((total % 3600) / 60);
+      const secs = total % 60;
+      return [hours, minutes, secs].map(n => String(n).padStart(2, '0')).join(':');
+  }
+
+  function renderBoostedClosedMessage(data) {
+      clearBoostedCountdownTimer();
+
+      let remaining = Math.max(0, parseInt(data && data.secondsUntilNextBoost, 10) || 0);
+      const message = (data && data.error) ? data.error : t('mainMenu.oddsShipClosedToday', 'A mai Oddsűrhajó már lezárult.');
+      const timeLabel = t('mainMenu.oddsShipNextIn', 'Következő indulásig hátralévő idő:');
+
+      matchesContainer.innerHTML =
+          '<div class="no-matches">'
+          + '<i class="fas fa-rocket" style="font-size:40px;color:#f5c518;margin-bottom:12px;display:block;"></i>'
+          + '<div>' + escapeHtml(message) + '</div>'
+          + '<div id="boosted-next-countdown" style="margin-top:10px;font-weight:700;color:#d7e3ff;">'
+          + escapeHtml(timeLabel) + ' ' + formatCountdown(remaining)
+          + '</div>'
+          + '</div>';
+
+      boostedCountdownTimer = setInterval(function () {
+          remaining = Math.max(0, remaining - 1);
+          const counterEl = document.getElementById('boosted-next-countdown');
+          if (counterEl) {
+              counterEl.textContent = timeLabel + ' ' + formatCountdown(remaining);
+          }
+
+          if (remaining <= 0) {
+              clearBoostedCountdownTimer();
+          }
+      }, 1000);
+  }
+
   const boostedMatchBtn = document.getElementById('show-boosted-match');
   if (boostedMatchBtn) {
       boostedMatchBtn.addEventListener('click', function (e) {
           e.preventDefault();
+          clearBoostedCountdownTimer();
           setFinishedViewMode(false);
           if (centerTitle) {
               centerTitle.innerHTML = '<i class="fas fa-rocket"></i> ' + t('mainMenu.oddsShipTitle', 'Oddsűrhajó — Mai kiemelt szorzó');
@@ -1422,6 +1504,10 @@ document.addEventListener('DOMContentLoaded', function () {
               .then(res => res.json())
               .then(data => {
                   if (data.error) {
+                      if (data.reason === 'today_closed') {
+                          renderBoostedClosedMessage(data);
+                          return;
+                      }
                       matchesContainer.innerHTML = '<div class="no-matches"><i class="fas fa-rocket" style="font-size:40px;color:#f5c518;margin-bottom:12px;display:block;"></i>' + escapeHtml(data.error) + '</div>';
                       return;
                   }

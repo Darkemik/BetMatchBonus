@@ -50,7 +50,7 @@
                 >
             </div>
             <div class="summary-row betslip-balance-row" id="betslip-balance-row" style="display:none;font-size:0.8rem;color:#999;padding:2px 0;">
-                <span>💰 Egyenleg:</span>
+                <span data-i18n="betslip.balance">💰 Egyenleg:</span>
                 <span id="betslip-balance-display" style="font-weight:600;">0 Ft</span>
             </div>
             <div class="summary-row" id="balance-type-row" style="display:none;">

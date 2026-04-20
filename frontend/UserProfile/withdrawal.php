@@ -252,7 +252,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
     <link rel="icon" href="../../img/logo.png" type="image/x-icon">
     <style>
         .withdrawal-section-title {
-            color: #333;
+            color: #fff;
             font-size: 0.8rem;
             font-weight: 700;
             text-transform: uppercase;
@@ -290,10 +290,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
             font-size: 1.1rem;
         }
         .withdrawal-hint {
-            color: #888;
+            color: #fff;
             font-size: 0.8rem;
             margin-bottom: 16px;
         }
+        .withdrawal-hint strong { color: #fff; }
 
         .withdrawal-quick-btns {
             display: flex;
@@ -328,7 +329,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
 
         .withdrawal-field label {
             font-weight: 600;
-            color: #333;
+            color: #fff;
             font-size: 0.85rem;
             margin-bottom: 6px;
         }
@@ -345,7 +346,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
             box-shadow: 0 0 6px rgba(0,123,255,0.12);
         }
         .withdrawal-field .field-hint {
-            color: #999;
+            color: #fff;
             font-size: 0.78rem;
             margin-top: 4px;
         }
@@ -374,7 +375,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
             gap: 10px;
         }
         .withdrawal-info-bar i { color: #007bff; font-size: 1rem; }
-        .withdrawal-info-bar span { color: #666; font-size: 0.85rem; }
+        .withdrawal-info-bar span { color: #fff; font-size: 0.85rem; }
+        .withdrawal-info-bar span strong { color: #fff; }
+        .withdrawal-info-bar.processing-info-bar span { color: #666; }
+        .withdrawal-info-bar.processing-info-bar span strong { color: #333; }
 
         .withdrawal-submit-btn {
             width: 100%;
@@ -578,7 +582,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                         <div class="withdrawal-field mb-3">
                             <label for="account_holder"><i class="fas fa-user"></i> <span data-i18n="userProfile.withdrawal.accountHolder">Számlán szereplő név</span></label>
                             <input type="text" class="form-control" id="account_holder" name="account_holder" required value="<?php echo htmlspecialchars($registered_full_name); ?>" readonly style="background:#f0f0f0;cursor:not-allowed;">
-                            <div class="field-hint" style="color:#007bff;" data-i18n-html="userProfile.withdrawal.registeredNameUsed"><i class="fas fa-info-circle"></i> A regisztrációkor megadott név kerül felhasználásra.</div>
+                            <div class="field-hint" data-i18n-html="userProfile.withdrawal.registeredNameUsed"><i class="fas fa-info-circle"></i> A regisztrációkor megadott név kerül felhasználásra.</div>
                         </div>
 
                         <div class="withdrawal-field mb-3">
@@ -605,7 +609,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                             </div>
                         </div>
 
-                        <div class="withdrawal-info-bar">
+                        <div class="withdrawal-info-bar processing-info-bar">
                             <i class="fas fa-shield-alt"></i>
                             <span data-i18n-html="userProfile.withdrawal.processingInfo">A kifizetést egy admin dolgozza fel. A pénz <strong>1–3 munkanap</strong> alatt érkezik meg a bankszámládra.</span>
                         </div>

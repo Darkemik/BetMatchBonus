@@ -1208,6 +1208,16 @@
     border-top-color: rgba(255, 193, 7, 0.15);
 }
 
+.elozmeny-item.elozmeny-void {
+    border: 1px solid rgba(158, 158, 158, 0.3);
+    background: rgba(158, 158, 158, 0.05);
+}
+
+.elozmeny-item.elozmeny-void .elozmeny-summary {
+    background: rgba(158, 158, 158, 0.08);
+    border-top-color: rgba(158, 158, 158, 0.15);
+}
+
 .won-amount {
     color: #4caf50 !important;
     font-weight: 700 !important;

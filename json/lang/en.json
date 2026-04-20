@@ -152,7 +152,10 @@
     "oddsPyramidBoost": "Odds Pyramid bonus: 1.3x multiplier active! (6+ bets)",
     "oddsPyramidProgress": "Odds Pyramid: <strong>{n}</strong> more bets needed for 1.3x bonus!",
     "historyPrev": "Previous",
-    "historyNext": "Next"
+    "historyNext": "Next",
+    "balance": "💰 Balance:",
+    "realBalance": "Main balance",
+    "void": "Refunded"
   },
   "mainMenu": {
     "upcomingMatches": "Upcoming Matches",

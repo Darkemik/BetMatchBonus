@@ -119,7 +119,7 @@ if ($sportId > 0) {
         WHERE s.api_id = ?
         AND (
             m.status_id = 3
-            OR (m.is_live = 0 AND m.start_time < ?)
+            OR (m.home_score IS NOT NULL AND m.away_score IS NOT NULL)
             )
       AND m.start_time BETWEEN ? AND ?
       AND m.name IS NOT NULL
@@ -133,7 +133,7 @@ if ($sportId > 0) {
         echo '<div class="no-matches">Hiba az adatbázis lekérdezésnél.</div>';
         exit;
     }
-    $stmt->bind_param("isss", $sportId, $now, $from, $now);
+    $stmt->bind_param("iss", $sportId, $from, $now);
 } else {
     $sql = "
     SELECT 
@@ -156,7 +156,7 @@ if ($sportId > 0) {
     LEFT JOIN Countries c ON ch.country_id = c.id
         WHERE (
             m.status_id = 3
-            OR (m.is_live = 0 AND m.start_time < ?)
+            OR (m.home_score IS NOT NULL AND m.away_score IS NOT NULL)
             )
       AND m.start_time BETWEEN ? AND ?
       AND m.name IS NOT NULL
@@ -170,7 +170,7 @@ if ($sportId > 0) {
         echo '<div class="no-matches">Hiba az adatbázis lekérdezésnél.</div>';
         exit;
     }
-    $stmt->bind_param("sss", $now, $from, $now);
+    $stmt->bind_param("ss", $from, $now);
 }
 
 $stmt->execute();
@@ -288,15 +288,17 @@ if (!empty($leagues)) {
 <?php if (empty($leagues)): ?>
     <div class="no-matches"><i class="fas fa-flag-checkered" style="font-size:40px;color:#aaa;margin-bottom:12px;display:block;"></i><span data-i18n="mainMenu.noFinishedMatches">Nincs lejátszott meccs az elmúlt 3 napban.</span></div>
 <?php else: ?>
+    <?php $leagueRenderIndex = 0; ?>
     <?php foreach ($leagues as $leagueKey => $leagueData):
+        $isInitiallyExpanded = $leagueRenderIndex < 3;
         $matches = $leagueData['matches'];
         $matchCount = count($matches);
         $countryDisplay = htmlspecialchars($leagueData['country']);
         $leagueDisplay = htmlspecialchars($leagueData['league_name'] ?? 'Egyéb');
         $leagueId = 'fleague-' . md5($leagueKey);
     ?>
-    <div class="league-group" data-league-id="<?php echo $leagueId; ?>">
-        <div class="league-header" onclick="this.parentElement.classList.toggle('expanded')">
+    <div class="league-group<?php echo $isInitiallyExpanded ? ' expanded' : ''; ?>" data-league-id="<?php echo $leagueId; ?>">
+        <div class="league-header" role="button" tabindex="0" aria-expanded="<?php echo $isInitiallyExpanded ? 'true' : 'false'; ?>">
             <div class="league-header-left">
                 <i class="fas fa-globe-europe league-country-icon"></i>
                 <span class="league-country"><?php echo $countryDisplay; ?></span>
@@ -324,10 +326,18 @@ if (!empty($leagues)) {
                             <?php endif; ?>
                         </td>
                         <td>
-                            <?php if (!empty($m['hasScore'])): ?>
-                                <span class="match-score finished-score"><?php echo htmlspecialchars($m['score']); ?></span>
+                            <?php if (!empty($m['hasScore'])):
+                                $scoreParts = explode(' - ', (string)$m['score'], 2);
+                                $homeScoreLabel = htmlspecialchars(trim((string)($scoreParts[0] ?? '0')));
+                                $awayScoreLabel = htmlspecialchars(trim((string)($scoreParts[1] ?? '0')));
+                            ?>
+                                <span class="match-score finished-score" aria-label="Végeredmény: <?php echo $homeScoreLabel; ?> - <?php echo $awayScoreLabel; ?>">
+                                    <span class="score-home"><?php echo $homeScoreLabel; ?></span>
+                                    <span class="score-separator">:</span>
+                                    <span class="score-away"><?php echo $awayScoreLabel; ?></span>
+                                </span>
                             <?php else: ?>
-                                <span class="match-score finished-score" data-i18n="mainMenu.noData">Nincs adat</span>
+                                <span class="match-score finished-score score-no-data" data-i18n="mainMenu.noData">Nincs adat</span>
                             <?php endif; ?>
                         </td>
                         <td>
@@ -349,5 +359,6 @@ if (!empty($leagues)) {
             </table>
         </div>
     </div>
+    <?php $leagueRenderIndex++; ?>
     <?php endforeach; ?>
 <?php endif; ?>

@@ -759,6 +759,366 @@ VALUES
   1                           -- Aktív
 );
 
+-- 4. NAPI TOP JUTALOM (AUTOMATIKUS, NINCS KÓDJA)
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  'TOP_REWARD_DAILY',
+  'Napi Top Jutalom (1.000 Ft Free Bet)',
+  'Automatikus napi jutalom a top befizető, top fogadó és top nyertes számára.',
+  7,                          -- DAILY_REWARD
+  1000.00,
+  NULL,
+  NULL,
+  NULL,
+  'FREE_BET',
+  'MANUAL',
+  'ANY',
+  0,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  0,
+  0,
+  NULL,
+  NULL,
+  0,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  0,
+  0,
+  NULL,
+  9999,
+  NULL,
+  NULL,
+  1                           -- Aktív
+);
+
+-- 5. ADMIN FREE BET (BELSŐ HASZNÁLAT)
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  '__ADMIN_FREEBET__',
+  'Admin Free Bet',
+  'Admin által adott free bet',
+  7,                          -- DAILY_REWARD
+  0.00,
+  NULL,
+  NULL,
+  NULL,
+  'FREE_BET',
+  'MANUAL',
+  NULL,
+  0,
+  NULL,
+  NULL,
+  NULL,
+  0.0,
+  5.0,
+  0,
+  0,
+  NULL,
+  NULL,
+  0,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  0,
+  0,
+  NULL,
+  0,
+  NULL,
+  NULL,
+  0                           -- Csak admin
+);
+
+-- 6. NB1-ES DERBY (ÚJPEST – FERENCVÁROS) - VAN KÓDJA
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  'NB1DERBY',
+  'NB1 DERBY BÓNUSZ (Újpest-Ferencváros)',
+  'Az NB1 legnagyobb derbiéhez kapcsolódó exkluzív élő fogadási bónusz! Hogyan szerezheted meg? 1) Várd meg, amíg elindul az Újpest FC – Ferencvárosi TC mérkőzés. 2) A meccs közben (élő fogadásként) tégy meg egy legalább 5.000 Ft értékű fogadást, minimum 2.00-es odds-szal. 3) A fogadásod lezárása és kiértékelése után 5.000 Ft értékű ingyenes fogadást (Free Bet) kapsz jutalmul. 4) Az ingyenes fogadásnál a tét nem kerül visszafizetésre, csak a tiszta nyereményt kapod. 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: Kizárólag élő fogadásra érvényes, előzetes (pre-match) fogadás nem számít!',
+  4,                          -- EVENT_SPECIFIC
+  5000.00,
+  5000.00,
+  5000.00,
+  0.00,
+  'FREE_BET',
+  'BET',
+  'FOOTBALL',
+  1,
+  2.0,
+  NULL,
+  NULL,
+  0.0,
+  5.0,
+  1,
+  0,
+  NULL,
+  NULL,
+  0,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  0,
+  0,
+  NULL,
+  1,
+  '2026-01-01 00:00:00',
+  NULL,
+  0                           -- Csak admin
+);
+
+-- 7. ESPORT BÓNUSZ (VAN KÓDJA)
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  'ESPORT5K',
+  'ESPORT BÓNUSZ (5.000 Ft bónusz)',
+  'Esport rajongóknak szóló bónusz — CS2, League of Legends, Dota 2 és más esport mérkőzésekre! Hogyan működik? 1) Tégy meg egy legalább 5.000 Ft értékű fogadást bármely esport mérkőzésre. 2) A fogadásnak legalább 3 eseményt (3-as kötést) kell tartalmaznia. 3) Minden egyes eseménynek minimum 1,30-as odds-szal kell rendelkeznie, és az össz odds-nak el kell érnie a 3.00-at. 4) A fogadásod lezárása és kiértékelése után 5.000 Ft bónusz pénzt kapsz. 5) A kapott bónuszt 3-szorosan kell megforgatnod (15.000 Ft értékű fogadás). 6) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Próbáld ki az esport fogadást és szerezd meg az extra bónuszt!',
+  4,                          -- EVENT_SPECIFIC
+  5000.00,
+  5000.00,
+  5000.00,
+  0.00,
+  'BONUS_MONEY',
+  'BET',
+  'ESPORT',
+  0,
+  3.0,
+  3,
+  1.3,
+  3.0,
+  5.0,
+  1,
+  0,
+  NULL,
+  NULL,
+  0,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  0,
+  0,
+  NULL,
+  1,
+  '2026-01-01 00:00:00',
+  NULL,
+  0                           -- Csak admin
+);
+
+-- 8. SZÜLETÉSNAPI BÓNUSZ (NINCS KÓD - IGÉNYLŐS)
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  NULL,
+  'SZÜLETÉSNAPI BÓNUSZ (5.000 Ft)',
+  'Boldog születésnapot! Ajándékunk neked: 5.000 Ft bónusz a nagy napodon. Hogyan igényelheted? 1) A születésnapodon (a regisztrációnál megadott dátum alapján) igényeld a bónuszt a profilodban vagy az ügyfélszolgálaton keresztül. 2) Jóváhagyás után 5.000 Ft bónusz pénz kerül a bónusz egyenlegedre. 3) A bónusszal bármilyen sportra, bármilyen mérkőzésre fogadhatsz — nincs sportági megkötés. 4) Nincs forgatási követelmény, tehát a nyereményed azonnal kifizethetővé válik! 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Minden évben egyszer, a születésnapodon igényelheted!',
+  7,                          -- ADMIN_BONUS
+  5000.00,
+  0.00,
+  5000.00,
+  0.00,
+  'BONUS_MONEY',
+  'MANUAL',
+  'ANY',
+  0,
+  NULL,
+  NULL,
+  NULL,
+  0.0,
+  5.0,
+  0,
+  0,
+  NULL,
+  NULL,
+  0,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  1,                          -- birthday_bonus = IGEN
+  0,
+  NULL,
+  1,
+  '2026-01-01 00:00:00',
+  NULL,
+  0                           -- Csak admin
+);
+
+-- 9. BETMATCHBONUS SZÜLETÉSNAPI BÓNUSZ (NINCS KÓD - IGÉNYLŐS, ELSŐ 500)
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  NULL,
+  'BETMATCH SZÜLETÉSNAPI BÓNUSZ (első 500)',
+  'A BetMatchBonus születésnapi különleges promóciója — limitált számban elérhető! Hogyan működik? 1) A BetMatchBonus évfordulóján az első 500 igénylő ügyfél kap 5.000 Ft bónuszt. 2) Igényeld a bónuszt a profilodban vagy az ügyfélszolgálaton keresztül — aki előbb igényli, az kapja meg! 3) A bónusszal bármilyen sportra, bármilyen mérkőzésre fogadhatsz — nincs sportági megkötés. 4) Nincs forgatási követelmény, a nyereményed azonnal kifizethetővé válik! 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: Csak 500 db érhető el összesen, ne habozz!',
+  7,                          -- ADMIN_BONUS
+  5000.00,
+  0.00,
+  5000.00,
+  0.00,
+  'BONUS_MONEY',
+  'MANUAL',
+  'ANY',
+  0,
+  NULL,
+  NULL,
+  NULL,
+  0.0,
+  5.0,
+  0,
+  0,
+  NULL,
+  NULL,
+  0,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  1,                          -- birthday_bonus = IGEN
+  0,
+  500,                        -- usage_limit = 500
+  1,
+  '2026-01-01 00:00:00',
+  NULL,
+  0                           -- Csak admin
+);
+
+-- 10. HÉTVÉGI BÓNUSZ (SZOMBAT-VASÁRNAP, VAN KÓDJA)
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  'HETVEGI5K',
+  'HÉTVÉGI BÓNUSZ (5.000 Ft ingyenes fogadás)',
+  'Hétvégi extra — szombaton és vasárnap elérhető ingyenes fogadás! Hogyan aktiválhatod? 1) Szombaton vagy vasárnap fizess be legalább 5.000 Ft-ot. 2) Cserébe 5.000 Ft értékű ingyenes fogadást (Free Bet) kapsz. 3) Az ingyenes fogadást 2-es kötésben (legalább 2 esemény) kell felhasználnod. 4) Az össz odds-nak legalább 2.00-nak kell lennie, és minden eseménynél minimum 1,40-es odds szükséges. 5) Nincs forgatási követelmény — a nyereményed azonnal kifizethetővé válik (a tét összege nem kerül visszafizetésre, csak a nyereményt kapod). 6) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Tipp: Használd a hétvégi nagy meccsekre!',
+  6,                          -- WEEKEND
+  5000.00,
+  5000.00,
+  5000.00,
+  100.00,
+  'FREE_BET',
+  'DEPOSIT',
+  'ANY',
+  0,
+  2.0,
+  2,
+  1.4,
+  0.0,
+  5.0,
+  0,
+  0,
+  NULL,
+  NULL,
+  0,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  0,
+  0,
+  NULL,
+  1,
+  '2026-01-01 00:00:00',
+  NULL,
+  0                           -- Csak admin
+);
+
+-- 11. ADMIN BÓNUSZ (BELSŐ HASZNÁLAT - BÓNUSZ PÉNZ)
+INSERT INTO BonusCodes
+(code, name, description, bonus_type_id, bonus_amount, min_deposit, max_bonus_amount, match_percent,
+ bet_reward_type, bonus_trigger, sport_restriction, live_only, min_odds, min_combo, min_odds_per_event,
+ wagering_multiplier, max_win_multiplier, evaluate_on_settle, is_step_bonus, parent_bonus_id, step_number,
+ valid_weekdays_only, daily_start_time, activation_expire_hours,
+ specific_date, advent_week, birthday_bonus, auto_assign, usage_limit, per_user_limit,
+ valid_from, valid_to, is_active)
+VALUES
+(
+  '__ADMIN_BONUS__',
+  'Admin Bónusz',
+  'Admin által manuálisan adott bónusz pénz a felhasználó bónusz egyenlegére.',
+  7,                          -- ADMIN_BONUS
+  0.00,
+  NULL,
+  NULL,
+  NULL,
+  'BONUS_MONEY',
+  'MANUAL',
+  NULL,
+  0,
+  NULL,
+  NULL,
+  NULL,
+  0.0,
+  5.0,
+  0,
+  0,
+  NULL,
+  NULL,
+  0,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  0,
+  0,
+  NULL,
+  0,
+  NULL,
+  NULL,
+  0                           -- Csak admin
+);
+
 -- ============================================================
 -- 30) Hiányzó oszlopok hozzáadása
 -- ============================================================

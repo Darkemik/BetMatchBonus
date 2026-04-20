@@ -9,6 +9,143 @@
 require_once dirname(__DIR__) . "/connect.php";
 require_once dirname(__DIR__) . "/config.php";
 
+function isPreferredBoostMarketName(string $marketName): bool
+{
+    $name = mb_strtolower($marketName);
+    return strpos($name, 'győztes') !== false
+        || strpos($name, 'winner') !== false
+        || strpos($name, '1x2') !== false
+        || strpos($name, 'végeredmény') !== false
+        || strpos($name, 'match result') !== false;
+}
+
+/**
+ * Kiválaszt egy boostolható market/selection párost normalizált market tömbből.
+ *
+ * Elvárt market forma:
+ * [
+ *   ['name' => '...', 'selections' => [['name'=>'...', 'odd'=>1.95], ...]],
+ *   ...
+ * ]
+ */
+function resolveBoostFromMarkets(array $markets): ?array
+{
+    if (empty($markets)) return null;
+
+    $preferredMarket = null;
+    $fallbackMarket = null;
+
+    foreach ($markets as $market) {
+        if (!is_array($market)) continue;
+
+        $marketName = (string)($market['name'] ?? '');
+        $selections = $market['selections'] ?? [];
+        if (!is_array($selections) || empty($selections)) continue;
+
+        $validSelections = array_values(array_filter($selections, function ($selection) {
+            return isset($selection['odd'])
+                && is_numeric($selection['odd'])
+                && (float)$selection['odd'] > 1
+                && trim((string)($selection['name'] ?? '')) !== '';
+        }));
+
+        if (empty($validSelections)) continue;
+
+        $candidate = [
+            'name' => $marketName,
+            'selections' => $validSelections,
+        ];
+
+        if ($fallbackMarket === null) {
+            $fallbackMarket = $candidate;
+        }
+
+        if (isPreferredBoostMarketName($marketName)) {
+            $preferredMarket = $candidate;
+            break;
+        }
+    }
+
+    $targetMarket = $preferredMarket ?? $fallbackMarket;
+    if ($targetMarket === null || empty($targetMarket['selections'])) {
+        return null;
+    }
+
+    $selection = $targetMarket['selections'][0];
+    $originalOdd = round((float)$selection['odd'], 2);
+    $boostedOdd = round($originalOdd * 1.5, 2);
+
+    if ($boostedOdd <= 1) {
+        return null;
+    }
+
+    return [
+        'market' => (string)$targetMarket['name'],
+        'selection' => (string)$selection['name'],
+        'originalOdd' => $originalOdd,
+        'boostedOdd' => $boostedOdd,
+    ];
+}
+
+/**
+ * DB fallback: EventMarkets + OddsOutcomes alapján próbál boostot választani.
+ */
+function resolveBoostFromDb(mysqli $conn, int $eventApiId): ?array
+{
+    $sql = "
+        SELECT em.name AS market_name, oo.label AS selection_name, oo.odds
+        FROM Events e
+        JOIN EventMarkets em ON em.event_id = e.id
+        JOIN OddsOutcomes oo ON oo.event_market_id = em.id
+        WHERE e.api_id = ?
+          AND em.name IS NOT NULL
+          AND TRIM(em.name) != ''
+          AND oo.label IS NOT NULL
+          AND TRIM(oo.label) != ''
+          AND oo.odds IS NOT NULL
+          AND oo.odds > 1
+        ORDER BY em.id ASC, oo.role ASC, oo.id ASC
+    ";
+
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        return null;
+    }
+
+    $stmt->bind_param('i', $eventApiId);
+    $stmt->execute();
+    $res = $stmt->get_result();
+
+    $marketMap = [];
+    while ($row = $res->fetch_assoc()) {
+        $marketName = (string)($row['market_name'] ?? '');
+        $selectionName = (string)($row['selection_name'] ?? '');
+        $oddValue = (float)($row['odds'] ?? 0);
+        if ($marketName === '' || $selectionName === '' || $oddValue <= 1) {
+            continue;
+        }
+
+        if (!isset($marketMap[$marketName])) {
+            $marketMap[$marketName] = [
+                'name' => $marketName,
+                'selections' => [],
+            ];
+        }
+
+        $marketMap[$marketName]['selections'][] = [
+            'name' => $selectionName,
+            'odd' => $oddValue,
+        ];
+    }
+    $stmt->close();
+
+    if (empty($marketMap)) {
+        return null;
+    }
+
+    return resolveBoostFromMarkets(array_values($marketMap));
+}
+
 function resolveCompetitionApiIdForBoost(mysqli $conn, array $countryCodes, array $leagueNames): int
 {
     if (empty($leagueNames)) return 0;
@@ -69,7 +206,8 @@ function getDailyBoostedMatch(): ?array
     global $conn;
 
     $strategyVersion = 3;
-    $today = date('Y-m-d');
+    $bpNow = new DateTime('now', new DateTimeZone('Europe/Budapest'));
+    $today = $bpNow->format('Y-m-d');
     $cacheDir  = __DIR__ . '/../uploads';
     $cacheFile = $cacheDir . '/boosted_cache.json';
 
@@ -96,11 +234,15 @@ function getDailyBoostedMatch(): ?array
         }
     }
 
-    // 2) Jelöltek lekérdezése (fix napi ablak: ma 00:00 UTC → ma 23:59 UTC)
+    // 2) Jelöltek lekérdezése (fix napi ablak: budapesti nap 00:00 → 23:59)
     //    - Csak labdarúgás (sport_api_id=66)
     //    - A főoldali sorrend szerinti első 3 ligatáblából választunk
-    $from = (new DateTime('today 00:00:00', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
-    $to   = (new DateTime('today 23:59:59', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
+    $fromBp = new DateTime($today . ' 00:00:00', new DateTimeZone('Europe/Budapest'));
+    $toBp = new DateTime($today . ' 23:59:59', new DateTimeZone('Europe/Budapest'));
+    $fromBp->setTimezone(new DateTimeZone('UTC'));
+    $toBp->setTimezone(new DateTimeZone('UTC'));
+    $from = $fromBp->format('Y-m-d H:i:s');
+    $to   = $toBp->format('Y-m-d H:i:s');
 
     $priorityIds = [
         'premier' => resolveCompetitionApiIdForBoost($conn, ['ENG', 'GBR'], ['Premier League']),
@@ -168,6 +310,8 @@ function getDailyBoostedMatch(): ?array
     }
     $stmt->close();
 
+    $allCandidates = $candidates;
+
     if (empty($candidates)) {
         return null;
     }
@@ -225,46 +369,26 @@ function getDailyBoostedMatch(): ?array
         try {
             $apiData = apiGet(EP_MATCH_DETAILS . '/' . $eventId);
 
-            if (isset($apiData['markets']) && is_array($apiData['markets']) && count($apiData['markets']) > 0) {
-                $targetMarket = null;
-                foreach ($apiData['markets'] as $market) {
-                    $mName = mb_strtolower($market['name'] ?? '');
-                    $sels = $market['selections'] ?? [];
-                    if (count($sels) < 2) continue;
-
-                    if (strpos($mName, 'győztes') !== false ||
-                        strpos($mName, 'winner') !== false ||
-                        strpos($mName, '1x2') !== false ||
-                        strpos($mName, 'végeredmény') !== false ||
-                        strpos($mName, 'match result') !== false) {
-                        $targetMarket = $market;
-                        break;
-                    }
-                    if ($targetMarket === null) {
-                        $targetMarket = $market;
-                    }
-                }
-
-                if ($targetMarket && !empty($targetMarket['selections'])) {
-                    $validSelections = array_values(array_filter($targetMarket['selections'], function ($s) {
-                        return isset($s['odd']) && is_numeric($s['odd']) && (float)$s['odd'] > 1;
-                    }));
-
-                    if (empty($validSelections)) {
-                        continue;
-                    }
-
-                    // Konzisztens, egyszeru valasztas: az elso ervenyes opcio
-                    $sel = $validSelections[0];
-
-                    $boostedMarket = $targetMarket['name'];
-                    $boostedSelection = $sel['name'] ?? '';
-                    $originalOdd = round((float)($sel['odd'] ?? 1.0), 2);
-                    $boostedOdd = round($originalOdd * 1.5, 2);
-                }
+            $resolvedBoost = resolveBoostFromMarkets((array)($apiData['markets'] ?? []));
+            if ($resolvedBoost) {
+                $boostedMarket = $resolvedBoost['market'];
+                $boostedSelection = $resolvedBoost['selection'];
+                $originalOdd = $resolvedBoost['originalOdd'];
+                $boostedOdd = $resolvedBoost['boostedOdd'];
             }
         } catch (Throwable $e) {
             error_log("Oddsűrhajó cache API hiba (eventId=$eventId): " . $e->getMessage());
+        }
+
+        // Fallback: ha API oldalról nincs használható market, próbáljuk a DB-t.
+        if ($boostedMarket === null || $boostedOdd === null || $boostedOdd <= 1) {
+            $dbResolvedBoost = resolveBoostFromDb($conn, $eventId);
+            if ($dbResolvedBoost) {
+                $boostedMarket = $dbResolvedBoost['market'];
+                $boostedSelection = $dbResolvedBoost['selection'];
+                $originalOdd = $dbResolvedBoost['originalOdd'];
+                $boostedOdd = $dbResolvedBoost['boostedOdd'];
+            }
         }
 
         // Ha sikerült odds-ot kapni, kilépünk a ciklusból
@@ -276,9 +400,54 @@ function getDailyBoostedMatch(): ?array
         error_log("Oddsűrhajó: eventId=$eventId nem adott vissza odds-ot, következő jelölt...");
     }
 
+    // Második kör: ha a top3 liga szűrésben nem találtunk boostot,
+    // próbáljuk meg a teljes napi jelöltlistát is.
+    if (($boostedMarket === null || $boostedOdd === null || $boostedOdd <= 1)
+        && count($allCandidates) > count($candidates)) {
+        $maxAttemptsAll = min(count($allCandidates), 50);
+
+        for ($attempt = 0; $attempt < $maxAttemptsAll; $attempt++) {
+            $selected = $allCandidates[$attempt];
+            $eventId = (int)$selected['api_id'];
+
+            $boostedMarket = null;
+            $boostedSelection = null;
+            $originalOdd = null;
+            $boostedOdd = null;
+
+            try {
+                $apiData = apiGet(EP_MATCH_DETAILS . '/' . $eventId);
+
+                $resolvedBoost = resolveBoostFromMarkets((array)($apiData['markets'] ?? []));
+                if ($resolvedBoost) {
+                    $boostedMarket = $resolvedBoost['market'];
+                    $boostedSelection = $resolvedBoost['selection'];
+                    $originalOdd = $resolvedBoost['originalOdd'];
+                    $boostedOdd = $resolvedBoost['boostedOdd'];
+                }
+            } catch (Throwable $e) {
+                error_log("Oddsűrhajó cache API hiba (2. kör, eventId=$eventId): " . $e->getMessage());
+            }
+
+            if ($boostedMarket === null || $boostedOdd === null || $boostedOdd <= 1) {
+                $dbResolvedBoost = resolveBoostFromDb($conn, $eventId);
+                if ($dbResolvedBoost) {
+                    $boostedMarket = $dbResolvedBoost['market'];
+                    $boostedSelection = $dbResolvedBoost['selection'];
+                    $originalOdd = $dbResolvedBoost['originalOdd'];
+                    $boostedOdd = $dbResolvedBoost['boostedOdd'];
+                }
+            }
+
+            if ($boostedMarket !== null && $boostedOdd !== null && $boostedOdd > 1) {
+                break;
+            }
+        }
+    }
+
     // Ha egyetlen jelölt sem adott odds-ot, ne mentsünk üres cache-t
     if ($boostedMarket === null || $boostedOdd === null || $boostedOdd <= 1) {
-        error_log("Oddsűrhajó: Egyik jelölt sem adott vissza érvényes odds-ot ($maxAttempts próba)");
+        error_log("Oddsűrhajó: Egyik jelölt sem adott vissza érvényes odds-ot (top3: $maxAttempts próba, teljes lista fallback is lefutott)");
         return null;
     }
 

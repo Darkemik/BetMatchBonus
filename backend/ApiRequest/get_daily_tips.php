@@ -26,8 +26,175 @@ function normalizeDailyTipText($value) {
     } else {
         $text = strtolower($text);
     }
+    $text = strtr($text, [
+        'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ö' => 'o', 'ő' => 'o', 'ú' => 'u', 'ü' => 'u', 'ű' => 'u',
+        'à' => 'a', 'è' => 'e', 'ì' => 'i', 'ò' => 'o', 'ù' => 'u',
+    ]);
     $text = preg_replace('/\s+/u', ' ', $text);
     return $text;
+}
+
+function parseDailyTipGoalsLine($value) {
+    $normalized = str_replace(',', '.', normalizeDailyTipText($value));
+    if (preg_match('/(\d+(?:\.\d+)?)/', $normalized, $m)) {
+        return (float)$m[1];
+    }
+    return null;
+}
+
+function isDailyTip1X2Market($marketName) {
+    $marketLower = normalizeDailyTipText($marketName);
+    return strpos($marketLower, '1x2') !== false
+        || strpos($marketLower, 'winner') !== false
+        || strpos($marketLower, 'gyoztes') !== false
+        || strpos($marketLower, 'match result') !== false
+        || strpos($marketLower, 'full time result') !== false
+        || strpos($marketLower, 'moneyline') !== false;
+}
+
+function isDailyTipCorrectScoreMarket($marketName) {
+    $marketLower = normalizeDailyTipText($marketName);
+    return strpos($marketLower, 'correct score') !== false
+        || strpos($marketLower, 'pontos vegeredmeny') !== false
+        || strpos($marketLower, 'exact score') !== false
+        || strpos($marketLower, 'vegeredmeny') !== false;
+}
+
+function analyzeDailyTipSelection(array $item): array {
+    $market = normalizeDailyTipText($item['market'] ?? '');
+    $pick = normalizeDailyTipText($item['pick'] ?? '');
+    $home = normalizeDailyTipText($item['homeTeam'] ?? '');
+    $away = normalizeDailyTipText($item['awayTeam'] ?? '');
+
+    $is1X2 = isDailyTip1X2Market($market);
+    $isCorrectScore = isDailyTipCorrectScoreMarket($market);
+
+    $hasGoalWord = strpos($market, 'gol') !== false || strpos($market, 'goal') !== false;
+    $isBtts = strpos($market, 'mindket csapat szerez golt') !== false || strpos($market, 'both teams to score') !== false || strpos($market, 'btts') !== false;
+    $isTeamToScore = strpos($market, 'melyik csapat szerez golt') !== false || strpos($market, 'which team scores') !== false;
+    $isHalfTimeFullTime = strpos($market, 'felido/vegeredmeny') !== false || strpos($market, '1. felido/vegeredmeny') !== false || strpos($market, 'half time/full time') !== false || strpos($market, '1st half/full time') !== false;
+    $isHalfTime = (strpos($market, 'felido') !== false || strpos($market, 'half time') !== false || strpos($market, '1st half') !== false) && !$isHalfTimeFullTime;
+    $isPlayerToScore = strpos($market, 'jatekos golt szerez') !== false || strpos($market, 'player to score') !== false || strpos($market, 'goalscorer') !== false || strpos($market, 'anytime scorer') !== false;
+    $isFirstLastGoal = strpos($market, 'elso gol') !== false || strpos($market, '1. gol') !== false || strpos($market, 'first goal') !== false || strpos($market, 'utolso gol') !== false || strpos($market, 'last goal') !== false;
+    $isWinToNil = strpos($market, 'kapott gol nelkuli gyozelem') !== false || strpos($market, 'kapott gol nelkul') !== false || strpos($market, 'win to nil') !== false || strpos($market, 'clean sheet') !== false;
+    $isGeneralScoringMarket = strpos($market, 'golt szerez') !== false || strpos($market, 'to score') !== false || strpos($market, 'scores') !== false;
+
+    $isOverPick = strpos($pick, 'felett') !== false || strpos($pick, 'over') !== false || strpos($pick, 'tobb') !== false || strpos($pick, 'more than') !== false;
+    $isUnderPick = strpos($pick, 'alatt') !== false || strpos($pick, 'under') !== false || strpos($pick, 'kevesebb') !== false || strpos($pick, 'less than') !== false;
+    $isYesPick = $pick === 'igen' || $pick === 'yes';
+    $isNoPick = $pick === 'nem' || $pick === 'no';
+
+    $isHomePick = $pick === '1' || $pick === 'hazai' || $pick === 'home' || ($home !== '' && strpos($pick, $home) !== false);
+    $isAwayPick = $pick === '2' || $pick === 'vendeg' || $pick === 'away' || ($away !== '' && strpos($pick, $away) !== false);
+
+    $isTeamGoalsMarket = $hasGoalWord && (
+        strpos($market, 'hazai csapat') !== false ||
+        strpos($market, 'vendeg csapat') !== false ||
+        strpos($market, 'home team') !== false ||
+        strpos($market, 'away team') !== false ||
+        strpos($market, 'csapat gol') !== false ||
+        strpos($market, 'team goals') !== false ||
+        ($home !== '' && strpos($market, $home) !== false) ||
+        ($away !== '' && strpos($market, $away) !== false)
+    );
+
+    $isTotalGoalsMarket = $hasGoalWord && (
+        strpos($market, 'golok szama') !== false ||
+        strpos($market, 'goals szama') !== false ||
+        strpos($market, 'total goals') !== false ||
+        strpos($market, 'goals number') !== false ||
+        strpos($market, 'meccs tobb') !== false ||
+        strpos($market, 'match over') !== false ||
+        strpos($market, 'match under') !== false ||
+        strpos($market, 'over/under') !== false
+    ) && !$isTeamGoalsMarket;
+
+    $isGoalRelated = $isTotalGoalsMarket || $isTeamGoalsMarket || $isBtts || $isTeamToScore || $isPlayerToScore || $isFirstLastGoal || $isWinToNil || $isGeneralScoringMarket;
+    $lineValue = parseDailyTipGoalsLine(($item['pick'] ?? '') . ' ' . ($item['market'] ?? ''));
+
+    $isTeamToScoreHomePick = $isTeamToScore && ($isHomePick || strpos($pick, 'hazai') !== false || strpos($pick, 'home') !== false);
+    $isTeamWinPick = $is1X2 && ($isHomePick || $isAwayPick);
+
+    return [
+        'is1X2' => $is1X2,
+        'isCorrectScore' => $isCorrectScore,
+        'isGoalRelated' => $isGoalRelated,
+        'isTotalGoalsMarket' => $isTotalGoalsMarket,
+        'isTeamGoalsMarket' => $isTeamGoalsMarket,
+        'isBtts' => $isBtts,
+        'isHalfTimeFullTime' => $isHalfTimeFullTime,
+        'isHalfTime' => $isHalfTime,
+        'isPlayerToScore' => $isPlayerToScore,
+        'isOverPick' => $isOverPick,
+        'isUnderPick' => $isUnderPick,
+        'isYesPick' => $isYesPick,
+        'isNoPick' => $isNoPick,
+        'isTeamToScoreHomePick' => $isTeamToScoreHomePick,
+        'isTeamWinPick' => $isTeamWinPick,
+        'lineValue' => $lineValue,
+    ];
+}
+
+function getDailyTipComboConflictMessage(array $itemA, array $itemB): ?string {
+    $a = analyzeDailyTipSelection($itemA);
+    $b = analyzeDailyTipSelection($itemB);
+
+    if ($a['isCorrectScore'] || $b['isCorrectScore']) {
+        return 'correct_score';
+    }
+
+    if ($a['isGoalRelated'] && $b['isGoalRelated']) {
+        return 'goal_related';
+    }
+
+    if (($a['is1X2'] && $b['isGoalRelated']) || ($b['is1X2'] && $a['isGoalRelated'])) {
+        return '1x2_goal';
+    }
+
+    if ($a['isTotalGoalsMarket'] && $b['isTotalGoalsMarket'] && (($a['isOverPick'] && $b['isUnderPick']) || ($a['isUnderPick'] && $b['isOverPick']))) {
+        return 'over_under_opposite';
+    }
+
+    if (($a['isBtts'] && $b['isTotalGoalsMarket']) || ($b['isBtts'] && $a['isTotalGoalsMarket'])) {
+        $bttsSel = $a['isBtts'] ? $a : $b;
+        $goalsSel = $a['isTotalGoalsMarket'] ? $a : $b;
+        if (($bttsSel['isYesPick'] && $goalsSel['isOverPick']) || ($bttsSel['isNoPick'] && $goalsSel['isUnderPick'])) {
+            return 'btts_total_goals_combo';
+        }
+    }
+
+    if ((($a['isHalfTimeFullTime'] || $a['isHalfTime']) && $b['is1X2']) || (($b['isHalfTimeFullTime'] || $b['isHalfTime']) && $a['is1X2'])) {
+        return 'halftime_1x2';
+    }
+
+    if (($a['isPlayerToScore'] && $b['isTeamWinPick']) || ($b['isPlayerToScore'] && $a['isTeamWinPick'])) {
+        return 'player_teamwin';
+    }
+
+    if (($a['isTotalGoalsMarket'] && $b['isTeamGoalsMarket']) || ($b['isTotalGoalsMarket'] && $a['isTeamGoalsMarket'])) {
+        return 'total_vs_team_goals';
+    }
+
+    if (($a['isBtts'] && $a['isYesPick'] && $b['isTeamToScoreHomePick']) || ($b['isBtts'] && $b['isYesPick'] && $a['isTeamToScoreHomePick'])) {
+        return 'btts_yes_team_to_score_home';
+    }
+
+    return null;
+}
+
+function isDailyTipValid(array $tip): bool {
+    $picks = is_array($tip['picks'] ?? null) ? $tip['picks'] : [];
+    if (count($picks) < 2) return false;
+    // Inject homeTeam/awayTeam from the parent tip into each pick
+    // so team-name-based goal market detection works correctly.
+    $home = $tip['homeTeam'] ?? '';
+    $away = $tip['awayTeam'] ?? '';
+    foreach ($picks as &$p) {
+        if (empty($p['homeTeam'])) $p['homeTeam'] = $home;
+        if (empty($p['awayTeam'])) $p['awayTeam'] = $away;
+    }
+    unset($p);
+    return getDailyTipComboConflictMessage($picks[0], $picks[1]) === null;
 }
 
 function refreshTipOddsFromApi($tip) {
@@ -124,14 +291,19 @@ if (file_exists($cacheFile)) {
     $cached = json_decode((string)file_get_contents($cacheFile), true);
     if (is_array($cached) && ($cached['date'] ?? '') === $today && is_array($cached['tips'] ?? null) && !empty($cached['tips'])) {
         $tipsFromCache = array_map('refreshTipOddsFromApi', $cached['tips']);
+        $tipsFromCache = array_values(array_filter($tipsFromCache, 'isDailyTipValid'));
 
-        file_put_contents($cacheFile, json_encode([
-            'date' => $today,
-            'tips' => $tipsFromCache,
-        ], JSON_UNESCAPED_UNICODE));
+        if (empty($tipsFromCache)) {
+            // Ha a korábbi cache már tiltott kombinációkat tartalmaz, újrageneráljuk.
+        } else {
+            file_put_contents($cacheFile, json_encode([
+                'date' => $today,
+                'tips' => $tipsFromCache,
+            ], JSON_UNESCAPED_UNICODE));
 
-        echo json_encode($tipsFromCache, JSON_UNESCAPED_UNICODE);
-        exit;
+            echo json_encode($tipsFromCache, JSON_UNESCAPED_UNICODE);
+            exit;
+        }
     }
 }
 
@@ -347,40 +519,69 @@ foreach ($selectedIndices as $si) {
         }
         if (count($validMarkets) < 2) continue;
 
-        // 2 különböző piacból 1-1 selection-t választunk
-        $mPool = range(0, count($validMarkets) - 1);
-        $m1Idx = abs(crc32($today . 'mA' . $si)) % count($mPool);
-        $market1 = $validMarkets[$mPool[$m1Idx]];
-        array_splice($mPool, $m1Idx, 1);
-        $m2Idx = abs(crc32($today . 'mB' . $si)) % count($mPool);
-        $market2 = $validMarkets[$mPool[$m2Idx]];
+        // Két olyan selection-t választunk ugyanarra a meccsre,
+        // amelyek kombinációja NEM ütközik a kötés tiltás szabályokba.
+        $pickCandidates = [];
+        foreach ($validMarkets as $market) {
+            $marketName = (string)($market['name'] ?? '');
+            $marketId = (int)($market['id'] ?? ($market['marketId'] ?? 0));
+            $marketSpecial = isset($market['specialValue']) ? trim((string)$market['specialValue']) : '';
+            $marketFull = $marketName . ($marketSpecial !== '' ? ' (' . $marketSpecial . ')' : '');
+            $selections = is_array($market['selections'] ?? null) ? $market['selections'] : [];
 
-        $validSelections1 = array_values(array_filter($market1['selections'], function ($sel) {
-            $odd = (float)($sel['odd'] ?? 0);
-            return $odd > 1;
-        }));
-        $validSelections2 = array_values(array_filter($market2['selections'], function ($sel) {
-            $odd = (float)($sel['odd'] ?? 0);
-            return $odd > 1;
-        }));
+            foreach ($selections as $sel) {
+                $odd = round((float)($sel['odd'] ?? 0), 2);
+                if ($odd <= 1) continue;
 
-        if (empty($validSelections1) || empty($validSelections2)) continue;
+                $pickCandidates[] = [
+                    'eventId' => $eventId,
+                    'homeTeam' => $homeTeam,
+                    'awayTeam' => $awayTeam,
+                    'market' => $marketFull,
+                    'marketId' => $marketId,
+                    'specialValue' => $marketSpecial,
+                    'pick' => (string)($sel['name'] ?? ''),
+                    'selectionId' => (int)($sel['id'] ?? ($sel['selectionId'] ?? 0)),
+                    'odds' => $odd,
+                ];
+            }
+        }
 
-        $sel1Idx = abs(crc32($today . 'sA' . $si)) % count($validSelections1);
-        $sel2Idx = abs(crc32($today . 'sB' . $si)) % count($validSelections2);
+        if (count($pickCandidates) < 2) continue;
 
-        $s1 = $validSelections1[$sel1Idx];
-        $s2 = $validSelections2[$sel2Idx];
+        $pair = null;
+        $candidateCount = count($pickCandidates);
+        $startIdx = abs(crc32($today . 'pairSeed' . $si)) % $candidateCount;
 
-        $market1Name = (string)($market1['name'] ?? '');
-        $market2Name = (string)($market2['name'] ?? '');
-        $market1Special = isset($market1['specialValue']) ? trim((string)$market1['specialValue']) : '';
-        $market2Special = isset($market2['specialValue']) ? trim((string)$market2['specialValue']) : '';
-        $market1Full = $market1Name . ($market1Special !== '' ? ' (' . $market1Special . ')' : '');
-        $market2Full = $market2Name . ($market2Special !== '' ? ' (' . $market2Special . ')' : '');
+        for ($aOffset = 0; $aOffset < $candidateCount; $aOffset++) {
+            $aIdx = ($startIdx + $aOffset) % $candidateCount;
+            $aPick = $pickCandidates[$aIdx];
 
-        $odd1 = round((float)($s1['odd'] ?? 1.0), 2);
-        $odd2 = round((float)($s2['odd'] ?? 1.0), 2);
+            for ($bOffset = 1; $bOffset < $candidateCount; $bOffset++) {
+                $bIdx = ($startIdx + $aOffset + $bOffset) % $candidateCount;
+                $bPick = $pickCandidates[$bIdx];
+
+                // Két külön piacból jöjjön a tipp.
+                $sameMarket = ($aPick['marketId'] > 0 && $bPick['marketId'] > 0)
+                    ? ((int)$aPick['marketId'] === (int)$bPick['marketId'])
+                    : (normalizeDailyTipText($aPick['market']) === normalizeDailyTipText($bPick['market']));
+                if ($sameMarket) continue;
+
+                if (getDailyTipComboConflictMessage($aPick, $bPick) !== null) {
+                    continue;
+                }
+
+                $pair = [$aPick, $bPick];
+                break 2;
+            }
+        }
+
+        if ($pair === null) continue;
+
+        $p1 = $pair[0];
+        $p2 = $pair[1];
+        $odd1 = (float)$p1['odds'];
+        $odd2 = (float)$p2['odds'];
 
         $comboOdds = round($odd1 * $odd2, 2);
 
@@ -392,20 +593,24 @@ foreach ($selectedIndices as $si) {
             'startTime' => $startFormatted,
             'picks'     => [
                 [
-                    'market' => $market1Full,
-                    'marketId' => (int)($market1['id'] ?? ($market1['marketId'] ?? 0)),
-                    'specialValue' => $market1Special,
-                    'pick' => $s1['name'] ?? '',
-                    'selectionId' => (int)($s1['id'] ?? ($s1['selectionId'] ?? 0)),
-                    'odds' => $odd1
+                    'market' => $p1['market'],
+                    'marketId' => (int)$p1['marketId'],
+                    'specialValue' => $p1['specialValue'],
+                    'pick' => $p1['pick'],
+                    'selectionId' => (int)$p1['selectionId'],
+                    'odds' => $odd1,
+                    'homeTeam' => $homeTeam,
+                    'awayTeam' => $awayTeam,
                 ],
                 [
-                    'market' => $market2Full,
-                    'marketId' => (int)($market2['id'] ?? ($market2['marketId'] ?? 0)),
-                    'specialValue' => $market2Special,
-                    'pick' => $s2['name'] ?? '',
-                    'selectionId' => (int)($s2['id'] ?? ($s2['selectionId'] ?? 0)),
-                    'odds' => $odd2
+                    'market' => $p2['market'],
+                    'marketId' => (int)$p2['marketId'],
+                    'specialValue' => $p2['specialValue'],
+                    'pick' => $p2['pick'],
+                    'selectionId' => (int)$p2['selectionId'],
+                    'odds' => $odd2,
+                    'homeTeam' => $homeTeam,
+                    'awayTeam' => $awayTeam,
                 ],
             ],
             'comboOdds' => $comboOdds,

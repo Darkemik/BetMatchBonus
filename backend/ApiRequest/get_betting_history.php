@@ -87,16 +87,23 @@ while ($ticket = $ticketsResult->fetch_assoc()) {
     } elseif ($status === 'OPEN') {
         $allFinished = true;
         $anyLost = false;
+        $allVoid = true;
         
         foreach ($selections as $sel) {
             if ($sel['status'] === 'OPEN') {
                 $allFinished = false;
+                $allVoid = false;
             } elseif ($sel['status'] === 'LOST') {
                 $anyLost = true;
+                $allVoid = false;
+            } elseif ($sel['status'] !== 'VOID') {
+                $allVoid = false;
             }
         }
         
-        if ($anyLost) {
+        if ($allVoid && count($selections) > 0) {
+            $status = 'VOID';
+        } elseif ($anyLost) {
             $status = 'LOST';
         } elseif ($allFinished && count($selections) > 0) {
             $status = 'WON';

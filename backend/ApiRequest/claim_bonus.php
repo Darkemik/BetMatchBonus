@@ -194,14 +194,20 @@ if ($granted_amount > 0 && isset($bonus['wagering_multiplier']) && $bonus['wager
 
 // 4. Bónusz hozzárendelése a felhasználóhoz
 
+// FREE_BET típus kezelése
+$betRewardType = strtoupper((string)($bonus['bet_reward_type'] ?? ''));
+$isFreeBetReward = ($betRewardType === 'FREE_BET');
+
 // Azonnali bónuszok egyedi egyenlege
-$individualBalance = (!$isDepositTriggered && !$isBetTriggered && $granted_amount > 0) ? $granted_amount : 0.00;
+$individualBalance = (!$isDepositTriggered && !$isBetTriggered && $granted_amount > 0 && !$isFreeBetReward) ? $granted_amount : 0.00;
+$freeBetAmount = (!$isDepositTriggered && !$isBetTriggered && $granted_amount > 0 && $isFreeBetReward) ? $granted_amount : 0.00;
+$bonusMoneyAmount = (!$isDepositTriggered && !$isBetTriggered && $granted_amount > 0 && !$isFreeBetReward) ? $granted_amount : 0.00;
 
 $insert_stmt = $conn->prepare("
-    INSERT INTO UserBonuses (user_id, bonus_id, status, granted_amount, bonus_balance, wagering_required, expires_at) 
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO UserBonuses (user_id, bonus_id, status, granted_amount, bonus_balance, free_bet_amount, bonus_money_amount, wagering_required, expires_at) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 ");
-$insert_stmt->bind_param("iisddds", $user_id, $bonus['id'], $status, $granted_amount, $individualBalance, $wagering_required, $expires_at);
+$insert_stmt->bind_param("iisdddds", $user_id, $bonus['id'], $status, $granted_amount, $individualBalance, $freeBetAmount, $bonusMoneyAmount, $wagering_required, $expires_at);
 
 if ($insert_stmt->execute()) {
     // Users.bonus_balance szinkronizálása (összes aktív bónusz egyenlegek összege)

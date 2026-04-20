@@ -138,9 +138,9 @@ while ($row = $res->fetch_assoc()) {
 
 $stmt->close();
 
-// Lejátszott/megtörtént meccsek száma sportágonként (utolsó 3 nap)
-$finFrom = (new DateTime('-3 days 00:00:00'))->format('Y-m-d H:i:s');
-$finNow  = (new DateTime('now'))->format('Y-m-d H:i:s');
+// Lejátszott/megtörtént meccsek száma sportáganként (utolsó 3 nap, UTC)
+$finFrom = (new DateTime('-3 days 00:00:00', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
+$finNow  = (new DateTime('now', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
 $finSql = "
 SELECT s.api_id AS sport_api_id, COUNT(*) AS finished_count
 FROM Events e
@@ -149,7 +149,7 @@ JOIN Competitions comp ON e.competition_id = comp.id
 LEFT JOIN Countries c ON comp.country_id = c.id
 WHERE (
         e.status_id = 3
-        OR (e.is_live = 0 AND e.start_time < ?)
+                OR (e.home_score IS NOT NULL AND e.away_score IS NOT NULL)
 )
   AND e.start_time BETWEEN ? AND ?
   AND e.name IS NOT NULL AND TRIM(e.name) != '' AND e.name != '-'
@@ -159,7 +159,7 @@ GROUP BY s.api_id
 ";
 $finStmt = $conn->prepare($finSql);
 if ($finStmt) {
-    $finStmt->bind_param("sss", $finNow, $finFrom, $finNow);
+        $finStmt->bind_param("ss", $finFrom, $finNow);
     $finStmt->execute();
     $finRes = $finStmt->get_result();
     $finCounts = [];

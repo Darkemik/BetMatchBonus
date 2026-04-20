@@ -304,7 +304,7 @@ $stmt->close();
         $leagueId = 'league-' . md5($leagueKey);
     ?>
     <div class="league-group<?php echo $isInitiallyExpanded ? ' expanded' : ''; ?>" data-league-id="<?php echo $leagueId; ?>">
-        <div class="league-header" onclick="this.parentElement.classList.toggle('expanded')">
+        <div class="league-header" role="button" tabindex="0" aria-expanded="<?php echo $isInitiallyExpanded ? 'true' : 'false'; ?>">
             <div class="league-header-left">
                 <i class="fas fa-globe-europe league-country-icon"></i>
                 <span class="league-country"><?php echo $countryDisplay; ?></span>

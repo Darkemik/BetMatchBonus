@@ -44,7 +44,7 @@
         <li><a class="dropdown-item" href="../../frontend/UserProfile/transaction_history.php"><i class="fas fa-history"></i> <span data-i18n="auth.transactionHistory">Tranzakciótörténet</span></a></li>
         <li><a class="dropdown-item" href="../../frontend/UserProfile/my_bonuses.php"><i class="fas fa-gift"></i> <span data-i18n="auth.myBonuses">Bónuszaim</span></a></li>
         <li><a class="dropdown-item" href="../../frontend/UserProfile/activity_log.php"><i class="fas fa-list"></i> <span data-i18n="auth.activityLog">Napló</span></a></li>
-        <li><a class="dropdown-item" href="../../frontend/UserProfile/notifications.php" id="notifDropdownItem"><i class="fas fa-bell"></i> <span data-i18n="auth.notifications">Értesítések</span> <span class="notif-header-badge" id="notifDropdownBadge" style="display:none;background:#dc3545;color:#fff;border-radius:50%;font-size:0.65rem;min-width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;padding:0 5px;margin-left:6px;"></span></a></li>
+        <li><a class="dropdown-item" href="../../frontend/UserProfile/notifications.php" id="notifDropdownItem"><i class="fas fa-bell"></i> <span data-i18n="auth.notifications">Értesítések</span> <span class="notif-header-badge" id="notifDropdownBadge" style="display:none;background:#dc3545;color:#fff;border-radius:50%;font-size:0.65rem;min-width:18px;height:18px;align-items:center;justify-content:center;font-weight:700;padding:0 5px;margin-left:6px;"></span></a></li>
         <li>
             <hr class="dropdown-divider">
         </li>

@@ -35,7 +35,7 @@ require_once "../../backend/connect.php";
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="logo-box">
+        <div class="logo-box">  
             <a href="../../frontend/MainMenu/MainMenu.php">
                 <img class="kep" src="../../img/logo.png" alt="logo">
             </a>

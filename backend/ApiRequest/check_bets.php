@@ -113,24 +113,20 @@ function evaluateOpenTickets($conn, $userId) {
                                 '_source' => 'time_fallback_with_score'
                             ];
                         } else {
-                            // Nincs score -> 0-0 fallbackkent
-                            $matchData = [
-                                'isLive' => false,
-                                'liveStatus' => 'ended',
-                                'score' => [0, 0],
-                                'homeTeam' => $dbEvent['home_team_name'],
-                                'awayTeam' => $dbEvent['away_team_name'],
-                                'isStarted' => true,
-                                'statusId' => 3,
-                                '_source' => 'time_fallback_no_score'
-                            ];
+                            // Nincs score 4+ ora utan -> NEM zárjuk le 0-0-nak!
+                            // Megvarjuk amig az API vagy DB valos eredmenyt ad.
+                            // Csak logoljuk a problemat.
+                            error_log("check_bets: 4+ ora, nincs score - match_id={$matchId} event_id=" . ($eventId ?? 'null') . " - NEM ertekeljuk ki, varunk az API-ra.");
+                            // matchData marad null -> skip
                         }
                         
-                        // Frissitsuk az Events tabla statuszat
-                        $stmtFixStatus = $conn->prepare("UPDATE Events SET is_live = 0, live_status = 'Ended', status_id = 3 WHERE api_id = ?");
-                        $stmtFixStatus->bind_param("i", $matchId);
-                        $stmtFixStatus->execute();
-                        $stmtFixStatus->close();
+                        // Frissitsuk az Events tabla statuszat CSAK ha van score
+                        if ($matchData) {
+                            $stmtFixStatus = $conn->prepare("UPDATE Events SET is_live = 0, live_status = 'Ended', status_id = 3 WHERE api_id = ?");
+                            $stmtFixStatus->bind_param("i", $matchId);
+                            $stmtFixStatus->execute();
+                            $stmtFixStatus->close();
+                        }
                     }
                 }
             }
@@ -154,6 +150,16 @@ function evaluateOpenTickets($conn, $userId) {
             $awayTeam = $sel['away_team'] ?: ($matchData['awayTeam'] ?? '');
             $pick = $sel['pick_label'] ?? '';
             $market = $sel['market_name'] ?? '';
+
+            // === VOID ellenorzes: torolt/elhalasztott meccs ===
+            if (isMatchCancelled($matchData)) {
+                $voidStatus = 'VOID';
+                $stmtUpdate = $conn->prepare("UPDATE TicketSelections SET status = ? WHERE id = ?");
+                $stmtUpdate->bind_param("si", $voidStatus, $sel['id']);
+                $stmtUpdate->execute();
+                $stmtUpdate->close();
+                continue; // Kovetkezo selection
+            }
 
             $won = checkIfPickWon($pick, $market, $homeScore, $awayScore, $homeTeam, $awayTeam);
             $newStatus = $won ? 'WON' : 'LOST';
@@ -253,23 +259,38 @@ function updateTicketStatus($conn, $ticketId, $userId) {
 
     $allFinished = true;
     $anyLost = false;
+    $anyVoid = false;
+    $allVoid = true;
     $count = 0;
+    $voidCount = 0;
 
     while ($row = $result->fetch_assoc()) {
         $count++;
         if ($row['status'] === 'OPEN') {
             $allFinished = false;
+            $allVoid = false;
         } elseif ($row['status'] === 'LOST') {
             $anyLost = true;
+            $allVoid = false;
+        } elseif ($row['status'] === 'VOID') {
+            $anyVoid = true;
+            $voidCount++;
+        } else {
+            // WON or CASHOUT
+            $allVoid = false;
         }
     }
     $stmtAll->close();
 
     if ($count === 0) return;
 
-    if ($anyLost) {
+    // Ha MINDEN selection VOID -> teljes visszaterites
+    if ($allVoid && $count > 0) {
+        $newStatus = 'VOID';
+    } elseif ($anyLost) {
         $newStatus = 'LOST';
     } elseif ($allFinished) {
+        // VOID selectionok ugy szamitanak mint odds=1.00 (atnezik a kovetkezo blokk)
         $newStatus = 'WON';
     } else {
         $newStatus = 'OPEN';
@@ -354,12 +375,87 @@ function updateTicketStatus($conn, $ticketId, $userId) {
         }
     }
 
+    // Ha VOID (minden meccs torolt) -> tet visszaterites
+    if ($newStatus === 'VOID') {
+        $refundAmount = (float)$ticketRow['stake'];
+        $bonusStake = (float)($ticketRow['bonus_stake'] ?? 0);
+
+        if ($bonusStake > 0) {
+            // Bónusz szelvény → bónusz egyenlegbe vissza
+            $ticketUserBonusId = !empty($ticketRow['user_bonus_id']) ? (int)$ticketRow['user_bonus_id'] : 0;
+            if ($ticketUserBonusId > 0) {
+                $stmtRefBonus = $conn->prepare("UPDATE UserBonuses SET bonus_balance = bonus_balance + ? WHERE id = ? AND user_id = ?");
+                $stmtRefBonus->bind_param("dii", $bonusStake, $ticketUserBonusId, $userId);
+                $stmtRefBonus->execute();
+                $stmtRefBonus->close();
+            }
+            $stmtRefUserBonus = $conn->prepare("UPDATE Users SET bonus_balance = bonus_balance + ? WHERE id = ?");
+            $stmtRefUserBonus->bind_param("di", $bonusStake, $userId);
+            $stmtRefUserBonus->execute();
+            $stmtRefUserBonus->close();
+        } else {
+            // Normál szelvény → rendes egyenlegbe vissza
+            $stmtRefBal = $conn->prepare("UPDATE Users SET balance = balance + ? WHERE id = ?");
+            $stmtRefBal->bind_param("di", $refundAmount, $userId);
+            $stmtRefBal->execute();
+            $stmtRefBal->close();
+        }
+
+        // Wallet tranzakció (type_id = 6 = VOID REFUND)
+        $stmtVoidTx = $conn->prepare("
+            INSERT INTO WalletTransactions (wallet_id, amount, type_id, related_type, related_id, created_at)
+            SELECT id, ?, 6, 'Ticket', ?, NOW() FROM Wallets WHERE user_id = ?
+        ");
+        $stmtVoidTx->bind_param("dii", $refundAmount, $ticketId, $userId);
+        $stmtVoidTx->execute();
+        $stmtVoidTx->close();
+
+        // BalanceHistory
+        require_once __DIR__ . '/../Auth/audit_helper.php';
+        $voidBal = $conn->query("SELECT balance FROM Users WHERE id = $userId")->fetch_assoc();
+        $voidNew = (float)($voidBal['balance'] ?? 0);
+        log_balance_change($userId, $voidNew - $refundAmount, $voidNew, $refundAmount, 'VOID visszatérítés: #' . $ticketId . ' (' . number_format($refundAmount, 0, ',', ' ') . ' Ft)');
+
+        // Értesítés
+        $voidMsg = 'A(z) #' . $ticketId . ' szelvényed visszatérítésre került (' . number_format($refundAmount, 0, ',', ' ') . ' Ft), mert a meccs(ek) törölve/elhalasztva lettek.';
+        $stmtVoidNotif = $conn->prepare("
+            INSERT INTO Notifications (user_id, title, message, type, related_type, related_id, created_at)
+            VALUES (?, 'Szelvény visszatérítés', ?, 'info', 'Ticket', ?, NOW())
+        ");
+        $stmtVoidNotif->bind_param("isi", $userId, $voidMsg, $ticketId);
+        $stmtVoidNotif->execute();
+        $stmtVoidNotif->close();
+
+        return; // VOID kész, nem kell tovább menni
+    }
+
     // Ha NYERTES -> nyeremeny jovairasa
     if ($newStatus === 'WON') {
         $potentialWin = (float)$ticketRow['potential_win'];
         $bonusStake = (float)($ticketRow['bonus_stake'] ?? 0);
         $isBonusTicket = ($bonusStake > 0);
         $ticketUserBonusId = !empty($ticketRow['user_bonus_id']) ? (int)$ticketRow['user_bonus_id'] : 0;
+
+        // Ha vannak VOID selectionok a nyertes szelvényben -> odds=1.00 kezelés
+        // Újraszámoljuk a tényleges nyereményt a VOID nélküli oddsokkal
+        if ($anyVoid && $voidCount > 0) {
+            $recalcStmt = $conn->prepare("SELECT odds_at_pick, status FROM TicketSelections WHERE ticket_id = ?");
+            $recalcStmt->bind_param("i", $ticketId);
+            $recalcStmt->execute();
+            $recalcResult = $recalcStmt->get_result();
+            $adjustedOdds = 1.0;
+            while ($rRow = $recalcResult->fetch_assoc()) {
+                if ($rRow['status'] === 'VOID') {
+                    // VOID = odds 1.00 (nem szamit bele)
+                    continue;
+                }
+                $adjustedOdds *= (float)$rRow['odds_at_pick'];
+            }
+            $recalcStmt->close();
+
+            $stake = (float)$ticketRow['stake'];
+            $potentialWin = round($stake * $adjustedOdds, 2);
+        }
 
         // Bónusz szelvénynél: max nyeremény cap (max_win_multiplier × granted_amount)
         if ($isBonusTicket && $ticketUserBonusId > 0) {
@@ -603,7 +699,34 @@ function curlGetJson($url) {
  * NEM tekintjuk befejezettnek pustan azert mert van eredmeny es nem elo!
  * Egy 2:0-as allas kozben az API frissites kozott atmenetileg is_live=0 lehet.
  */
+/**
+ * Ellenorzi, hogy a meccs TOROLT/ELHALASZTOTT/VISSZAVONT-e
+ * Ilyenkor VOID kezelest kap (odds=1.00, visszaterites)
+ */
+function isMatchCancelled($matchData) {
+    $statusId = (int)($matchData['statusId'] ?? 0);
+    // status_id = 5 gyakran cancelled/postponed
+    if ($statusId === 5 || $statusId === 6 || $statusId === 7) {
+        return true;
+    }
+
+    $liveStatus = strtolower(trim((string)($matchData['liveStatus'] ?? $matchData['status'] ?? '')));
+    $cancelledStatuses = ['cancelled', 'abandoned', 'postponed', 'retired', 'walkover',
+                          'interrupted', 'suspended', 'void', 'deleted', 'removed'];
+    foreach ($cancelledStatuses as $cs) {
+        if ($liveStatus !== '' && strpos($liveStatus, $cs) !== false) {
+            return true;
+        }
+    }
+    return false;
+}
+
 function isMatchFinished($matchData) {
+    // 0) Torolt/elhalasztott meccs is "befejezett" a kiertekeles szempontjabol
+    if (isMatchCancelled($matchData)) {
+        return true;
+    }
+
     // 1) status_id = 3 (FINISHED) az adatbazisban - legmegbizhatobb
     $statusId = $matchData['statusId'] ?? 0;
     if ($statusId === 3) {
@@ -613,9 +736,9 @@ function isMatchFinished($matchData) {
     // 2) liveStatus mezo ellenorzese - szoveges befejezesi jelzok
     $liveStatus = $matchData['liveStatus'] ?? $matchData['status'] ?? '';
     $liveStatusLower = strtolower(trim($liveStatus));
+    // Torolt/cancelled statuszokat az isMatchCancelled() kezeli, itt csak a rendes befejezeseket figyeljuk
     $finishedStatuses = ['ended', 'finished', 'final', 'ft', 'aet', 'ap', 'closed', 
-                         'retired', 'walkover', 'cancelled', 'abandoned', 'after penalties',
-                         'after extra time', 'full-time', 'result'];
+                         'after penalties', 'after extra time', 'full-time', 'result'];
     
     foreach ($finishedStatuses as $fs) {
         if ($liveStatusLower !== '' && strpos($liveStatusLower, $fs) !== false) {

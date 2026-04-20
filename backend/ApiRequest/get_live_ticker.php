@@ -117,10 +117,10 @@ try {
         $goalEvents = array_filter($goalEvents, function($g) use ($now) {
             return ($now - ($g['timestamp'] ?? 0)) < 300;
         });
-        // Deduplikáció: apiId+side kombináció, legfrissebb marad
+        // Deduplikáció: ugyanarra az eseményre (apiId + side + új állás) csak a legfrissebb maradjon.
         $dedupMap = [];
         foreach ($goalEvents as $g) {
-            $dk = $g['apiId'] . '_' . $g['side'];
+            $dk = $g['apiId'] . '_' . $g['side'] . '_' . ($g['newScore'] ?? '');
             if (!isset($dedupMap[$dk]) || $g['timestamp'] > $dedupMap[$dk]['timestamp']) {
                 $dedupMap[$dk] = $g;
             }
@@ -150,29 +150,26 @@ try {
     if ($fp) fclose($fp);
 
     // ── 4) Ticker összeállítása (sport szűréssel) ──
-    // Csak valódi eredményváltozások — meccs-szintű deduplikáció
-    $seenApiIds = [];
+    // Eseményszintű elemeket adunk vissza: minden külön gólváltozás külön elem marad.
     foreach ($goalEvents as $goal) {
         if ($sportFilter > 0 && (int)($goal['sportApiId'] ?? 0) !== $sportFilter) continue;
 
         $aid = $goal['apiId'];
-        if (isset($seenApiIds[$aid])) continue;
-        $seenApiIds[$aid] = true;
 
-        // Az aktuális DB-beli élő eredmény is kell (liveTime frissülhet)
-        $live = $currentScores[$aid] ?? null;
-        $currentScore = $live
-            ? ($live['homeScore'] . ' - ' . $live['awayScore'])
-            : $goal['newScore'];
-        $currentLiveTime = $live ? $live['liveTime'] : $goal['time'];
+        // Stabil, esemény-szintű ID: ugyanaz az esemény ugyanazzal az ID-val marad,
+        // de egy új gólváltozás új ID-t kap.
+        $eventId = 'goal_' . $aid
+            . '_' . (int)($goal['timestamp'] ?? $now)
+            . '_' . preg_replace('/[^a-z]/i', '', (string)($goal['side'] ?? 'x'))
+            . '_' . preg_replace('/[^0-9]/', '', (string)($goal['newScore'] ?? ''));
 
         $result['ticker'][] = [
-            'id'        => 'goal_' . $aid,
+            'id'        => $eventId,
             'matchId'   => (int)$aid,
             'name'      => $goal['matchName'],
-            'score'     => $currentScore,
+            'score'     => $goal['newScore'],
             'prevScore' => $goal['prevScore'],
-            'liveTime'  => $currentLiveTime,
+            'liveTime'  => $goal['time'],
             'sportIcon' => $goal['sportIcon'],
             'goalTeam'  => $goal['team'],
             'ts'        => (int)($goal['timestamp'] ?? $now),

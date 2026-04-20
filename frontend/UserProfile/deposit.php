@@ -203,10 +203,13 @@ $bonus_stmt->close();
             gap: 10px;
         }
         .deposit-info-bar i { color: #007bff; font-size: 1rem; }
-        .deposit-info-bar span { color: #666; font-size: 0.85rem; }
+        .deposit-info-bar span { color: #fff; font-size: 0.85rem; }
+        .deposit-info-bar span strong { color: #fff; }
+        .deposit-info-bar.secure-info-bar span { color: #666; }
+        .deposit-info-bar.secure-info-bar span strong { color: #333; }
 
         .deposit-section-title {
-            color: #333;
+            color: #fff;
             font-size: 0.8rem;
             font-weight: 700;
             text-transform: uppercase;
@@ -350,7 +353,7 @@ $bonus_stmt->close();
                             <button type="button" class="deposit-quick-btn" data-amount="50000">50 000</button>
                         </div>
 
-                        <div class="deposit-info-bar">
+                        <div class="deposit-info-bar secure-info-bar">
                             <i class="fas fa-shield-alt"></i>
                             <span data-i18n-html="userProfile.deposit.secureInfo">A befizetés biztonságosan, titkosított kapcsolaton keresztül kerül feldolgozásra. Minimális: <strong><?php echo number_format($minDeposit, 0, ',', ' '); ?> FT</strong> | Maximális: <strong><?php echo number_format($maxDeposit, 0, ',', ' '); ?> FT</strong></span>
                         </div>

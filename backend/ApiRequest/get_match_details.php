@@ -149,8 +149,11 @@ try {
 
     // Piacok feldolgozása
     if (isset($apiData['markets']) && is_array($apiData['markets'])) {
-        // Oddsűrhajó meccs indulás után nem rakható: piacokat lezárjuk.
-        if ($isBoostedMatch && !empty($response_data['match']['hasStarted'])) {
+        // Oddsűrhajó meccs élőbe váltás vagy befejezés után nem rakható: piacokat lezárjuk.
+        if ($isBoostedMatch && (
+            !empty($response_data['match']['isLive'])
+            || (int)($response_data['match']['statusId'] ?? 0) === 3
+        )) {
             $apiData['markets'] = [];
         }
 

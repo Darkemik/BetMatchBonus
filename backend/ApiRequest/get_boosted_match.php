@@ -18,23 +18,36 @@ header('Content-Type: application/json; charset=utf-8');
 $cached = getDailyBoostedMatch();
 
 if (!$cached || empty($cached['eventId'])) {
-    echo json_encode(['success' => false, 'error' => 'Nincs elérhető meccs'], JSON_UNESCAPED_UNICODE);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Nincs elérhető meccs, mert jelenleg nincs használható odds adat (API/DB).'
+    ], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
+$bpNow = new DateTime('now', new DateTimeZone('Europe/Budapest'));
+$nextBoostBp = new DateTime('tomorrow 00:00:00', new DateTimeZone('Europe/Budapest'));
+$secondsUntilNextBoost = max(0, $nextBoostBp->getTimestamp() - $bpNow->getTimestamp());
+
 $eventId = (int)$cached['eventId'];
-$statusStmt = $conn->prepare("SELECT status_id, is_live FROM Events WHERE api_id = ? LIMIT 1");
+$statusStmt = $conn->prepare("SELECT status_id, is_live, start_time FROM Events WHERE api_id = ? LIMIT 1");
 if ($statusStmt) {
     $statusStmt->bind_param('i', $eventId);
     $statusStmt->execute();
     $eventRow = $statusStmt->get_result()->fetch_assoc();
     $statusStmt->close();
 
-    // Ha a mai Oddsűrhajó meccs véget ért, ne mutassunk új meccset ma.
-    if ($eventRow && (int)($eventRow['status_id'] ?? 0) === 3) {
+    $isLive = (int)($eventRow['is_live'] ?? 0) === 1;
+    $isFinished = (int)($eventRow['status_id'] ?? 0) === 3;
+
+    // Ha a mai Oddsűrhajó meccs élő vagy már véget ért, ma nem váltunk újra.
+    if ($eventRow && ($isLive || $isFinished)) {
         echo json_encode([
             'success' => false,
-            'error' => 'Holnap lesz új Oddsűrhajó, a mai véget ért!'
+            'reason' => 'today_closed',
+            'error' => 'A mai Oddsűrhajó már lezárult.',
+            'secondsUntilNextBoost' => $secondsUntilNextBoost,
+            'nextBoostAt' => $nextBoostBp->format(DateTime::ATOM)
         ], JSON_UNESCAPED_UNICODE);
         exit;
     }
@@ -79,4 +92,6 @@ echo json_encode([
     'boostedOdd'       => $cached['boostedOdd'],
     'boostMultiplier'  => 1.5,
     'date'             => $cached['date'],
+    'secondsUntilNextBoost' => $secondsUntilNextBoost,
+    'nextBoostAt'      => $nextBoostBp->format(DateTime::ATOM),
 ], JSON_UNESCAPED_UNICODE);

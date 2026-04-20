@@ -831,8 +831,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const wasUnavailable = !!item.marketUnavailable;
             const selectionLookup = findSelectionInMatchDetails(details, item);
             const matchFinished = isMatchFinishedFromDetails(details);
-            const matchStarted = isMatchStartedFromDetails(details);
-            const oddsRocketStartedLock = !!(details.match && details.match.isBoosted) && matchStarted && !matchFinished;
+            const matchIsLive = !!(details.match && details.match.isLive);
+            const oddsRocketStartedLock = !!(details.match && details.match.isBoosted) && matchIsLive && !matchFinished;
             const hasAnyMarkets = Array.isArray(details.markets) && details.markets.length > 0;
 
             let nextUnavailable = false;
@@ -1522,7 +1522,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Rendes egyenleg opció
                 const realOpt = document.createElement('option');
                 realOpt.value = 'real';
-                realOpt.textContent = '💰 Rendes egyenleg — ' + formatFt(userBalance);
+                realOpt.textContent = '💰 ' + window.i18n('betslip.realBalance', 'Rendes egyenleg') + ' — ' + formatFt(userBalance);
                 realOpt.style.color = '#4caf50';
                 selectEl.appendChild(realOpt);
 
@@ -2083,7 +2083,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const statusText = isCashout ? '💰 Cash Out' :
                               ticket.status === 'OPEN' ? '⏳ ' + t('betslip.pending', 'Függőben') : 
                               ticket.status === 'WON' ? '✅ ' + t('betslip.won', 'Nyertes') : 
-                              ticket.status === 'LOST' ? '❌ ' + t('betslip.lost', 'Vesztes') : '❓ ' + t('mainMenu.unknown', 'Ismeretlen');
+                              ticket.status === 'LOST' ? '❌ ' + t('betslip.lost', 'Vesztes') : 
+                              ticket.status === 'VOID' ? '↩️ ' + t('betslip.void', 'Visszatérítve') : '❓ ' + t('mainMenu.unknown', 'Ismeretlen');
             
             const statusClass = ticket.status.toLowerCase();
             
@@ -2093,7 +2094,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     const itemStatus = item.status || 'OPEN';
                     const itemIcon = itemStatus === 'WON' ? '✅' : 
                                      itemStatus === 'LOST' ? '❌' : 
-                                     itemStatus === 'CASHOUT' ? '💰' : '⏳';
+                                     itemStatus === 'CASHOUT' ? '💰' :
+                                     itemStatus === 'VOID' ? '↩️' : '⏳';
                     const itemStatusClass = itemStatus.toLowerCase();
                     const liveKey = buildSelectionLiveKey(item);
                     
@@ -2144,9 +2146,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const wonClass = ticket.status === 'WON' ? ' elozmeny-won' : '';
             const lostClass = ticket.status === 'LOST' ? ' elozmeny-lost' : '';
             const cashoutClass = isCashout ? ' elozmeny-cashout' : '';
+            const voidClass = ticket.status === 'VOID' ? ' elozmeny-void' : '';
 
             const el = document.createElement('div');
-            el.className = 'elozmeny-item' + wonClass + lostClass + cashoutClass;
+            el.className = 'elozmeny-item' + wonClass + lostClass + cashoutClass + voidClass;
             const bonusBadge = ticket.bonus_bet ? '<span class="elozmeny-bonus-badge">🎁 Bónusz</span>' : '';
             const stakeLabel = ticket.free_bet_used
                 ? 'Tét, ingyenes fogadás:'

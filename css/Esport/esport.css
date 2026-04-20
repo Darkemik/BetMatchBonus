@@ -1204,20 +1204,20 @@
 
 /* Meccs cella csapatok elrendezése */
 .league-matches .match-cell {
-  white-space: normal;
+    white-space: normal;
 }
 
 .league-matches .match-cell .home-team,
 .league-matches .match-cell .away-team {
-  display: inline-block;
-  min-width: 80px;
+    display: inline-block;
+    min-width: 80px;
     color: #fff !important;
     font-weight: 700;
 }
 
 .league-matches .match-cell .vs {
-  display: inline-block;
-  margin: 0 10px;
+    display: inline-block;
+    margin: 0 10px;
   background: rgba(186,104,200,0.15);
   padding: 2px 8px;
   border-radius: 4px;
@@ -1369,3 +1369,4 @@
     opacity: 1 !important;
     text-shadow: none !important;
 }
+

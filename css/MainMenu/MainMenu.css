@@ -1129,6 +1129,14 @@ body .simple-footer {
   overflow: hidden;
 }
 
+.league-group .league-matches {
+  display: none;
+}
+
+.league-group.expanded .league-matches {
+  display: block;
+}
+
 .league-matches .matches-table {
   margin: 0;
   border-radius: 0;
@@ -1157,7 +1165,7 @@ body .simple-footer {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  width: 72px;
+  width: 108px;
   text-align: center;
   pointer-events: none;
 }
@@ -1231,20 +1239,51 @@ body .simple-footer {
 
 /* Eredmény badge stílus */
 .league-matches .match-score {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  white-space: nowrap;
   background: rgba(255,255,255,0.06);
-  padding: 4px 14px;
+  padding: 4px 10px;
   border-radius: 6px;
   font-weight: 700;
   font-size: 14px;
   color: #ecf0f1;
-  letter-spacing: 2px;
-  min-width: 60px;
+  letter-spacing: 0;
+  min-width: 74px;
 }
 
 .league-matches .finished-score {
   background: rgba(76,175,80,0.12);
   color: #8ccfaa;
+}
+
+.league-matches .finished-score .score-home,
+.league-matches .finished-score .score-away {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.22);
+  color: #e9f7ef;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.league-matches .finished-score .score-separator {
+  display: inline-block;
+  margin: 0 2px;
+  color: #98d9b2;
+  font-weight: 800;
+}
+
+.league-matches .finished-score.score-no-data {
+  letter-spacing: 0;
+  font-weight: 700;
+  color: #9fb2b9;
 }
 
 /* Kezdés badge */
