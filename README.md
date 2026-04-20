@@ -42,7 +42,7 @@ A **BetMatchBonus** egy PHP + MySQL alapú sportfogadási webalkalmazás demó/p
 3. Állítsd be legalább ezeket a változókat a `.env` fájlban:
    - `DB_HOST`, `DB_USER`, `DB_PASS`, `DB_NAME`
    - `API_BASE_URL`
-   - (opcionális, de ajánlott) `RECAPTCHA_*`, `MAIL_*`, `SITE_BASE_URL`
+   - `RECAPTCHA_*`, `MAIL_*`, `SITE_BASE_URL`
 4. Importáld az adatbázis sémát:
    - `backend/DataBase/bettingdb.sql`
 5. Az adatbázis importálása után futtasd a kapcsolódási ellenőrzést:
