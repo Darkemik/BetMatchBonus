@@ -1773,19 +1773,24 @@
 
 .league-matches .match-cell {
     white-space: nowrap;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    align-items: center;
-    column-gap: 6px;
+    position: relative;
     overflow: hidden;
     width: 100%;
+    min-height: 24px;
     color: #fff !important;
     font-weight: 700;
+}
+
+.league-matches .match-cell::after {
+    content: "";
+    display: block;
+    clear: both;
 }
 
 .league-matches .match-cell .home-team,
 .league-matches .match-cell .away-team {
     display: block;
+    max-width: calc(50% - 22px);
     min-width: 0;
     white-space: nowrap;
     overflow: hidden;
@@ -1801,13 +1806,13 @@
 }
 
 .league-matches .match-cell .home-team {
+    float: left;
     text-align: left;
-    justify-self: start;
 }
 
 .league-matches .match-cell .away-team {
+    float: right;
     text-align: right;
-    justify-self: end;
 }
 
 .league-matches .match-cell .team {
@@ -1818,9 +1823,12 @@
 
 .league-matches .match-cell .vs {
     display: inline-flex;
-    flex: 0 0 auto;
     align-items: center;
     justify-content: center;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
     min-width: 24px;
     height: 18px;
     margin: 0;
@@ -1926,11 +1934,15 @@
 
     .league-matches .match-cell {
         white-space: nowrap;
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-        align-items: center;
-        column-gap: 4px;
+        position: relative;
         overflow: hidden;
+        min-height: 22px;
+    }
+
+    .league-matches .match-cell::after {
+        content: "";
+        display: block;
+        clear: both;
     }
 
     .league-matches .match-cell .home-team,
@@ -1943,14 +1955,19 @@
         text-overflow: ellipsis;
     }
 
+    .league-matches .match-cell .home-team,
+    .league-matches .match-cell .away-team {
+        max-width: calc(50% - 20px);
+    }
+
     .league-matches .match-cell .home-team {
+        float: left;
         text-align: left;
-        justify-self: start;
     }
 
     .league-matches .match-cell .away-team {
+        float: right;
         text-align: right;
-        justify-self: end;
     }
 
     .league-matches .match-cell .vs {
@@ -1960,6 +1977,10 @@
         padding: 0 4px;
         font-size: 9px;
         letter-spacing: 0.3px;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
     }
 
     .league-matches .start-time {
