@@ -600,6 +600,10 @@ document.addEventListener('DOMContentLoaded', function() {
             return aMatchId === bMatchId;
         }
 
+        if (aMatchId > 0 || bMatchId > 0) {
+            return false;
+        }
+
         return normalizeComboText(itemA && itemA.homeTeam) === normalizeComboText(itemB && itemB.homeTeam) &&
                normalizeComboText(itemA && itemA.awayTeam) === normalizeComboText(itemB && itemB.awayTeam);
     }
@@ -612,10 +616,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (a.isCorrectScore || b.isCorrectScore) {
             return 'Kötés tiltás: pontos eredmény piac más piaccal nem köthető ugyanazon a meccsen.';
-        }
-
-        if (a.isGoalRelated && b.isGoalRelated) {
-            return 'Kötés tiltás: ugyanazon meccsen gólos logikájú piacok nem köthetők egymással.';
         }
 
         if ((a.is1X2 && b.isGoalRelated) || (b.is1X2 && a.isGoalRelated)) {
