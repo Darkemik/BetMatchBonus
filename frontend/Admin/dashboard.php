@@ -289,6 +289,9 @@ $role = $_SESSION['admin_role'];
                                             <button type="button" class="btn btn-danger btn-sm btn-delete-user" data-uid="<?= $u['id'] ?>" data-username="<?= htmlspecialchars($u['username'], ENT_QUOTES) ?>">
                                                 <i class="fas fa-trash"></i> Felhasználó törlése
                                             </button>
+                                            <button type="button" class="btn btn-outline-warning btn-sm btn-force-logout" data-uid="<?= $u['id'] ?>" data-username="<?= htmlspecialchars($u['username'], ENT_QUOTES) ?>">
+                                                <i class="fas fa-sign-out-alt"></i> Kijelentkeztetés
+                                            </button>
                                         </div>
                                     </div>
 
@@ -329,6 +332,32 @@ $role = $_SESSION['admin_role'];
 </div>
 
 <!-- Delete User Modal -->
+<!-- Force-logout Modal -->
+<div class="modal fade" id="forceLogoutModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background:#16213e;color:#eee;">
+            <div class="modal-header" style="border-bottom-color:#e94560;">
+                <h5 class="modal-title"><i class="fas fa-sign-out-alt me-2 text-warning"></i>Kijelentkeztetés</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="forceLogoutUserId">
+                <p class="text-muted">Felhasználó: <strong id="forceLogoutUsername" class="text-white"></strong></p>
+                <div class="alert alert-warning" style="background:#2a2a1a;border-color:#e9a345;color:#eee;">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    A felhasználó <strong>minden eszközről</strong> kijelentkeztetésre kerül. Az aktív munkamenetei és emlékeztetői érvénytelenítve lesznek.
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top-color:#333;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button>
+                <button type="button" class="btn btn-warning" id="confirmForceLogoutBtn">
+                    <i class="fas fa-sign-out-alt me-1"></i>Kijelentkeztetés
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="deleteUserModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content" style="background:#16213e;color:#eee;">
@@ -508,6 +537,41 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('deleteReason').value = '';
             new bootstrap.Modal(document.getElementById('deleteUserModal')).show();
         });
+    });
+
+    // Force-logout: modal megnyitása
+    document.querySelectorAll('.btn-force-logout').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('forceLogoutUserId').value = this.dataset.uid;
+            document.getElementById('forceLogoutUsername').textContent = this.dataset.username;
+            new bootstrap.Modal(document.getElementById('forceLogoutModal')).show();
+        });
+    });
+
+    // Force-logout: megerősítés
+    document.getElementById('confirmForceLogoutBtn').addEventListener('click', function() {
+        const userId = document.getElementById('forceLogoutUserId').value;
+        const confirmBtn = this;
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kijelentkeztetés...';
+
+        const formData = new FormData();
+        formData.append('action', 'force_logout');
+        formData.append('user_id', userId);
+
+        fetch(API_URL, { method: 'POST', body: formData })
+            .then(r => r.json())
+            .then(data => {
+                showToast(data.message, data.success ? 'success' : 'danger');
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('forceLogoutModal')).hide();
+                }
+            })
+            .catch(() => showToast('Hálózati hiba!', 'danger'))
+            .finally(() => {
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = '<i class="fas fa-sign-out-alt me-1"></i>Kijelentkeztetés';
+            });
     });
 
     // Felhasználó törlése – megerősítés

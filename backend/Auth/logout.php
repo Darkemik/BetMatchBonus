@@ -14,10 +14,11 @@ if ($userId > 0) {
 session_unset();
 session_destroy();
 
-// Ha be volt jelentkezve, töröljük a remember_token-t az adatbázisból
-if ($userId > 0) {
-  $stmt = $conn->prepare("UPDATE Users SET remember_token = NULL, remember_expiry = NULL WHERE id = ?");
-  $stmt->bind_param("i", $userId);
+// Ha be volt jelentkezve, deaktiváljuk az aktuális session tokent a UserSessions táblában
+if ($userId > 0 && isset($_COOKIE['remember_token'])) {
+  $tokenHash = hash('sha256', $_COOKIE['remember_token']);
+  $stmt = $conn->prepare("UPDATE UserSessions SET is_active = 0 WHERE user_id = ? AND token = ?");
+  $stmt->bind_param("is", $userId, $tokenHash);
   $stmt->execute();
   $stmt->close();
 }

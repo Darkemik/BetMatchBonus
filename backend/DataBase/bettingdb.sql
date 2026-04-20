@@ -285,12 +285,17 @@ CREATE TABLE IF NOT EXISTS Users (
 -- 15) USER SESSIONS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS UserSessions (
-  id         INT           AUTO_INCREMENT PRIMARY KEY,
-  user_id    INT           NOT NULL,
-  token      VARCHAR(255)  NOT NULL UNIQUE,
-  expires_at DATETIME      NOT NULL,
-  created_at DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  is_active  TINYINT(1)    NOT NULL DEFAULT 1,
+  id             INT           AUTO_INCREMENT PRIMARY KEY,
+  user_id        INT           NOT NULL,
+  token          VARCHAR(255)  NOT NULL UNIQUE,
+  expires_at     DATETIME      NOT NULL,
+  created_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  is_active      TINYINT(1)    NOT NULL DEFAULT 1,
+  ip_address     VARCHAR(45)   DEFAULT NULL,
+  location       VARCHAR(100)  DEFAULT NULL,
+  user_agent     VARCHAR(255)  DEFAULT NULL,
+  last_active_at DATETIME      DEFAULT NULL,
+  INDEX idx_session_user_active (user_id, is_active),
   CONSTRAINT fk_session_user FOREIGN KEY (user_id) REFERENCES Users(id) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
@@ -1134,7 +1139,8 @@ ALTER TABLE Transactions
 
 ALTER TABLE Users
   ADD COLUMN IF NOT EXISTS failed_login_attempts INT NOT NULL DEFAULT 0 AFTER password_changed_at,
-  ADD COLUMN IF NOT EXISTS login_locked_until DATETIME DEFAULT NULL AFTER failed_login_attempts;
+  ADD COLUMN IF NOT EXISTS login_locked_until DATETIME DEFAULT NULL AFTER failed_login_attempts,
+  ADD COLUMN IF NOT EXISTS force_logout_at DATETIME DEFAULT NULL AFTER login_locked_until;
 
 ALTER TABLE BonusCodes
   MODIFY COLUMN description TEXT DEFAULT NULL;

@@ -62,6 +62,27 @@ document.addEventListener('DOMContentLoaded', function () {
     fd.append('password', password);
     fd.append('rememberMe', rememberMe);
 
+    // Böngésző felismerés kliens oldalon (Brave nem küldi a UA-ban)
+    var clientBrowser = 'Unknown';
+    if (navigator.brave && typeof navigator.brave.isBrave === 'function') {
+      clientBrowser = 'Brave';
+    } else if (/Edg\//i.test(navigator.userAgent)) {
+      clientBrowser = 'Edge';
+    } else if (/OPR\//i.test(navigator.userAgent) || /Opera/i.test(navigator.userAgent)) {
+      clientBrowser = 'Opera';
+    } else if (/Vivaldi/i.test(navigator.userAgent)) {
+      clientBrowser = 'Vivaldi';
+    } else if (/YaBrowser/i.test(navigator.userAgent)) {
+      clientBrowser = 'Yandex';
+    } else if (/Firefox/i.test(navigator.userAgent)) {
+      clientBrowser = 'Firefox';
+    } else if (/Safari/i.test(navigator.userAgent) && !/Chrome/i.test(navigator.userAgent)) {
+      clientBrowser = 'Safari';
+    } else if (/Chrome/i.test(navigator.userAgent)) {
+      clientBrowser = 'Chrome';
+    }
+    fd.append('client_browser', clientBrowser);
+
     // reCAPTCHA v3 token lekérése, majd bejelentkezés
     if (typeof grecaptcha !== 'undefined') {
       grecaptcha.ready(function () {

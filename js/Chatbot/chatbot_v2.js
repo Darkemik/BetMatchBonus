@@ -606,7 +606,7 @@
 
     function showStartupPopup() {
         if (isOpen || getEl('chatbotStartupPopup')) return;
-        if (sessionStorage.getItem('bmb_popup_shown')) return;
+        if (localStorage.getItem('bmb_popup_shown')) return;
 
         var popup = document.createElement('button');
         popup.type = 'button';
@@ -625,7 +625,7 @@
         document.body.appendChild(popup);
         applyMobileFloatingOffsets();
         requestAnimationFrame(function () { popup.classList.add('show'); });
-        sessionStorage.setItem('bmb_popup_shown', '1');
+        localStorage.setItem('bmb_popup_shown', '1');
         startupPopupHideTimer = setTimeout(hideStartupPopup, 7000);
     }
 

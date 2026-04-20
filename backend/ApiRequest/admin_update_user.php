@@ -196,6 +196,16 @@ if ($action === 'toggle_active') {
     }
 
     log_audit('user_toggle', 'user', $userId, "Felhasználó {$statusText}");
+
+    // Ha letiltjuk, automatikusan force-logoutoljuk is
+    if (!$newActive) {
+        $conn->query("UPDATE UserSessions SET is_active = 0 WHERE user_id = " . (int)$userId);
+        $stmtF = $conn->prepare("UPDATE Users SET force_logout_at = NOW() WHERE id = ?");
+        $stmtF->bind_param("i", $userId);
+        $stmtF->execute();
+        $stmtF->close();
+    }
+
     echo json_encode(['success' => true, 'message' => "Felhasználó {$statusText}! Email értesítés elküldve."]);
     exit;
 }
@@ -366,6 +376,42 @@ if ($action === 'send_message') {
     } catch (MailException $e) {
         echo json_encode(['success' => false, 'message' => 'Email küldési hiba: ' . $e->getMessage()]);
     }
+    exit;
+}
+
+// ── 5) Felhasználó force-logout (minden eszközről kijelentkeztetés) ──
+if ($action === 'force_logout') {
+    $userId = (int)($_POST['user_id'] ?? 0);
+    if ($userId <= 0) {
+        echo json_encode(['success' => false, 'message' => 'Érvénytelen felhasználó ID.']);
+        exit;
+    }
+
+    $stmt = $conn->prepare("SELECT username FROM Users WHERE id = ? LIMIT 1");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $user = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    if (!$user) {
+        echo json_encode(['success' => false, 'message' => 'Felhasználó nem található.']);
+        exit;
+    }
+
+    // 1) Összes remember-session deaktiválása
+    $stmt = $conn->prepare("UPDATE UserSessions SET is_active = 0 WHERE user_id = ?");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $stmt->close();
+
+    // 2) Force-logout timestamp beállítása (PHP session-t is érvényteleníti)
+    $stmt = $conn->prepare("UPDATE Users SET force_logout_at = NOW() WHERE id = ?");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $stmt->close();
+
+    log_audit('force_logout', 'user', $userId, 'Kikényszerített kijelentkezés: ' . $user['username']);
+    echo json_encode(['success' => true, 'message' => htmlspecialchars($user['username']) . ' kijelentkeztetve minden eszközről.']);
     exit;
 }
 

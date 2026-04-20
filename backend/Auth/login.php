@@ -136,22 +136,76 @@ if ($rememberMe) {
   $tokenExpiry = time() + (10 * 60 * 60); // 10 óra — DB token lejárat
   $cookieExpiry = time() + (10 * 365 * 24 * 60 * 60); // ~10 év — cookie "örökre"
   
-  // Token mentése az adatbázisba (10 óra érvényesség)
-  $stmt = $conn->prepare("UPDATE Users SET remember_token = ?, remember_expiry = FROM_UNIXTIME(?) WHERE id = ?");
-  $stmt->bind_param("sii", $tokenHash, $tokenExpiry, $user['id']);
+  $ip = $_SERVER['REMOTE_ADDR'] ?? null;
+  $ua = isset($_SERVER['HTTP_USER_AGENT']) ? mb_substr($_SERVER['HTTP_USER_AGENT'], 0, 255) : null;
+  $clientBrowser = trim($_POST['client_browser'] ?? '');
+
+  // Ha a kliens böngésző nevet küldött, beleírjuk a user-agent elejére jelzésként
+  if ($clientBrowser !== '' && $clientBrowser !== 'Unknown') {
+    $ua = '[' . mb_substr($clientBrowser, 0, 30) . '] ' . ($ua ?? '');
+    $ua = mb_substr($ua, 0, 255);
+  }
+
+  // Session limit ellenőrzés (0 = korlátlan)
+  $maxSessions = get_setting_int('max_concurrent_sessions', 5);
+  if ($maxSessions > 0) {
+    // Lejárt sessionök takarítása
+    $conn->query("UPDATE UserSessions SET is_active = 0 WHERE user_id = " . (int)$user['id'] . " AND is_active = 1 AND expires_at <= NOW()");
+
+    $stmtCnt = $conn->prepare("SELECT COUNT(*) AS cnt FROM UserSessions WHERE user_id = ? AND is_active = 1 AND expires_at > NOW()");
+    $stmtCnt->bind_param("i", $user['id']);
+    $stmtCnt->execute();
+    $activeCnt = (int)$stmtCnt->get_result()->fetch_assoc()['cnt'];
+    $stmtCnt->close();
+
+    // Ha a limit elérve, a legrégebbi session(öke)t deaktiváljuk
+    $toRemove = $activeCnt - ($maxSessions - 1); // -1 mert az új session-t is hozzáadjuk
+    if ($toRemove > 0) {
+      $stmtOld = $conn->prepare("SELECT id FROM UserSessions WHERE user_id = ? AND is_active = 1 AND expires_at > NOW() ORDER BY last_active_at ASC, created_at ASC LIMIT ?");
+      $stmtOld->bind_param("ii", $user['id'], $toRemove);
+      $stmtOld->execute();
+      $resOld = $stmtOld->get_result();
+      $idsToDeactivate = [];
+      while ($r = $resOld->fetch_assoc()) {
+        $idsToDeactivate[] = (int)$r['id'];
+      }
+      $stmtOld->close();
+      if (!empty($idsToDeactivate)) {
+        $idList = implode(',', $idsToDeactivate);
+        $conn->query("UPDATE UserSessions SET is_active = 0 WHERE id IN ($idList)");
+      }
+    }
+  }
+
+  // Token mentése a UserSessions táblába (multi-device)
+  // Helyszín meghatározása IP alapján
+  $location = null;
+  $isLocal = in_array($ip, ['::1', '127.0.0.1', 'localhost', null, ''], true);
+  if ($isLocal) {
+    $location = 'Helyi gép (localhost)';
+  } else {
+    $geoCtx = stream_context_create(['http' => ['timeout' => 2]]);
+    $geoJson = @file_get_contents('http://ip-api.com/json/' . urlencode($ip) . '?fields=status,city,country,countryCode', false, $geoCtx);
+    if ($geoJson) {
+      $geo = json_decode($geoJson, true);
+      if (isset($geo['status']) && $geo['status'] === 'success') {
+        $city = $geo['city'] ?? '';
+        $cc = $geo['countryCode'] ?? '';
+        $location = trim($city . ', ' . $cc, ', ');
+      }
+    }
+  }
+
+  $stmt = $conn->prepare("INSERT INTO UserSessions (user_id, token, expires_at, is_active, ip_address, location, user_agent, last_active_at)
+                          VALUES (?, ?, FROM_UNIXTIME(?), 1, ?, ?, ?, NOW())");
+  $stmt->bind_param("isisss", $user['id'], $tokenHash, $tokenExpiry, $ip, $location, $ua);
   $stmt->execute();
   $stmt->close();
   
   // Cookie beállítása (örökre megmarad)
   setcookie('remember_token', $rememberToken, $cookieExpiry, '/', '', false, true);
 } else {
-  // Ha nincs bejelölve, töröljük a régi remember_token-t az adatbázisból és a cookie-t
-  $stmt = $conn->prepare("UPDATE Users SET remember_token = NULL, remember_expiry = NULL WHERE id = ?");
-  $stmt->bind_param("i", $user['id']);
-  $stmt->execute();
-  $stmt->close();
-  
-  // Cookie törlése
+  // Ha nincs bejelölve, cookie törlése (régi sessionöket nem bántjuk, más eszközökön maradhatnak)
   setcookie('remember_token', '', time() - 3600, '/', '', false, true);
 }
 

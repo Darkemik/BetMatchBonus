@@ -90,6 +90,14 @@ if (isset($_SESSION['user_id'])) {
   $sessionMaxSeconds = get_setting_int('session_max_duration_minutes', 60) * 60;
   $elapsed = time() - (int)$_SESSION['login_started_at'];
   if ($elapsed >= $sessionMaxSeconds) {
+    // Az aktuális remember token deaktiválása a UserSessions-ben
+    if (isset($_COOKIE['remember_token'])) {
+      $expTokenHash = hash('sha256', $_COOKIE['remember_token']);
+      $stmtExp = $conn->prepare("UPDATE UserSessions SET is_active = 0 WHERE token = ?");
+      $stmtExp->bind_param("s", $expTokenHash);
+      $stmtExp->execute();
+      $stmtExp->close();
+    }
     session_unset();
     session_destroy();
     setcookie('remember_token', '', time() - 3600, '/', '', false, true);
@@ -97,7 +105,24 @@ if (isset($_SESSION['user_id'])) {
     exit;
   }
   
-  $stmt = $conn->prepare("SELECT id, username, email, full_name, balance, bonus_balance FROM Users WHERE id = ? LIMIT 1");
+  // UserSessions.is_active ellenőrzés (revoke / X gomb)
+  if (isset($_COOKIE['remember_token'])) {
+    $chkTokenHash = hash('sha256', $_COOKIE['remember_token']);
+    $stmtChk = $conn->prepare("SELECT is_active FROM UserSessions WHERE token = ? AND user_id = ? LIMIT 1");
+    $stmtChk->bind_param("si", $chkTokenHash, $userId);
+    $stmtChk->execute();
+    $chkRow = $stmtChk->get_result()->fetch_assoc();
+    $stmtChk->close();
+    if (!$chkRow || !(int)$chkRow['is_active']) {
+      session_unset();
+      session_destroy();
+      setcookie('remember_token', '', time() - 3600, '/', '', false, true);
+      echo json_encode(['loggedIn' => false, 'revoked' => true]);
+      exit;
+    }
+  }
+
+  $stmt = $conn->prepare("SELECT id, username, email, full_name, balance, bonus_balance, force_logout_at FROM Users WHERE id = ? LIMIT 1");
   $stmt->bind_param("i", $userId);
   $stmt->execute();
   $res = $stmt->get_result();
@@ -105,6 +130,19 @@ if (isset($_SESSION['user_id'])) {
   $stmt->close();
   
   if ($user) {
+    // Force-logout ellenőrzés (admin kijelentkeztette)
+    if (!empty($user['force_logout_at'])) {
+      $forceAt = strtotime($user['force_logout_at']);
+      $loginAt = (int)($_SESSION['login_started_at'] ?? 0);
+      if ($forceAt > $loginAt) {
+        session_unset();
+        session_destroy();
+        setcookie('remember_token', '', time() - 3600, '/', '', false, true);
+        echo json_encode(['loggedIn' => false, 'forced' => true]);
+        exit;
+      }
+    }
+
     $freeBet = getAvailableFreeBet($conn, $userId);
     $activeBonuses = getActiveBonusList($conn, $userId);
     $user['session_bet_total'] = (float)($_SESSION['session_bet_total'] ?? 0.0);
@@ -126,18 +164,28 @@ if (isset($_COOKIE['remember_token'])) {
   $rememberToken = $_COOKIE['remember_token'];
   $tokenHash = hash('sha256', $rememberToken);
   
-  $stmt = $conn->prepare("SELECT id, username, email, full_name, balance, bonus_balance, remember_expiry FROM Users 
-                          WHERE remember_token = ? AND remember_expiry > NOW() AND is_active = 1 LIMIT 1");
+  // Multi-device: UserSessions táblából keresünk
+  $stmt = $conn->prepare("SELECT us.id AS session_id, u.id, u.username, u.email, u.full_name, u.balance, u.bonus_balance
+                          FROM UserSessions us
+                          INNER JOIN Users u ON u.id = us.user_id
+                          WHERE us.token = ? AND us.expires_at > NOW() AND us.is_active = 1 AND u.is_active = 1
+                          LIMIT 1");
   $stmt->bind_param("s", $tokenHash);
   $stmt->execute();
   $res = $stmt->get_result();
-  $user = $res->fetch_assoc();
+  $row = $res->fetch_assoc();
   $stmt->close();
   
-  if ($user) {
+  if ($row) {
+    // Frissítjük a session utolsó aktivitását
+    $stmtUpd = $conn->prepare("UPDATE UserSessions SET last_active_at = NOW() WHERE id = ?");
+    $stmtUpd->bind_param("i", $row['session_id']);
+    $stmtUpd->execute();
+    $stmtUpd->close();
+
     // Session alapítása a cookie alapján
-    $_SESSION['user_id'] = (int)$user['id'];
-    $_SESSION['username'] = $user['username'];
+    $_SESSION['user_id'] = (int)$row['id'];
+    $_SESSION['username'] = $row['username'];
     if (!isset($_SESSION['session_bet_total'])) {
       $_SESSION['session_bet_total'] = 0.0;
     }
@@ -145,16 +193,16 @@ if (isset($_COOKIE['remember_token'])) {
       $_SESSION['login_started_at'] = time();
     }
     
-    $freeBet = getAvailableFreeBet($conn, (int)$user['id']);
-    $activeBonuses = getActiveBonusList($conn, (int)$user['id']);
+    $freeBet = getAvailableFreeBet($conn, (int)$row['id']);
+    $activeBonuses = getActiveBonusList($conn, (int)$row['id']);
     $sessionRemaining = 3600 - (time() - (int)$_SESSION['login_started_at']);
     echo json_encode(['loggedIn' => true, 'user' => [
-      'id' => $user['id'],
-      'username' => $user['username'],
-      'email' => $user['email'],
-      'full_name' => $user['full_name'],
-      'balance' => $user['balance'],
-      'bonus_balance' => $user['bonus_balance'] ?? 0,
+      'id' => $row['id'],
+      'username' => $row['username'],
+      'email' => $row['email'],
+      'full_name' => $row['full_name'],
+      'balance' => $row['balance'],
+      'bonus_balance' => $row['bonus_balance'] ?? 0,
       'session_bet_total' => (float)($_SESSION['session_bet_total'] ?? 0.0),
       'login_started_at' => (int)($_SESSION['login_started_at'] ?? time()),
       'session_remaining' => $sessionRemaining,
