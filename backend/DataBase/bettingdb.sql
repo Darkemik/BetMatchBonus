@@ -443,6 +443,7 @@ CREATE TABLE IF NOT EXISTS BonusCodes (
   code                 VARCHAR(50)   DEFAULT NULL UNIQUE,
   name                 VARCHAR(150)  NOT NULL,
   description          TEXT          DEFAULT NULL,
+  image_url            VARCHAR(255)  DEFAULT NULL,
   bonus_type_id        INT           NOT NULL,
   bonus_amount         DECIMAL(10,2) NOT NULL,
   min_deposit          DECIMAL(10,2) DEFAULT NULL,
