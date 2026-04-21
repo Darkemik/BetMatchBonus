@@ -277,10 +277,71 @@ document.addEventListener('DOMContentLoaded', function () {
           .trim();
       }
 
-  function getMarketCategory(marketName) {
+  function isBasketballSportId(sportId) {
+      return Number(sportId) === 67;
+  }
+
+  function getMarketCategory(marketName, options) {
       const name = normalizeMarketText(marketName);
+      const opts = options || {};
+      const basketballMode = !!opts.basketballMode;
 
       if (!name) return 'other';
+
+      if (basketballMode) {
+          if (name.includes('handicap') || name.includes('hendikep')) {
+              return 'handicap';
+          }
+
+          if (
+              name.includes('felido') ||
+              name.includes('elso felido') ||
+              name.includes('1st half') ||
+              name.includes('first half') ||
+              name.includes('half time') ||
+              name.includes('halftime')
+          ) {
+              return 'halftime';
+          }
+
+          if (
+              name.includes('negyed') ||
+              name.includes('quarter') ||
+              name.includes('q1') ||
+              name.includes('q2') ||
+              name.includes('q3') ||
+              name.includes('q4') ||
+              name.includes('1q') ||
+              name.includes('2q') ||
+              name.includes('3q') ||
+              name.includes('4q') ||
+              name.includes('1. negyed') ||
+              name.includes('2. negyed') ||
+              name.includes('3. negyed') ||
+              name.includes('4. negyed') ||
+              name.includes('1st quarter') ||
+              name.includes('2nd quarter') ||
+              name.includes('3rd quarter') ||
+              name.includes('4th quarter')
+          ) {
+              return 'quarters';
+          }
+
+          if (
+              name.includes('pont') ||
+              name.includes('point') ||
+              name.includes('score') ||
+              name.includes('osszpont') ||
+              name.includes('osszpont') ||
+              name.includes('over') ||
+              name.includes('under') ||
+              name.includes('total')
+          ) {
+              return 'score';
+          }
+
+          return 'other';
+      }
 
       if (
           name.includes('szabalytalansag') ||
@@ -348,7 +409,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       if (!filterButtons.length || !marketCards.length) return;
 
-      const applyFilter = (category) => {
+    const applyFilter = (category) => {
           let visibleCount = 0;
 
           marketCards.forEach(card => {
@@ -374,7 +435,8 @@ document.addEventListener('DOMContentLoaded', function () {
           });
       });
 
-      applyFilter('all');
+      const initialCategory = filterButtons[0].getAttribute('data-market-filter') || 'all';
+      applyFilter(initialCategory);
   }
 
   function syncColumnsToTipsBottom() {
@@ -949,14 +1011,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
       const markets = matchData.markets || [];
       const isBoostedMatch = match.isBoosted || false;
-      const marketFilters = [
-          { key: 'all', icon: 'fa-layer-group', label: t('mainMenu.marketFilterAll', 'Összes') },
-          { key: 'goals', icon: 'fa-futbol', label: t('mainMenu.marketFilterGoals', 'Gólok') },
-          { key: 'corners', icon: 'fa-location-arrow', label: t('mainMenu.marketFilterCorners', 'Szögletek') },
-          { key: 'handicap', icon: 'fa-scale-balanced', label: t('mainMenu.marketFilterHandicap', 'Hendikep') },
-          { key: 'halftime', icon: 'fa-stopwatch', label: t('mainMenu.marketFilterHalftime', 'Félidő') },
-          { key: 'fouls', icon: 'fa-ban', label: t('mainMenu.marketFilterFouls', 'Szabálytalanságok') }
-      ];
+      const isBasketballView = isBasketballSportId(currentSportId);
+      const marketFilters = isBasketballView
+          ? [
+              { key: 'all', icon: 'fa-layer-group', label: t('mainMenu.marketFilterAll', 'Osszes') },
+              { key: 'score', icon: 'fa-basketball-ball', label: 'Pontszám' },
+              { key: 'handicap', icon: 'fa-scale-balanced', label: t('mainMenu.marketFilterHandicap', 'Hendikep') },
+              { key: 'quarters', icon: 'fa-list-ol', label: 'Negyedek' },
+              { key: 'halftime', icon: 'fa-stopwatch', label: t('mainMenu.marketFilterHalftime', 'Felido') }
+          ]
+          : [
+              { key: 'all', icon: 'fa-layer-group', label: t('mainMenu.marketFilterAll', 'Osszes') },
+              { key: 'goals', icon: 'fa-futbol', label: t('mainMenu.marketFilterGoals', 'Golok') },
+              { key: 'corners', icon: 'fa-location-arrow', label: t('mainMenu.marketFilterCorners', 'Szogletek') },
+              { key: 'handicap', icon: 'fa-scale-balanced', label: t('mainMenu.marketFilterHandicap', 'Hendikep') },
+              { key: 'halftime', icon: 'fa-stopwatch', label: t('mainMenu.marketFilterHalftime', 'Felido') },
+              { key: 'fouls', icon: 'fa-ban', label: t('mainMenu.marketFilterFouls', 'Szabalytalansagok') }
+          ];
 
       let html = `
           <button class="back-btn" id="back-to-matches">
@@ -1000,7 +1071,7 @@ document.addEventListener('DOMContentLoaded', function () {
           markets.forEach(market => {
               const specialVal = market.specialValue ? ' (' + market.specialValue + ')' : '';
               const marketFullName = td(market.name || '') + specialVal;
-              const marketCategory = getMarketCategory(marketFullName);
+              const marketCategory = getMarketCategory(marketFullName, { basketballMode: isBasketballView });
 
               html += `<div class="market-card" data-market-category="${marketCategory}">
                   <div class="market-header"><span class="market-name">${escapeHtml(marketFullName)}</span></div>

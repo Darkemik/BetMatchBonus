@@ -190,7 +190,7 @@ $assignStmt = $conn->prepare("
         ?,
         bc.id,
         CASE
-            WHEN UPPER(COALESCE(bc.bonus_trigger, '')) = 'DEPOSIT' THEN 'PENDING'
+            WHEN UPPER(COALESCE(bc.bonus_trigger, '')) IN ('DEPOSIT', 'BET', 'LOSS') THEN 'PENDING'
             ELSE 'ACTIVE'
         END AS status,
         CASE

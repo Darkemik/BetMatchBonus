@@ -624,7 +624,17 @@ try {
         FROM UserBonuses ub
         INNER JOIN BonusCodes bc ON bc.id = ub.bonus_id
         WHERE ub.user_id = ?
-          AND ub.status = 'PENDING'
+            AND (
+                ub.status = 'PENDING'
+                OR (
+                  ub.status = 'ACTIVE'
+                  AND COALESCE(ub.used, 0) = 0
+                  AND ub.ticket_id IS NULL
+                  AND COALESCE(ub.bonus_money_amount, 0) = 0
+                  AND COALESCE(ub.free_bet_amount, 0) = 0
+                  AND COALESCE(ub.bonus_balance, 0) = 0
+                )
+            )
           AND ub.used = 0
           AND bc.bonus_trigger = 'BET'
           AND (bc.valid_to IS NULL OR bc.valid_to >= NOW())
@@ -669,7 +679,7 @@ try {
         // evaluate_on_settle: nem azonnal aktiválódik, hanem a kvalifikáló fogadás lezárásakor
         $evaluateOnSettle = (int)($betBonus['evaluate_on_settle'] ?? 0);
         if ($evaluateOnSettle) {
-            $storeTicketStmt = $conn->prepare("UPDATE UserBonuses SET ticket_id = ? WHERE id = ?");
+            $storeTicketStmt = $conn->prepare("UPDATE UserBonuses SET ticket_id = ?, status = 'PENDING' WHERE id = ?");
             $storeTicketStmt->bind_param("ii", $ticketId, $betBonus['user_bonus_id']);
             $storeTicketStmt->execute();
             $storeTicketStmt->close();
