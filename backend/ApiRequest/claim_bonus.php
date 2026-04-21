@@ -90,9 +90,9 @@ if (!empty($bonus['valid_weekdays_only']) && !$isWeekdayWindow && !$adminForceAc
     exit();
 }
 
-// Hétvégi bónusz csak szombat-vasárnap aktiválható (admin force átugorja).
+// Hétvégi bónusz csak szombat-vasárnap aktiválható.
 $bonusCode = strtoupper((string)($bonus['code'] ?? ''));
-if ($bonusCode === 'HETVEGI5K' && !$isWeekend && !$adminForceActive) {
+if ($bonusCode === 'HETVEGI5K' && !$isWeekend) {
     echo json_encode(['success' => false, 'message' => 'Ez a bónuszkód csak szombaton és vasárnap aktiválható!']);
     exit();
 }

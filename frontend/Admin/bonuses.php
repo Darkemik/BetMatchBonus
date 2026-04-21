@@ -34,6 +34,16 @@ $conn->query("
       AND (code IS NULL OR code = '')
 ");
 
+// Hétvégi bónusz hétköznap mindig legyen inaktív.
+if ($isWeekday) {
+    $conn->query(" 
+        UPDATE BonusCodes
+        SET admin_force_active = 0,
+            is_active = 0
+        WHERE code = 'HETVEGI5K'
+    ");
+}
+
 // Esport bónusz legyen fixen aktív az admin felületen is.
 $conn->query(" 
     UPDATE BonusCodes

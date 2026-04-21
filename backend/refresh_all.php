@@ -348,11 +348,11 @@ try {
     $isWeekend = ((int)date('N') >= 6) ? 1 : 0;
     $weekendToggleStmt = $conn->prepare(" 
         UPDATE BonusCodes
-        SET is_active = CASE
-            WHEN admin_force_active = 1 THEN 1
-            WHEN ? = 1 THEN 1
-            ELSE 0
-        END
+        SET admin_force_active = 0,
+            is_active = CASE
+                WHEN ? = 1 THEN 1
+                ELSE 0
+            END
         WHERE code = 'HETVEGI5K'
     ");
     if ($weekendToggleStmt) {

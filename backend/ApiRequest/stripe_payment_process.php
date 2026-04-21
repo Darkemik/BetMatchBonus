@@ -234,8 +234,8 @@ $isWeekend = ((int)date('N') >= 6);
 foreach ($pending_bonuses as $pb) {
     $bonusCode = strtoupper((string)($pb['code'] ?? ''));
 
-    // Hétvégi bónusz csak szombat-vasárnap aktiválódjon (admin force átugorja).
-    if ($bonusCode === 'HETVEGI5K' && empty($pb['admin_force_active']) && !$isWeekend) {
+    // Hétvégi bónusz csak szombat-vasárnap aktiválódjon.
+    if ($bonusCode === 'HETVEGI5K' && !$isWeekend) {
         continue;
     }
 

@@ -91,6 +91,13 @@ $query = "SELECT id, code, name, description, {$imageSelect}, {$birthdaySelect},
                         AND (
                             code IS NULL
                             OR code NOT IN ('TOP_REWARD_DAILY', '__ADMIN_FREEBET__', '__ADMIN_BONUS__')
+                            OR (
+                                code = '__ADMIN_BONUS__'
+                                AND (
+                                    COALESCE(name, '') <> 'Admin Bónusz'
+                                    OR COALESCE(description, '') <> 'Admin által manuálisan adott bónusz pénz a felhasználó bónusz egyenlegére.'
+                                )
+                            )
                         )
                     ORDER BY id ASC";
 
@@ -231,9 +238,9 @@ if ($result) {
                 }
             }
 
-            // Hétvégi bónusz csak szombat-vasárnap legyen látható (admin force átugorja).
+            // Hétvégi bónusz csak szombat-vasárnap legyen látható.
             $bonusCode = strtoupper((string)($row['code'] ?? ''));
-            if ($bonusCode === 'HETVEGI5K' && empty($row['admin_force_active']) && !$isWeekend) {
+            if ($bonusCode === 'HETVEGI5K' && !$isWeekend) {
                 continue;
             }
 
