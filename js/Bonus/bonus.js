@@ -76,6 +76,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function localizeBonusTitle(title, lang) {
         const src = String(title || '').trim();
         let localized = src;
+        const bonusToken = '(?:B[ÓO]NUSZ|BONUS)';
 
         if (lang === 'en' && src === 'Vesztes fogadás cashback (30% Free Bet)') {
             localized = 'Losing Bet Cashback (30% Free Bet)';
@@ -91,23 +92,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (lang === 'en') {
-            const weekdayPattern = /^B[ÓO]NUSZ\s+H[ÉE]TK[ÖO]ZNAP/i;
+            const weekdayPattern = new RegExp('^' + bonusToken + '\\s+H[ÉE]TK[ÖO]ZNAP', 'i');
             if (weekdayPattern.test(src)) {
                 localized = src
-                    .replace(/^B[ÓO]NUSZ\s+H[ÉE]TK[ÖO]ZNAP/i, 'WEEKDAY BONUS')
+                    .replace(weekdayPattern, 'Weekday Bonus')
                     .replace(/Ft/gi, 'FT');
             }
         }
 
         if (lang === 'en') {
-            const dartsPattern = /^DARTS\s+B[ÓO]NUSZ\s*\(([^)]+)\)$/i;
+            const dartsPattern = new RegExp('^DARTS\\s+' + bonusToken + '\\s*\\(([^)]+)\\)$', 'i');
             const match = src.match(dartsPattern);
             if (match) {
                 const details = match[1]
                     .replace(/fogadás/gi, 'bet')
                     .replace(/bónusz/gi, 'bonus')
                     .replace(/Ft/gi, 'FT');
-                localized = `DARTS BONUS (${details})`;
+                localized = `Darts Bonus (${details})`;
+            }
+        }
+
+        if (lang === 'en') {
+            const esportPattern = new RegExp('^ESPORT\\s+' + bonusToken + '\\s*\\(([^)]+)\\)$', 'i');
+            const match = src.match(esportPattern);
+            if (match) {
+                const details = match[1]
+                    .replace(/fogadás/gi, 'bet')
+                    .replace(/bónusz/gi, 'bonus')
+                    .replace(/Ft/gi, 'FT');
+                localized = `Esport Bonus (${details})`;
             }
         }
 
@@ -120,37 +133,37 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const titleCaseRules = [
             {
-                source: /^B[ÓO]NUSZ\s+H[ÉE]TK[ÖO]ZNAP/i,
+                source: new RegExp('^' + bonusToken + '\\s+H[ÉE]TK[ÖO]ZNAP', 'i'),
                 hu: 'Bónusz Hétköznap',
                 en: 'Weekday Bonus'
             },
             {
-                source: /^DARTS\s+B[ÓO]NUSZ/i,
+                source: new RegExp('^DARTS\\s+' + bonusToken, 'i'),
                 hu: 'Darts Bónusz',
                 en: 'Darts Bonus'
             },
             {
-                source: /^NB1\s+DERBY\s+B[ÓO]NUSZ/i,
+                source: new RegExp('^NB1\\s+DERBY\\s+' + bonusToken, 'i'),
                 hu: 'NB1 Derby Bónusz',
                 en: 'NB1 Derby Bonus'
             },
             {
-                source: /^ESPORT\s+B[ÓO]NUSZ/i,
+                source: new RegExp('^ESPORT\\s+' + bonusToken, 'i'),
                 hu: 'Esport Bónusz',
                 en: 'Esport Bonus'
             },
             {
-                source: /^SZ[ÜU]LET[ÉE]SNAPI\s+B[ÓO]NUSZ/i,
+                source: new RegExp('^SZ[ÜU]LET[ÉE]SNAPI\\s+' + bonusToken, 'i'),
                 hu: 'Születésnapi Bónusz',
                 en: 'Birthday Bonus'
             },
             {
-                source: /^BETMATCH\s+SZ[ÜU]LET[ÉE]SNAPI\s+B[ÓO]NUSZ/i,
+                source: new RegExp('^BETMATCH\\s+SZ[ÜU]LET[ÉE]SNAPI\\s+' + bonusToken, 'i'),
                 hu: 'BetMatch Születésnapi Bónusz',
                 en: 'BetMatch Birthday Bonus'
             },
             {
-                source: /^H[ÉE]TV[ÉE]GI\s+B[ÓO]NUSZ/i,
+                source: new RegExp('^H[ÉE]TV[ÉE]GI\\s+' + bonusToken, 'i'),
                 hu: 'Hétvégi Bónusz',
                 en: 'Weekend Bonus'
             },
@@ -160,7 +173,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 en: 'Admin Free Bet'
             },
             {
-                source: /^ADMIN\s+B[ÓO]NUSZ/i,
+                source: new RegExp('^ADMIN\\s+' + bonusToken, 'i'),
                 hu: 'Admin Bónusz',
                 en: 'Admin Bonus'
             }
@@ -191,14 +204,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         const adminFreeBetEnText = 'Free Bet granted manually by an admin.';
         const adminBonusEnText = 'Bonus money manually granted by an admin to the user\'s bonus balance.';
         const dailyTopEnText = 'Automatic daily reward for the top depositor, top bettor, and top winner.';
-        const isDartsBonusTitle = /^DARTS\s+B[ÓO]NUSZ/i.test(titleSrc);
-        const isNb1DerbyBonusTitle = /^NB1\s+DERBY\s+B[ÓO]NUSZ/i.test(titleSrc);
-        const isEsportBonusTitle = /^ESPORT\s+B[ÓO]NUSZ/i.test(titleSrc);
-        const isBirthdayBonusTitle = /^SZ[ÜU]LET[ÉE]SNAPI\s+B[ÓO]NUSZ/i.test(titleSrc);
-        const isBetmatchBirthdayBonusTitle = /^BETMATCH\s+SZ[ÜU]LET[ÉE]SNAPI\s+B[ÓO]NUSZ/i.test(titleSrc);
-        const isWeekendBonusTitle = /^H[ÉE]TV[ÉE]GI\s+B[ÓO]NUSZ/i.test(titleSrc);
+        const isDartsBonusTitle = /^DARTS\s+(?:B[ÓO]NUSZ|BONUS)/i.test(titleSrc);
+        const isNb1DerbyBonusTitle = /^NB1\s+DERBY\s+(?:B[ÓO]NUSZ|BONUS)/i.test(titleSrc);
+        const isEsportBonusTitle = /^ESPORT\s+(?:B[ÓO]NUSZ|BONUS)/i.test(titleSrc);
+        const isBirthdayBonusTitle = /^SZ[ÜU]LET[ÉE]SNAPI\s+(?:B[ÓO]NUSZ|BONUS)/i.test(titleSrc);
+        const isBetmatchBirthdayBonusTitle = /^BETMATCH\s+SZ[ÜU]LET[ÉE]SNAPI\s+(?:B[ÓO]NUSZ|BONUS)/i.test(titleSrc);
+        const isWeekendBonusTitle = /^H[ÉE]TV[ÉE]GI\s+(?:B[ÓO]NUSZ|BONUS)/i.test(titleSrc);
         const isAdminFreeBetTitle = /^ADMIN\s+FREE\s+BET/i.test(titleSrc);
-        const isAdminBonusTitle = /^ADMIN\s+B[ÓO]NUSZ/i.test(titleSrc);
+        const isAdminBonusTitle = /^ADMIN\s+(?:B[ÓO]NUSZ|BONUS)/i.test(titleSrc);
 
         if (lang === 'en' && isDartsBonusTitle) {
             return dartsEnText;
@@ -299,16 +312,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 `;
             }
 
-                                                const sportIcons = { DARTS: '🎯', FOOTBALL: '⚽', TENNIS: '🎾', BASKETBALL: '🏀', ESPORT: '🎮' };
-                                                const sportRestrictionUpper = String(bonus.sportRestriction || '').toUpperCase();
-                                                const isDartsSportBadge = sportRestrictionUpper === 'DARTS';
-                                                const isEsportSportBadge = sportRestrictionUpper === 'ESPORT';
-                                                const liveLabel = isEsportSportBadge ? '' : ' | <span style="color:#4caf50;">● LIVE</span>';
-                                                const sportBadge = bonus.sportRestriction && !isDartsSportBadge
-                ? `<div class="bonus-sport-badge" style="display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#7c4dff22,#b388ff33);border:1px solid #7c4dff66;color:#b388ff;font-size:0.75rem;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:6px;">
-                                                                                ${sportIcons[bonus.sportRestriction] || '🏆'} ${bonus.sportRestriction}${liveLabel}
-                  </div>`
-                : '';
+                        const sportBadge = '';
 
             box.innerHTML = `
                 <div class="doboz-inner">
