@@ -416,25 +416,7 @@ try {
                 $nb1ToggleStmt->close();
         }
 
-        // Esport bónusz auto-toggle: csak akkor aktív,
-        // ha ma van LoL / Counter-Strike / Valorant esport esemény.
-        $esportToday = 0;
-        $esportTodayStmt = $conn->prepare(" 
-            SELECT COUNT(*) AS cnt
-            FROM Events e
-            INNER JOIN Sports s ON s.id = e.sport_id
-            INNER JOIN Competitions ch ON ch.id = e.competition_id
-            WHERE e.start_time BETWEEN ? AND ?
-                AND s.api_id = 145
-                AND COALESCE(NULLIF(ch.game_tag, ''), 'other') IN ('lol', 'cs', 'valorant')
-        ");
-        if ($esportTodayStmt) {
-            $esportTodayStmt->bind_param('ss', $dayFromUtc, $dayToUtc);
-            $esportTodayStmt->execute();
-            $esportTodayRow = $esportTodayStmt->get_result()->fetch_assoc();
-            $esportTodayStmt->close();
-            $esportToday = ((int)($esportTodayRow['cnt'] ?? 0) > 0) ? 1 : 0;
-        }
+        // Esport bónusz fixen admin felülírással aktív.
 
         $esportToggleStmt = $conn->prepare(" 
             UPDATE BonusCodes
@@ -497,154 +479,7 @@ try {
                         $betmatchBirthdayDescStmt->close();
                 }
 
-        // Születésnapi bónuszokat igényléssel (gombnyomásra) kezeljük,
-        // ezért az automatikus jóváírás itt ki van kapcsolva.
-        $birthdayClaimRequiresButton = true;
-        $birthdayCheckedUsers = 0;
-        $birthdayGrantedUsers = 0;
-
-        $todayMonthDay = date('m-d');
-        $currentYear = (int)date('Y');
-
-        $birthdayBonusStmt = $conn->prepare(" 
-            SELECT id, name, bonus_amount, max_bonus_amount, bet_reward_type,
-                   wagering_multiplier, activation_expire_hours
-            FROM BonusCodes
-            WHERE birthday_bonus = 1
-              AND (code IS NULL OR code = '')
-              AND name LIKE 'Születésnapi Bónusz%'
-            ORDER BY id ASC
-            LIMIT 1
-        ");
-
-        $birthdayBonusRow = null;
-        if ($birthdayBonusStmt) {
-            $birthdayBonusStmt->execute();
-            $birthdayBonusRow = $birthdayBonusStmt->get_result()->fetch_assoc();
-            $birthdayBonusStmt->close();
-        }
-
-        if ($birthdayBonusRow && !$birthdayClaimRequiresButton) {
-            $birthdayBonusId = (int)$birthdayBonusRow['id'];
-            $birthdayBonusAmount = (float)($birthdayBonusRow['max_bonus_amount'] ?? 0);
-            if ($birthdayBonusAmount <= 0) {
-                $birthdayBonusAmount = (float)($birthdayBonusRow['bonus_amount'] ?? 0);
-            }
-
-            $birthdayIsFreeBet = (strtoupper((string)($birthdayBonusRow['bet_reward_type'] ?? '')) === 'FREE_BET');
-            $birthdayWageringMultiplier = (float)($birthdayBonusRow['wagering_multiplier'] ?? 0);
-            $birthdayWageringRequired = $birthdayBonusAmount > 0 ? ($birthdayBonusAmount * max(0.0, $birthdayWageringMultiplier)) : 0.0;
-
-            $birthdayExpiresAt = null;
-            $birthdayExpireHours = (int)($birthdayBonusRow['activation_expire_hours'] ?? 0);
-            if ($birthdayExpireHours > 0) {
-                $birthdayExpiresAt = date('Y-m-d H:i:s', strtotime('+' . $birthdayExpireHours . ' hours'));
-            }
-
-            $birthdayUsersStmt = $conn->prepare(" 
-                SELECT id
-                FROM Users
-                WHERE is_active = 1
-                  AND DATE_FORMAT(birth_date, '%m-%d') = ?
-            ");
-
-            if ($birthdayUsersStmt) {
-                $birthdayUsersStmt->bind_param('s', $todayMonthDay);
-                $birthdayUsersStmt->execute();
-                $birthdayUsers = $birthdayUsersStmt->get_result()->fetch_all(MYSQLI_ASSOC);
-                $birthdayUsersStmt->close();
-
-                $birthdayCheckedUsers = count($birthdayUsers);
-
-                $alreadyGrantedStmt = $conn->prepare(" 
-                    SELECT id
-                    FROM UserBonuses
-                    WHERE user_id = ?
-                      AND bonus_id = ?
-                      AND YEAR(created_at) = ?
-                    LIMIT 1
-                ");
-
-                $insertBirthdayStmt = $conn->prepare(" 
-                    INSERT INTO UserBonuses
-                        (user_id, bonus_id, status, granted_amount, bonus_balance, free_bet_amount, bonus_money_amount, wagering_required, expires_at)
-                    VALUES
-                        (?, ?, 'ACTIVE', ?, ?, ?, ?, ?, ?)
-                ");
-
-                $syncBirthdayBalanceStmt = $conn->prepare(" 
-                    UPDATE Users SET bonus_balance = (
-                        SELECT COALESCE(SUM(ub.bonus_balance), 0)
-                        FROM UserBonuses ub
-                        WHERE ub.user_id = ?
-                          AND ub.status = 'ACTIVE'
-                          AND ub.used = 0
-                          AND (ub.expires_at IS NULL OR ub.expires_at > NOW())
-                    )
-                    WHERE id = ?
-                ");
-
-                $birthdayNotifStmt = $conn->prepare(" 
-                    INSERT INTO Notifications (user_id, title, message, type, created_at)
-                    VALUES (?, 'Születésnapi bónusz jóváírás', 'Boldog születésnapot! Jóváírtunk neked 5.000 Ft születésnapi bónuszt.', 'bonus', NOW())
-                ");
-
-                foreach ($birthdayUsers as $uRow) {
-                    $birthdayUserId = (int)($uRow['id'] ?? 0);
-                    if ($birthdayUserId <= 0) {
-                        continue;
-                    }
-
-                    if ($alreadyGrantedStmt) {
-                        $alreadyGrantedStmt->bind_param('iii', $birthdayUserId, $birthdayBonusId, $currentYear);
-                        $alreadyGrantedStmt->execute();
-                        $alreadyGrantedRes = $alreadyGrantedStmt->get_result();
-                        if ($alreadyGrantedRes && $alreadyGrantedRes->num_rows > 0) {
-                            continue;
-                        }
-                    }
-
-                    $birthdayBonusBalance = $birthdayIsFreeBet ? 0.0 : $birthdayBonusAmount;
-                    $birthdayFreeBetAmount = $birthdayIsFreeBet ? $birthdayBonusAmount : 0.0;
-                    $birthdayBonusMoneyAmount = $birthdayIsFreeBet ? 0.0 : $birthdayBonusAmount;
-
-                    if ($insertBirthdayStmt) {
-                        $insertBirthdayStmt->bind_param(
-                            'iiddddds',
-                            $birthdayUserId,
-                            $birthdayBonusId,
-                            $birthdayBonusAmount,
-                            $birthdayBonusBalance,
-                            $birthdayFreeBetAmount,
-                            $birthdayBonusMoneyAmount,
-                            $birthdayWageringRequired,
-                            $birthdayExpiresAt
-                        );
-                        $ok = $insertBirthdayStmt->execute();
-                        if (!$ok) {
-                            continue;
-                        }
-                    }
-
-                    if ($syncBirthdayBalanceStmt) {
-                        $syncBirthdayBalanceStmt->bind_param('ii', $birthdayUserId, $birthdayUserId);
-                        $syncBirthdayBalanceStmt->execute();
-                    }
-
-                    if ($birthdayNotifStmt) {
-                        $birthdayNotifStmt->bind_param('i', $birthdayUserId);
-                        $birthdayNotifStmt->execute();
-                    }
-
-                    $birthdayGrantedUsers++;
-                }
-
-                if ($alreadyGrantedStmt) $alreadyGrantedStmt->close();
-                if ($insertBirthdayStmt) $insertBirthdayStmt->close();
-                if ($syncBirthdayBalanceStmt) $syncBirthdayBalanceStmt->close();
-                if ($birthdayNotifStmt) $birthdayNotifStmt->close();
-            }
-        }
+        // Születésnapi bónuszokat igényléssel (gombnyomásra) kezeljük.
 
     $isWeekday = ((int)date('N') <= 5) ? 1 : 0;
 
@@ -670,9 +505,8 @@ try {
         'message' => 'Hétköznapi auto-toggle: ' . ($isWeekday ? 'hétköznap' : 'hétvége')
             . ' | HETVEGI5K: ' . ($isWeekend ? 'aktív (hétvége)' : 'inaktív (hétköznap)')
             . ' | NB1DERBY: ' . ($nb1DerbyToday ? 'aktív (ma van Újpest–Ferencváros)' : 'inaktív (ma nincs derby)')
-            . ' | ESPORT5K: ' . ($esportToday ? 'aktív (ma van LoL/CS/Valorant)' : 'inaktív (ma nincs LoL/CS/Valorant)')
-            . ' | BetMatchBonus szülinap: alapból aktív'
-            . ' | Születésnapi bónusz: ' . $birthdayGrantedUsers . ' jóváírás (' . $birthdayCheckedUsers . ' érintett user)',
+            . ' | ESPORT5K: aktív (admin force)'
+            . ' | BetMatchBonus szülinap: alapból aktív',
         'ms'      => round((microtime(true) - $stepStart) * 1000),
     ];
 } catch (Throwable $e) {
@@ -686,7 +520,7 @@ try {
     $imgSync = syncBonusImagesFromUploads($conn);
     $results[] = [
         'step' => 'Bónusz képek szinkron',
-        'status' => ($imgSync['status'] ?? 'ok') === 'ok' ? 'ok' : 'ok',
+        'status' => 'ok',
         'message' => sprintf(
             '%s | frissítve: %d, már egyezett: %d, hiányzó bónusz: %d, érvénytelen fájlnév: %d',
             $imgSync['message'] ?? 'Kész',

@@ -220,7 +220,7 @@ $isFreeBetReward = ($betRewardType === 'FREE_BET');
 // Azonnali bónuszok egyedi egyenlege
 $individualBalance = (!$isDepositTriggered && !$isBetTriggered && $granted_amount > 0 && !$isFreeBetReward) ? $granted_amount : 0.00;
 $freeBetAmount = (!$isDepositTriggered && !$isBetTriggered && $granted_amount > 0 && $isFreeBetReward) ? $granted_amount : 0.00;
-$bonusMoneyAmount = (!$isDepositTriggered && !$isBetTriggered && $granted_amount > 0 && !$isFreeBetReward) ? $granted_amount : 0.00;
+$bonusMoneyAmount = $individualBalance;
 
 $insert_stmt = $conn->prepare("
     INSERT INTO UserBonuses (user_id, bonus_id, status, granted_amount, bonus_balance, free_bet_amount, bonus_money_amount, wagering_required, expires_at) 

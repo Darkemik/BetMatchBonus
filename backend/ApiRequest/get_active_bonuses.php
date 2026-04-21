@@ -13,8 +13,6 @@ $isGuest = !isset($_SESSION['user_id']);
 $userId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
 $isBirthdayTodayForUser = false;
 $isBetmatchBonusDay = (date('m-d') === '05-26');
-$todayFrom = date('Y-m-d 00:01:00'); // fallback, per-bonus override below
-$tomorrowFrom = date('Y-m-d 00:01:00', strtotime('+1 day'));
 
 if (!$isGuest && $userId > 0) {
     $birthCheckStmt = $conn->prepare(" 
@@ -199,14 +197,13 @@ $hasExistingBonus = false; // Kompatibilitás megtartása a frontend felé
 if ($result) {
     while ($row = $result->fetch_assoc()) {
         $bonusName = (string)($row['name'] ?? '');
-        $isBetmatchBirthdayByName = (bool)preg_match('/^BETMATCH(?:\s*BONUS)?\s+SZ[ÜU]LET[ÉE]SNAPI\s+B[ÓO]NUSZ/ui', $bonusName);
+        $isBetmatchBirthdayBonus = (bool)preg_match('/^BETMATCH(?:\s*BONUS)?\s+SZ[ÜU]LET[ÉE]SNAPI\s+B[ÓO]NUSZ/ui', $bonusName);
 
-        if ($isBetmatchBirthdayByName && !$isBetmatchBonusDay) {
+        if ($isBetmatchBirthdayBonus && !$isBetmatchBonusDay) {
             continue;
         }
 
         $isBirthdayBonus = ((int)($row['birthday_bonus'] ?? 0) === 1);
-        $isBetmatchBirthdayBonus = (bool)preg_match('/^BETMATCH(?:\s*BONUS)?\s+SZ[ÜU]LET[ÉE]SNAPI\s+B[ÓO]NUSZ/ui', $bonusName);
 
         // Születésnapi bónuszok megjelenítése:
         // - BetMatchBonus születésnapi bónusz: csak bejelentkezve + május 26-án
@@ -360,7 +357,7 @@ if ($result) {
         }
 
         $longDescription = localizeBonusDescription($row['description'] ?? '', $lang, $row['bonus_trigger'] ?? 'DEPOSIT');
-        if ($isBetmatchBirthdayByName && $lang === 'hu') {
+        if ($isBetmatchBirthdayBonus && $lang === 'hu') {
             $longDescription = 'A BetMatchBonus születésnapi különleges promóciója - limitált számban elérhető! Hogyan működik? 1) A promóció évente május 26-án aktiválódik. 2) Ezen a napon az első 500 jogosult igénylés teljesülhet. 3) A bónusszal bármilyen sportra, bármilyen mérkőzésre fogadhatsz - nincs sportági megkötés. 4) Nincs forgatási követelmény, a nyereményed azonnal kifizethetővé válik. 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: csak 500 db érhető el összesen.';
         }
 

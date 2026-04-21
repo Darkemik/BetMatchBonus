@@ -38,8 +38,6 @@ if ($searchParam) {
 }
 
 $role = $_SESSION['admin_role'];
-
-$role = $_SESSION['admin_role'];
 ?>
 <!DOCTYPE html>
 <html lang="hu">
