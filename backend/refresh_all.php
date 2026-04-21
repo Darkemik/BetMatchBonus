@@ -438,15 +438,11 @@ try {
 
         $esportToggleStmt = $conn->prepare(" 
             UPDATE BonusCodes
-            SET is_active = CASE
-                WHEN admin_force_active = 1 THEN 1
-                WHEN ? = 1 THEN 1
-                ELSE 0
-            END
+            SET admin_force_active = 1,
+                is_active = 1
             WHERE code = 'ESPORT5K'
         ");
         if ($esportToggleStmt) {
-            $esportToggleStmt->bind_param('i', $esportToday);
             $esportToggleStmt->execute();
             $esportToggleStmt->close();
         }

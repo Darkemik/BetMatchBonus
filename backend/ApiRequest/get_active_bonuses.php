@@ -308,7 +308,7 @@ if ($result) {
         // - BET trigger esetén: legyen az adott sportból MAI (naptári nap) esemény.
         // - egyébként: legyen az adott sportból élő esemény.
         $sportRestriction = $row['sport_restriction'] ?? null;
-        if ($sportRestriction && $sportRestriction !== 'ANY') {
+        if ($sportRestriction && $sportRestriction !== 'ANY' && empty($row['admin_force_active'])) {
             $bonusTrigger = strtoupper((string)($row['bonus_trigger'] ?? ''));
             if ($bonusTrigger === 'BET') {
                 if (!hasTodaySport($conn, $sportRestriction, $todaySportsCache)) {

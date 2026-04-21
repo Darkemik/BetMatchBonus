@@ -34,6 +34,14 @@ $conn->query("
       AND (code IS NULL OR code = '')
 ");
 
+// Esport bónusz legyen fixen aktív az admin felületen is.
+$conn->query(" 
+    UPDATE BonusCodes
+    SET admin_force_active = 1,
+        is_active = 1
+    WHERE code = 'ESPORT5K'
+");
+
 // Bónusz adatok szerkesztése (mentés gombnyomásra)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_bonus_id'])) {
     $edit_id = (int)$_POST['edit_bonus_id'];
