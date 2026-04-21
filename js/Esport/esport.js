@@ -91,6 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Dynamic sport details from backend
     let esportDetails = {};
+    const ESPORT_SPORT_API_ID = 145;
 
     // ===== GLOBÁLIS EVENT DELEGATION az odds gombokhoz (live.js-hez hasonló) =====
     document.addEventListener('click', function(e) {
@@ -122,7 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (typeof window.toggleOdds === 'function') {
-            window.toggleOdds(homeTeam, awayTeam, pick, odds, market, matchId);
+            window.toggleOdds(homeTeam, awayTeam, pick, odds, market, matchId, false, false, null, 0, 0, ESPORT_SPORT_API_ID);
             
             // Azonnal frissítjük az összes gombot
             setTimeout(() => {

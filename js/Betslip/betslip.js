@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let availableFreeBetMinCombo = 0;
     let availableFreeBetMinOdds = 0;
     let availableFreeBetMinOddsPerEvent = 0;
+    let availableFreeBetList = [];
     let manualStakeBeforeFreeBet = (window.SITE_SETTINGS && window.SITE_SETTINGS.min_bet_amount) || 100;
     let activeBonusList = [];
     let isTicketSubmitting = false;
@@ -34,6 +35,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let remoteAvailabilityValidationInFlight = false;
     let lastRemoteAvailabilityValidationAt = 0;
     const REMOTE_AVAILABILITY_VALIDATION_MS = 20000;
+    const ESPORT_SPORT_API_ID = 145;
+    const matchSportApiCache = new Map();
 
     function formatFt(value) {
         return (parseFloat(value) || 0).toLocaleString('hu-HU', {
@@ -90,20 +93,93 @@ document.addEventListener('DOMContentLoaded', function() {
         return appPrefix + '/frontend/MainMenu/MainMenu.php?eventId=' + encodeURIComponent(String(matchId));
     }
 
-    function openMatchDetailsFromBetslip(matchId) {
+    function buildEsportMatchUrl(matchId) {
+        const pathname = window.location && window.location.pathname ? window.location.pathname : '';
+        const frontendIdx = pathname.toLowerCase().indexOf('/frontend/');
+        const appPrefix = frontendIdx >= 0 ? pathname.substring(0, frontendIdx) : '';
+        return appPrefix + '/frontend/Esport/esport.php?eventId=' + encodeURIComponent(String(matchId));
+    }
+
+    function resolveSportApiIdForMatch(matchId, explicitSportApiId) {
+        const normalizedMatchId = parseInt(matchId, 10) || 0;
+        const directSportApiId = parseInt(explicitSportApiId, 10) || 0;
+        if (directSportApiId > 0) {
+            return directSportApiId;
+        }
+
+        if (normalizedMatchId > 0 && matchSportApiCache.has(normalizedMatchId)) {
+            return parseInt(matchSportApiCache.get(normalizedMatchId), 10) || 0;
+        }
+
+        const itemWithSport = Array.isArray(ticketItems)
+            ? ticketItems.find(function(item) {
+                const itemMatchId = parseInt(item && item.matchId, 10) || 0;
+                if (itemMatchId !== normalizedMatchId) return false;
+                const itemSportApiId = parseInt((item && (item.sport_api_id || item.sportApiId)) || 0, 10) || 0;
+                return itemSportApiId > 0;
+            })
+            : null;
+
+        if (itemWithSport) {
+            return parseInt((itemWithSport.sport_api_id || itemWithSport.sportApiId) || 0, 10) || 0;
+        }
+
+        if (window.location.pathname.includes('/Esport/')) {
+            return ESPORT_SPORT_API_ID;
+        }
+
+        return 0;
+    }
+
+    function openMatchDetailsFromBetslip(matchId, knownSportApiId) {
         const numericMatchId = parseInt(matchId, 10) || 0;
         if (!(numericMatchId > 0)) return;
 
-        if (typeof window.loadMatchDetails === 'function') {
-            try {
-                window.loadMatchDetails(numericMatchId);
+        const routeBySport = function(sportApiId) {
+            const isEsportMatch = parseInt(sportApiId, 10) === ESPORT_SPORT_API_ID;
+            if (isEsportMatch) {
+                const esportPath = buildEsportMatchUrl(numericMatchId);
+                if (window.location.pathname.includes('/Esport/esport.php')) {
+                    if (typeof window.loadMatchDetails === 'function') {
+                        window.loadMatchDetails(numericMatchId);
+                    } else {
+                        window.location.href = esportPath;
+                    }
+                } else {
+                    window.location.href = esportPath;
+                }
                 return;
-            } catch (e) {
-                console.warn('[BETSLIP] loadMatchDetails hiba, fallback navigáció:', e);
             }
+
+            if (typeof window.loadMatchDetails === 'function') {
+                try {
+                    window.loadMatchDetails(numericMatchId);
+                    return;
+                } catch (e) {
+                    console.warn('[BETSLIP] loadMatchDetails hiba, fallback navigáció:', e);
+                }
+            }
+
+            window.location.href = buildMainMenuMatchUrl(numericMatchId);
+        };
+
+        const resolvedSportApiId = resolveSportApiIdForMatch(numericMatchId, knownSportApiId);
+        if (resolvedSportApiId > 0) {
+            matchSportApiCache.set(numericMatchId, resolvedSportApiId);
+            routeBySport(resolvedSportApiId);
+            return;
         }
 
-        window.location.href = buildMainMenuMatchUrl(numericMatchId);
+        fetch('../../backend/ApiRequest/get_match_details.php?eventId=' + numericMatchId, { cache: 'no-store' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                const sportApiId = parseInt(data && data.match && data.match.sportApiId, 10) || 0;
+                matchSportApiCache.set(numericMatchId, sportApiId);
+                routeBySport(sportApiId);
+            })
+            .catch(function() {
+                routeBySport(0);
+            });
     }
 
     function isHistoryTabActive() {
@@ -281,21 +357,60 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    function isFreeBetTicketEligible() {
+    function getSelectedFreeBet() {
+        const selectEl = document.getElementById('balance-type-select');
+        const value = selectEl ? String(selectEl.value || '') : '';
+
+        if (value.indexOf('freebet_') === 0) {
+            const selectedId = parseInt(value.replace('freebet_', ''), 10) || 0;
+            const fromList = availableFreeBetList.find(function(fb) {
+                return (parseInt(fb && fb.id, 10) || 0) === selectedId;
+            });
+            if (fromList) return fromList;
+        }
+
+        return {
+            id: availableFreeBetId,
+            amount: availableFreeBetAmount,
+            min_combo: availableFreeBetMinCombo,
+            min_odds: availableFreeBetMinOdds,
+            min_odds_per_event: availableFreeBetMinOddsPerEvent,
+            name: 'Ingyenes fogadás'
+        };
+    }
+
+    function isFreeBetTicketEligible(freeBet) {
         if (ticketItems.length === 0) return false;
 
+        const fb = freeBet || getSelectedFreeBet();
+        const minCombo = parseInt(fb && fb.min_combo, 10) || 0;
+        const minOdds = parseFloat(fb && fb.min_odds) || 0;
+        const minOddsPerEvent = parseFloat(fb && fb.min_odds_per_event) || 0;
+
         const metrics = getTicketMetrics();
-        if (availableFreeBetMinCombo > 0 && metrics.selectionCount < availableFreeBetMinCombo) return false;
-        if (availableFreeBetMinOdds > 0 && metrics.totalOdds < availableFreeBetMinOdds) return false;
-        if (availableFreeBetMinOddsPerEvent > 0 && metrics.minOddsPerEvent < availableFreeBetMinOddsPerEvent) return false;
+        if (minCombo > 0 && metrics.selectionCount < minCombo) return false;
+        if (minOdds > 0 && metrics.totalOdds < minOdds) return false;
+        if (minOddsPerEvent > 0 && metrics.minOddsPerEvent < minOddsPerEvent) return false;
 
         return true;
+    }
+
+    function getEligibleFreeBetsForCurrentTicket() {
+        if (!Array.isArray(availableFreeBetList) || availableFreeBetList.length === 0) {
+            return [];
+        }
+        return availableFreeBetList.filter(function(fb) {
+            const amount = parseFloat(fb && fb.amount) || 0;
+            const id = parseInt(fb && fb.id, 10) || 0;
+            return id > 0 && amount > 0 && isFreeBetTicketEligible(fb);
+        });
     }
 
     function isUsingFreeBet() {
         const toggle = document.getElementById('use-freebet-toggle');
         const selectEl = document.getElementById('balance-type-select');
-        return !!(toggle && toggle.checked) || !!(selectEl && selectEl.value === 'freebet');
+        const selectedFreeBet = !!(selectEl && String(selectEl.value || '').indexOf('freebet_') === 0);
+        return !!(toggle && toggle.checked) || selectedFreeBet;
     }
 
     function renderFreeBetOption() {
@@ -306,26 +421,27 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectEl = document.getElementById('balance-type-select');
         if (!stakeInput || !selectEl) return;
 
-        const eligibleForCurrentTicket = isFreeBetTicketEligible();
-        const freeBetAvailable = isLoggedIn && availableFreeBetAmount > 0 && availableFreeBetId > 0 && eligibleForCurrentTicket;
+        const eligibleFreeBets = getEligibleFreeBetsForCurrentTicket();
+        const freeBetAvailable = isLoggedIn && eligibleFreeBets.length > 0;
 
         if (row) {
             row.style.display = 'none';
         }
         if (amountEl) {
-            amountEl.textContent = formatFt(availableFreeBetAmount);
+            const selectedFreeBet = getSelectedFreeBet();
+            amountEl.textContent = formatFt(parseFloat(selectedFreeBet && selectedFreeBet.amount) || 0);
         }
 
         if (!freeBetAvailable) {
             if (toggle) toggle.checked = false;
-            if (selectEl.value === 'freebet') {
+            if (String(selectEl.value || '').indexOf('freebet_') === 0) {
                 selectEl.value = 'real';
             }
             stakeInput.readOnly = false;
             stakeInput.removeAttribute('aria-disabled');
         } else {
             if (toggle) {
-                toggle.checked = (selectEl.value === 'freebet');
+                toggle.checked = (String(selectEl.value || '').indexOf('freebet_') === 0);
             }
         }
     }
@@ -336,27 +452,32 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectEl = document.getElementById('balance-type-select');
         if (!stakeInput) return;
 
-        const freeBetCanBeUsed = availableFreeBetAmount > 0 && availableFreeBetId > 0;
+        const selectedFreeBet = getSelectedFreeBet();
+        const freeBetAmount = parseFloat(selectedFreeBet && selectedFreeBet.amount) || 0;
+        const freeBetId = parseInt(selectedFreeBet && selectedFreeBet.id, 10) || 0;
+        const freeBetCanBeUsed = freeBetAmount > 0 && freeBetId > 0 && isFreeBetTicketEligible(selectedFreeBet);
         const toggleChecked = !!(toggle && toggle.checked);
-        const selectedFreeBet = !!(selectEl && selectEl.value === 'freebet');
-        const shouldUseFreeBet = freeBetCanBeUsed && (toggleChecked || selectedFreeBet);
+        const freeBetSelectedInDropdown = !!(selectEl && String(selectEl.value || '').indexOf('freebet_') === 0);
+        const shouldUseFreeBet = freeBetCanBeUsed && (toggleChecked || freeBetSelectedInDropdown);
 
         if (shouldUseFreeBet) {
             if (toggle) toggle.checked = true;
-            if (selectEl) selectEl.value = 'freebet';
+            if (selectEl && String(selectEl.value || '').indexOf('freebet_') !== 0) {
+                selectEl.value = 'freebet_' + freeBetId;
+            }
             manualStakeBeforeFreeBet = parseFloat(stakeInput.value) || manualStakeBeforeFreeBet || 100;
-            stakeInput.value = String(Math.round(availableFreeBetAmount));
+            stakeInput.value = String(Math.round(freeBetAmount));
             stakeInput.readOnly = true;
             stakeInput.setAttribute('aria-disabled', 'true');
             updateSelectBorderColor();
         } else {
             if (toggle) toggle.checked = false;
-            if (selectEl && selectEl.value === 'freebet') {
+            if (selectEl && String(selectEl.value || '').indexOf('freebet_') === 0) {
                 selectEl.value = 'real';
             }
             stakeInput.readOnly = false;
             stakeInput.removeAttribute('aria-disabled');
-            if ((parseFloat(stakeInput.value) || 0) === Math.round(availableFreeBetAmount) && manualStakeBeforeFreeBet > 0) {
+            if ((parseFloat(stakeInput.value) || 0) === Math.round(freeBetAmount) && manualStakeBeforeFreeBet > 0) {
                 stakeInput.value = String(Math.round(manualStakeBeforeFreeBet));
             }
         }
@@ -381,6 +502,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 availableFreeBetMinCombo = parseInt(data.user?.available_free_bet_min_combo, 10) || 0;
                 availableFreeBetMinOdds = parseFloat(data.user?.available_free_bet_min_odds) || 0;
                 availableFreeBetMinOddsPerEvent = parseFloat(data.user?.available_free_bet_min_odds_per_event) || 0;
+                availableFreeBetList = Array.isArray(data.user?.available_free_bets) ? data.user.available_free_bets : [];
+                if (availableFreeBetList.length === 0 && availableFreeBetId > 0 && availableFreeBetAmount > 0) {
+                    availableFreeBetList = [{
+                        id: availableFreeBetId,
+                        amount: availableFreeBetAmount,
+                        min_combo: availableFreeBetMinCombo,
+                        min_odds: availableFreeBetMinOdds,
+                        min_odds_per_event: availableFreeBetMinOddsPerEvent,
+                        name: 'Ingyenes fogadás'
+                    }];
+                }
                 activeBonusList = Array.isArray(data.user?.active_bonuses) ? data.user.active_bonuses : [];
                 console.log('[BETSLIP] Login status:', isLoggedIn, 'User ID:', currentUserId, 'Balance:', userBalance, 'Bonus:', userBonusBalance, 'Active bonuses:', activeBonusList.length);
                 renderFreeBetOption();
@@ -401,6 +533,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 availableFreeBetMinCombo = 0;
                 availableFreeBetMinOdds = 0;
                 availableFreeBetMinOddsPerEvent = 0;
+                availableFreeBetList = [];
                 activeBonusList = [];
                 renderFreeBetOption();
                 updatePlaceBetButton();
@@ -1352,10 +1485,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ===== TOGGLE: HOZZÁADÁS / ELTÁVOLÍTÁS =====
-    window.toggleOdds = function(homeTeam, awayTeam, pick, odds, market, matchId, isDailyTip, isBoosted, originalOdds, marketId, selectionId) {
+    window.toggleOdds = function(homeTeam, awayTeam, pick, odds, market, matchId, isDailyTip, isBoosted, originalOdds, marketId, selectionId, sportApiId) {
         console.log('[BETSLIP] toggleOdds called:', {homeTeam, awayTeam, pick, odds, market, matchId, isDailyTip});
         const normalizedMarketId = parseInt(marketId, 10) || 0;
         const normalizedSelectionId = parseInt(selectionId, 10) || 0;
+        let normalizedSportApiId = parseInt(sportApiId, 10) || 0;
+        if (normalizedSportApiId <= 0 && window.location.pathname.includes('/Esport/')) {
+            normalizedSportApiId = ESPORT_SPORT_API_ID;
+        }
+        const normalizedMatchId = parseInt(matchId, 10) || 0;
+        if (normalizedMatchId > 0 && normalizedSportApiId > 0) {
+            matchSportApiCache.set(normalizedMatchId, normalizedSportApiId);
+        }
         
         var existingIndex = ticketItems.findIndex(function(item) {
             return item.homeTeam === homeTeam && 
@@ -1394,7 +1535,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 awayTeam: awayTeam,
                 pick: pick,
                 market: market,
-                matchId: matchId || 0
+                matchId: normalizedMatchId
             };
             const marketComboConflict = findMarketComboConflictWithCandidate(candidateComboItem);
             if (marketComboConflict) {
@@ -1411,7 +1552,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 market: market,
                 marketId: normalizedMarketId,
                 selectionId: normalizedSelectionId,
-                matchId: matchId || 0,
+                matchId: normalizedMatchId,
+                sport_api_id: normalizedSportApiId,
                 isDailyTip: !!isDailyTip,
                 isBoosted: !!isBoosted,
                 originalOdds: (isBoosted && parseFloat(originalOdds) > 0) ? parseFloat(originalOdds) : null,
@@ -1511,6 +1653,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const isUnavailable = !!item.marketUnavailable;
             const hasBoostedOddsDisplay = !!item.isBoosted && oldOdds > 0;
             const matchId = parseInt(item.matchId, 10) || 0;
+            const sportApiId = parseInt((item.sport_api_id || item.sportApiId) || 0, 10) || 0;
             const matchLabel = escapeHtml(td(item.homeTeam)) + ' vs ' + escapeHtml(td(item.awayTeam));
             const oddsHtml = hasBoostedOddsDisplay
                 ? `<span class="betslip-boosted-odd-display">
@@ -1525,7 +1668,7 @@ document.addEventListener('DOMContentLoaded', function() {
             el.innerHTML = `
                 <div class="betslip-item-header">
                     ${matchId > 0
-                        ? `<button type="button" class="betslip-match-link" data-match-id="${matchId}" title="Meccs megnyitása">${matchLabel}</button>`
+                        ? `<button type="button" class="betslip-match-link" data-match-id="${matchId}" data-sport-api-id="${sportApiId}" title="Meccs megnyitása">${matchLabel}</button>`
                         : `<span>${matchLabel}</span>`}
                     <button class="betslip-remove" data-index="${idx}" title="${t('betslip.remove', 'Eltávolítás')}">×</button>
                 </div>
@@ -1580,7 +1723,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (matchLink) {
             e.preventDefault();
             e.stopPropagation();
-            openMatchDetailsFromBetslip(matchLink.getAttribute('data-match-id'));
+            openMatchDetailsFromBetslip(matchLink.getAttribute('data-match-id'), matchLink.getAttribute('data-sport-api-id'));
             return;
         }
 
@@ -1675,7 +1818,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Bónusz selector dropdown frissítése
         if (typeRow && selectEl) {
             const hasBonusOptions = activeBonusList.length > 0;
-            const hasFreeBetOption = isLoggedIn && availableFreeBetAmount > 0 && availableFreeBetId > 0 && isFreeBetTicketEligible();
+            const eligibleFreeBets = getEligibleFreeBetsForCurrentTicket();
+            const hasFreeBetOption = isLoggedIn && eligibleFreeBets.length > 0;
             const hasAnySourceOption = hasBonusOptions || hasFreeBetOption;
 
             if (hasAnySourceOption) {
@@ -1705,11 +1849,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Ingyenes fogadás opció
                 if (hasFreeBetOption) {
-                    const freeBetOpt = document.createElement('option');
-                    freeBetOpt.value = 'freebet';
-                    freeBetOpt.textContent = '🎟 Ingyenes fogadás — ' + formatFt(availableFreeBetAmount);
-                    freeBetOpt.style.color = '#4fc3f7';
-                    selectEl.appendChild(freeBetOpt);
+                    eligibleFreeBets.forEach(function(fb) {
+                        const freeBetOpt = document.createElement('option');
+                        const freeBetId = parseInt(fb && fb.id, 10) || 0;
+                        const freeBetAmount = parseFloat(fb && fb.amount) || 0;
+                        const freeBetName = String((fb && fb.name) || 'Ingyenes fogadás');
+                        freeBetOpt.value = 'freebet_' + freeBetId;
+                        freeBetOpt.textContent = '🎟 Ingyenes fogadás — ' + formatFt(freeBetAmount) + ' • ' + freeBetName;
+                        freeBetOpt.style.color = '#4fc3f7';
+                        selectEl.appendChild(freeBetOpt);
+                    });
                 }
 
                 // Visszaállítás a korábbi kiválasztásra, ha még létezik
@@ -1734,7 +1883,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const val = selectEl.value;
         if (val === 'real') {
             selectEl.style.borderColor = '#4caf50';
-        } else if (val === 'freebet') {
+        } else if (String(val || '').indexOf('freebet_') === 0) {
             selectEl.style.borderColor = '#4fc3f7';
         } else {
             selectEl.style.borderColor = '#7c3aed';
@@ -1744,7 +1893,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function getSelectedBalanceType() {
         const selectEl = document.getElementById('balance-type-select');
         if (!selectEl) return 'real';
-        if (selectEl.value === 'freebet') return 'freebet';
+        if (String(selectEl.value || '').indexOf('freebet_') === 0) return 'freebet';
         return selectEl.value.startsWith('bonus_') ? 'bonus' : 'real';
     }
 
@@ -1798,8 +1947,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const stake = parseFloat(document.getElementById('stake-input')?.value) || 0;
         const useFreeBet = isUsingFreeBet();
-        const freeBetEligible = isFreeBetTicketEligible();
-        const freeBetCoversStake = useFreeBet && freeBetEligible && availableFreeBetAmount >= stake && availableFreeBetId > 0;
+        const selectedFreeBet = getSelectedFreeBet();
+        const freeBetEligible = isFreeBetTicketEligible(selectedFreeBet);
+        const selectedFreeBetAmount = parseFloat(selectedFreeBet && selectedFreeBet.amount) || 0;
+        const selectedFreeBetId = parseInt(selectedFreeBet && selectedFreeBet.id, 10) || 0;
+        const freeBetCoversStake = useFreeBet && freeBetEligible && selectedFreeBetAmount >= stake && selectedFreeBetId > 0;
         const balanceType = getSelectedBalanceType();
         const activeBalance = balanceType === 'bonus' ? getSelectedBonusBalance() : userBalance;
         const unavailableItems = getUnavailableTicketItemsCount();
@@ -1878,7 +2030,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             if (useFreeBet) {
-                if (!(availableFreeBetId > 0 && isFreeBetTicketEligible() && availableFreeBetAmount >= stake)) {
+                const selectedFreeBet = getSelectedFreeBet();
+                const selectedFreeBetId = parseInt(selectedFreeBet && selectedFreeBet.id, 10) || 0;
+                const selectedFreeBetAmount = parseFloat(selectedFreeBet && selectedFreeBet.amount) || 0;
+                if (!(selectedFreeBetId > 0 && isFreeBetTicketEligible(selectedFreeBet) && selectedFreeBetAmount >= stake)) {
                     BmbPopup.warning('Az ingyenes fogadás feltételei vagy összege nem megfelelő ehhez a szelvényhez.', 'Ingyenes fogadás hiba');
                     return;
                 }
@@ -1919,6 +2074,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const balanceType = getSelectedBalanceType();
         const useBonus = (!useFreeBet && balanceType === 'bonus');
         const userBonusId = useBonus ? getSelectedUserBonusId() : 0;
+        const selectedFreeBet = getSelectedFreeBet();
+        const selectedFreeBetId = parseInt(selectedFreeBet && selectedFreeBet.id, 10) || 0;
 
         const payload = {
             stake: stake,
@@ -1928,7 +2085,7 @@ document.addEventListener('DOMContentLoaded', function() {
             useFreeBet: useFreeBet,
             useBonus: useBonus,
             userBonusId: userBonusId,
-            freeBetUserBonusId: parseInt(useFreeBet ? availableFreeBetId : 0, 10) || 0,
+            freeBetUserBonusId: parseInt(useFreeBet ? selectedFreeBetId : 0, 10) || 0,
             hasDailyTipBoost: metrics.hasDailyTip,
             hasOddsPyramidBoost: metrics.hasOddsPyramid
         };
@@ -2078,7 +2235,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target && e.target.id === 'balance-type-select') {
             const toggle = document.getElementById('use-freebet-toggle');
             if (toggle) {
-                toggle.checked = e.target.value === 'freebet';
+                toggle.checked = String(e.target.value || '').indexOf('freebet_') === 0;
             }
             applyFreeBetSelectionState();
             updateSelectBorderColor();
@@ -2214,6 +2371,105 @@ document.addEventListener('DOMContentLoaded', function() {
         manageCashoutLiveRefresh();
     }
 
+    function reAddTicketToBetslip(ticketId) {
+        const normalizedTicketId = parseInt(ticketId, 10) || 0;
+        if (normalizedTicketId <= 0) return;
+
+        const sourceTicket = bettingHistory.find(function(t) {
+            return (parseInt(t && t.id, 10) || 0) === normalizedTicketId;
+        });
+
+        if (!sourceTicket || !Array.isArray(sourceTicket.items) || sourceTicket.items.length === 0) {
+            BmbPopup.info('Ehhez a szelvényhez nem található visszatölthető tipp.', 'Újra a szelvényre');
+            return;
+        }
+
+        let addedCount = 0;
+        let skippedCount = 0;
+
+        sourceTicket.items.forEach(function(item) {
+            const homeTeam = String(item.homeTeam || '').trim();
+            const awayTeam = String(item.awayTeam || '').trim();
+            const pick = String(item.pick || '').trim();
+            const market = String(item.market || '').trim();
+            const odds = parseFloat(item.odds) || 0;
+            const matchId = parseInt(item.event_id || item.match_id, 10) || 0;
+            const sportApiId = parseInt(item.sport_api_id, 10) || 0;
+
+            if (!homeTeam || !awayTeam || !pick || !market || odds <= 1) {
+                skippedCount += 1;
+                return;
+            }
+
+            const alreadyInTicket = ticketItems.some(function(existing) {
+                return existing.homeTeam === homeTeam
+                    && existing.awayTeam === awayTeam
+                    && existing.pick === pick
+                    && existing.market === market;
+            });
+            if (alreadyInTicket) {
+                skippedCount += 1;
+                return;
+            }
+
+            if (window.BetslipLogic.hasSelectionInMarket(homeTeam, awayTeam, market)) {
+                skippedCount += 1;
+                return;
+            }
+
+            if (window.BetslipLogic.isCorrectScoreMarket(market)
+                && window.BetslipLogic.isConflictingScore(pick, homeTeam, awayTeam)) {
+                skippedCount += 1;
+                return;
+            }
+
+            const comboConflict = findMarketComboConflictWithCandidate({
+                homeTeam: homeTeam,
+                awayTeam: awayTeam,
+                pick: pick,
+                market: market,
+                matchId: matchId
+            });
+            if (comboConflict) {
+                skippedCount += 1;
+                return;
+            }
+
+            ticketItems.push({
+                homeTeam: homeTeam,
+                awayTeam: awayTeam,
+                pick: pick,
+                odds: odds,
+                market: market,
+                marketId: 0,
+                selectionId: 0,
+                matchId: matchId,
+                sport_api_id: sportApiId,
+                isDailyTip: false,
+                isBoosted: false,
+                originalOdds: null,
+                marketUnavailable: false,
+                unavailableReason: null,
+                addedAt: new Date().toISOString()
+            });
+            addedCount += 1;
+        });
+
+        if (addedCount > 0) {
+            saveToStorage();
+            renderTicket();
+            refreshAllOddsButtons();
+        }
+
+        if (addedCount > 0 && skippedCount > 0) {
+            BmbPopup.info('Szelvény visszatöltve: ' + addedCount + ' tét hozzáadva, ' + skippedCount + ' tét kihagyva (ütközés vagy már szerepel).', 'Újra a szelvényre');
+        } else if (addedCount > 0) {
+            BmbPopup.success('Szelvény visszatöltve: ' + addedCount + ' tét hozzáadva.', 'Újra a szelvényre');
+        } else {
+            BmbPopup.warning('Nem volt visszatölthető tét (ütközés, duplikáció vagy lezárt piac).', 'Újra a szelvényre');
+        }
+    }
+
     // ===== FOGADÁSI ELŐZMÉNYEK RENDERELÉS =====
     function renderHistory() {
         const container = document.getElementById('elozmeny-items');
@@ -2264,8 +2520,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     const liveKey = buildSelectionLiveKey(item);
                     
                     const navMatchId = item.event_id || item.match_id || null;
+                    const navSportApiId = parseInt(item.sport_api_id, 10) || 0;
                     const clickable = navMatchId ? 'elozmeny-match-clickable' : '';
-                    const dataAttr = navMatchId ? `data-match-id="${navMatchId}"` : '';
+                    const dataAttr = navMatchId
+                        ? `data-match-id="${navMatchId}" data-sport-api-id="${navSportApiId}"`
+                        : '';
                     itemsHtml += `
                         <div class="elozmeny-item-entry ${itemStatusClass}" data-ticket-id="${ticket.id}" data-live-key="${escapeHtml(liveKey)}">
                             <div class="elozmeny-match ${clickable}" ${dataAttr}>
@@ -2326,6 +2585,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="elozmeny-items-list">${itemsHtml}</div>
                 ${cashoutBadgeHtml}
                 ${cashoutHtml}
+                <div class="elozmeny-rebet-actions">
+                    <button type="button" class="cashout-btn elozmeny-rebet-btn" data-ticket-id="${ticket.id}">
+                        <i class="fas fa-redo-alt"></i> ${t('betslip.rebetToTicket', 'Újra a szelvényre')}
+                    </button>
+                </div>
                 <div class="elozmeny-summary">
                     <span><strong>${stakeLabel}</strong> ${parseFloat(ticket.stake).toLocaleString('hu-HU')} Ft</span>
                     <span><strong>${t('betslip.oddsLabel', 'Odds:')}</strong> ${parseFloat(ticket.total_odds).toFixed(3)}</span>
@@ -2350,15 +2614,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== ELŐZMÉNY MECCS KATTINTÁS =====
     document.addEventListener('click', function(e) {
+        const rebetBtn = e.target.closest('.elozmeny-rebet-btn[data-ticket-id]');
+        if (rebetBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            reAddTicketToBetslip(rebetBtn.getAttribute('data-ticket-id'));
+            return;
+        }
+
         const matchEl = e.target.closest('.elozmeny-match-clickable');
         if (!matchEl) return;
         const eventId = parseInt(matchEl.getAttribute('data-match-id'), 10);
         if (!eventId) return;
+        const sportApiId = parseInt(matchEl.getAttribute('data-sport-api-id'), 10) || 0;
+        const isEsportMatch = sportApiId === 145;
 
-        // Főoldalra navigálunk, ahol a loadMatchDetails fallback-kel kezeli a lejátszott meccseket is
-        const mainPath = '../../frontend/MainMenu/MainMenu.php?eventId=' + eventId;
+        if (isEsportMatch) {
+            const esportPath = buildEsportMatchUrl(eventId);
+            if (window.location.pathname.includes('/Esport/esport.php')) {
+                if (typeof window.loadMatchDetails === 'function') {
+                    window.loadMatchDetails(eventId);
+                } else {
+                    window.location.href = esportPath;
+                }
+            } else {
+                window.location.href = esportPath;
+            }
+            return;
+        }
+
+        // Alapeset: főoldal
+        const mainPath = buildMainMenuMatchUrl(eventId);
         if (window.location.pathname.includes('/MainMenu/MainMenu.php')) {
-            // Már a főoldalon vagyunk
             if (typeof window.loadMatchDetails === 'function') {
                 window.loadMatchDetails(eventId);
             } else {

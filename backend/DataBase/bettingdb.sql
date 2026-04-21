@@ -674,7 +674,7 @@ VALUES
 (
   'DARTSBONUSZ5K',
   'Darts Bónusz (10.000 Ft fogadás, 5.000 Ft bónusz)',
-  'Darts rajongóknak szóló exkluzív bónusz! Hogyan szerezheted meg? 1) Tégy meg egy legalább 10.000 Ft értékű fogadást kizárólag darts mérkőzésekre. 2) A fogadásnak legalább 2 eseményt (2-es kötést) kell tartalmaznia, minimum 2.00-es össz odds-szal. 3) A fogadásod lezárása és kiértékelése után 5.000 Ft bónusz pénzt kapsz a bónusz egyenlegedre. 4) A kapott 5.000 Ft bónuszt 2-szeresen kell megforgatnod (10.000 Ft értékű fogadás), mielőtt kifizethetővé válik. 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: Az aktiválás után 48 órád van a bónusz felhasználására!',
+  'Darts rajongóknak szóló exkluzív bónusz! Hogyan szerezheted meg? 1) Tégy meg egy legalább 10.000 Ft értékű fogadást kizárólag darts mérkőzésekre. 2) A fogadásnak legalább 2 eseményt (2-es kötést) kell tartalmaznia, minimum 2.00-es össz odds-szal. 3) A fogadásod után azonnal 5.000FT bónusz pénzt kapsz a bónusz egyenlegedre. 4) A kapott 5.000 Ft bónuszt 2-szeresen kell megforgatnod (10.000 Ft értékű fogadás), mielőtt kifizethetővé válik. 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: Az aktiválás után 48 órád van a bónusz felhasználására!',
   4,                          -- EVENT_SPECIFIC
   5000.00,
   10000.00,
@@ -785,7 +785,7 @@ VALUES
   NULL,
   0,
   NULL,
-  NULL,
+  48,
   NULL,
   NULL,
   0,
@@ -974,7 +974,7 @@ VALUES
   1,
   '2026-01-01 00:00:00',
   NULL,
-  0                           -- Nem publikus listaelem; refresh_all évente 1x automatikusan jóváírja jogosult usernek
+  1                           -- Alapból aktív; megjelenítést a backend szűri (bejelentkezés + aznapi születésnap)
 );
 
 -- 9. BETMATCHBONUS SZÜLETÉSNAPI BÓNUSZ (NINCS KÓD - IGÉNYLŐS, ELSŐ 500)
@@ -988,8 +988,8 @@ INSERT INTO BonusCodes
 VALUES
 (
   NULL,
-  'BetMatch Születésnapi Bónusz (első 500)',
-  'A BetMatchBonus születésnapi különleges promóciója — limitált számban elérhető! Hogyan működik? 1) A promóció évente április 25-én aktiválódik. 2) Ezen a napon az első 500 jogosult igénylés teljesülhet. 3) A bónusszal bármilyen sportra, bármilyen mérkőzésre fogadhatsz — nincs sportági megkötés. 4) Nincs forgatási követelmény, a nyereményed azonnal kifizethetővé válik. 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: Csak 500 db érhető el összesen.',
+  'BetMatchBonus Születésnapi Bónusz (első 500)',
+  'A BetMatchBonus születésnapi különleges promóciója - limitált számban elérhető! Hogyan működik? 1) A promóció évente május 26-án aktiválódik. 2) Ezen a napon az első 500 jogosult igénylés teljesülhet. 3) A bónusszal bármilyen sportra, bármilyen mérkőzésre fogadhatsz - nincs sportági megkötés. 4) Nincs forgatási követelmény, a nyereményed azonnal kifizethetővé válik. 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: csak 500 db érhető el összesen.',
   7,                          -- ADMIN_BONUS
   5000.00,
   0.00,
@@ -1019,7 +1019,7 @@ VALUES
   1,
   '2026-01-01 00:00:00',
   NULL,
-  0                           -- Alapból inaktív; refresh_all auto-toggle aktiválja április 25-én
+  1                           -- A napi aktivitást backend időzítés kezeli (május 26.)
 );
 
 -- 10. HÉTVÉGI BÓNUSZ (SZOMBAT-VASÁRNAP, VAN KÓDJA)

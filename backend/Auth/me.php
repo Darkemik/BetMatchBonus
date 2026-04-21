@@ -5,9 +5,10 @@ header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/../connect.php';
 require_once __DIR__ . '/../Auth/settings_helper.php';
 
-function getAvailableFreeBet(mysqli $conn, int $userId): array {
+function getAvailableFreeBets(mysqli $conn, int $userId): array {
   $stmt = $conn->prepare(" 
     SELECT ub.id,
+           COALESCE(bc.name, 'Ingyenes fogadás') AS bonus_name,
            COALESCE(ub.free_bet_amount, 0) AS free_bet_amount,
            COALESCE(bc.min_combo, 0) AS min_combo,
            COALESCE(bc.min_odds, 0) AS min_odds,
@@ -21,20 +22,39 @@ function getAvailableFreeBet(mysqli $conn, int $userId): array {
       AND COALESCE(ub.free_bet_amount, 0) > 0
       AND (ub.expires_at IS NULL OR ub.expires_at > NOW())
     ORDER BY ub.free_bet_amount DESC, ub.id ASC
-    LIMIT 1
   ");
   $stmt->bind_param("i", $userId);
   $stmt->execute();
   $res = $stmt->get_result();
-  $row = $res->fetch_assoc();
+  $list = [];
+  while ($row = $res->fetch_assoc()) {
+    $list[] = [
+      'id' => (int)($row['id'] ?? 0),
+      'name' => (string)($row['bonus_name'] ?? 'Ingyenes fogadás'),
+      'amount' => (float)($row['free_bet_amount'] ?? 0.0),
+      'min_combo' => (int)($row['min_combo'] ?? 0),
+      'min_odds' => (float)($row['min_odds'] ?? 0.0),
+      'min_odds_per_event' => (float)($row['min_odds_per_event'] ?? 0.0)
+    ];
+  }
   $stmt->close();
 
+  return $list;
+}
+
+function getAvailableFreeBet(mysqli $conn, int $userId): array {
+  $list = getAvailableFreeBets($conn, $userId);
+  if (!empty($list)) {
+    return $list[0];
+  }
+
   return [
-    'id' => (int)($row['id'] ?? 0),
-    'amount' => (float)($row['free_bet_amount'] ?? 0.0),
-    'min_combo' => (int)($row['min_combo'] ?? 0),
-    'min_odds' => (float)($row['min_odds'] ?? 0.0),
-    'min_odds_per_event' => (float)($row['min_odds_per_event'] ?? 0.0)
+    'id' => 0,
+    'name' => 'Ingyenes fogadás',
+    'amount' => 0.0,
+    'min_combo' => 0,
+    'min_odds' => 0.0,
+    'min_odds_per_event' => 0.0
   ];
 }
 
@@ -143,7 +163,8 @@ if (isset($_SESSION['user_id'])) {
       }
     }
 
-    $freeBet = getAvailableFreeBet($conn, $userId);
+    $freeBets = getAvailableFreeBets($conn, $userId);
+    $freeBet = !empty($freeBets) ? $freeBets[0] : ['id' => 0, 'amount' => 0.0, 'min_combo' => 0, 'min_odds' => 0.0, 'min_odds_per_event' => 0.0];
     $activeBonuses = getActiveBonusList($conn, $userId);
     $user['session_bet_total'] = (float)($_SESSION['session_bet_total'] ?? 0.0);
     $user['login_started_at'] = (int)($_SESSION['login_started_at'] ?? time());
@@ -153,6 +174,7 @@ if (isset($_SESSION['user_id'])) {
     $user['available_free_bet_min_combo'] = $freeBet['min_combo'];
     $user['available_free_bet_min_odds'] = $freeBet['min_odds'];
     $user['available_free_bet_min_odds_per_event'] = $freeBet['min_odds_per_event'];
+    $user['available_free_bets'] = $freeBets;
     $user['active_bonuses'] = $activeBonuses;
     echo json_encode(['loggedIn' => true, 'user' => $user]);
     exit;
@@ -193,7 +215,8 @@ if (isset($_COOKIE['remember_token'])) {
       $_SESSION['login_started_at'] = time();
     }
     
-    $freeBet = getAvailableFreeBet($conn, (int)$row['id']);
+    $freeBets = getAvailableFreeBets($conn, (int)$row['id']);
+    $freeBet = !empty($freeBets) ? $freeBets[0] : ['id' => 0, 'amount' => 0.0, 'min_combo' => 0, 'min_odds' => 0.0, 'min_odds_per_event' => 0.0];
     $activeBonuses = getActiveBonusList($conn, (int)$row['id']);
     $sessionRemaining = 3600 - (time() - (int)$_SESSION['login_started_at']);
     echo json_encode(['loggedIn' => true, 'user' => [
@@ -211,6 +234,7 @@ if (isset($_COOKIE['remember_token'])) {
       'available_free_bet_min_combo' => $freeBet['min_combo'],
       'available_free_bet_min_odds' => $freeBet['min_odds'],
       'available_free_bet_min_odds_per_event' => $freeBet['min_odds_per_event'],
+      'available_free_bets' => $freeBets,
       'active_bonuses' => $activeBonuses
     ]]);
     exit;

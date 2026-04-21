@@ -39,6 +39,7 @@ $stmt->close();
 
 $isWeekday = ((int)date('N') <= 5);
 $isWeekend = ((int)date('N') >= 6);
+$isBetmatchBonusDay = (date('m-d') === '05-26');
 
 if (!$bonus) {
     if ($bonusId > 0 && empty($code)) {
@@ -66,6 +67,13 @@ if (!$bonus) {
 
 if ($bonusId > 0 && empty($code) && !empty($bonus['code'])) {
     echo json_encode(['success' => false, 'message' => 'Ehhez a bónuszhoz kód szükséges.']);
+    exit();
+}
+
+$bonusName = (string)($bonus['name'] ?? '');
+$isBetmatchBirthdayBonus = (bool)preg_match('/^BETMATCH(?:\s*BONUS)?\s+SZ[ÜU]LET[ÉE]SNAPI\s+B[ÓO]NUSZ/ui', $bonusName);
+if ($isBetmatchBirthdayBonus && !$isBetmatchBonusDay) {
+    echo json_encode(['success' => false, 'message' => 'Ez a bónusz csak május 26-án érhető el.']);
     exit();
 }
 

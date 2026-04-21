@@ -45,12 +45,14 @@ while ($ticket = $ticketsResult->fetch_assoc()) {
         SELECT ts.id, ts.odds_at_pick, ts.status, 
                ts.home_team, ts.away_team, ts.pick_label, ts.market_name,
                ts.event_id, ts.match_id, e.api_id AS event_api_id,
+               s.api_id AS sport_api_id, s.name AS sport_name,
                o.label, e.home_team_name, e.away_team_name, 
                em.name as em_market_name
         FROM TicketSelections ts
         LEFT JOIN OddsOutcomes o ON ts.outcome_id = o.id
         LEFT JOIN EventMarkets em ON o.event_market_id = em.id
         LEFT JOIN Events e ON ts.event_id = e.id
+        LEFT JOIN Sports s ON e.sport_id = s.id
         WHERE ts.ticket_id = ?
     ");
     $stmtSelections->bind_param("i", $ticketId);
@@ -75,6 +77,8 @@ while ($ticket = $ticketsResult->fetch_assoc()) {
             'odds' => (float)$sel['odds_at_pick'],
             'status' => $sel['status'],
             'event_id' => $eventApiId,
+            'sport_api_id' => isset($sel['sport_api_id']) ? (int)$sel['sport_api_id'] : null,
+            'sport_name' => $sel['sport_name'] ?? null,
             'match_id' => $matchId
         ];
     }

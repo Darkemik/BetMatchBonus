@@ -28,9 +28,12 @@ $stmt = $conn->prepare("
     SELECT 
         e.api_id, e.name, e.start_time, e.is_live, e.live_time,
         e.home_score, e.away_score, e.status_id,
+        s.api_id AS sport_api_id,
+        s.name AS sport_name,
         comp.name AS league_name,
         c.name AS country_name
     FROM Events e
+    LEFT JOIN Sports s ON e.sport_id = s.id
     LEFT JOIN Competitions comp ON e.competition_id = comp.id
     LEFT JOIN Countries c ON comp.country_id = c.id
     WHERE e.api_id = ?
@@ -81,6 +84,8 @@ $response_data = [
         'score'        => $score ?: '0 - 0',
         'isLive'       => $dbRow ? (bool)$dbRow['is_live'] : false,
         'statusId'     => $dbRow ? (int)($dbRow['status_id'] ?? 0) : 0,
+        'sportApiId'   => $dbRow ? (int)($dbRow['sport_api_id'] ?? 0) : 0,
+        'sportName'    => $dbRow['sport_name'] ?? null,
         'hasStarted'   => false,
         'liveTime'     => $dbRow['live_time'] ?? null,
         'liveStatus'   => null,

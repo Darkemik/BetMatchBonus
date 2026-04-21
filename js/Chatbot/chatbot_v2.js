@@ -408,6 +408,11 @@
             [/Szelvények/g, 'Tickets'],
             [/Tét:/g, 'Stake:'],
             [/Nyeremény:/g, 'Winnings:'],
+            [/Jelentkezz be az összegzés megtekintéséhez\./g, 'Please sign in to view your summary.'],
+            [/Jelentkezz be az egyenleged megtekintéséhez\./g, 'Please sign in to view your balance.'],
+            [/Jelentkezz be a bónuszaid megtekintéséhez\./g, 'Please sign in to view your bonuses.'],
+            [/Jelentkezz be a szelvényeid megtekintéséhez\./g, 'Please sign in to view your tickets.'],
+            [/Jelentkezz be a statisztikáid megtekintéséhez\./g, 'Please sign in to view your statistics.'],
             [/Jelentkezz be/g, 'Please sign in'],
             [/Még nincs fogadásod\./g, 'You have no bets yet.'],
             [/Jelenleg nincs élő meccs\./g, 'There are no live matches right now.'],
@@ -480,6 +485,11 @@
             [/I am your <b>BMB Assistant<\/b> - here to help you navigate\./g, 'Én vagyok a <b>BMB Asszisztens</b> - segítek eligazodni.'],
             [/Ask anything, or type <b>#commands<\/b> to view my features\./g, 'Kérdezz bátran, vagy írd be <b>#parancsok</b> a funkcióimért.'],
             [/Chat cleared! How can I help\?/g, 'Beszélgetés törölve! Miben segíthetek?'],
+            [/Please sign in to view your summary\./g, 'Jelentkezz be az összegzés megtekintéséhez.'],
+            [/Please sign in to view your balance\./g, 'Jelentkezz be az egyenleged megtekintéséhez.'],
+            [/Please sign in to view your bonuses\./g, 'Jelentkezz be a bónuszaid megtekintéséhez.'],
+            [/Please sign in to view your tickets\./g, 'Jelentkezz be a szelvényeid megtekintéséhez.'],
+            [/Please sign in to view your statistics\./g, 'Jelentkezz be a statisztikáid megtekintéséhez.'],
             [/Please sign in/g, 'Jelentkezz be']
         ];
 

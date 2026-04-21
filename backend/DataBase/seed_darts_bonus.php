@@ -24,7 +24,7 @@ if ($existing) {
         VALUES (
           'DARTSBONUSZ5K',
           'DARTS BÓNUSZ (10.000 Ft fogadás, 5.000 Ft bónusz)',
-          'Darts rajongóknak szóló exkluzív bónusz! Hogyan szerezheted meg? 1) Tégy meg egy legalább 10.000 Ft értékű fogadást kizárólag darts mérkőzésekre. 2) A fogadásnak legalább 2 eseményt (2-es kötést) kell tartalmaznia, minimum 2.00-es össz odds-szal. 3) A fogadásod lezárása és kiértékelése után 5.000 Ft bónusz pénzt kapsz a bónusz egyenlegedre. 4) A kapott 5.000 Ft bónuszt 2-szeresen kell megforgatnod (10.000 Ft értékű fogadás), mielőtt kifizethetővé válik. 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: Az aktiválás után 48 órád van a bónusz felhasználására!',
+          'Darts rajongóknak szóló exkluzív bónusz! Hogyan szerezheted meg? 1) Tégy meg egy legalább 10.000 Ft értékű fogadást kizárólag darts mérkőzésekre. 2) A fogadásnak legalább 2 eseményt (2-es kötést) kell tartalmaznia, minimum 2.00-es össz odds-szal. 3) A fogadásod után azonnal 5.000FT bónusz pénzt kapsz a bónusz egyenlegedre. 4) A kapott 5.000 Ft bónuszt 2-szeresen kell megforgatnod (10.000 Ft értékű fogadás), mielőtt kifizethetővé válik. 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: Az aktiválás után 48 órád van a bónusz felhasználására!',
           4, 5000.00, 10000.00, 5000.00, 0.00,
           'BONUS_MONEY', 'BET', 'DARTS', 0, 2.0, 2, NULL,
           2.0, 5.0, 1, 0, NULL, NULL,

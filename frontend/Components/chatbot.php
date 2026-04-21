@@ -55,7 +55,7 @@ if (get_setting_int('chatbot_enabled', 1) === 0): ?>
 <?php
 $chatbotPath = $_SERVER['PHP_SELF'];
 $chatbotPrefix = '../../';
-$chatbotAssetVersion = '20260419-1805';
+$chatbotAssetVersion = '20260421-1815';
 if (strpos($chatbotPath, '/frontend/Help/') !== false ||
     strpos($chatbotPath, '/frontend/MainMenu/') !== false ||
     strpos($chatbotPath, '/frontend/Live/') !== false ||

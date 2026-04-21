@@ -326,11 +326,13 @@ $deductFromBalance = $deductFromDeposited + $deductFromWinnings;
 
 // PRE-CHECK: Bónusz korlátozások ellenőrzése fogadás előtt (sport, live, combo, odds)
 $preCheckSportNames = [];
+$preCheckSportApiIds = [];
 $preCheckLiveFlags = [];
 foreach ($items as $preItem) {
     $preMatchId = (int)$preItem['matchId'];
     $stmtPrecheck = $conn->prepare("
         SELECT e.sport_id, e.is_live, UPPER(s.name) AS sport_name
+               , COALESCE(s.api_id, 0) AS sport_api_id
         FROM Events e
         INNER JOIN Sports s ON s.id = e.sport_id
         WHERE e.api_id = ? LIMIT 1
@@ -341,9 +343,11 @@ foreach ($items as $preItem) {
     $stmtPrecheck->close();
     if ($precheckRow) {
         $preCheckSportNames[] = $precheckRow['sport_name'];
+        $preCheckSportApiIds[] = (int)($precheckRow['sport_api_id'] ?? 0);
         $preCheckLiveFlags[] = (int)$precheckRow['is_live'];
     } else {
         $preCheckSportNames[] = null;
+        $preCheckSportApiIds[] = 0;
         $preCheckLiveFlags[] = 0;
     }
 }
@@ -373,10 +377,20 @@ if ($useBonusBet && isset($selectedBonus)) {
     }
     if ($bonusSR !== 'ANY' && $bonusSR !== '') {
         $allMatchSport = true;
-        foreach ($preCheckSportNames as $sn) {
-            if ($sn === null || $sn !== $bonusSR) {
-                $allMatchSport = false;
-                break;
+        if ($bonusSR === 'ESPORT') {
+            $esportSportApiIds = [145, 146, 147, 148];
+            foreach ($preCheckSportApiIds as $sid) {
+                if ($sid <= 0 || !in_array((int)$sid, $esportSportApiIds, true)) {
+                    $allMatchSport = false;
+                    break;
+                }
+            }
+        } else {
+            foreach ($preCheckSportNames as $sn) {
+                if ($sn === null || $sn !== $bonusSR) {
+                    $allMatchSport = false;
+                    break;
+                }
             }
         }
         if (!$allMatchSport || empty($preCheckSportNames)) {
@@ -401,6 +415,14 @@ try {
     if ($dartsSportStmt) {
         while ($dartsSport = $dartsSportStmt->fetch_assoc()) {
             $dartsSportIds[] = (int)$dartsSport['id'];
+        }
+    }
+
+    $esportSportIds = [];
+    $esportSportStmt = $conn->query("SELECT id FROM Sports WHERE api_id IN (145,146,147,148) OR UPPER(name) LIKE '%ESPORT%'");
+    if ($esportSportStmt) {
+        while ($esportSport = $esportSportStmt->fetch_assoc()) {
+            $esportSportIds[] = (int)$esportSport['id'];
         }
     }
 
@@ -608,9 +630,21 @@ try {
         }
     }
 
+    $isAllEsportTicket = false;
+    if ($allSelectionsResolved && $selectionCount > 0 && count($ticketSportIds) === $selectionCount && !empty($esportSportIds)) {
+        $isAllEsportTicket = true;
+        foreach ($ticketSportIds as $sportId) {
+            if (!in_array((int)$sportId, $esportSportIds, true)) {
+                $isAllEsportTicket = false;
+                break;
+            }
+        }
+    }
+
     $betPendingStmt = $conn->prepare(" 
         SELECT
             ub.id AS user_bonus_id,
+            bc.code,
             bc.bonus_amount,
             bc.min_deposit,
             bc.min_combo,
@@ -625,7 +659,17 @@ try {
         INNER JOIN BonusCodes bc ON bc.id = ub.bonus_id
         WHERE ub.user_id = ?
             AND (
-                ub.status = 'PENDING'
+                                (
+                                    ub.status = 'PENDING'
+                                    AND (
+                                        COALESCE(bc.evaluate_on_settle, 0) = 0
+                                        OR ub.ticket_id IS NULL
+                                        OR ub.ticket_id = 0
+                                        OR UPPER(COALESCE(bc.sport_restriction, 'ANY')) IN ('DARTS', 'ESPORT')
+                                        OR UPPER(COALESCE(bc.code, '')) LIKE '%DARTS%'
+                                        OR UPPER(COALESCE(bc.code, '')) LIKE '%ESPORT%'
+                                    )
+                                )
                 OR (
                   ub.status = 'ACTIVE'
                   AND COALESCE(ub.used, 0) = 0
@@ -645,7 +689,6 @@ try {
     $betPendingBonuses = $betPendingRes->fetch_all(MYSQLI_ASSOC);
     $betPendingStmt->close();
 
-    $betBonusToBalance = 0.00;
     $betBonusToBonusBalance = 0.00;
 
     foreach ($betPendingBonuses as $betBonus) {
@@ -670,15 +713,23 @@ try {
         if ($sportRestriction === 'DARTS' && !$isAllDartsTicket) {
             continue;
         }
+        if ($sportRestriction === 'ESPORT' && !$isAllEsportTicket) {
+            continue;
+        }
 
         $grantedBetBonus = (float)($betBonus['bonus_amount'] ?? 0);
         if ($grantedBetBonus <= 0) {
             continue;
         }
 
-        // evaluate_on_settle: nem azonnal aktiválódik, hanem a kvalifikáló fogadás lezárásakor
+        // evaluate_on_settle: alapból nem azonnal aktiválódik, hanem a kvalifikáló fogadás lezárásakor
         $evaluateOnSettle = (int)($betBonus['evaluate_on_settle'] ?? 0);
-        if ($evaluateOnSettle) {
+        $bonusCode = strtoupper((string)($betBonus['code'] ?? ''));
+        $isDartsBonus = ($sportRestriction === 'DARTS') || (strpos($bonusCode, 'DARTS') !== false);
+        $isEsportBonus = ($sportRestriction === 'ESPORT') || (strpos($bonusCode, 'ESPORT') !== false);
+
+        // DARTS + ESPORT kivétel: feltétel teljesülésekor azonnal jóváírjuk, nem várunk a settle-re.
+        if ($evaluateOnSettle && !$isDartsBonus && !$isEsportBonus) {
             $storeTicketStmt = $conn->prepare("UPDATE UserBonuses SET ticket_id = ?, status = 'PENDING' WHERE id = ?");
             $storeTicketStmt->bind_param("ii", $ticketId, $betBonus['user_bonus_id']);
             $storeTicketStmt->execute();
@@ -716,18 +767,9 @@ try {
         $activateBetBonusStmt->execute();
         $activateBetBonusStmt->close();
 
-        if (strtoupper((string)($betBonus['bet_reward_type'] ?? '')) === 'BONUS_MONEY') {
-            $betBonusToBalance += $grantedBetBonus;
-        } elseif (!$isFreeBetReward) {
+        if (!$isFreeBetReward) {
             $betBonusToBonusBalance += $grantedBetBonus;
         }
-    }
-
-    if ($betBonusToBalance > 0) {
-        $betBonusBalanceStmt = $conn->prepare("UPDATE Users SET balance = balance + ? WHERE id = ?");
-        $betBonusBalanceStmt->bind_param("di", $betBonusToBalance, $userId);
-        $betBonusBalanceStmt->execute();
-        $betBonusBalanceStmt->close();
     }
 
     if ($betBonusToBonusBalance > 0) {
@@ -819,6 +861,24 @@ try {
         }
     }
     } // end if ($useBonusBet) — forgatás + transfer blokk
+
+    // 7.5. Bónusz egyenleg szinkronizálása (védőháló):
+    // mindig a UserBonuses aktív, nem felhasznált rekordok összege legyen a Users.bonus_balance.
+    $syncBonusStmt = $conn->prepare(" 
+        UPDATE Users
+        SET bonus_balance = (
+            SELECT COALESCE(SUM(ub.bonus_balance), 0)
+            FROM UserBonuses ub
+            WHERE ub.user_id = ?
+              AND ub.status = 'ACTIVE'
+              AND ub.used = 0
+              AND (ub.expires_at IS NULL OR ub.expires_at > NOW())
+        )
+        WHERE id = ?
+    ");
+    $syncBonusStmt->bind_param("ii", $userId, $userId);
+    $syncBonusStmt->execute();
+    $syncBonusStmt->close();
 
     // Aktuális egyenleg lekérdezése azonnali frontend frissítéshez
     $newBalance = null;

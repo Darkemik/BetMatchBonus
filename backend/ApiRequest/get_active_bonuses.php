@@ -11,8 +11,26 @@ $isWeekend = ((int)date('N') >= 6);
 
 $isGuest = !isset($_SESSION['user_id']);
 $userId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
+$isBirthdayTodayForUser = false;
+$isBetmatchBonusDay = (date('m-d') === '05-26');
 $todayFrom = date('Y-m-d 00:01:00'); // fallback, per-bonus override below
 $tomorrowFrom = date('Y-m-d 00:01:00', strtotime('+1 day'));
+
+if (!$isGuest && $userId > 0) {
+    $birthCheckStmt = $conn->prepare(" 
+        SELECT DATE_FORMAT(birth_date, '%m-%d') AS md
+        FROM Users
+        WHERE id = ?
+        LIMIT 1
+    ");
+    if ($birthCheckStmt) {
+        $birthCheckStmt->bind_param('i', $userId);
+        $birthCheckStmt->execute();
+        $birthCheckRow = $birthCheckStmt->get_result()->fetch_assoc();
+        $birthCheckStmt->close();
+        $isBirthdayTodayForUser = !empty($birthCheckRow['md']) && $birthCheckRow['md'] === date('m-d');
+    }
+}
 
 function localizeBonusDescription($desc, $lang, $bonusTrigger) {
     $source = trim((string)$desc);
@@ -62,10 +80,10 @@ if ($colStmt) {
 }
 
 $imageSelect = $hasImageUrlCol ? 'image_url' : "'' AS image_url";
-$birthdayFilter = $hasBirthdayBonusCol ? 'AND birthday_bonus = 0' : '';
+$birthdaySelect = $hasBirthdayBonusCol ? 'birthday_bonus' : '0 AS birthday_bonus';
 
 // Lekérdezés: csak aktív bónuszok
-$query = "SELECT id, code, name, description, {$imageSelect}, bonus_amount, min_deposit, max_bonus_amount, match_percent, 
+$query = "SELECT id, code, name, description, {$imageSelect}, {$birthdaySelect}, bonus_amount, min_deposit, max_bonus_amount, match_percent, 
                                  is_step_bonus, step_number, bonus_type_id, valid_weekdays_only, is_active,
                                  daily_start_time, admin_force_active, sport_restriction, bonus_trigger, per_user_limit
                     FROM BonusCodes 
@@ -74,7 +92,6 @@ $query = "SELECT id, code, name, description, {$imageSelect}, bonus_amount, min_
                             code IS NULL
                             OR code NOT IN ('TOP_REWARD_DAILY', '__ADMIN_FREEBET__', '__ADMIN_BONUS__')
                         )
-                        {$birthdayFilter}
                     ORDER BY id ASC";
 
 $result = $conn->query($query);
@@ -174,6 +191,35 @@ $hasExistingBonus = false; // Kompatibilitás megtartása a frontend felé
 
 if ($result) {
     while ($row = $result->fetch_assoc()) {
+        $bonusName = (string)($row['name'] ?? '');
+        $isBetmatchBirthdayByName = (bool)preg_match('/^BETMATCH(?:\s*BONUS)?\s+SZ[ÜU]LET[ÉE]SNAPI\s+B[ÓO]NUSZ/ui', $bonusName);
+
+        if ($isBetmatchBirthdayByName && !$isBetmatchBonusDay) {
+            continue;
+        }
+
+        $isBirthdayBonus = ((int)($row['birthday_bonus'] ?? 0) === 1);
+        $isBetmatchBirthdayBonus = (bool)preg_match('/^BETMATCH(?:\s*BONUS)?\s+SZ[ÜU]LET[ÉE]SNAPI\s+B[ÓO]NUSZ/ui', $bonusName);
+
+        // Születésnapi bónuszok megjelenítése:
+        // - BetMatchBonus születésnapi bónusz: csak bejelentkezve + május 26-án
+        // - Standard születésnapi bónusz: csak bejelentkezve + aznapi felhasználói születésnap
+        if ($isBirthdayBonus) {
+            if ($isGuest) {
+                continue;
+            }
+
+            if ($isBetmatchBirthdayBonus) {
+                if (!$isBetmatchBonusDay) {
+                    continue;
+                }
+            } else {
+                if (!$isBirthdayTodayForUser) {
+                    continue;
+                }
+            }
+        }
+
         if (!$isGuest) {
             // Hétköznapi bónusz láthatóság: hétköznap + daily_start_time után, VAGY admin_force_active
             if ((int)$row['valid_weekdays_only'] === 1 && empty($row['admin_force_active'])) {
@@ -307,11 +353,15 @@ if ($result) {
         }
 
         $longDescription = localizeBonusDescription($row['description'] ?? '', $lang, $row['bonus_trigger'] ?? 'DEPOSIT');
+        if ($isBetmatchBirthdayByName && $lang === 'hu') {
+            $longDescription = 'A BetMatchBonus születésnapi különleges promóciója - limitált számban elérhető! Hogyan működik? 1) A promóció évente május 26-án aktiválódik. 2) Ezen a napon az első 500 jogosult igénylés teljesülhet. 3) A bónusszal bármilyen sportra, bármilyen mérkőzésre fogadhatsz - nincs sportági megkötés. 4) Nincs forgatási követelmény, a nyereményed azonnal kifizethetővé válik. 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: csak 500 db érhető el összesen.';
+        }
 
         $bonuses[] = [
             'id' => $row['id'],
             'code' => $row['code'],
             'title' => $row['name'],
+            'isBirthdayBonus' => $isBirthdayBonus,
             'amount' => $amountText,
             'condition' => $conditionText,
             'isStepBonus' => $isStepBonus,

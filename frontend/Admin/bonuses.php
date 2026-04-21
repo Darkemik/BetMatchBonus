@@ -26,6 +26,14 @@ $conn->query("
     WHERE valid_weekdays_only = 1
 ");
 
+// Kód nélküli születésnapi bónuszok legyenek alapból aktívak.
+$conn->query(" 
+    UPDATE BonusCodes
+    SET is_active = 1
+        WHERE birthday_bonus = 1
+      AND (code IS NULL OR code = '')
+");
+
 // Bónusz adatok szerkesztése (mentés gombnyomásra)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_bonus_id'])) {
     $edit_id = (int)$_POST['edit_bonus_id'];

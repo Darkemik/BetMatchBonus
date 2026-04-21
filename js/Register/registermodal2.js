@@ -10,6 +10,26 @@ document.addEventListener('DOMContentLoaded', function () {
     var birthplaceInput = document.getElementById('modal2-birthplace');
     var dateShell = dateInput ? dateInput.closest('.birthdate-shell') : null;
 
+    function t(key, fallback) {
+        if (typeof window.i18n === 'function') {
+            var val = window.i18n(key, fallback);
+            if (val && val !== key) return val;
+        }
+        return fallback;
+    }
+
+    function formatText(template, vars) {
+        return String(template || '').replace(/\{(\w+)\}/g, function (_, token) {
+            return vars && vars[token] != null ? String(vars[token]) : '';
+        });
+    }
+
+    function getDatePartLabel(part) {
+        if (part === 'year') return t('registerModal2.birthYearOption', 'Év');
+        if (part === 'month') return t('registerModal2.birthMonthOption', 'Hónap');
+        return t('registerModal2.birthDayOption', 'Nap');
+    }
+
     // ── Város autocomplete ──
     var cityList = document.getElementById('city-autocomplete-list');
     var cityDebounce = null;
@@ -142,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function populateDays(year, month) {
         if (!daySelect) return;
         var existing = daySelect.value;
-        daySelect.innerHTML = '<option value="">Nap</option>';
+        daySelect.innerHTML = '<option value="">' + getDatePartLabel('day') + '</option>';
 
         if (!year || !month) return;
         var daysInMonth = new Date(year, month, 0).getDate();
@@ -170,7 +190,11 @@ document.addEventListener('DOMContentLoaded', function () {
             calcAge.value = '';
             dateInput.removeAttribute('aria-invalid');
             setBirthdateVisualState('neutral');
-            if (result.textContent === '18 éves kor alatt nem lehet regisztrálni!') {
+            var minAge = (window.SITE_SETTINGS && window.SITE_SETTINGS.min_user_age) || 18;
+            var underAgeMsg = formatText(t('registerModal2.underAgeError', '{minAge} years old minimum required for registration!'), {
+                minAge: minAge
+            });
+            if (result.textContent === underAgeMsg) {
                 result.textContent = '';
             }
             return;
@@ -185,11 +209,13 @@ document.addEventListener('DOMContentLoaded', function () {
         var m = now.getMonth() - birth.getMonth();
         if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
         calcAge.value = age;
-        ageResult.textContent = 'Életkor: ' + age;
+        ageResult.textContent = formatText(t('registerModal2.ageLabel', 'Age: {age}'), { age: age });
 
         var minAge = (window.SITE_SETTINGS && window.SITE_SETTINGS.min_user_age) || 18;
         if (age < minAge) {
-            result.textContent = minAge + ' éves kor alatt nem lehet regisztrálni!';
+            result.textContent = formatText(t('registerModal2.underAgeError', '{minAge} years old minimum required for registration!'), {
+                minAge: minAge
+            });
             dateInput.setAttribute('aria-invalid', 'true');
             setBirthdateVisualState('invalid');
         } else {
@@ -204,6 +230,28 @@ document.addEventListener('DOMContentLoaded', function () {
     if (yearSelect && monthSelect) {
         populateDays(yearSelect.value, monthSelect.value);
     }
+
+    function refreshDatePlaceholders() {
+        if (yearSelect && yearSelect.options && yearSelect.options.length > 0) {
+            yearSelect.options[0].textContent = getDatePartLabel('year');
+        }
+        if (monthSelect && monthSelect.options && monthSelect.options.length > 0) {
+            monthSelect.options[0].textContent = getDatePartLabel('month');
+        }
+        populateDays(yearSelect ? yearSelect.value : '', monthSelect ? monthSelect.value : '');
+        if (yearSelect && monthSelect && daySelect && yearSelect.value && monthSelect.value && daySelect.value) {
+            updateBirthdateValue();
+        } else if (ageResult && ageResult.textContent) {
+            var ageMatch = ageResult.textContent.match(/(\d+)/);
+            if (ageMatch) {
+                ageResult.textContent = formatText(t('registerModal2.ageLabel', 'Age: {age}'), {
+                    age: ageMatch[1]
+                });
+            }
+        }
+    }
+
+    window.addEventListener('languageChanged', refreshDatePlaceholders);
 
     if (yearSelect && monthSelect && daySelect) {
         yearSelect.addEventListener('change', function () {
@@ -230,11 +278,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     img.style.display = 'none';
                     if (result) {
                         result.style.color = 'red';
-                        result.textContent = 'Ugyanazt a képet nem töltheted fel több helyre!';
+                        result.textContent = t('registerModal2.duplicateImageError', 'You cannot upload the same image in multiple places!');
                     }
                     return;
                 }
-                if (result && result.textContent === 'Ugyanazt a képet nem töltheted fel több helyre!') {
+                if (result && result.textContent === t('registerModal2.duplicateImageError', 'You cannot upload the same image in multiple places!')) {
                     result.textContent = '';
                 }
                 img.src = URL.createObjectURL(this.files[0]);
@@ -285,7 +333,9 @@ document.addEventListener('DOMContentLoaded', function () {
         var age = parseInt(calcAge.value);
         var minAge = (window.SITE_SETTINGS && window.SITE_SETTINGS.min_user_age) || 18;
         if (isNaN(age) || age < minAge) {
-            result.textContent = minAge + ' éves kor alatt nem lehet regisztrálni!';
+            result.textContent = formatText(t('registerModal2.underAgeError', '{minAge} years old minimum required for registration!'), {
+                minAge: minAge
+            });
             result.style.color = 'red';
             dateInput.setAttribute('aria-invalid', 'true');
             setBirthdateVisualState('invalid');
@@ -294,7 +344,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Ellenőrzés: 1. lépés adatai megvannak-e
         if (!window.registerStep1Data) {
-            result.textContent = 'Hiba: Kérlek kezdd újra a regisztrációt!';
+            result.textContent = t('registerModal2.restartError', 'Error: Please restart the registration process!');
             result.style.color = 'red';
             return;
         }
@@ -327,9 +377,9 @@ document.addEventListener('DOMContentLoaded', function () {
         // Duplikált kép ellenőrzés küldés előtt
         var uploadedFiles = [];
         var fileInputs = [
-            { el: idFirst, name: 'Személyi 1. oldal' },
-            { el: idSecond, name: 'Személyi 2. oldal' },
-            { el: addressImg, name: 'Lakcímkártya' }
+            { el: idFirst, name: t('registerModal2.idFirstLabel', 'ID card front') },
+            { el: idSecond, name: t('registerModal2.idSecondLabel', 'ID card back') },
+            { el: addressImg, name: t('registerModal2.addressCardLabel', 'Address card') }
         ];
         for (var fi = 0; fi < fileInputs.length; fi++) {
             var f = fileInputs[fi].el;
@@ -338,7 +388,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 for (var uj = 0; uj < uploadedFiles.length; uj++) {
                     if (uploadedFiles[uj].key === fKey) {
                         result.style.color = 'red';
-                        result.textContent = 'Ugyanazt a képet nem töltheted fel több helyre! (' + fileInputs[fi].name + ' és ' + uploadedFiles[uj].label + ')';
+                        result.textContent = formatText(
+                            t('registerModal2.duplicateImagePairError', 'You cannot upload the same image in multiple places! ({current} and {other})'),
+                            { current: fileInputs[fi].name, other: uploadedFiles[uj].label }
+                        );
                         return;
                     }
                 }
@@ -351,7 +404,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (addressImg.files[0]) formData.append('address_image', addressImg.files[0]);
 
         // Küldés a backendnek
-        result.textContent = 'Regisztráció folyamatban...';
+        result.textContent = t('registerModal2.registrationInProgress', 'Registration in progress...');
         result.style.color = '#666';
 
         // reCAPTCHA v3 token lekérése, majd regisztráció
@@ -420,13 +473,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             } catch (parseErr) {
                 result.style.color = 'red';
-                result.textContent = 'Szerver hiba történt (500). Kérjük, próbáld újra később.';
+                result.textContent = t('registerModal2.serverError500', 'Server error (500). Please try again later.');
                 console.error('JSON parse error:', parseErr, 'Response:', text);
             }
         })
         .catch(function (err) {
             result.style.color = 'red';
-            result.textContent = 'Hiba történt a regisztráció során.';
+            result.textContent = t('registerModal2.registrationError', 'An error occurred during registration.');
             console.error(err);
         });
     }

@@ -451,28 +451,59 @@ try {
             $esportToggleStmt->close();
         }
 
-        // BetMatch születésnapi bónusz auto-toggle: csak április 25-én legyen aktív.
-        $betmatchBirthdayDate = '04-25';
-        $isBetmatchBirthday = (date('m-d') === $betmatchBirthdayDate) ? 1 : 0;
+        // Esport bónusz lejárat egységesítése: aktiválástól számított 48 óra.
+        $esportExpireCfgStmt = $conn->prepare(" 
+            UPDATE BonusCodes
+            SET activation_expire_hours = 48
+            WHERE code = 'ESPORT5K'
+        ");
+        if ($esportExpireCfgStmt) {
+            $esportExpireCfgStmt->execute();
+            $esportExpireCfgStmt->close();
+        }
+
+        // Visszafelé kompatibilitás: már aktivált/várakozó, lejárat nélküli esport bónuszok backfillje.
+        $esportExpireBackfillStmt = $conn->prepare(" 
+            UPDATE UserBonuses ub
+            INNER JOIN BonusCodes bc ON bc.id = ub.bonus_id
+            SET ub.expires_at = DATE_ADD(ub.created_at, INTERVAL 48 HOUR)
+            WHERE bc.code = 'ESPORT5K'
+              AND ub.status IN ('ACTIVE', 'PENDING')
+              AND ub.expires_at IS NULL
+        ");
+        if ($esportExpireBackfillStmt) {
+            $esportExpireBackfillStmt->execute();
+            $esportExpireBackfillStmt->close();
+        }
+
+                // Kód nélküli születésnapi bónuszok legyenek alapból aktívak.
         $betmatchBirthdayToggleStmt = $conn->prepare(" 
             UPDATE BonusCodes
-            SET is_active = CASE
-                WHEN admin_force_active = 1 THEN 1
-                WHEN ? = 1 THEN 1
-                ELSE 0
-            END
+                    SET is_active = 1
             WHERE birthday_bonus = 1
               AND (code IS NULL OR code = '')
-              AND name LIKE 'BetMatch Születésnapi Bónusz%'
         ");
         if ($betmatchBirthdayToggleStmt) {
-            $betmatchBirthdayToggleStmt->bind_param('i', $isBetmatchBirthday);
             $betmatchBirthdayToggleStmt->execute();
             $betmatchBirthdayToggleStmt->close();
         }
 
-        // Születésnapi bónusz auto-jóváírás: a felhasználó a saját születésnapján
-        // automatikusan megkapja a standard "Születésnapi Bónusz" jutalmat (évente egyszer).
+                // BetMatchBonus születésnapi bónusz leírás frissítése (május 26.).
+                $betmatchBirthdayDescStmt = $conn->prepare(" 
+                        UPDATE BonusCodes
+                        SET description = 'A BetMatchBonus születésnapi különleges promóciója - limitált számban elérhető! Hogyan működik? 1) A promóció évente május 26-án aktiválódik. 2) Ezen a napon az első 500 jogosult igénylés teljesülhet. 3) A bónusszal bármilyen sportra, bármilyen mérkőzésre fogadhatsz - nincs sportági megkötés. 4) Nincs forgatási követelmény, a nyereményed azonnal kifizethetővé válik. 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: csak 500 db érhető el összesen.'
+                        WHERE birthday_bonus = 1
+                            AND (name LIKE 'BetMatchBonus Születésnapi Bónusz%' OR name LIKE 'BetMatch Születésnapi Bónusz%')
+                            AND (code IS NULL OR code = '')
+                ");
+                if ($betmatchBirthdayDescStmt) {
+                        $betmatchBirthdayDescStmt->execute();
+                        $betmatchBirthdayDescStmt->close();
+                }
+
+        // Születésnapi bónuszokat igényléssel (gombnyomásra) kezeljük,
+        // ezért az automatikus jóváírás itt ki van kapcsolva.
+        $birthdayClaimRequiresButton = true;
         $birthdayCheckedUsers = 0;
         $birthdayGrantedUsers = 0;
 
@@ -497,7 +528,7 @@ try {
             $birthdayBonusStmt->close();
         }
 
-        if ($birthdayBonusRow) {
+        if ($birthdayBonusRow && !$birthdayClaimRequiresButton) {
             $birthdayBonusId = (int)$birthdayBonusRow['id'];
             $birthdayBonusAmount = (float)($birthdayBonusRow['max_bonus_amount'] ?? 0);
             if ($birthdayBonusAmount <= 0) {
@@ -644,7 +675,7 @@ try {
             . ' | HETVEGI5K: ' . ($isWeekend ? 'aktív (hétvége)' : 'inaktív (hétköznap)')
             . ' | NB1DERBY: ' . ($nb1DerbyToday ? 'aktív (ma van Újpest–Ferencváros)' : 'inaktív (ma nincs derby)')
             . ' | ESPORT5K: ' . ($esportToday ? 'aktív (ma van LoL/CS/Valorant)' : 'inaktív (ma nincs LoL/CS/Valorant)')
-            . ' | BetMatch szülinap: ' . ($isBetmatchBirthday ? 'aktív (ápr. 25)' : 'inaktív (nem ápr. 25)')
+            . ' | BetMatchBonus szülinap: alapból aktív'
             . ' | Születésnapi bónusz: ' . $birthdayGrantedUsers . ' jóváírás (' . $birthdayCheckedUsers . ' érintett user)',
         'ms'      => round((microtime(true) - $stepStart) * 1000),
     ];

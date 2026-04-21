@@ -59,6 +59,31 @@ $result = $stmt->get_result();
 $bonuses = $result->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
+// A bónusz egyenleg forrása az aktív UserBonuses rekordok összege,
+// így az összesítő kártya mindig a valós értéket mutatja.
+$bonusSumStmt = $conn->prepare(" 
+    SELECT COALESCE(SUM(bonus_balance), 0) AS total_bonus
+    FROM UserBonuses
+    WHERE user_id = ?
+      AND status = 'ACTIVE'
+      AND used = 0
+      AND (expires_at IS NULL OR expires_at > NOW())
+");
+$bonusSumStmt->bind_param("i", $user_id);
+$bonusSumStmt->execute();
+$bonusSumRow = $bonusSumStmt->get_result()->fetch_assoc();
+$bonusSumStmt->close();
+
+$bonus_balance = (float)($bonusSumRow['total_bonus'] ?? 0);
+
+// Users.bonus_balance visszaszinkronizálása, hogy más felületek se lássanak stale értéket.
+if ($hasBonusBalance) {
+    $syncUserBonusStmt = $conn->prepare("UPDATE Users SET bonus_balance = ? WHERE id = ?");
+    $syncUserBonusStmt->bind_param("di", $bonus_balance, $user_id);
+    $syncUserBonusStmt->execute();
+    $syncUserBonusStmt->close();
+}
+
 // Aktív és lejárt bónuszok száma
 $active_bonuses = 0;
 $expired_bonuses = 0;
@@ -67,6 +92,11 @@ $current_bonuses = [];
 $archived_bonuses = [];
 
 foreach ($bonuses as $bonus) {
+    $isLossTrigger = strtoupper((string)($bonus['bonus_trigger'] ?? '')) === 'LOSS';
+    $isLossRewardRow = $isLossTrigger
+        && ((float)($bonus['free_bet_amount'] ?? 0) > 0)
+        && ((float)($bonus['granted_amount'] ?? 0) > 0);
+
     $isExpiredByTime = !empty($bonus['expires_at']) && strtotime($bonus['expires_at']) <= time();
     $isActiveAndValid = ($bonus['status'] === 'ACTIVE')
         && (empty($bonus['expires_at']) || strtotime($bonus['expires_at']) > time());
@@ -77,14 +107,20 @@ foreach ($bonuses as $bonus) {
     if ($isArchived) {
         $archived_bonuses[] = $bonus;
     } else {
-        $current_bonuses[] = $bonus;
+        if (!$isLossRewardRow) {
+            $current_bonuses[] = $bonus;
+        }
     }
 
-    if ($isActiveAndValid) {
+    if ($isActiveAndValid && !$isLossRewardRow) {
         $active_bonuses++;
         if (strtoupper((string)($bonus['bet_reward_type'] ?? '')) === 'FREE_BET') {
             $total_free_bet_amount += (float)($bonus['free_bet_amount'] ?? $bonus['granted_amount'] ?? 0);
         }
+    }
+
+    if ($isLossRewardRow && $isActiveAndValid) {
+        $total_free_bet_amount += (float)($bonus['free_bet_amount'] ?? $bonus['granted_amount'] ?? 0);
     }
 }
 
@@ -280,14 +316,16 @@ foreach ($current_bonuses as $cb) {
                                                     $cbMinOdds = (float)($bonus['min_odds_val'] ?? 0);
                                                 ?>
                                                 <div class="mt-2 mb-2 p-3" style="background: #0f3460; border-radius: 10px; border: 1px solid rgba(233,69,96,0.3);">
-                                                    <p class="mb-2" style="font-size:0.9rem;"><i class="fas fa-shield-alt" style="color:#e94560;"></i> <strong data-i18n="userProfile.myBonuses.cashbackConditionsTitle">Cashback feltételek:</strong></p>
-                                                    <ul class="mb-2" style="font-size:0.85rem; padding-left: 1.2rem; margin-bottom: 0;">
-                                                        <li><span data-i18n="userProfile.myBonuses.cashbackMinStake">Min. tét:</span> <strong><?php echo number_format($cbMinStake, 0, ',', ' '); ?> <span data-i18n="userProfile.myBonuses.currencyFt">Ft</span></strong></li>
-                                                        <li><span data-i18n="userProfile.myBonuses.cashbackMinOdds">Min. odds:</span> <strong><?php echo number_format($cbMinOdds, 2, ',', ''); ?></strong></li>
-                                                        <li><span data-i18n="userProfile.myBonuses.cashbackRefund">Visszatérítés:</span> <strong><?php echo number_format($cbPercent, 0); ?>%</strong> <span data-i18n="userProfile.myBonuses.cashbackFreeBetForm">Free Bet formájában</span></li>
-                                                        <li><span data-i18n="userProfile.myBonuses.cashbackDailyLimit">Napi limit:</span> <strong data-i18n="userProfile.myBonuses.cashbackDailyLimitValue">1 alkalom</strong></li>
-                                                    </ul>
-                                                    <hr style="border-color: rgba(255,255,255,0.15); margin: 8px 0;">
+                                                    <?php if ($cbStats['today_count'] <= 0): ?>
+                                                        <p class="mb-2" style="font-size:0.9rem;"><i class="fas fa-shield-alt" style="color:#e94560;"></i> <strong data-i18n="userProfile.myBonuses.cashbackConditionsTitle">Cashback feltételek:</strong></p>
+                                                        <ul class="mb-2" style="font-size:0.85rem; padding-left: 1.2rem; margin-bottom: 0;">
+                                                            <li><span data-i18n="userProfile.myBonuses.cashbackMinStake">Min. tét:</span> <strong><?php echo number_format($cbMinStake, 0, ',', ' '); ?> <span data-i18n="userProfile.myBonuses.currencyFt">Ft</span></strong></li>
+                                                            <li><span data-i18n="userProfile.myBonuses.cashbackMinOdds">Min. odds:</span> <strong><?php echo number_format($cbMinOdds, 2, ',', ''); ?></strong></li>
+                                                            <li><span data-i18n="userProfile.myBonuses.cashbackRefund">Visszatérítés:</span> <strong><?php echo number_format($cbPercent, 0); ?>%</strong> <span data-i18n="userProfile.myBonuses.cashbackFreeBetForm">Free Bet formájában</span></li>
+                                                            <li><span data-i18n="userProfile.myBonuses.cashbackDailyLimit">Napi limit:</span> <strong data-i18n="userProfile.myBonuses.cashbackDailyLimitValue">1 alkalom</strong></li>
+                                                        </ul>
+                                                        <hr style="border-color: rgba(255,255,255,0.15); margin: 8px 0;">
+                                                    <?php endif; ?>
                                                     <?php if ($cbStats['today_count'] > 0): ?>
                                                         <p class="mb-1" style="font-size:0.85rem;"><i class="fas fa-check-circle text-success"></i> <strong data-i18n="userProfile.myBonuses.todayCashbackLabel">Mai cashback:</strong> <?php echo number_format($cbStats['today_total'], 0, ',', ' '); ?> Ft <span data-i18n="userProfile.myBonuses.freeBetCredited">Free Bet jóváírva</span></p>
                                                         <p class="mb-0" style="font-size:0.8rem; color: #aaa;"><i class="fas fa-info-circle"></i> Ma már kaptál cashback-et. Holnap újra elérhető.</p>
@@ -604,6 +642,21 @@ foreach ($current_bonuses as $cb) {
 
     document.querySelectorAll('.bonus-desc-btn').forEach((btn) => {
         btn.addEventListener('click', () => {
+            const formatBonusDescriptionForModal = (raw) => {
+                const src = String(raw || '').trim();
+                if (!src) return src;
+
+                // 1) 2) 3) ... pontok új sorba törése
+                let out = src.replace(/\s+(\d+\)\s*)/g, '\n$1');
+
+                // "Fontos:" / "Important:" rész külön sorba
+                out = out.replace(/\s+(Fontos:|Important:)\s*/gi, '\n$1 ');
+
+                // Többszörös üres sorok normalizálása
+                out = out.replace(/\n{3,}/g, '\n\n').trim();
+                return out;
+            };
+
             const localizeBonusTitle = (raw, lang) => {
                 const src = String(raw || '').trim();
                 if (lang !== 'en') return src;
@@ -654,8 +707,6 @@ foreach ($current_bonuses as $cb) {
 
             const localizeBonusDescription = (rawTitle, rawDescription, lang) => {
                 const src = String(rawDescription || '').trim();
-                if (lang !== 'en') return src;
-
                 const normalizedTitle = String(rawTitle || '').trim();
                 const isDartsBonus = /^DARTS\s+B[ÓO]NUSZ\s*\(([^)]+)\)$/i.test(normalizedTitle);
                 const isNb1DerbyBonus = /^NB1\s+DERBY\s+B[ÓO]NUSZ/i.test(normalizedTitle);
@@ -668,6 +719,13 @@ foreach ($current_bonuses as $cb) {
                 const isAdminFreeBet = /^ADMIN\s+FREE\s+BET/i.test(normalizedTitle);
                 const isAdminBonus = /^ADMIN\s+B[ÓO]NUSZ/i.test(normalizedTitle);
 
+                if (lang !== 'en') {
+                    if (isDartsBonus) {
+                        return 'Darts rajongóknak szóló exkluzív bónusz! Hogyan szerezheted meg? 1) Tégy meg egy legalább 10.000 Ft értékű fogadást kizárólag darts mérkőzésekre. 2) A fogadásnak legalább 2 eseményt (2-es kötést) kell tartalmaznia, minimum 2.00-es össz odds-szal. 3) A fogadásod után azonnal 5.000FT bónusz pénzt kapsz a bónusz egyenlegedre. 4) A kapott 5.000 Ft bónuszt 2-szeresen kell megforgatnod (10.000 Ft értékű fogadás), mielőtt kifizethetővé válik. 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: Az aktiválás után 48 órád van a bónusz felhasználására!';
+                    }
+                    return src;
+                }
+
                 if (isWeekdayBonus && src.includes('Hétfőtől péntekig minden nap elérhető feltöltési bónusz')) {
                     return 'Weekday deposit bonus available every day from Monday to Friday. How can you activate it? 1) Deposit at least 3,000 FT to your account. 2) You receive 100% of your deposit as bonus, up to 5,000 FT. Example: 3,000 FT deposit = 3,000 FT bonus, 5,000 FT deposit = 5,000 FT bonus, 10,000 FT deposit = 5,000 FT bonus (max). 3) The received bonus must be wagered 3 times before it becomes withdrawable. So if you received a 5,000 FT bonus, you need to place bets worth 15,000 FT. 4) The maximum winnings are 5x the bonus amount (25,000 FT). Important: This bonus can only be activated on weekdays (Monday to Friday), from 08:00 in the morning; it is not available on weekends.';
                 }
@@ -676,7 +734,7 @@ foreach ($current_bonuses as $cb) {
                     return 'Automatic daily reward for the top depositor, top bettor, and top winner.';
                 }
                 if (isDartsBonus && src.includes('Darts rajongóknak szóló exkluzív bónusz')) {
-                    return 'Exclusive bonus for darts fans! How to get it? 1) Place a bet worth at least 10,000 FT only on darts matches. 2) Your bet must include at least 2 events (2-leg combo) with a minimum total odds of 2.00. 3) After your bet is settled and evaluated, you receive 5,000 FT bonus money to your bonus balance. 4) The received 5,000 FT bonus must be wagered 2x (10,000 FT wager volume) before it becomes withdrawable. 5) Maximum withdrawable amount from this bonus is 5x (25,000 FT). Important: after activation, you have 48 hours to use this bonus.';
+                    return 'Exclusive bonus for darts fans! How to get it? 1) Place a bet worth at least 10,000 FT only on darts matches. 2) Your bet must include at least 2 events (2-leg combo) with a minimum total odds of 2.00. 3) Right after placing the qualifying bet, you receive 5,000 FT bonus money to your bonus balance. 4) The received 5,000 FT bonus must be wagered 2x (10,000 FT wager volume) before it becomes withdrawable. 5) Maximum withdrawable amount from this bonus is 5x (25,000 FT). Important: after activation, you have 48 hours to use this bonus.';
                 }
 
                 if (isNb1DerbyBonus && src.includes('Az NB1 legnagyobb derbiéhez kapcsolódó exkluzív élő fogadási bónusz')) {
@@ -720,6 +778,8 @@ foreach ($current_bonuses as $cb) {
             const minOdds = btn.getAttribute('data-min-odds') || '0';
             const minOddsEvent = btn.getAttribute('data-min-odds-event') || '0';
             const bonusTrigger = btn.getAttribute('data-bonus-trigger') || '';
+            const isLossTrigger = bonusTrigger === 'LOSS';
+            const isBetTrigger = bonusTrigger === 'BET';
 
             const currentLang = (typeof window.i18nLang === 'function') ? window.i18nLang() : 'hu';
             const finalTitle = localizeBonusTitle(title, currentLang);
@@ -734,7 +794,9 @@ foreach ($current_bonuses as $cb) {
             }
 
             document.getElementById('bonusDescTitle').textContent = finalTitle;
-            document.getElementById('bonusDescText').textContent = finalDescription;
+            const bonusDescTextEl = document.getElementById('bonusDescText');
+            bonusDescTextEl.textContent = formatBonusDescriptionForModal(finalDescription);
+            bonusDescTextEl.style.whiteSpace = 'pre-line';
 
             const reqList = document.getElementById('bonusRequirementsList');
             reqList.innerHTML = '';
@@ -749,16 +811,36 @@ foreach ($current_bonuses as $cb) {
                 reqList.appendChild(li);
             };
 
-            addReq(window.i18n ? window.i18n('userProfile.myBonuses.activationMode', 'Aktiválás módja') : 'Aktiválás módja', bonusTrigger === 'DEPOSIT' ? (window.i18n ? window.i18n('userProfile.myBonuses.depositBased', 'Befizetéshez kötött') : 'Befizetéshez kötött') : (window.i18n ? window.i18n('userProfile.myBonuses.instant', 'Azonnali') : 'Azonnali'));
-            addReq(window.i18n ? window.i18n('userProfile.myBonuses.minDeposit', 'Minimum befizetés') : 'Minimum befizetés', `${minDeposit} FT`);
+            const activationModeValue = bonusTrigger === 'DEPOSIT'
+                ? (window.i18n ? window.i18n('userProfile.myBonuses.depositBased', 'Befizetéshez kötött') : 'Befizetéshez kötött')
+                : (isLossTrigger
+                    ? (window.i18n ? window.i18n('userProfile.myBonuses.afterLosingBet', 'Vesztes fogadás után') : 'Vesztes fogadás után')
+                    : (window.i18n ? window.i18n('userProfile.myBonuses.instant', 'Azonnali') : 'Azonnali'));
+
+            addReq(window.i18n ? window.i18n('userProfile.myBonuses.activationMode', 'Aktiválás módja') : 'Aktiválás módja', activationModeValue);
+            addReq(
+                (isLossTrigger || isBetTrigger)
+                    ? (window.i18n ? window.i18n('userProfile.myBonuses.cashbackMinStake', 'Min. tét') : 'Min. tét')
+                    : (window.i18n ? window.i18n('userProfile.myBonuses.minDeposit', 'Minimum befizetés') : 'Minimum befizetés'),
+                `${minDeposit} FT`
+            );
 
             if (Number(String(matchPercent).replace(',', '.')) > 0) {
-                addReq(window.i18n ? window.i18n('userProfile.myBonuses.bonusRate', 'Bónusz mértéke') : 'Bónusz mértéke', `${matchPercent}% (max ${maxBonus} FT)`);
+                if (isLossTrigger) {
+                    addReq(
+                        window.i18n ? window.i18n('userProfile.myBonuses.cashbackRefund', 'Visszatérítés') : 'Visszatérítés',
+                        `${matchPercent}% ${window.i18n ? window.i18n('userProfile.myBonuses.cashbackFreeBetForm', 'Free Bet formájában') : 'Free Bet formájában'}`
+                    );
+                } else {
+                    addReq(window.i18n ? window.i18n('userProfile.myBonuses.bonusRate', 'Bónusz mértéke') : 'Bónusz mértéke', `${matchPercent}% (max ${maxBonus} FT)`);
+                }
             } else {
                 addReq(window.i18n ? window.i18n('userProfile.myBonuses.maxBonus', 'Maximális bónusz') : 'Maximális bónusz', `${maxBonus} FT`);
             }
 
-            addReq(window.i18n ? window.i18n('userProfile.myBonuses.wageringRequirement', 'Forgatási követelmény') : 'Forgatási követelmény', `${wageringMultiplier}x`);
+            if (!isLossTrigger) {
+                addReq(window.i18n ? window.i18n('userProfile.myBonuses.wageringRequirement', 'Forgatási követelmény') : 'Forgatási követelmény', `${wageringMultiplier}x`);
+            }
 
             if (parseInt(minCombo, 10) > 0) {
                 addReq(window.i18n ? window.i18n('userProfile.myBonuses.minCombo', 'Minimum kötés') : 'Minimum kötés', `${minCombo} ${window.i18n ? window.i18n('userProfile.myBonuses.events', 'esemény') : 'esemény'}`);

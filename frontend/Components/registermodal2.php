@@ -38,20 +38,20 @@
                             <div class="birthdate-shell mb-1">
                                 <div class="birthdate-row">
                                     <select id="modal2-birth-year" class="form-select birthdate-select" required>
-                                        <option value="">Év</option>
+                                        <option value="" data-i18n="registerModal2.birthYearOption">Év</option>
                                     </select>
                                     <select id="modal2-birth-month" class="form-select birthdate-select" required>
-                                        <option value="">Hónap</option>
+                                        <option value="" data-i18n="registerModal2.birthMonthOption">Hónap</option>
                                     </select>
                                     <select id="modal2-birth-day" class="form-select birthdate-select" required>
-                                        <option value="">Nap</option>
+                                        <option value="" data-i18n="registerModal2.birthDayOption">Nap</option>
                                     </select>
                                 </div>
                                 <input type="hidden" id="modal2-date-input" name="birthdate" required>
                             </div>
                             <input type="hidden" name="calculated_age" id="modal2-calculated_age">
                             <input type="hidden" name="birthplace_city_id" id="modal2-birthplace_city_id" value="1">
-                            <p class="small birthdate-help mb-1">Válaszd ki az évet, hónapot és napot.</p>
+                            <p class="small birthdate-help mb-1" data-i18n="registerModal2.birthDateHelp">Válaszd ki az évet, hónapot és napot.</p>
                             <p id="modal2-age-result" class="small birthdate-age-result mb-3"></p>
                         </div>
 
