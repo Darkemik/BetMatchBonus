@@ -9,7 +9,7 @@
                 
                 $help_links = [
                     ['href' => '../Help/GYIK.php', 'key' => 'helpMenu.faq', 'label' => 'GYIK'],
-                    ['href' => '../Help/uj_funkcio.php', 'key' => 'helpMenu.newFeatures', 'label' => 'Új funkciók'],
+                    ['href' => '../Help/uj_funkcio.php', 'key' => 'helpMenu.newFeatures', 'label' => 'Oldalbemutató'],
                     ['href' => '../Help/sportszabalyok.php', 'key' => 'helpMenu.sportRules', 'label' => 'Sportszabályok'],
                     ['href' => '../Help/szotar.php', 'key' => 'helpMenu.dictionary', 'label' => 'Szótár'],
                     ['href' => '../Help/fizetesi_lehetosegek.php', 'key' => 'helpMenu.paymentOptions', 'label' => 'Fizetési lehetőségek'],

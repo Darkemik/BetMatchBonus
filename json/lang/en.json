@@ -283,7 +283,7 @@
   "helpMenu": {
     "info": "INFORMATION",
     "faq": "FAQ",
-    "newFeatures": "New features",
+    "newFeatures": "Site Walkthrough",
     "sportRules": "Sport rules",
     "dictionary": "Dictionary",
     "paymentOptions": "Payment options",
@@ -295,8 +295,8 @@
     "participationRules": "Participation rules"
   },
   "helpNewFeature": {
-    "title": "New Feature Video",
-    "iframeTitle": "New feature introduction video"
+    "title": "Site Walkthrough",
+    "iframeTitle": "Site walkthrough video"
   },
   "helpStatic": {
     "payment": {

@@ -283,7 +283,7 @@
   "helpMenu": {
     "info": "INFORMÁCIÓK",
     "faq": "GYIK",
-    "newFeatures": "Új funkciók",
+    "newFeatures": "Oldalbemutató",
     "sportRules": "Sportszabályok",
     "dictionary": "Szótár",
     "paymentOptions": "Fizetési lehetőségek",
@@ -295,8 +295,8 @@
     "participationRules": "Részvételi szabályzat"
   },
   "helpNewFeature": {
-    "title": "Új funkció videó",
-    "iframeTitle": "Új funkció bemutató videó"
+    "title": "Oldalbemutató",
+    "iframeTitle": "Oldalbemutató videó"
   },
   "helpStatic": {
     "payment": {

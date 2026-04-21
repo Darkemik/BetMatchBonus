@@ -310,7 +310,7 @@
         },
         {
             keywords: ['new feature', 'news', 'update', 'frissítés', 'újdonság'],
-            answer: '🆕 Latest updates: <a href="../../frontend/Help/uj_funkcio.php">New Features</a> page'
+            answer: '🆕 Site walkthrough: <a href="../../frontend/Help/uj_funkcio.php">Site Walkthrough</a> page'
         },
         {
             keywords: ['hello', 'hi', 'hey', 'szia', 'helló', 'üdv'],
@@ -651,7 +651,9 @@
         fetchFromBackend('balance', function (data) {
             hideTyping();
             if (!data.loggedIn) {
-                addBotMessage('🔒 Please sign in to view your balance.');
+                addBotMessage(getUiLocale() === 'en-US'
+                    ? '🔒 Please sign in to view your balance.'
+                    : '🔒 Jelentkezz be az egyenleged megtekintéséhez.');
                 return;
             }
             addBotMessage(
@@ -669,7 +671,9 @@
         fetchFromBackend('bonuses', function (data) {
             hideTyping();
             if (!data.loggedIn) {
-                addBotMessage('🔒 Please sign in to view your bonuses.');
+                addBotMessage(getUiLocale() === 'en-US'
+                    ? '🔒 Please sign in to view your bonuses.'
+                    : '🔒 Jelentkezz be a bónuszaid megtekintéséhez.');
                 return;
             }
             if (!data.activeBonuses || data.activeBonuses.length === 0) {
@@ -696,7 +700,9 @@
         fetchFromBackend('history', function (data) {
             hideTyping();
             if (!data.loggedIn) {
-                addBotMessage('🔒 Please sign in to view your tickets.');
+                addBotMessage(getUiLocale() === 'en-US'
+                    ? '🔒 Please sign in to view your tickets.'
+                    : '🔒 Jelentkezz be a szelvényeid megtekintéséhez.');
                 return;
             }
             if (!data.recentTickets || data.recentTickets.length === 0) {
@@ -728,7 +734,9 @@
         fetchFromBackend('history', function (data) {
             hideTyping();
             if (!data.loggedIn) {
-                addBotMessage('🔒 Please sign in to view your statistics.');
+                addBotMessage(getUiLocale() === 'en-US'
+                    ? '🔒 Please sign in to view your statistics.'
+                    : '🔒 Jelentkezz be a statisztikáid megtekintéséhez.');
                 return;
             }
             var s = data.ticketStats || {};
@@ -830,7 +838,9 @@
         fetchFromBackend('summary', function (data) {
             hideTyping();
             if (!data.loggedIn) {
-                addBotMessage('🔒 Please sign in to view your summary.');
+                addBotMessage(getUiLocale() === 'en-US'
+                    ? '🔒 Please sign in to view your summary.'
+                    : '🔒 Jelentkezz be az összegzés megtekintéséhez.');
                 return;
             }
             var html = '📋 <b>Summary</b><br><br>';
