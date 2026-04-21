@@ -9,9 +9,51 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-$query = "SELECT id, activity_type, description, created_at FROM ActivityLog WHERE user_id = ? ORDER BY created_at DESC LIMIT 200";
+$perPage = 10;
+$page = max(1, (int)($_GET['page'] ?? 1));
+$excludedTypes = ['deposit', 'withdrawal'];
+$allowedTypes = ['login', 'logout', 'bet', 'bonus', 'profile_update', 'password_change', 'password_reset'];
+$selectedType = trim((string)($_GET['type'] ?? 'all'));
+if ($selectedType !== 'all' && !in_array($selectedType, $allowedTypes, true)) {
+    $selectedType = 'all';
+}
+
+$countSql = "SELECT COUNT(*) AS cnt FROM ActivityLog WHERE user_id = ?";
+$countSql .= " AND activity_type NOT IN (?, ?)";
+if ($selectedType !== 'all') {
+    $countSql .= " AND activity_type = ?";
+}
+
+$countStmt = $conn->prepare($countSql);
+if ($selectedType === 'all') {
+    $countStmt->bind_param("iss", $user_id, $excludedTypes[0], $excludedTypes[1]);
+} else {
+    $countStmt->bind_param("isss", $user_id, $excludedTypes[0], $excludedTypes[1], $selectedType);
+}
+$countStmt->execute();
+$totalActivities = (int)$countStmt->get_result()->fetch_assoc()['cnt'];
+$countStmt->close();
+
+$totalPages = max(1, (int)ceil($totalActivities / $perPage));
+if ($page > $totalPages) {
+    $page = $totalPages;
+}
+
+$offset = ($page - 1) * $perPage;
+
+$query = "SELECT id, activity_type, description, created_at FROM ActivityLog WHERE user_id = ?";
+$query .= " AND activity_type NOT IN (?, ?)";
+if ($selectedType !== 'all') {
+    $query .= " AND activity_type = ?";
+}
+$query .= " ORDER BY created_at DESC LIMIT ? OFFSET ?";
+
 $stmt = $conn->prepare($query);
-$stmt->bind_param("i", $user_id);
+if ($selectedType === 'all') {
+    $stmt->bind_param("issii", $user_id, $excludedTypes[0], $excludedTypes[1], $perPage, $offset);
+} else {
+    $stmt->bind_param("isssii", $user_id, $excludedTypes[0], $excludedTypes[1], $selectedType, $perPage, $offset);
+}
 $stmt->execute();
 $result = $stmt->get_result();
 $activities = $result->fetch_all(MYSQLI_ASSOC);
@@ -22,19 +64,16 @@ $typeLabels = [
     'login' => 'Bejelentkezés',
     'logout' => 'Kijelentkezés',
     'bet' => 'Fogadás',
-    'deposit' => 'Befizetés',
-    'withdrawal' => 'Kifizetés',
     'bonus' => 'Bónusz',
     'profile_update' => 'Profil frissítés',
-    'password_change' => 'Jelszó módosítás'
+    'password_change' => 'Jelszó módosítás',
+    'password_reset' => 'Jelszó-visszaállítás'
 ];
 
 $typeLabelKeys = [
     'login' => 'userProfile.activityLog.typeLogin',
     'logout' => 'userProfile.activityLog.typeLogout',
     'bet' => 'userProfile.activityLog.typeBet',
-    'deposit' => 'userProfile.activityLog.typeDeposit',
-    'withdrawal' => 'userProfile.activityLog.typeWithdrawal',
     'bonus' => 'userProfile.activityLog.typeBonus',
     'profile_update' => 'userProfile.activityLog.typeProfileUpdate',
     'password_change' => 'userProfile.activityLog.typePasswordChange'
@@ -44,22 +83,20 @@ $typeIcons = [
     'login' => 'fa-sign-in-alt',
     'logout' => 'fa-sign-out-alt',
     'bet' => 'fa-dice',
-    'deposit' => 'fa-plus-circle',
-    'withdrawal' => 'fa-minus-circle',
     'bonus' => 'fa-gift',
     'profile_update' => 'fa-user-edit',
-    'password_change' => 'fa-key'
+    'password_change' => 'fa-key',
+    'password_reset' => 'fa-unlock-alt'
 ];
 
 $typeColors = [
     'login' => '#52b788',
     'logout' => '#e94560',
     'bet' => '#5b9bd5',
-    'deposit' => '#52b788',
-    'withdrawal' => '#e94560',
     'bonus' => '#f5c518',
     'profile_update' => '#9aa6b2',
-    'password_change' => '#c77dff'
+    'password_change' => '#c77dff',
+    'password_reset' => '#4f7cff'
 ];
 
 // Csoportosítás dátum szerint
@@ -88,7 +125,7 @@ foreach ($activities as $a) {
         .log-filter-btn {
             background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
             color: #aaa; padding: 5px 14px; border-radius: 20px; font-size: 0.8rem;
-            cursor: pointer; transition: all 0.15s;
+            cursor: pointer; transition: all 0.15s; text-decoration: none; display: inline-block;
         }
         .log-filter-btn:hover { border-color: #e94560; color: #e94560; }
         .log-filter-btn.active { background: #e94560; color: #fff; border-color: #e94560; }
@@ -125,6 +162,27 @@ foreach ($activities as $a) {
             background: rgba(255,255,255,0.06); color: #9aa6b2; font-size: 0.72rem;
             padding: 2px 8px; border-radius: 10px; margin-left: 6px;
         }
+
+        .log-pagination-wrap {
+            margin-top: 18px;
+            display: flex;
+            justify-content: center;
+        }
+        .log-pagination-wrap .page-link {
+            background: rgba(255,255,255,0.04);
+            border-color: rgba(255,255,255,0.12);
+            color: #ddd;
+        }
+        .log-pagination-wrap .page-item.active .page-link {
+            background: #e94560;
+            border-color: #e94560;
+            color: #fff;
+        }
+        .log-pagination-wrap .page-item.disabled .page-link {
+            background: rgba(255,255,255,0.02);
+            border-color: rgba(255,255,255,0.08);
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -148,7 +206,19 @@ foreach ($activities as $a) {
             </div>
             <div class="col-md-9">
                 <div class="profile-content">
-                    <h1><i class="fas fa-list"></i> <span data-i18n="userProfile.activityLog.heading">Tevékenységnapló</span> <span class="log-count-badge"><?= count($activities) ?> <span data-i18n="userProfile.activityLog.entries">bejegyzés</span></span></h1>
+                    <h1><i class="fas fa-list"></i> <span data-i18n="userProfile.activityLog.heading">Tevékenységnapló</span> <span class="log-count-badge"><?= $totalActivities ?> <span data-i18n="userProfile.activityLog.entries">bejegyzés</span></span></h1>
+
+                    <!-- Szűrő gombok -->
+                    <div class="log-filter-bar">
+                        <a class="log-filter-btn <?= $selectedType === 'all' ? 'active' : '' ?>" href="?type=all&page=1" data-i18n="userProfile.activityLog.filterAll">Összes</a>
+                        <?php
+                        foreach ($allowedTypes as $t):
+                            $label = $typeLabels[$t] ?? ucfirst($t);
+                            $labelKey = $typeLabelKeys[$t] ?? '';
+                        ?>
+                            <a class="log-filter-btn <?= $selectedType === $t ? 'active' : '' ?>" href="?type=<?= urlencode($t) ?>&page=1"<?php if ($labelKey): ?> data-i18n="<?= htmlspecialchars($labelKey) ?>"<?php endif; ?>><?= htmlspecialchars($label) ?></a>
+                        <?php endforeach; ?>
+                    </div>
 
                     <?php if (empty($activities)): ?>
                         <div class="log-empty">
@@ -156,19 +226,6 @@ foreach ($activities as $a) {
                             <p data-i18n="userProfile.activityLog.empty">Még nincs tevékenységi bejegyzés.</p>
                         </div>
                     <?php else: ?>
-                        <!-- Szűrő gombok -->
-                        <div class="log-filter-bar">
-                            <button class="log-filter-btn active" data-filter="all" data-i18n="userProfile.activityLog.filterAll">Összes</button>
-                            <?php
-                            $usedTypes = array_unique(array_column($activities, 'activity_type'));
-                            foreach ($usedTypes as $t):
-                                $label = $typeLabels[$t] ?? ucfirst($t);
-                                $labelKey = $typeLabelKeys[$t] ?? '';
-                            ?>
-                                <button class="log-filter-btn" data-filter="<?= htmlspecialchars($t) ?>"<?php if ($labelKey): ?> data-i18n="<?= htmlspecialchars($labelKey) ?>"<?php endif; ?>><?= htmlspecialchars($label) ?></button>
-                            <?php endforeach; ?>
-                        </div>
-
                         <!-- Napló bejegyzések -->
                         <div id="logEntries">
                         <?php foreach ($grouped as $day => $dayActivities): ?>
@@ -204,6 +261,47 @@ foreach ($activities as $a) {
                             <?php endforeach; ?>
                         <?php endforeach; ?>
                         </div>
+
+                        <?php if ($totalPages > 1): ?>
+                        <div class="log-pagination-wrap">
+                            <nav aria-label="Napló lapozó">
+                                <ul class="pagination pagination-sm mb-0">
+                                    <?php $typeParam = '&type=' . urlencode($selectedType); ?>
+                                    <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
+                                        <a class="page-link" href="?page=<?= max(1, $page - 1) ?><?= $typeParam ?>" aria-label="Előző">&laquo;</a>
+                                    </li>
+
+                                    <?php
+                                    $startPage = max(1, $page - 2);
+                                    $endPage = min($totalPages, $page + 2);
+                                    if ($startPage > 1):
+                                    ?>
+                                        <li class="page-item"><a class="page-link" href="?page=1<?= $typeParam ?>">1</a></li>
+                                        <?php if ($startPage > 2): ?>
+                                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+
+                                    <?php for ($p = $startPage; $p <= $endPage; $p++): ?>
+                                        <li class="page-item <?= $p === $page ? 'active' : '' ?>">
+                                            <a class="page-link" href="?page=<?= $p ?><?= $typeParam ?>"><?= $p ?></a>
+                                        </li>
+                                    <?php endfor; ?>
+
+                                    <?php if ($endPage < $totalPages): ?>
+                                        <?php if ($endPage < $totalPages - 1): ?>
+                                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                                        <?php endif; ?>
+                                        <li class="page-item"><a class="page-link" href="?page=<?= $totalPages ?><?= $typeParam ?>"><?= $totalPages ?></a></li>
+                                    <?php endif; ?>
+
+                                    <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
+                                        <a class="page-link" href="?page=<?= min($totalPages, $page + 1) ?><?= $typeParam ?>" aria-label="Következő">&raquo;</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
             </div>
@@ -295,26 +393,6 @@ foreach ($activities as $a) {
             el.textContent = translateLogDescription(original, lang);
         });
     }
-
-    document.querySelectorAll('.log-filter-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.log-filter-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            const filter = this.dataset.filter;
-            document.querySelectorAll('.log-entry').forEach(entry => {
-                entry.style.display = (filter === 'all' || entry.dataset.type === filter) ? '' : 'none';
-            });
-            document.querySelectorAll('.log-day-header').forEach(header => {
-                let next = header.nextElementSibling;
-                let hasVisible = false;
-                while (next && !next.classList.contains('log-day-header')) {
-                    if (next.classList.contains('log-entry') && next.style.display !== 'none') hasVisible = true;
-                    next = next.nextElementSibling;
-                }
-                header.style.display = hasVisible ? '' : 'none';
-            });
-        });
-    });
 
     document.addEventListener('DOMContentLoaded', function () {
         setTimeout(applyActivityLogI18n, 0);

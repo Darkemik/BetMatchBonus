@@ -63,8 +63,8 @@ function getConfiguredMailer(): PHPMailer {
 
 /* ━━━━━ APPROVE ━━━━━ */
 if ($action === 'approve') {
-    if ((int)$user['data_verified'] === 1) {
-        echo json_encode(['success' => false, 'message' => 'Ez a felhasználó adatai már jóváhagyásra kerültek.']);
+    if (empty($user['data_verification_token'])) {
+        echo json_encode(['success' => false, 'message' => 'Ehhez a felhasználóhoz nincs függő adatellenőrzési kérés.']);
         exit;
     }
 
@@ -116,8 +116,8 @@ if ($action === 'reject') {
         exit;
     }
 
-    if ((int)$user['data_verified'] === 1) {
-        echo json_encode(['success' => false, 'message' => 'Ez a felhasználó adatai már jóváhagyásra kerültek, nem utasítható el.']);
+    if (empty($user['data_verification_token'])) {
+        echo json_encode(['success' => false, 'message' => 'Ehhez a felhasználóhoz nincs függő adatellenőrzési kérés.']);
         exit;
     }
 

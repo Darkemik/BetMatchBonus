@@ -11,7 +11,15 @@ if (!isset($conn)) {
 }
 
 function awardDailyTopRewards(mysqli $conn): array {
-    $today = date('Y-m-d');
+    $bpTz = new DateTimeZone('Europe/Budapest');
+    $utcTz = new DateTimeZone('UTC');
+    $dayStartBp = new DateTime('today 00:00:00', $bpTz);
+    $dayEndBp = new DateTime('today 23:59:59', $bpTz);
+    $dayStartBp->setTimezone($utcTz);
+    $dayEndBp->setTimezone($utcTz);
+    $fromUtc = $dayStartBp->format('Y-m-d H:i:s');
+    $toUtc = $dayEndBp->format('Y-m-d H:i:s');
+
     $freeBetAmount = 1000;
     $expireHours = 48;
     $awarded = [];
@@ -20,9 +28,9 @@ function awardDailyTopRewards(mysqli $conn): array {
     $dupCheck = $conn->prepare("
         SELECT COUNT(*) AS cnt FROM Notifications
         WHERE type = 'top_reward'
-          AND DATE(created_at) = ?
+          AND created_at BETWEEN ? AND ?
     ");
-    $dupCheck->bind_param("s", $today);
+    $dupCheck->bind_param("ss", $fromUtc, $toUtc);
     $dupCheck->execute();
     $dupRow = $dupCheck->get_result()->fetch_assoc();
     $dupCheck->close();
@@ -36,14 +44,14 @@ function awardDailyTopRewards(mysqli $conn): array {
             'key' => 'top_depositor',
             'title' => 'Top Befizető',
             'notif_title' => '🏆 Napi Top Befizető!',
-            'notif_msg' => 'Gratulálunk! Te vagy a mai nap legnagyobb befizetője! Jutalmad: %d Ft Free Bet.',
+            'notif_msg' => 'Gratulálunk! Te vagy a mai nap legnagyobb befizetője! Jutalmad: %d Ft Free Bet. Ha több top kategóriát is megnyersz ma, mindegyikért külön jutalom jár.',
             'sql' => "
                 SELECT u.id AS user_id, u.username, SUM(t.amount) AS total_amount
                 FROM Transactions t
                 JOIN Users u ON t.user_id = u.id
                 WHERE t.type = 'deposit'
                   AND t.status = 'completed'
-                  AND DATE(t.created_at) = ?
+                                    AND t.created_at BETWEEN ? AND ?
                 GROUP BY u.id
                 ORDER BY total_amount DESC
                 LIMIT 1
@@ -53,12 +61,12 @@ function awardDailyTopRewards(mysqli $conn): array {
             'key' => 'top_bettor',
             'title' => 'Top Fogadó',
             'notif_title' => '🏆 Napi Top Fogadó!',
-            'notif_msg' => 'Gratulálunk! Te vagy a mai nap legnagyobb fogadója! Jutalmad: %d Ft Free Bet.',
+            'notif_msg' => 'Gratulálunk! Te vagy a mai nap legnagyobb fogadója! Jutalmad: %d Ft Free Bet. Ha több top kategóriát is megnyersz ma, mindegyikért külön jutalom jár.',
             'sql' => "
                 SELECT u.id AS user_id, u.username, SUM(t2.stake) AS total_amount
                 FROM Tickets t2
                 JOIN Users u ON t2.user_id = u.id
-                WHERE DATE(t2.created_at) = ?
+                WHERE t2.created_at BETWEEN ? AND ?
                 GROUP BY u.id
                 ORDER BY total_amount DESC
                 LIMIT 1
@@ -68,13 +76,13 @@ function awardDailyTopRewards(mysqli $conn): array {
             'key' => 'top_winner',
             'title' => 'Top Nyertes',
             'notif_title' => '🏆 Napi Top Nyertes!',
-            'notif_msg' => 'Gratulálunk! Te vagy a mai nap legnagyobb nyertese! Jutalmad: %d Ft Free Bet.',
+            'notif_msg' => 'Gratulálunk! Te vagy a mai nap legnagyobb nyertese! Jutalmad: %d Ft Free Bet. Ha több top kategóriát is megnyersz ma, mindegyikért külön jutalom jár.',
             'sql' => "
                 SELECT u.id AS user_id, u.username, SUM(t2.potential_win) AS total_amount
                 FROM Tickets t2
                 JOIN Users u ON t2.user_id = u.id
                 WHERE t2.status = 'WON'
-                  AND DATE(t2.updated_at) = ?
+                                    AND t2.created_at BETWEEN ? AND ?
                 GROUP BY u.id
                 ORDER BY total_amount DESC
                 LIMIT 1
@@ -94,19 +102,31 @@ function awardDailyTopRewards(mysqli $conn): array {
                 bet_reward_type, bonus_trigger, sport_restriction, live_only,
                 wagering_multiplier, max_win_multiplier, per_user_limit, is_active)
             VALUES ('TOP_REWARD_DAILY', 'Napi Top Jutalom (1.000 Ft Free Bet)',
-                'Automatikus napi jutalom a top befizető, top fogadó és top nyertes számára.',
+                'Automatikus napi jutalom a top befizető, top fogadó és top nyertes számára. Ha valaki több kategóriában is első, kategóriánként külön 1.000 Ft Free Betet kap.',
                 7, 1000, 'FREE_BET', 'MANUAL', 'ANY', 0, NULL, NULL, 9999, 1)
         ");
         $bonusCodeId = $conn->insert_id;
     } else {
         $bonusCodeId = (int)$bcRow['id'];
+
+        // Biztosítjuk, hogy a meglévő bonus code leírása is egyértelmű legyen.
+        $descUpdate = $conn->prepare(" 
+            UPDATE BonusCodes
+            SET description = 'Automatikus napi jutalom a top befizető, top fogadó és top nyertes számára. Ha valaki több kategóriában is első, kategóriánként külön 1.000 Ft Free Betet kap.'
+            WHERE id = ?
+        ");
+        if ($descUpdate) {
+            $descUpdate->bind_param("i", $bonusCodeId);
+            $descUpdate->execute();
+            $descUpdate->close();
+        }
     }
 
     $expiresAt = date('Y-m-d H:i:s', strtotime("+{$expireHours} hours"));
 
     foreach ($categories as $cat) {
         $stmt = $conn->prepare($cat['sql']);
-        $stmt->bind_param("s", $today);
+        $stmt->bind_param("ss", $fromUtc, $toUtc);
         $stmt->execute();
         $row = $stmt->get_result()->fetch_assoc();
         $stmt->close();

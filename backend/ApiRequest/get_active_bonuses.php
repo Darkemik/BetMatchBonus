@@ -7,6 +7,7 @@ date_default_timezone_set('Europe/Budapest');
 $lang = (isset($_GET['lang']) && strtolower((string)$_GET['lang']) === 'en') ? 'en' : 'hu';
 
 $isWeekday = ((int)date('N') <= 5);
+$isWeekend = ((int)date('N') >= 6);
 
 $isGuest = !isset($_SESSION['user_id']);
 $userId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
@@ -19,7 +20,7 @@ function localizeBonusDescription($desc, $lang, $bonusTrigger) {
     $enFreeBet = 'If a bet of at least 5,000 Ft loses (min. odds: 1.80), you get 30% back as a Free Bet. It is automatically activated once per day when the losing ticket is settled. You can use the received Free Bet on any bet.';
 
     if ($lang === 'en') {
-        if ((string)$bonusTrigger === 'BET') {
+        if ((string)$bonusTrigger === 'LOSS') {
             return $enFreeBet;
         }
 
@@ -28,7 +29,7 @@ function localizeBonusDescription($desc, $lang, $bonusTrigger) {
         }
     }
 
-    if ($lang === 'hu' && (string)$bonusTrigger === 'BET') {
+    if ($lang === 'hu' && (string)$bonusTrigger === 'LOSS') {
         return $huFreeBet;
     }
 
@@ -66,9 +67,13 @@ $birthdayFilter = $hasBirthdayBonusCol ? 'AND birthday_bonus = 0' : '';
 // Lekérdezés: csak aktív bónuszok
 $query = "SELECT id, code, name, description, {$imageSelect}, bonus_amount, min_deposit, max_bonus_amount, match_percent, 
                                  is_step_bonus, step_number, bonus_type_id, valid_weekdays_only, is_active,
-                                 daily_start_time, admin_force_active, sport_restriction, bonus_trigger
+                                 daily_start_time, admin_force_active, sport_restriction, bonus_trigger, per_user_limit
                     FROM BonusCodes 
                     WHERE is_active = 1
+                        AND (
+                            code IS NULL
+                            OR code NOT IN ('TOP_REWARD_DAILY', '__ADMIN_FREEBET__', '__ADMIN_BONUS__')
+                        )
                         {$birthdayFilter}
                     ORDER BY id ASC";
 
@@ -96,6 +101,73 @@ function hasLiveSport($conn, $sportName, &$cache) {
     return ($cache[strtoupper($sportName)] ?? 0) > 0;
 }
 
+$todaySportsCache = null;
+function hasTodaySport($conn, $sportName, &$cache) {
+    $normalizedSport = strtoupper((string)$sportName);
+
+    // Esportnál ne sportnév-szövegre támaszkodjunk, mert eltérhet (pl. Esports/E-Sport).
+    if ($normalizedSport === 'ESPORT') {
+        if (!array_key_exists('ESPORT', $cache ?? [])) {
+            $dayStartBp = new DateTime('today 00:00:00', new DateTimeZone('Europe/Budapest'));
+            $dayEndBp = new DateTime('today 23:59:59', new DateTimeZone('Europe/Budapest'));
+            $dayStartBp->setTimezone(new DateTimeZone('UTC'));
+            $dayEndBp->setTimezone(new DateTimeZone('UTC'));
+            $fromUtc = $dayStartBp->format('Y-m-d H:i:s');
+            $toUtc = $dayEndBp->format('Y-m-d H:i:s');
+
+            $stmtEsport = $conn->prepare(" 
+                SELECT COUNT(*) AS cnt
+                FROM Events e
+                JOIN Sports s ON e.sport_id = s.id
+                WHERE e.start_time BETWEEN ? AND ?
+                  AND s.api_id = 145
+            ");
+            $cache = $cache ?? [];
+            if ($stmtEsport) {
+                $stmtEsport->bind_param('ss', $fromUtc, $toUtc);
+                $stmtEsport->execute();
+                $resEsport = $stmtEsport->get_result()->fetch_assoc();
+                $cache['ESPORT'] = (int)($resEsport['cnt'] ?? 0);
+                $stmtEsport->close();
+            } else {
+                $cache['ESPORT'] = 0;
+            }
+        }
+
+        return ($cache['ESPORT'] ?? 0) > 0;
+    }
+
+    if ($cache === null) {
+        $cache = [];
+
+        $dayStartBp = new DateTime('today 00:00:00', new DateTimeZone('Europe/Budapest'));
+        $dayEndBp = new DateTime('today 23:59:59', new DateTimeZone('Europe/Budapest'));
+        $dayStartBp->setTimezone(new DateTimeZone('UTC'));
+        $dayEndBp->setTimezone(new DateTimeZone('UTC'));
+        $fromUtc = $dayStartBp->format('Y-m-d H:i:s');
+        $toUtc = $dayEndBp->format('Y-m-d H:i:s');
+
+        $stmt = $conn->prepare(" 
+            SELECT UPPER(s.name) AS sport_name, COUNT(*) AS cnt
+            FROM Events e
+            JOIN Sports s ON e.sport_id = s.id
+            WHERE e.start_time BETWEEN ? AND ?
+            GROUP BY s.id
+        ");
+        if ($stmt) {
+            $stmt->bind_param('ss', $fromUtc, $toUtc);
+            $stmt->execute();
+            $res = $stmt->get_result();
+            while ($row = $res->fetch_assoc()) {
+                $cache[$row['sport_name']] = (int)$row['cnt'];
+            }
+            $stmt->close();
+        }
+    }
+
+    return ($cache[$normalizedSport] ?? 0) > 0;
+}
+
 // Többszörös bónusz rendszer: nincs egyszerre-egy-bónusz korlátozás.
 // Minden bónusznak saját egyenlege van (UserBonuses.bonus_balance).
 $hasExistingBonus = false; // Kompatibilitás megtartása a frontend felé
@@ -111,6 +183,53 @@ if ($result) {
                 if (!$isWeekdayWindow) {
                     continue;
                 }
+            }
+
+            // Hétvégi bónusz csak szombat-vasárnap legyen látható (admin force átugorja).
+            $bonusCode = strtoupper((string)($row['code'] ?? ''));
+            if ($bonusCode === 'HETVEGI5K' && empty($row['admin_force_active']) && !$isWeekend) {
+                continue;
+            }
+
+            // Ha már van aktív/várakozó példány, ne kínáljuk fel újra a bónuszt.
+            $activeInstanceStmt = $conn->prepare(" 
+                SELECT COUNT(*) AS cnt
+                FROM UserBonuses
+                WHERE user_id = ?
+                  AND bonus_id = ?
+                  AND status IN ('ACTIVE', 'PENDING')
+                  AND used = 0
+                  AND (expires_at IS NULL OR expires_at > NOW())
+            ");
+            $activeInstanceStmt->bind_param("ii", $userId, $row['id']);
+            $activeInstanceStmt->execute();
+            $activeRow = $activeInstanceStmt->get_result()->fetch_assoc();
+            $activeInstanceCount = (int)($activeRow['cnt'] ?? 0);
+            $activeInstanceStmt->close();
+
+            $perUserLimit = (int)($row['per_user_limit'] ?? 1);
+            $hasLimit = ($perUserLimit > 0);
+
+            // Elért összes beváltás esetén ne listázzuk újra a bónuszt.
+            $claimCountStmt = $conn->prepare(" 
+                SELECT COUNT(*) AS cnt
+                FROM UserBonuses
+                WHERE user_id = ? AND bonus_id = ?
+            ");
+            $claimCountStmt->bind_param("ii", $userId, $row['id']);
+            $claimCountStmt->execute();
+            $claimCountRow = $claimCountStmt->get_result()->fetch_assoc();
+            $claimCountStmt->close();
+            $claimCount = (int)($claimCountRow['cnt'] ?? 0);
+
+            if ($hasLimit && $claimCount >= $perUserLimit) {
+                continue;
+            }
+
+            // Többször használható bónusznál csak akkor rejtjük el,
+            // ha az aktív/pending példányok száma elérte a limitet.
+            if ($hasLimit && $activeInstanceCount >= $perUserLimit) {
+                continue;
             }
 
             // Hétköznapi napi bónusz ne jelenjen meg, ha ma már igényelték
@@ -139,11 +258,20 @@ if ($result) {
             }
         }
 
-        // Sport-specifikus bónusz: csak akkor jelenik meg, ha van élő meccs az adott sportból
+        // Sport-specifikus bónuszok láthatósága:
+        // - BET trigger esetén: legyen az adott sportból MAI (naptári nap) esemény.
+        // - egyébként: legyen az adott sportból élő esemény.
         $sportRestriction = $row['sport_restriction'] ?? null;
         if ($sportRestriction && $sportRestriction !== 'ANY') {
-            if (!hasLiveSport($conn, $sportRestriction, $liveSportsCache)) {
-                continue; // Nincs élő meccs ebből a sportból → ne jelenjen meg
+            $bonusTrigger = strtoupper((string)($row['bonus_trigger'] ?? ''));
+            if ($bonusTrigger === 'BET') {
+                if (!hasTodaySport($conn, $sportRestriction, $todaySportsCache)) {
+                    continue; // Nincs mai esemény ebből a sportból → ne jelenjen meg
+                }
+            } else {
+                if (!hasLiveSport($conn, $sportRestriction, $liveSportsCache)) {
+                    continue; // Nincs élő meccs ebből a sportból → ne jelenjen meg
+                }
             }
         }
 
@@ -171,6 +299,13 @@ if ($result) {
             $conditionText .= $lang === 'en' ? ' | Multi-step bonus' : ' | Több lépcsős bónusz';
         }
 
+        $perUserLimit = (int)($row['per_user_limit'] ?? 1);
+        if ($perUserLimit > 1) {
+            $conditionText .= $lang === 'en'
+                ? (' | Usable up to ' . $perUserLimit . ' times')
+                : (' | Felhasználható: max. ' . $perUserLimit . ' alkalom');
+        }
+
         $longDescription = localizeBonusDescription($row['description'] ?? '', $lang, $row['bonus_trigger'] ?? 'DEPOSIT');
 
         $bonuses[] = [
@@ -185,7 +320,8 @@ if ($result) {
             'image' => !empty($row['image_url']) ? $row['image_url'] : '../../img/logo.png',
             'hasExistingBonus' => $hasExistingBonus,
             'sportRestriction' => ($sportRestriction && $sportRestriction !== 'ANY') ? $sportRestriction : null,
-            'bonusTrigger' => $bonusTrigger
+            'bonusTrigger' => $bonusTrigger,
+            'perUserLimit' => (int)($row['per_user_limit'] ?? 1)
         ];
     }
 }

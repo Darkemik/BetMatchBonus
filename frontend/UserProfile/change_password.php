@@ -2,6 +2,7 @@
 require_once "../../backend/Auth/check_session.php";
 require_once "../../backend/connect.php";
 require_once "../../backend/Auth/settings_helper.php";
+require_once "../../backend/Auth/audit_helper.php";
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: /frontend/MainMenu/MainMenu.php");
@@ -54,6 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
             $update_stmt->bind_param("si", $new_password_hash, $user_id);
             
             if ($update_stmt->execute()) {
+                log_activity((int)$user_id, 'password_change', 'Jelszó módosítva a felhasználói felületen.');
                 $success_message = "Jelszó sikeresen megváltoztatva!";
             } else {
                 $error_message = "Hiba a jelszó módosítása során: " . $update_stmt->error;
@@ -207,12 +209,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
             return Math.floor(diff / 86400) + ' napja';
         }
 
-        function renderSessions(sessions) {
+        function getSessionLocationLabel(s, dataVerified) {
+            var location = String(s.location || '').trim();
+            var lowered = location.toLowerCase();
+            if (!location || lowered === 'helyi gép (localhost)' || lowered === 'helyi gep (localhost)') {
+                if (dataVerified) {
+                    var ip = String(s.ip_address || '').trim().toLowerCase();
+                    if (ip === '::1' || ip === '127.0.0.1' || ip === 'localhost' || ip === '::ffff:127.0.0.1') {
+                        return 'Helyi gép (localhost)';
+                    }
+                    return ip || '–';
+                }
+                return 'előbb küldje be a személyes adatokat';
+            }
+            return location;
+        }
+
+        function renderSessions(sessions, dataVerified) {
             if (!sessions || sessions.length === 0) {
                 listEl.innerHTML = '<div class="alert alert-info" data-i18n="userProfile.sessions.none">Nincs aktív munkamenet.</div>';
                 return;
             }
-            var html = '<div class="list-group">';
+            var html = '';
+
+            html += '<div class="list-group">';
             sessions.forEach(function(s) {
                 var badge = s.is_current
                     ? ' <span class="badge bg-success" data-i18n="userProfile.sessions.current">Ez az eszköz</span>'
@@ -223,7 +243,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
                 html += '<div class="list-group-item d-flex justify-content-between align-items-center">'
                     + '<div>'
                     + '<strong>' + escHtml(s.device) + '</strong>' + badge + '<br>'
-                    + '<small class="text-muted">' + escHtml(s.location || s.ip_address || '–') + ' · '
+                    + '<small class="text-muted">' + escHtml(getSessionLocationLabel(s, !!dataVerified)) + ' · '
                     + '<span data-i18n="userProfile.sessions.lastActive">Utolsó aktivitás</span>: ' + timeAgo(s.last_active_at) + '</small>'
                     + '</div>'
                     + revokeBtn
@@ -249,7 +269,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
             fetch(sessionsUrl)
                 .then(function(r) { return r.json(); })
                 .then(function(data) {
-                    if (data.success) renderSessions(data.sessions);
+                    if (data.success) renderSessions(data.sessions, data.data_verified);
                     else listEl.innerHTML = '<div class="alert alert-warning">' + escHtml(data.message || 'Hiba') + '</div>';
                 })
                 .catch(function() {

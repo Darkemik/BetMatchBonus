@@ -19,6 +19,13 @@ if (!check_page_permission('balances')) {
     exit;
 }
 
+function createUserNotification(mysqli $conn, int $userId, string $title, string $message, string $type = 'admin_action'): void {
+    $stmt = $conn->prepare("INSERT INTO Notifications (user_id, title, message, type, created_at) VALUES (?, ?, ?, ?, NOW())");
+    $stmt->bind_param("isss", $userId, $title, $message, $type);
+    $stmt->execute();
+    $stmt->close();
+}
+
 $method = $_SERVER['REQUEST_METHOD'];
 
 // ─── GET — Lista / történet ───
@@ -217,6 +224,9 @@ if ($method === 'POST') {
 
     $conn->begin_transaction();
     try {
+        $txType = $type === 'credit' ? 'deposit' : 'withdrawal';
+        $txId = 'ADMBAL_' . strtoupper(substr($type, 0, 1)) . '_' . uniqid();
+
         // Users.balance frissítés
         $stmt = $conn->prepare("UPDATE Users SET balance = ? WHERE id = ?");
         $stmt->bind_param("di", $newBalance, $userId);
@@ -229,6 +239,16 @@ if ($method === 'POST') {
         $stmt->execute();
         $stmt->close();
 
+        // Tranzakciótörténetbe is kerüljön (admin jóváírás/levonás)
+        $paymentMethod = 'admin_balance_adjust';
+        $txStatus = 'completed';
+        $txDescription = ($type === 'credit' ? 'Admin egyenleg jóváírás: ' : 'Admin egyenleg levonás: ') . $reason;
+        $txAmount = abs($changeAmount);
+        $stmt = $conn->prepare("INSERT INTO Transactions (user_id, type, amount, payment_method, status, transaction_id, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())");
+        $stmt->bind_param("isdssss", $userId, $txType, $txAmount, $paymentMethod, $txStatus, $txId, $txDescription);
+        $stmt->execute();
+        $stmt->close();
+
         // BalanceHistory bejegyzés
         $reasonFull = ($type === 'credit' ? 'Admin jóváírás' : 'Admin levonás') . ': ' . $reason;
         $stmt = $conn->prepare("
@@ -238,6 +258,14 @@ if ($method === 'POST') {
         $stmt->bind_param("iddds", $userId, $previousBalance, $newBalance, $changeAmount, $reasonFull);
         $stmt->execute();
         $stmt->close();
+
+        createUserNotification(
+            $conn,
+            $userId,
+            $type === 'credit' ? 'Egyenleg jóváírás' : 'Egyenleg levonás',
+            ($type === 'credit' ? 'Az admin jóváírt ' : 'Az admin levont ') . number_format(abs($changeAmount), 0, ',', ' ') . ' Ft összeget. Ok: ' . $reason,
+            'balance'
+        );
 
         $conn->commit();
     } catch (Exception $e) {

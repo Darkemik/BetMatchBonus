@@ -1728,10 +1728,16 @@ body .simple-footer {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-height: 330px;
 }
 
 .daily-tips-loading,
 .daily-tips-empty {
+  flex: 1;
+  min-height: 314px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   color: #667;
   padding: 10px 6px;
@@ -1856,5 +1862,14 @@ body .simple-footer {
 @media (max-width: 1100px) {
   .daily-tips-wrapper {
     margin-top: 12px;
+  }
+
+  .daily-tips-list {
+    min-height: 240px;
+  }
+
+  .daily-tips-loading,
+  .daily-tips-empty {
+    min-height: 224px;
   }
 }

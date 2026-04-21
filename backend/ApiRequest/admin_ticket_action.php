@@ -8,6 +8,13 @@ require_once dirname(__DIR__) . '/connect.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
+function createUserNotification(mysqli $conn, int $userId, string $title, string $message, string $type = 'ticket'): void {
+    $stmt = $conn->prepare("INSERT INTO Notifications (user_id, title, message, type, created_at) VALUES (?, ?, ?, ?, NOW())");
+    $stmt->bind_param("isss", $userId, $title, $message, $type);
+    $stmt->execute();
+    $stmt->close();
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Érvénytelen kérés.']);
     exit;
@@ -98,6 +105,13 @@ if ($action === 'void') {
         }
 
         $conn->commit();
+        createUserNotification(
+            $conn,
+            $userId,
+            'Szelvény érvénytelenítve',
+            'Az admin a(z) #' . $ticketId . ' szelvényt érvénytelenítette. Visszatérített összeg: ' . number_format($totalRefund, 0, ',', ' ') . ' Ft.',
+            'ticket'
+        );
         log_audit('ticket_void', 'ticket', $ticketId, "Szelvény #$ticketId érvénytelenítve, tét visszaadva: " . number_format($totalRefund, 0, ',', ' ') . " Ft");
         echo json_encode(['success' => true, 'message' => "Szelvény #$ticketId érvénytelenítve! Tét visszaadva: " . number_format($totalRefund, 0, ',', ' ') . " Ft"]);
     } catch (Exception $e) {
@@ -212,9 +226,23 @@ if ($action === 'manual_close') {
         $conn->commit();
 
         if ($newStatus === 'WON') {
+            createUserNotification(
+                $conn,
+                $userId,
+                'Szelvény nyertesre zárva',
+                'Az admin a(z) #' . $ticketId . ' szelvényt WON státuszra zárta. Jóváírt nyeremény: ' . number_format($potentialWin, 0, ',', ' ') . ' Ft.',
+                'ticket'
+            );
             log_audit('ticket_close', 'ticket', $ticketId, "Szelvény #$ticketId → WON, nyeremény: " . number_format($potentialWin, 0, ',', ' ') . " Ft");
             echo json_encode(['success' => true, 'message' => "Szelvény #$ticketId → WON! Nyeremény jóváírva: " . number_format($potentialWin, 0, ',', ' ') . " Ft"]);
         } else {
+            createUserNotification(
+                $conn,
+                $userId,
+                'Szelvény vesztesre zárva',
+                'Az admin a(z) #' . $ticketId . ' szelvényt LOST státuszra zárta.',
+                'ticket'
+            );
             log_audit('ticket_close', 'ticket', $ticketId, "Szelvény #$ticketId → LOST");
             echo json_encode(['success' => true, 'message' => "Szelvény #$ticketId → LOST. Nincs kifizetés."]);
         }

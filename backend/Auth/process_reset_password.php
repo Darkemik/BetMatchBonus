@@ -4,6 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../connect.php';
 require_once __DIR__ . '/settings_helper.php';
+require_once __DIR__ . '/audit_helper.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Érvénytelen kérés.']);
@@ -25,7 +26,7 @@ if (strlen($newPassword) < $minPwLen) {
 }
 
 // Token keresése
-$stmt = $conn->prepare("SELECT id, username, email FROM Users WHERE reset_token = ? AND reset_token_expiry > NOW() LIMIT 1");
+$stmt = $conn->prepare("SELECT id, username, email, password_hash FROM Users WHERE reset_token = ? AND reset_token_expiry > NOW() LIMIT 1");
 $stmt->bind_param("s", $token);
 $stmt->execute();
 $res = $stmt->get_result();
@@ -37,12 +38,19 @@ if (!$user) {
     exit;
 }
 
+if (password_verify($newPassword, (string)$user['password_hash'])) {
+    echo json_encode(['success' => false, 'message' => 'Az új jelszó nem egyezhet a régivel. Kérjük, adj meg egy másik jelszót!']);
+    exit;
+}
+
 // Jelszó frissítése, token törlése
 $passwordHash = password_hash($newPassword, PASSWORD_DEFAULT);
 $upd = $conn->prepare("UPDATE Users SET password_hash = ?, reset_token = NULL, reset_token_expiry = NULL WHERE id = ?");
 $upd->bind_param("si", $passwordHash, $user['id']);
 $upd->execute();
 $upd->close();
+
+log_activity((int)$user['id'], 'password_change', 'Jelszó módosítva jelszó-visszaállítási linkkel.');
 
 echo json_encode([
     'success' => true,

@@ -68,6 +68,13 @@ function giveFreeBetBonus($conn, int $bonusCodeId, int $userId, float $amount, i
     return $ubId;
 }
 
+function createUserNotification(mysqli $conn, int $userId, string $title, string $message, string $type = 'bonus'): void {
+    $stmt = $conn->prepare("INSERT INTO Notifications (user_id, title, message, type, created_at) VALUES (?, ?, ?, ?, NOW())");
+    $stmt->bind_param("isss", $userId, $title, $message, $type);
+    $stmt->execute();
+    $stmt->close();
+}
+
 switch ($action) {
 
     // ─── Free Bet adása (bónuszként) ───
@@ -359,9 +366,23 @@ switch ($action) {
             if ($isBatch) {
                 foreach ($batchEntries as $be) {
                     log_activity((int)$be['user_id'], 'bonus', $revokeDesc);
+                    createUserNotification(
+                        $conn,
+                        (int)$be['user_id'],
+                        'Free Bet visszavonva',
+                        'Az admin visszavonta a Free Bet bónuszodat. Összeg: ' . number_format((float)$ubRow['granted_amount'], 0, ',', '.') . ' Ft.',
+                        'BONUS'
+                    );
                 }
             } else {
                 log_activity((int)$ubRow['user_id'], 'bonus', $revokeDesc);
+                createUserNotification(
+                    $conn,
+                    (int)$ubRow['user_id'],
+                    'Free Bet visszavonva',
+                    'Az admin visszavonta a Free Bet bónuszodat. Összeg: ' . number_format((float)$ubRow['granted_amount'], 0, ',', '.') . ' Ft.',
+                    'BONUS'
+                );
             }
 
             $conn->commit();

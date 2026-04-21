@@ -204,6 +204,7 @@ log_balance_change($user_id, $prevBal, $prevBal + (float)$amount, (float)$amount
 // Megkeressük az összes PENDING bónuszt, amelyek DEPOSIT triggerrel rendelkeznek és teljesül a min. befizetési feltétel
 $pending_stmt = $conn->prepare("
     SELECT ub.id AS user_bonus_id, ub.created_at,
+        bc.code,
         bc.bonus_amount, bc.wagering_multiplier, bc.activation_expire_hours,
             bc.min_deposit, bc.match_percent, bc.max_bonus_amount, bc.valid_weekdays_only,
             bc.bet_reward_type, bc.daily_start_time, bc.admin_force_active
@@ -228,8 +229,16 @@ $bonus_credited_total = 0.00;
 $bonus_credit_to_balance = 0.00;
 $bonus_credit_to_bonus_balance = 0.00;
 $isWeekday = ((int)date('N') <= 5);
+$isWeekend = ((int)date('N') >= 6);
 
 foreach ($pending_bonuses as $pb) {
+    $bonusCode = strtoupper((string)($pb['code'] ?? ''));
+
+    // Hétvégi bónusz csak szombat-vasárnap aktiválódjon (admin force átugorja).
+    if ($bonusCode === 'HETVEGI5K' && empty($pb['admin_force_active']) && !$isWeekend) {
+        continue;
+    }
+
     // Hétköznapi napi bónusz: daily_start_time-től aktiválható, admin_force_active átugorja
     $adminForce = !empty($pb['admin_force_active']);
     if (!empty($pb['valid_weekdays_only']) && !$adminForce) {

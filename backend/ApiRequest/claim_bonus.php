@@ -38,6 +38,7 @@ $bonus = $result->fetch_assoc();
 $stmt->close();
 
 $isWeekday = ((int)date('N') <= 5);
+$isWeekend = ((int)date('N') >= 6);
 
 if (!$bonus) {
     if ($bonusId > 0 && empty($code)) {
@@ -81,6 +82,13 @@ if (!empty($bonus['valid_weekdays_only']) && !$isWeekdayWindow && !$adminForceAc
     exit();
 }
 
+// Hétvégi bónusz csak szombat-vasárnap aktiválható (admin force átugorja).
+$bonusCode = strtoupper((string)($bonus['code'] ?? ''));
+if ($bonusCode === 'HETVEGI5K' && !$isWeekend && !$adminForceActive) {
+    echo json_encode(['success' => false, 'message' => 'Ez a bónuszkód csak szombaton és vasárnap aktiválható!']);
+    exit();
+}
+
 // Nem hétköznap-only bónusznál marad a manuális is_active ellenőrzés
 if (empty($bonus['valid_weekdays_only']) && (int)$bonus['is_active'] !== 1) {
     echo json_encode(['success' => false, 'message' => 'Ez a bónuszkód jelenleg inaktív.']);
@@ -89,6 +97,7 @@ if (empty($bonus['valid_weekdays_only']) && (int)$bonus['is_active'] !== 1) {
 
 // 2. Leellenőrizzük, hogy a user használta-e már ezt a bónuszt
 $perUserLimit = (int)($bonus['per_user_limit'] ?? 1);
+$hasLimit = ($perUserLimit > 0);
 $check_query = "SELECT id, status FROM UserBonuses WHERE user_id = ? AND bonus_id = ?";
 $bind_types = "ii";
 $today_from = null;
@@ -112,26 +121,28 @@ if (!empty($bonus['valid_weekdays_only'])) {
 $check_stmt->execute();
 $check_result = $check_stmt->get_result();
 $claimCount = $check_result->num_rows;
-$already_claimed = ($claimCount >= $perUserLimit);
+$already_claimed = ($hasLimit && $claimCount >= $perUserLimit);
 $existing_claim = $claimCount > 0 ? $check_result->fetch_assoc() : null;
 $check_stmt->close();
 
-// Aktív/Pending példány ellenőrzése: nem lehet újat aktiválni, amíg a régi fut
-$activeCheckStmt = $conn->prepare("
-    SELECT id FROM UserBonuses
+// Aktív/Pending példány ellenőrzése: limitelt bónusznál csak akkor tiltunk,
+// ha az aktív/pending példányok száma elérte a per_user_limit értéket.
+$activeCheckStmt = $conn->prepare(" 
+    SELECT COUNT(*) AS cnt FROM UserBonuses
     WHERE user_id = ? AND bonus_id = ?
       AND status IN ('ACTIVE', 'PENDING')
       AND used = 0
       AND (expires_at IS NULL OR expires_at > NOW())
-    LIMIT 1
 ");
 $activeCheckStmt->bind_param("ii", $user_id, $bonus['id']);
 $activeCheckStmt->execute();
-$hasActiveInstance = $activeCheckStmt->get_result()->num_rows > 0;
+$activeRow = $activeCheckStmt->get_result()->fetch_assoc();
+$activeCount = (int)($activeRow['cnt'] ?? 0);
 $activeCheckStmt->close();
 
-if ($hasActiveInstance) {
-    echo json_encode(['success' => false, 'message' => 'Ebből a bónuszból már van aktív vagy várakozó példányod. Várd meg, amíg lejár vagy teljesíted!']);
+$activeLimitReached = $hasLimit ? ($activeCount >= $perUserLimit) : false;
+if ($activeLimitReached) {
+    echo json_encode(['success' => false, 'message' => 'Ebből a bónuszból jelenleg elérted az egyidejű aktív/várakozó limiteket. Várd meg, amíg lejár vagy teljesíted!']);
     exit();
 }
 
@@ -207,7 +218,7 @@ $insert_stmt = $conn->prepare("
     INSERT INTO UserBonuses (user_id, bonus_id, status, granted_amount, bonus_balance, free_bet_amount, bonus_money_amount, wagering_required, expires_at) 
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 ");
-$insert_stmt->bind_param("iisdddds", $user_id, $bonus['id'], $status, $granted_amount, $individualBalance, $freeBetAmount, $bonusMoneyAmount, $wagering_required, $expires_at);
+$insert_stmt->bind_param("iisddddds", $user_id, $bonus['id'], $status, $granted_amount, $individualBalance, $freeBetAmount, $bonusMoneyAmount, $wagering_required, $expires_at);
 
 if ($insert_stmt->execute()) {
     // Users.bonus_balance szinkronizálása (összes aktív bónusz egyenlegek összege)

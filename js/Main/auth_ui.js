@@ -73,6 +73,15 @@ async function refreshAuthUI() {
       if (sessionBetEl) sessionBetEl.textContent = '0 FT';
       if (sessionLoginDurationEl) sessionLoginDurationEl.textContent = '01:00:00';
 
+      if (data.forced) {
+        const msg = 'Az admin kijelentkeztetett minden eszközről. Kérjük, jelentkezz be újra!';
+        if (window.BmbPopup && typeof window.BmbPopup.warning === 'function') {
+          window.BmbPopup.warning(msg, 'Kijelentkeztetve');
+        } else {
+          alert(msg);
+        }
+      }
+
       // Ha lejárt a session, üzenetet mutatunk
       if (data.expired) {
         alert('A munkameneted lejárt (1 óra). Kérjük, jelentkezz be újra!');

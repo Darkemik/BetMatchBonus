@@ -26,6 +26,15 @@ require_once __DIR__ . '/../PHPMailer/Exception.php';
 
 header('Content-Type: application/json');
 
+$sendFinancialEmails = false;
+
+function createUserNotification(mysqli $conn, int $userId, string $title, string $message, string $type = 'balance'): void {
+    $stmt = $conn->prepare("INSERT INTO Notifications (user_id, title, message, type, created_at) VALUES (?, ?, ?, ?, NOW())");
+    $stmt->bind_param("isss", $userId, $title, $message, $type);
+    $stmt->execute();
+    $stmt->close();
+}
+
 function getConfiguredMailer() {
     $mail = new PHPMailer(true);
     $mail->isSMTP();
@@ -112,42 +121,43 @@ if ($action === 'manual_deposit') {
     $newBalance = number_format((float)$user['balance'] + $amount, 0, ',', ' ');
     $date = date('Y.m.d H:i');
 
-    sendDepositEmail($user['email'], $user['username'],
-        'BetMatchBonus – Egyenleg jóváírás',
-        '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#1a1a2e;font-family:Arial,Helvetica,sans-serif;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background:#1a1a2e;padding:40px 0;">
-        <tr><td align="center">
-            <table width="560" cellpadding="0" cellspacing="0" style="background:#16213e;border-radius:12px;overflow:hidden;">
-                <!-- Header -->
-                <tr><td style="background:#28a745;padding:24px 30px;text-align:center;">
-                    <h1 style="margin:0;color:#fff;font-size:22px;">✅ Egyenleg jóváírás</h1>
-                </td></tr>
-                <!-- Body -->
-                <tr><td style="padding:30px;">
-                    <p style="color:#eee;font-size:16px;margin:0 0 20px;">Kedves <strong>' . htmlspecialchars($user['username']) . '</strong>,</p>
-                    <p style="color:#ccc;font-size:14px;margin:0 0 24px;">Jóváírás érkezett a fiókodra. Az összeg azonnal elérhető az egyenlegeden.</p>
-                    <!-- Amount box -->
-                    <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f1b30;border-radius:8px;border-left:4px solid #28a745;margin-bottom:20px;">
-                        <tr><td style="padding:20px 24px;text-align:center;">
-                            <div style="color:#52b788;font-size:28px;font-weight:700;">+' . $amountFmt . ' Ft</div>
-                            <div style="color:#aaa;font-size:13px;margin-top:4px;">jóváírt összeg</div>
-                        </td></tr>
-                    </table>
-                    <!-- Details -->
-                    <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a1225;border-radius:8px;margin-bottom:20px;">
-                        <tr><td style="padding:10px 20px;color:#aaa;font-size:14px;">Új egyenleg</td><td style="padding:10px 20px;color:#52b788;font-size:14px;font-weight:700;">' . $newBalance . ' Ft</td></tr>
-                        <tr><td style="padding:10px 20px;color:#aaa;font-size:14px;">Dátum</td><td style="padding:10px 20px;color:#eee;font-size:14px;">' . $date . '</td></tr>
-                        ' . $noteHtml . '
-                    </table>
-                    <p style="color:#888;font-size:13px;margin:0;">Ha kérdésed van, keresd az ügyfélszolgálatot.</p>
-                </td></tr>
-                <!-- Footer -->
-                <tr><td style="background:#0f1b30;padding:16px 30px;text-align:center;">
-                    <p style="color:#666;font-size:12px;margin:0;">© ' . date('Y') . ' BetMatchBonus — Automatikus értesítés</p>
-                </td></tr>
-            </table>
-        </td></tr></table>
-        </body></html>'
+    if ($sendFinancialEmails) {
+        sendDepositEmail($user['email'], $user['username'],
+            'BetMatchBonus – Egyenleg jóváírás',
+            '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#1a1a2e;font-family:Arial,Helvetica,sans-serif;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#1a1a2e;padding:40px 0;">
+            <tr><td align="center">
+                <table width="560" cellpadding="0" cellspacing="0" style="background:#16213e;border-radius:12px;overflow:hidden;">
+                    <tr><td style="background:#28a745;padding:24px 30px;text-align:center;">
+                        <h1 style="margin:0;color:#fff;font-size:22px;">✅ Egyenleg jóváírás</h1>
+                    </td></tr>
+                    <tr><td style="padding:30px;">
+                        <p style="color:#eee;font-size:16px;margin:0 0 20px;">Kedves <strong>' . htmlspecialchars($user['username']) . '</strong>,</p>
+                        <p style="color:#ccc;font-size:14px;margin:0 0 24px;">Jóváírás érkezett a fiókodra. Az összeg azonnal elérhető az egyenlegeden.</p>
+                        <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f1b30;border-radius:8px;border-left:4px solid #28a745;margin-bottom:20px;">
+                            <tr><td style="padding:20px 24px;text-align:center;">
+                                <div style="color:#52b788;font-size:28px;font-weight:700;">+' . $amountFmt . ' Ft</div>
+                                <div style="color:#aaa;font-size:13px;margin-top:4px;">jóváírt összeg</div>
+                            </td></tr>
+                        </table>
+                        <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a1225;border-radius:8px;margin-bottom:20px;">
+                            <tr><td style="padding:10px 20px;color:#aaa;font-size:14px;">Új egyenleg</td><td style="padding:10px 20px;color:#52b788;font-size:14px;font-weight:700;">' . $newBalance . ' Ft</td></tr>
+                            <tr><td style="padding:10px 20px;color:#aaa;font-size:14px;">Dátum</td><td style="padding:10px 20px;color:#eee;font-size:14px;">' . $date . '</td></tr>
+                            ' . $noteHtml . '
+                        </table>
+                    </td></tr>
+                </table>
+            </td></tr></table>
+            </body></html>'
+        );
+    }
+
+    createUserNotification(
+        $conn,
+        $userId,
+        'Admin befizetés jóváírás',
+        number_format($amount, 0, ',', ' ') . ' Ft jóváírás történt az egyenlegeden.' . ($note !== '' ? ' Megjegyzés: ' . $note : ''),
+        'balance'
     );
 
     log_audit('deposit_manual', 'user', $userId, "Manuális jóváírás: {$amountFmt} Ft – {$user['username']}");
@@ -220,43 +230,16 @@ if ($action === 'refund') {
     $methodLabel = strtoupper($tx['payment_method'] ?? '');
     $date = date('Y.m.d H:i');
 
-    sendDepositEmail($tx['email'], $tx['username'],
-        'BetMatchBonus – Befizetés visszatérítve',
-        '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#1a1a2e;font-family:Arial,Helvetica,sans-serif;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background:#1a1a2e;padding:40px 0;">
-        <tr><td align="center">
-            <table width="560" cellpadding="0" cellspacing="0" style="background:#16213e;border-radius:12px;overflow:hidden;">
-                <!-- Header -->
-                <tr><td style="background:#e94560;padding:24px 30px;text-align:center;">
-                    <h1 style="margin:0;color:#fff;font-size:22px;">⚠️ Befizetés visszatérítve</h1>
-                </td></tr>
-                <!-- Body -->
-                <tr><td style="padding:30px;">
-                    <p style="color:#eee;font-size:16px;margin:0 0 20px;">Kedves <strong>' . htmlspecialchars($tx['username']) . '</strong>,</p>
-                    <p style="color:#ccc;font-size:14px;margin:0 0 24px;">Egy korábbi befizetésed visszatérítésre került. Az összeg levonásra került az egyenlegedből.</p>
-                    <!-- Amount box -->
-                    <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f1b30;border-radius:8px;border-left:4px solid #e94560;margin-bottom:20px;">
-                        <tr><td style="padding:20px 24px;text-align:center;">
-                            <div style="color:#e94560;font-size:28px;font-weight:700;text-decoration:line-through;">' . $amountFmt . ' Ft</div>
-                            <div style="color:#aaa;font-size:13px;margin-top:4px;">visszatérített összeg</div>
-                        </td></tr>
-                    </table>
-                    <!-- Details -->
-                    <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a1225;border-radius:8px;margin-bottom:20px;">
-                        <tr><td style="padding:10px 20px;color:#aaa;font-size:14px;">Tranzakció ID</td><td style="padding:10px 20px;color:#eee;font-size:14px;font-family:monospace;">' . htmlspecialchars($tx['transaction_id']) . '</td></tr>
-                        <tr><td style="padding:10px 20px;color:#aaa;font-size:14px;">Fizetési mód</td><td style="padding:10px 20px;color:#eee;font-size:14px;">' . $methodLabel . '</td></tr>
-                        <tr><td style="padding:10px 20px;color:#aaa;font-size:14px;">Dátum</td><td style="padding:10px 20px;color:#eee;font-size:14px;">' . $date . '</td></tr>
-                        ' . $reasonHtml . '
-                    </table>
-                    <p style="color:#888;font-size:13px;margin:0;">Ha kérdésed van, keresd az ügyfélszolgálatot.</p>
-                </td></tr>
-                <!-- Footer -->
-                <tr><td style="background:#0f1b30;padding:16px 30px;text-align:center;">
-                    <p style="color:#666;font-size:12px;margin:0;">© ' . date('Y') . ' BetMatchBonus — Automatikus értesítés</p>
-                </td></tr>
-            </table>
-        </td></tr></table>
-        </body></html>'
+    if ($sendFinancialEmails) {
+        sendDepositEmail($tx['email'], $tx['username'], 'BetMatchBonus – Befizetés visszatérítve', '<html><body></body></html>');
+    }
+
+    createUserNotification(
+        $conn,
+        (int)$tx['user_id'],
+        'Befizetés visszatérítve',
+        'A(z) ' . htmlspecialchars($tx['transaction_id']) . ' azonosítójú befizetésed visszatérítésre került. Összeg: ' . number_format((float)$tx['amount'], 0, ',', ' ') . ' Ft. ' . ($reason !== '' ? 'Ok: ' . $reason : ''),
+        'balance'
     );
 
     log_audit('deposit_refund', 'transaction', $txId, "Visszatérítés: {$amountFmt} Ft");

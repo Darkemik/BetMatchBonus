@@ -15,6 +15,13 @@ use PHPMailer\PHPMailer\Exception as MailException;
 
 header('Content-Type: application/json; charset=utf-8');
 
+function createUserNotification(mysqli $conn, int $userId, string $title, string $message, string $type = 'admin_action'): void {
+    $stmt = $conn->prepare("INSERT INTO Notifications (user_id, title, message, type, created_at) VALUES (?, ?, ?, ?, NOW())");
+    $stmt->bind_param("isss", $userId, $title, $message, $type);
+    $stmt->execute();
+    $stmt->close();
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Érvénytelen kérés.']);
     exit;
@@ -80,6 +87,14 @@ if ($action === 'update_user') {
         exit;
     }
     $upd->close();
+
+    createUserNotification(
+        $conn,
+        $userId,
+        'Fiókadatok módosítva',
+        'Az admin módosította a fiókod adatait. Részletek: ' . implode(' | ', $changes),
+        'account_update'
+    );
 
     // Email küldése a felhasználónak a változásokról
     $targetEmail = $newEmail;
@@ -186,6 +201,7 @@ if ($action === 'toggle_active') {
                 <div style='font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#1a1a2e;color:#eee;padding:30px;border-radius:10px;'>
                     <h2 style='color:#e94560;'>Kedves " . htmlspecialchars($targetName) . "!</h2>
                     <p>Értesítünk, hogy fiókod <strong style='color:#e94560;'>felfüggesztésre került</strong>.</p>
+                    <p>A biztonság érdekében minden eszközről automatikusan kijelentkeztettünk.</p>
                     <p>Ha kérdésed van, kérjük vedd fel velünk a kapcsolatot.</p>
                     <br><p style='color:#888;font-size:12px;'>Üdvözlettel,<br>BetMatchBonus csapata</p>
                 </div>";
@@ -379,7 +395,87 @@ if ($action === 'send_message') {
     exit;
 }
 
-// ── 5) Felhasználó force-logout (minden eszközről kijelentkeztetés) ──
+// ── 5) Admin jelszó-visszaállítás indítása ──
+if ($action === 'reset_password') {
+    $userId = (int)($_POST['user_id'] ?? 0);
+    if ($userId <= 0) {
+        echo json_encode(['success' => false, 'message' => 'Érvénytelen felhasználó ID.']);
+        exit;
+    }
+
+    $stmt = $conn->prepare("SELECT id, username, email, full_name FROM Users WHERE id = ? LIMIT 1");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $user = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    if (!$user) {
+        echo json_encode(['success' => false, 'message' => 'Felhasználó nem található.']);
+        exit;
+    }
+
+    $targetName = $user['full_name'] ?: $user['username'];
+    $resetToken = bin2hex(random_bytes(32));
+
+    $stmt = $conn->prepare("UPDATE Users SET reset_token = ?, reset_token_expiry = DATE_ADD(NOW(), INTERVAL 1 HOUR), force_logout_at = NOW() WHERE id = ?");
+    $stmt->bind_param("si", $resetToken, $userId);
+    if (!$stmt->execute()) {
+        $stmt->close();
+        echo json_encode(['success' => false, 'message' => 'Nem sikerült a visszaállítási token mentése.']);
+        exit;
+    }
+    $stmt->close();
+
+    // Biztonság: minden aktív eszköz kijelentkeztetése.
+    $stmt = $conn->prepare("UPDATE UserSessions SET is_active = 0 WHERE user_id = ?");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $stmt->close();
+
+    log_activity($userId, 'password_reset', 'Admin jelszó-visszaállítás indítva.');
+
+    $resetUrl = SITE_BASE_URL . '/frontend/Auth/reset_password.php?token=' . $resetToken;
+
+    try {
+        $mail = new PHPMailer(true);
+        $mail->isSMTP();
+        $mail->Host       = MAIL_SMTP_HOST;
+        $mail->SMTPAuth   = true;
+        $mail->Username   = MAIL_SMTP_USERNAME;
+        $mail->Password   = MAIL_SMTP_PASSWORD;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = MAIL_SMTP_PORT;
+        $mail->CharSet    = 'UTF-8';
+
+        $mail->setFrom(MAIL_FROM_EMAIL, MAIL_FROM_NAME);
+        $mail->addAddress($user['email'], $targetName);
+        $mail->isHTML(true);
+        $mail->Subject = 'BetMatchBonus – Admin jelszó-visszaállítás';
+        $mail->Body = "
+            <div style='font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#1a1a2e;color:#eee;padding:30px;border-radius:10px;'>
+                <h2 style='color:#f5c518;'>Kedves " . htmlspecialchars($targetName) . "!</h2>
+                <p>Az adminisztráció jelszó-visszaállítást indított a fiókodhoz.</p>
+                <p>Kérjük, az alábbi gombra kattintva állíts be új jelszót:</p>
+                <p><a href='" . htmlspecialchars($resetUrl) . "' style='display:inline-block;padding:12px 24px;background:#f5c518;color:#1a1a2e;text-decoration:none;border-radius:6px;font-weight:bold;'>Új jelszó beállítása</a></p>
+                <p style='color:#bbb;'>A visszaállítási link 1 órán belül lejár.</p>
+                <p style='color:#bbb;'>Biztonsági okból minden eszközről kijelentkeztettünk. Az új jelszó beállítása után jelentkezz be újra.</p>
+                <br>
+                <p style='color:#888;font-size:12px;'>Üdvözlettel,<br>BetMatchBonus csapata</p>
+            </div>";
+
+        $mail->send();
+    } catch (MailException $e) {
+        error_log('Admin reset password email hiba: ' . $e->getMessage());
+        echo json_encode(['success' => false, 'message' => 'A token létrejött, de az email küldés nem sikerült.']);
+        exit;
+    }
+
+    log_audit('admin_reset_password', 'user', $userId, 'Admin jelszó-visszaállítás indítva: ' . $user['username']);
+    echo json_encode(['success' => true, 'message' => 'Jelszó-visszaállítási email elküldve: ' . htmlspecialchars($user['email'])]);
+    exit;
+}
+
+// ── 6) Felhasználó force-logout (minden eszközről kijelentkeztetés) ──
 if ($action === 'force_logout') {
     $userId = (int)($_POST['user_id'] ?? 0);
     if ($userId <= 0) {
@@ -409,6 +505,14 @@ if ($action === 'force_logout') {
     $stmt->bind_param("i", $userId);
     $stmt->execute();
     $stmt->close();
+
+    createUserNotification(
+        $conn,
+        $userId,
+        'Kényszerített kijelentkeztetés',
+        'Az admin minden eszközről kijelentkeztetett. Kérjük, jelentkezz be újra.',
+        'security'
+    );
 
     log_audit('force_logout', 'user', $userId, 'Kikényszerített kijelentkezés: ' . $user['username']);
     echo json_encode(['success' => true, 'message' => htmlspecialchars($user['username']) . ' kijelentkeztetve minden eszközről.']);

@@ -4,6 +4,7 @@ ini_set('display_errors', 1);
 
 require_once "../../backend/Auth/check_session.php";
 require_once "../../backend/connect.php";
+require_once "../../backend/Auth/audit_helper.php";
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception as MailException;
@@ -16,13 +17,15 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 // Felhasználó adatainak lekérése
-$query = "SELECT id, username, email, full_name, mobile_number as phone, country, city, postal_code, address, birth_date, created_at, data_verified, bank_statement_file, data_rejected_at, data_rejection_reason FROM Users WHERE id = ?";
+$query = "SELECT id, username, email, full_name, mobile_number as phone, country, city, postal_code, address, birth_date, created_at, data_verified, data_verification_token, bank_statement_file, data_rejected_at, data_rejection_reason FROM Users WHERE id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 $stmt->close();
+
+$hasPendingDataVerification = !empty($user['data_verification_token']);
 
 // Elutasítás utáni 15 perces várakozás ellenőrzése
 $rejectedAt = $user['data_rejected_at'] ? strtotime($user['data_rejected_at']) : null;
@@ -45,8 +48,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     $postal_code = htmlspecialchars($_POST['postal_code'] ?? '');
     $address = htmlspecialchars($_POST['address'] ?? '');
 
-    if (empty($country) || empty($city) || empty($postal_code) || empty($address)) {
-        $_SESSION['error_message'] = "Kérjük, töltsd ki az összes lakcímadatot az ellenőrzés kéréséhez!";
+    // A személyes adatok ellenőrzéséhez minden szükséges mező kötelező.
+    $missingFields = [];
+    if (empty($user['username'])) $missingFields[] = 'felhasználónév';
+    if (empty($user['email'])) $missingFields[] = 'email';
+    if (empty($user['full_name'])) $missingFields[] = 'teljes név';
+    if (empty($user['phone'])) $missingFields[] = 'telefonszám';
+    if (empty($user['birth_date'])) $missingFields[] = 'születési dátum';
+    if (empty($country)) $missingFields[] = 'ország';
+    if (empty($city)) $missingFields[] = 'város / község';
+    if (empty($postal_code)) $missingFields[] = 'irányítószám';
+    if (empty($address)) $missingFields[] = 'cím';
+
+    if (!empty($missingFields)) {
+        $_SESSION['error_message'] = "Kérjük, töltsd ki az összes kötelező személyes adatot az ellenőrzés kéréséhez! Hiányzó mezők: " . implode(', ', $missingFields) . ".";
         header("Location: personal_data.php");
         exit();
     }
@@ -91,14 +106,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
         }
     }
 
+    if (empty($bank_statement_path)) {
+        $_SESSION['error_message'] = "A személyes adatok beküldéséhez kötelező bankszámlakivonatot feltölteni.";
+        header("Location: personal_data.php");
+        exit();
+    }
+
     // Token generálás
     $token = bin2hex(random_bytes(32));
 
-    $update_query = "UPDATE Users SET country = ?, city = ?, postal_code = ?, address = ?, data_verification_token = ?, bank_statement_file = ?, data_rejected_at = NULL, data_rejection_reason = NULL WHERE id = ?";
+    $update_query = "UPDATE Users SET country = ?, city = ?, postal_code = ?, address = ?, data_verified = 0, data_verification_token = ?, bank_statement_file = ?, data_rejected_at = NULL, data_rejection_reason = NULL WHERE id = ?";
     $update_stmt = $conn->prepare($update_query);
     $update_stmt->bind_param("ssssssi", $country, $city, $postal_code, $address, $token, $bank_statement_path, $user_id);
     
     if ($update_stmt->execute()) {
+        $changed = [];
+        if (($user['country'] ?? '') !== $country) $changed[] = 'ország';
+        if (($user['city'] ?? '') !== $city) $changed[] = 'város';
+        if (($user['postal_code'] ?? '') !== $postal_code) $changed[] = 'irányítószám';
+        if (($user['address'] ?? '') !== $address) $changed[] = 'cím';
+        $profileDesc = 'Személyes adatok frissítve és ellenőrzésre beküldve.';
+        if (!empty($changed)) {
+            $profileDesc .= ' Módosított mezők: ' . implode(', ', $changed) . '.';
+        }
+        log_activity((int)$user_id, 'profile_update', $profileDesc);
+
         // Email küldés adminnak a bmbugyfelszolgalat@gmail.com címre
         require_once "../../backend/mail_config.php";
         require_once "../../backend/PHPMailer/Exception.php";
@@ -210,7 +242,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                 <div class="profile-content">
                     <h1><i class="fas fa-user"></i> <span data-i18n="auth.personalData">Személyes Adatok</span></h1>
 
-                    <?php if (!(int)($user['data_verified'] ?? 0)): ?>
+                    <?php if ($hasPendingDataVerification): ?>
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-hourglass-half"></i>
+                        <span>A személyes adataid újraellenőrzése folyamatban van. Az admin jóváhagyásáig ez az állapot aktív.</span>
+                    </div>
+
+                    <?php elseif (!(int)($user['data_verified'] ?? 0)): ?>
                     
                     <?php if ($rejectedAt && !empty($user['data_rejection_reason'])): ?>
                     <div class="alert alert-danger" role="alert">
@@ -280,25 +318,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                         
                         <div class="form-group mb-3">
                             <label for="country" data-i18n="userProfile.personalData.country">Ország</label>
-                            <input type="text" class="form-control" id="country" name="country" value="<?php echo htmlspecialchars($user['country'] ?? ''); ?>" readonly>
+                            <input type="text" class="form-control" id="country" name="country" value="<?php echo htmlspecialchars($user['country'] ?? ''); ?>" readonly required>
                             <small class="form-text" style="color: #aaa;" data-i18n="userProfile.personalData.autoByPostal">Az irányítószám alapján automatikusan kitöltődik</small>
                         </div>
                         
                         <div class="form-group mb-3">
                             <label for="postal_code" data-i18n="userProfile.personalData.postalCode">Irányítószám</label>
-                            <input type="text" class="form-control" id="postal_code" name="postal_code" value="<?php echo htmlspecialchars($user['postal_code'] ?? ''); ?>" maxlength="4" placeholder="pl. 1051">
+                            <input type="text" class="form-control" id="postal_code" name="postal_code" value="<?php echo htmlspecialchars($user['postal_code'] ?? ''); ?>" maxlength="4" pattern="[0-9]{4}" placeholder="pl. 1051" required>
                             <small class="form-text" id="postalFeedback" style="color: #aaa;"></small>
                         </div>
                         
                         <div class="form-group mb-3">
                             <label for="city" data-i18n="userProfile.personalData.city">Város / Község</label>
-                            <input type="text" class="form-control" id="city" name="city" value="<?php echo htmlspecialchars($user['city'] ?? ''); ?>" readonly>
+                            <input type="text" class="form-control" id="city" name="city" value="<?php echo htmlspecialchars($user['city'] ?? ''); ?>" readonly required>
                             <small class="form-text" style="color: #aaa;" data-i18n="userProfile.personalData.autoByPostal">Az irányítószám alapján automatikusan kitöltődik</small>
                         </div>
                         
                         <div class="form-group mb-3">
                             <label for="address" data-i18n="userProfile.personalData.address">Cím</label>
-                            <input type="text" class="form-control" id="address" name="address" value="<?php echo htmlspecialchars($user['address'] ?? ''); ?>">
+                            <input type="text" class="form-control" id="address" name="address" value="<?php echo htmlspecialchars($user['address'] ?? ''); ?>" required>
                         </div>
                         
                         <div class="form-group mb-3">
@@ -309,7 +347,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                                     <small style="color:#aaa; margin-left:8px;"><?php echo htmlspecialchars($user['bank_statement_file']); ?></small>
                                 </div>
                             <?php endif; ?>
-                            <input type="file" class="form-control" id="bank_statement" name="bank_statement" accept=".pdf,.jpg,.jpeg,.png,.webp">
+                            <input type="file" class="form-control" id="bank_statement" name="bank_statement" accept=".pdf,.jpg,.jpeg,.png,.webp" <?php echo empty($user['bank_statement_file']) ? 'required' : ''; ?>>
                             <small class="form-text" style="color: #aaa;" data-i18n="userProfile.personalData.bankStatementHint">PDF, JPG, PNG vagy WEBP — max. 5 MB.</small>
                         </div>
 

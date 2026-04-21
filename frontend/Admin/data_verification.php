@@ -17,8 +17,7 @@ $pending = $conn->query("
            bank_statement_file, data_verification_token,
            created_at, updated_at
     FROM Users
-    WHERE data_verification_token IS NOT NULL
-      AND data_verified = 0
+        WHERE data_verification_token IS NOT NULL
       AND is_active = 1
     ORDER BY updated_at DESC
 ");

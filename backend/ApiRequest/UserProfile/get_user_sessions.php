@@ -17,6 +17,16 @@ if (!isset($_SESSION['user_id'])) {
 
 $userId = (int)$_SESSION['user_id'];
 
+$dataVerified = 0;
+$stmtUser = $conn->prepare("SELECT data_verified FROM Users WHERE id = ? LIMIT 1");
+$stmtUser->bind_param("i", $userId);
+$stmtUser->execute();
+$userRow = $stmtUser->get_result()->fetch_assoc();
+$stmtUser->close();
+if ($userRow) {
+    $dataVerified = (int)($userRow['data_verified'] ?? 0);
+}
+
 // --- GET: Sessionök listázása ---
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $stmt = $conn->prepare("
@@ -51,13 +61,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
     $stmt->close();
 
-    echo json_encode(['success' => true, 'sessions' => $sessions]);
+    echo json_encode(['success' => true, 'sessions' => $sessions, 'data_verified' => $dataVerified]);
     exit;
 }
 
 // --- POST: Session visszavonás ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
+
+    if ($action === 'update_location') {
+        $sessionId = (int)($_POST['session_id'] ?? 0);
+        $location = trim((string)($_POST['location'] ?? ''));
+
+        if ($sessionId <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Érvénytelen session ID.']);
+            exit;
+        }
+        if ($location === '') {
+            echo json_encode(['success' => false, 'message' => 'Hiányzó helyadat.']);
+            exit;
+        }
+
+        $location = mb_substr($location, 0, 120);
+
+        $stmt = $conn->prepare("UPDATE UserSessions SET location = ?, last_active_at = NOW() WHERE id = ? AND user_id = ? AND is_active = 1 AND expires_at > NOW()");
+        $stmt->bind_param("sii", $location, $sessionId, $userId);
+        $stmt->execute();
+        $updated = $stmt->affected_rows > 0;
+        $stmt->close();
+
+        if ($updated) {
+            echo json_encode(['success' => true, 'message' => 'Helyadat frissítve.']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'A munkamenet nem frissíthető.']);
+        }
+        exit;
+    }
 
     if ($action === 'revoke') {
         $sessionId = (int)($_POST['session_id'] ?? 0);

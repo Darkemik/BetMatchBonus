@@ -292,6 +292,9 @@ $role = $_SESSION['admin_role'];
                                             <button type="button" class="btn btn-outline-warning btn-sm btn-force-logout" data-uid="<?= $u['id'] ?>" data-username="<?= htmlspecialchars($u['username'], ENT_QUOTES) ?>">
                                                 <i class="fas fa-sign-out-alt"></i> Kijelentkeztetés
                                             </button>
+                                            <button type="button" class="btn btn-outline-info btn-sm btn-reset-password" data-uid="<?= $u['id'] ?>" data-username="<?= htmlspecialchars($u['username'], ENT_QUOTES) ?>">
+                                                <i class="fas fa-key"></i> Jelszó reset
+                                            </button>
                                         </div>
                                     </div>
 
@@ -332,6 +335,32 @@ $role = $_SESSION['admin_role'];
 </div>
 
 <!-- Delete User Modal -->
+<!-- Reset password Modal -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background:#16213e;color:#eee;">
+            <div class="modal-header" style="border-bottom-color:#4fc3f7;">
+                <h5 class="modal-title"><i class="fas fa-key me-2 text-info"></i>Jelszó-visszaállítás</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="resetPasswordUserId">
+                <p class="text-muted">Felhasználó: <strong id="resetPasswordUsername" class="text-white"></strong></p>
+                <div class="alert alert-info" style="background:#1a2a3a;border-color:#4fc3f7;color:#eee;">
+                    <i class="fas fa-shield-alt me-1"></i>
+                    A felhasználónak jelszó-visszaállítási emailt küldünk, és biztonsági okból minden aktív eszközről kijelentkeztetjük.
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top-color:#333;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button>
+                <button type="button" class="btn btn-info" id="confirmResetPasswordBtn">
+                    <i class="fas fa-key me-1"></i>Reset email küldése
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Force-logout Modal -->
 <div class="modal fade" id="forceLogoutModal" tabindex="-1">
     <div class="modal-dialog">
@@ -546,6 +575,41 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('forceLogoutUsername').textContent = this.dataset.username;
             new bootstrap.Modal(document.getElementById('forceLogoutModal')).show();
         });
+    });
+
+    // Jelszó reset: modal megnyitása
+    document.querySelectorAll('.btn-reset-password').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('resetPasswordUserId').value = this.dataset.uid;
+            document.getElementById('resetPasswordUsername').textContent = this.dataset.username;
+            new bootstrap.Modal(document.getElementById('resetPasswordModal')).show();
+        });
+    });
+
+    // Jelszó reset: megerősítés
+    document.getElementById('confirmResetPasswordBtn').addEventListener('click', function() {
+        const userId = document.getElementById('resetPasswordUserId').value;
+        const confirmBtn = this;
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Küldés...';
+
+        const formData = new FormData();
+        formData.append('action', 'reset_password');
+        formData.append('user_id', userId);
+
+        fetch(API_URL, { method: 'POST', body: formData })
+            .then(r => r.json())
+            .then(data => {
+                showToast(data.message, data.success ? 'success' : 'danger');
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('resetPasswordModal')).hide();
+                }
+            })
+            .catch(() => showToast('Hálózati hiba!', 'danger'))
+            .finally(() => {
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = '<i class="fas fa-key me-1"></i>Reset email küldése';
+            });
     });
 
     // Force-logout: megerősítés

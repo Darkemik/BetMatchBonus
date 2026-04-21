@@ -829,8 +829,8 @@ function checkIfPickWon($pick, $market, $homeScore, $awayScore, $homeTeam, $away
         $totalGoals = $homeScore + $awayScore;
         
         // Keressuk a vonalat a piac nevebol: "(2.5)" vagy "(4.5)" stb.
-        preg_match('/\((\d+\.?\d*)\)/', $market, $matches);
-        $line = isset($matches[1]) ? floatval($matches[1]) : 0;
+        preg_match('/\(([+-]?\d+[\.,]?\d*)\)/', $market, $matches);
+        $line = isset($matches[1]) ? floatval(str_replace(',', '.', $matches[1])) : 0;
         
         // Ha a pick tartalmazza a szamot: "5,5 alatt" -> line = 5.5
         if ($line == 0) {
@@ -863,9 +863,19 @@ function checkIfPickWon($pick, $market, $homeScore, $awayScore, $homeTeam, $away
     // ===== Double Chance / Ketesely =====
     if (strpos($marketLower, 'double chance') !== false || strpos($marketLower, 'dupla') !== false ||
         strpos($marketLower, 'ketesely') !== false) {
-        if ($pickLower === '1x' || $pickLower === 'home or draw') return $homeScore >= $awayScore;
-        if ($pickLower === 'x2' || $pickLower === 'draw or away') return $awayScore >= $homeScore;
-        if ($pickLower === '12' || $pickLower === 'home or away') return $homeScore !== $awayScore;
+        $pickCompact = str_replace([' ', '/', '-', '_'], '', $pickLower);
+
+        if ($pickCompact === '1x' || $pickLower === 'home or draw') return $homeScore >= $awayScore;
+        if ($pickCompact === 'x2' || $pickLower === 'draw or away') return $awayScore >= $homeScore;
+        if ($pickCompact === '12' || $pickLower === 'home or away') return $homeScore !== $awayScore;
+
+        // Magyar numerikus variansok: "1 vagy X", "X vagy 2", "1 vagy 2"
+        $hasOne = preg_match('/(^|\s)1(\s|$)/', $pickLower) === 1;
+        $hasTwo = preg_match('/(^|\s)2(\s|$)/', $pickLower) === 1;
+        $hasX = preg_match('/(^|\s)x(\s|$)/', $pickLower) === 1;
+        if ($hasOne && $hasX) return $homeScore >= $awayScore;              // 1X
+        if ($hasX && $hasTwo) return $awayScore >= $homeScore;              // X2
+        if ($hasOne && $hasTwo && !$hasX) return $homeScore !== $awayScore; // 12
         
         // Magyar szoveges formatum: "Dontetlen vagy [csapat]" / "[csapat] vagy Dontetlen"
         $hasDraw = strpos($pickLower, 'dontetlen') !== false || strpos($pickLower, 'draw') !== false;
@@ -879,8 +889,8 @@ function checkIfPickWon($pick, $market, $homeScore, $awayScore, $homeTeam, $away
 
     // ===== Handicap =====
     if (strpos($marketLower, 'handicap') !== false || strpos($marketLower, 'hendikep') !== false) {
-        preg_match('/\(([+-]?\d+\.?\d*)\)/', $market, $matches);
-        $handicap = isset($matches[1]) ? floatval($matches[1]) : 0;
+        preg_match('/\(([+-]?\d+[\.,]?\d*)\)/', $market, $matches);
+        $handicap = isset($matches[1]) ? floatval(str_replace(',', '.', $matches[1])) : 0;
         
         if ($pickLower === '1' || $pickLower === $homeTeamLower || strpos($pickLower, 'home') !== false) {
             return ($homeScore + $handicap) > $awayScore;

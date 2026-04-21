@@ -299,10 +299,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 `;
             }
 
-            const sportIcons = { DARTS: '🎯', FOOTBALL: '⚽', TENNIS: '🎾', BASKETBALL: '🏀', ESPORT: '🎮' };
-            const sportBadge = bonus.sportRestriction
+                                                const sportIcons = { DARTS: '🎯', FOOTBALL: '⚽', TENNIS: '🎾', BASKETBALL: '🏀', ESPORT: '🎮' };
+                                                const sportRestrictionUpper = String(bonus.sportRestriction || '').toUpperCase();
+                                                const isDartsSportBadge = sportRestrictionUpper === 'DARTS';
+                                                const isEsportSportBadge = sportRestrictionUpper === 'ESPORT';
+                                                const liveLabel = isEsportSportBadge ? '' : ' | <span style="color:#4caf50;">● LIVE</span>';
+                                                const sportBadge = bonus.sportRestriction && !isDartsSportBadge
                 ? `<div class="bonus-sport-badge" style="display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#7c4dff22,#b388ff33);border:1px solid #7c4dff66;color:#b388ff;font-size:0.75rem;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:6px;">
-                                        ${sportIcons[bonus.sportRestriction] || '🏆'} ${bonus.sportRestriction} | <span style="color:#4caf50;">● LIVE</span>
+                                                                                ${sportIcons[bonus.sportRestriction] || '🏆'} ${bonus.sportRestriction}${liveLabel}
                   </div>`
                 : '';
 

@@ -27,6 +27,15 @@ use PHPMailer\PHPMailer\Exception as MailException;
 
 header('Content-Type: application/json');
 
+$sendFinancialEmails = false;
+
+function createUserNotification(mysqli $conn, int $userId, string $title, string $message, string $type = 'balance'): void {
+    $stmt = $conn->prepare("INSERT INTO Notifications (user_id, title, message, type, created_at) VALUES (?, ?, ?, ?, NOW())");
+    $stmt->bind_param("isss", $userId, $title, $message, $type);
+    $stmt->execute();
+    $stmt->close();
+}
+
 // Helper: konfigurált PHPMailer példány
 function getConfiguredMailer() {
     $mail = new PHPMailer(true);
@@ -104,24 +113,24 @@ if ($action === 'manual_withdraw') {
     $amountFormatted = number_format($amount, 0, ',', ' ');
 
     // Email a felhasználónak
-    try {
-        $mail = getConfiguredMailer();
-        $mail->addAddress($user['email'], $user['username']);
-        $mail->isHTML(true);
-        $mail->Subject = '=?UTF-8?B?' . base64_encode('💸 Manuális kifizetés - ' . $amountFormatted . ' Ft') . '?=';
-        $mail->Body = '
-        <div style="background:#1a1a2e;padding:30px;border-radius:12px;max-width:480px;margin:auto;font-family:Arial,sans-serif;">
-            <div style="text-align:center;margin-bottom:20px;font-size:3rem;">💸</div>
-            <h2 style="color:#28a745;text-align:center;margin:0 0 10px;">Kifizetés jóváírva</h2>
-            <p style="color:#ccc;text-align:center;">Kedves <strong style="color:#fff;">' . htmlspecialchars($user['username']) . '</strong>,</p>
-            <p style="color:#28a745;text-align:center;font-size:1.4rem;font-weight:bold;">' . $amountFormatted . ' Ft</p>
-            ' . ($note !== '' ? '<div style="background:#0f3460;border-radius:8px;padding:12px;margin:14px 0;"><p style="color:#aaa;margin:0 0 4px;font-size:0.8rem;">Megjegyzés:</p><p style="color:#fff;margin:0;">' . htmlspecialchars($note) . '</p></div>' : '') . '
-            <p style="color:#aaa;text-align:center;font-size:0.85rem;">Az összeg levonásra került az egyenlegedből.</p>
-            <hr style="border-color:#333;">
-            <p style="color:#666;text-align:center;font-size:0.8rem;">Tranzakció: ' . htmlspecialchars($transactionId) . '</p>
-        </div>';
-        $mail->send();
-    } catch (MailException $e) { /* silent */ }
+    if ($sendFinancialEmails) {
+        try {
+            $mail = getConfiguredMailer();
+            $mail->addAddress($user['email'], $user['username']);
+            $mail->isHTML(true);
+            $mail->Subject = '=?UTF-8?B?' . base64_encode('💸 Manuális kifizetés - ' . $amountFormatted . ' Ft') . '?=';
+            $mail->Body = '<html><body></body></html>';
+            $mail->send();
+        } catch (MailException $e) { /* silent */ }
+    }
+
+    createUserNotification(
+        $conn,
+        $userId,
+        'Admin manuális kifizetés',
+        'Az admin manuális kifizetést rögzített: ' . $amountFormatted . ' Ft. Tranzakció: ' . $transactionId . ($note !== '' ? ' | Megjegyzés: ' . $note : ''),
+        'balance'
+    );
 
     log_audit('withdrawal_manual', 'user', $userId, 'Manuális kifizetés: ' . $amountFormatted . ' Ft (' . $user['username'] . ')');
     echo json_encode(['success' => true, 'message' => 'Manuális kifizetés létrehozva: ' . $amountFormatted . ' Ft (' . htmlspecialchars($user['username']) . ')']);
@@ -194,27 +203,24 @@ if ($action === 'revoke') {
     $amountFormatted = number_format((float)$tx['amount'], 0, ',', ' ');
 
     // Email a felhasználónak
-    try {
-        $mail = getConfiguredMailer();
-        $mail->addAddress($tx['email'], $tx['username']);
-        $mail->isHTML(true);
-        $mail->Subject = '=?UTF-8?B?' . base64_encode('⚠️ Kifizetés visszavonva - ' . $amountFormatted . ' Ft') . '?=';
-        $mail->Body = '
-        <div style="background:#1a1a2e;padding:30px;border-radius:12px;max-width:480px;margin:auto;font-family:Arial,sans-serif;">
-            <div style="text-align:center;margin-bottom:20px;font-size:3rem;">⚠️</div>
-            <h2 style="color:#f5c518;text-align:center;margin:0 0 10px;">Kifizetés visszavonva</h2>
-            <p style="color:#ccc;text-align:center;">Kedves <strong style="color:#fff;">' . htmlspecialchars($tx['username']) . '</strong>,</p>
-            <p style="color:#f5c518;text-align:center;font-size:1.2rem;font-weight:bold;">' . $amountFormatted . ' Ft</p>
-            <div style="background:#2a2400;border:1px solid #5a4a00;border-radius:8px;padding:14px;margin:14px 0;">
-                <p style="color:#aaa;margin:0 0 4px;font-size:0.8rem;">Visszavonás oka:</p>
-                <p style="color:#fff;margin:0;">' . htmlspecialchars($reason) . '</p>
-            </div>
-            <p style="color:#aaa;text-align:center;font-size:0.85rem;">Az összeg visszakerült az egyenlegedre.</p>
-            <hr style="border-color:#333;">
-            <p style="color:#666;text-align:center;font-size:0.8rem;">Tranzakció: ' . htmlspecialchars($tx['transaction_id']) . '</p>
-        </div>';
-        $mail->send();
-    } catch (MailException $e) { /* silent */ }
+    if ($sendFinancialEmails) {
+        try {
+            $mail = getConfiguredMailer();
+            $mail->addAddress($tx['email'], $tx['username']);
+            $mail->isHTML(true);
+            $mail->Subject = '=?UTF-8?B?' . base64_encode('⚠️ Kifizetés visszavonva - ' . $amountFormatted . ' Ft') . '?=';
+            $mail->Body = '<html><body></body></html>';
+            $mail->send();
+        } catch (MailException $e) { /* silent */ }
+    }
+
+    createUserNotification(
+        $conn,
+        (int)$tx['user_id'],
+        'Kifizetés visszavonva',
+        'A(z) ' . $tx['transaction_id'] . ' azonosítójú kifizetésed visszavonásra került. Összeg: ' . $amountFormatted . '. Ok: ' . $reason,
+        'balance'
+    );
 
     log_audit('withdrawal_revoke', 'transaction', $txId, 'Kifizetés visszavonva: ' . $amountFormatted . ' Ft');
     echo json_encode(['success' => true, 'message' => 'Kifizetés visszavonva, egyenleg visszaállítva: ' . $amountFormatted . ' Ft']);
@@ -263,26 +269,26 @@ if ($action === 'approve') {
     $upd->close();
 
     // Email a felhasználónak
-    try {
-        $mail = getConfiguredMailer();
-        $mail->addAddress($tx['email'], $tx['username']);
-        $mail->isHTML(true);
-        $mail->Subject = '=?UTF-8?B?' . base64_encode('✅ Kifizetésed jóváhagyva! - ' . $amountFormatted . ' Ft') . '?=';
-        $mail->Body = '
-        <div style="background:#1a1a2e;padding:30px;border-radius:12px;max-width:480px;margin:auto;font-family:Arial,sans-serif;">
-            <div style="text-align:center;margin-bottom:20px;font-size:3rem;">✅</div>
-            <h2 style="color:#28a745;text-align:center;margin:0 0 10px;">Kifizetésed jóváhagyva!</h2>
-            <p style="color:#ccc;text-align:center;">Kedves <strong style="color:#fff;">' . htmlspecialchars($tx['username']) . '</strong>,</p>
-            <p style="color:#28a745;text-align:center;font-size:1.4rem;font-weight:bold;">' . $amountFormatted . ' Ft</p>
-            <p style="color:#aaa;text-align:center;font-size:0.9rem;">Az összeg hamarosan megérkezik a bankszámládra:<br>
-            <strong style="color:#fff;font-family:monospace;">' . htmlspecialchars($tx['account_number'] ?? '') . '</strong></p>
-            <hr style="border-color:#333;">
-            <p style="color:#666;text-align:center;font-size:0.8rem;">Tranzakció: ' . htmlspecialchars($tx['transaction_id']) . '</p>
-        </div>';
-        $mail->send();
-    } catch (MailException $e) {
-        // Email hiba nem akadályozza a jóváhagyást
+    if ($sendFinancialEmails) {
+        try {
+            $mail = getConfiguredMailer();
+            $mail->addAddress($tx['email'], $tx['username']);
+            $mail->isHTML(true);
+            $mail->Subject = '=?UTF-8?B?' . base64_encode('✅ Kifizetésed jóváhagyva! - ' . $amountFormatted . ' Ft') . '?=';
+            $mail->Body = '<html><body></body></html>';
+            $mail->send();
+        } catch (MailException $e) {
+            // Email hiba nem akadályozza a jóváhagyást
+        }
     }
+
+    createUserNotification(
+        $conn,
+        (int)$tx['user_id'],
+        'Kifizetés jóváhagyva',
+        'A(z) ' . $tx['transaction_id'] . ' azonosítójú kifizetésed jóváhagyásra került. Összeg: ' . $amountFormatted . '.',
+        'balance'
+    );
 
     log_audit('withdrawal_approve', 'transaction', $txId, 'Kifizetés jóváhagyva: ' . $amountFormatted . ' Ft');
     echo json_encode(['success' => true, 'message' => 'Kifizetés jóváhagyva: ' . $amountFormatted . ' Ft']);
@@ -319,29 +325,26 @@ if ($action === 'reject') {
     }
 
     // Email a felhasználónak
-    try {
-        $mail = getConfiguredMailer();
-        $mail->addAddress($tx['email'], $tx['username']);
-        $mail->isHTML(true);
-        $mail->Subject = '=?UTF-8?B?' . base64_encode('❌ Kifizetésed elutasítva - ' . $amountFormatted . ' Ft') . '?=';
-        $mail->Body = '
-        <div style="background:#1a1a2e;padding:30px;border-radius:12px;max-width:480px;margin:auto;font-family:Arial,sans-serif;">
-            <div style="text-align:center;margin-bottom:20px;font-size:3rem;">❌</div>
-            <h2 style="color:#e94560;text-align:center;margin:0 0 10px;">Kifizetésed elutasítva</h2>
-            <p style="color:#ccc;text-align:center;">Kedves <strong style="color:#fff;">' . htmlspecialchars($tx['username']) . '</strong>,</p>
-            <p style="color:#e94560;text-align:center;font-size:1.2rem;font-weight:bold;">' . $amountFormatted . ' Ft</p>
-            <div style="background:#2a1a1a;border:1px solid #4a2a2a;border-radius:8px;padding:14px;margin:14px 0;">
-                <p style="color:#aaa;margin:0 0 4px;font-size:0.8rem;">Elutasítás oka:</p>
-                <p style="color:#fff;margin:0;">' . htmlspecialchars($reason) . '</p>
-            </div>
-            <p style="color:#aaa;text-align:center;font-size:0.85rem;">Az összeg visszakerült az egyenlegedre.</p>
-            <hr style="border-color:#333;">
-            <p style="color:#666;text-align:center;font-size:0.8rem;">Tranzakció: ' . htmlspecialchars($tx['transaction_id']) . '</p>
-        </div>';
-        $mail->send();
-    } catch (MailException $e) {
-        // Email hiba nem akadályozza az elutasítást
+    if ($sendFinancialEmails) {
+        try {
+            $mail = getConfiguredMailer();
+            $mail->addAddress($tx['email'], $tx['username']);
+            $mail->isHTML(true);
+            $mail->Subject = '=?UTF-8?B?' . base64_encode('❌ Kifizetésed elutasítva - ' . $amountFormatted . ' Ft') . '?=';
+            $mail->Body = '<html><body></body></html>';
+            $mail->send();
+        } catch (MailException $e) {
+            // Email hiba nem akadályozza az elutasítást
+        }
     }
+
+    createUserNotification(
+        $conn,
+        (int)$tx['user_id'],
+        'Kifizetés elutasítva',
+        'A(z) ' . $tx['transaction_id'] . ' azonosítójú kifizetésed elutasításra került. Összeg: ' . $amountFormatted . '. Ok: ' . $reason,
+        'balance'
+    );
 
     log_audit('withdrawal_reject', 'transaction', $txId, 'Kifizetés elutasítva: ' . $amountFormatted . ' Ft');
     echo json_encode(['success' => true, 'message' => 'Kifizetés elutasítva, egyenleg visszaállítva: ' . $amountFormatted . ' Ft']);

@@ -213,12 +213,13 @@ CREATE TABLE IF NOT EXISTS EventMarkets (
   api_market_id  BIGINT        NOT NULL,
   type_id        INT           NOT NULL,
   name           VARCHAR(150)  NOT NULL,
-  special_value  VARCHAR(30)   DEFAULT NULL,
+  special_value  VARCHAR(60)   DEFAULT NULL,
   is_active      TINYINT(1)    NOT NULL DEFAULT 1,
   status         VARCHAR(20)   NOT NULL DEFAULT 'OPEN',
   created_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_market_event (event_id),
+  UNIQUE KEY uk_market_event_api_market (event_id, api_market_id),
   CONSTRAINT fk_market_event FOREIGN KEY (event_id) REFERENCES Events(id) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
@@ -235,6 +236,7 @@ CREATE TABLE IF NOT EXISTS OddsOutcomes (
   status          VARCHAR(20)   NOT NULL DEFAULT 'OPEN',
   updated_at      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_outcome_market (event_market_id),
+  UNIQUE KEY uk_outcome_market_api_outcome (event_market_id, api_outcome_id),
   CONSTRAINT fk_outcome_market FOREIGN KEY (event_market_id) REFERENCES EventMarkets(id) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
@@ -297,21 +299,6 @@ CREATE TABLE IF NOT EXISTS UserSessions (
   last_active_at DATETIME      DEFAULT NULL,
   INDEX idx_session_user_active (user_id, is_active),
   CONSTRAINT fk_session_user FOREIGN KEY (user_id) REFERENCES Users(id) ON UPDATE CASCADE ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
-
--- ============================================================
--- 16) USER LOGS
--- ============================================================
-CREATE TABLE IF NOT EXISTS UserLogs (
-  id           INT           AUTO_INCREMENT PRIMARY KEY,
-  user_id      INT           NOT NULL,
-  action       VARCHAR(100)  NOT NULL,
-  related_type VARCHAR(20)   DEFAULT NULL,
-  related_id   INT           DEFAULT NULL,
-  details      VARCHAR(255)  DEFAULT NULL,
-  created_at   DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  INDEX idx_userlog_user (user_id),
-  CONSTRAINT fk_userlog_user FOREIGN KEY (user_id) REFERENCES Users(id) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 -- ============================================================
@@ -852,7 +839,7 @@ VALUES
   0,
   NULL,
   NULL,
-  0                           -- Csak admin
+  0                           -- Alapból inaktív; refresh_all auto-toggle állítja derbi-nap szerint
 );
 
 -- 6. NB1-ES DERBY (ÚJPEST – FERENCVÁROS) - VAN KÓDJA
@@ -912,7 +899,7 @@ VALUES
 (
   'ESPORT5K',
   'Esport Bónusz (5.000 Ft bónusz)',
-  'Esport rajongóknak szóló bónusz — CS2, League of Legends, Dota 2 és más esport mérkőzésekre! Hogyan működik? 1) Tégy meg egy legalább 5.000 Ft értékű fogadást bármely esport mérkőzésre. 2) A fogadásnak legalább 3 eseményt (3-as kötést) kell tartalmaznia. 3) Minden egyes eseménynek minimum 1,30-as odds-szal kell rendelkeznie, és az össz odds-nak el kell érnie a 3.00-at. 4) A fogadásod lezárása és kiértékelése után 5.000 Ft bónusz pénzt kapsz. 5) A kapott bónuszt 3-szorosan kell megforgatnod (15.000 Ft értékű fogadás). 6) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Próbáld ki az esport fogadást és szerezd meg az extra bónuszt!',
+  'Esport rajongóknak szóló bónusz — League of Legends, Counter-Strike és Valorant mérkőzésekre! Hogyan működik? 1) Tégy meg egy legalább 5.000 Ft értékű fogadást bármely esport mérkőzésre. 2) A fogadásnak legalább 3 eseményt (3-as kötést) kell tartalmaznia. 3) Minden egyes eseménynek minimum 1,30-as odds-szal kell rendelkeznie, és az össz odds-nak el kell érnie a 3.00-at. 4) A fogadásod lezárása és kiértékelése után 5.000 Ft bónusz pénzt kapsz. 5) A kapott bónuszt 3-szorosan kell megforgatnod (15.000 Ft értékű fogadás). 6) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Próbáld ki az esport fogadást és szerezd meg az extra bónuszt!',
   4,                          -- EVENT_SPECIFIC
   5000.00,
   5000.00,
@@ -942,7 +929,7 @@ VALUES
   1,
   '2026-01-01 00:00:00',
   NULL,
-  0                           -- Csak admin
+  0                           -- Alapból inaktív; refresh_all auto-toggle állítja eseménynap szerint
 );
 
 -- 8. SZÜLETÉSNAPI BÓNUSZ (NINCS KÓD - IGÉNYLŐS)
@@ -957,7 +944,7 @@ VALUES
 (
   NULL,
   'Születésnapi Bónusz (5.000 Ft)',
-  'Boldog születésnapot! Ajándékunk neked: 5.000 Ft bónusz a nagy napodon. Hogyan igényelheted? 1) A születésnapodon (a regisztrációnál megadott dátum alapján) igényeld a bónuszt a profilodban vagy az ügyfélszolgálaton keresztül. 2) Jóváhagyás után 5.000 Ft bónusz pénz kerül a bónusz egyenlegedre. 3) A bónusszal bármilyen sportra, bármilyen mérkőzésre fogadhatsz — nincs sportági megkötés. 4) Nincs forgatási követelmény, tehát a nyereményed azonnal kifizethetővé válik! 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Minden évben egyszer, a születésnapodon igényelheted!',
+  'Boldog születésnapot! Ajándékunk neked: 5.000 Ft bónusz a nagy napodon. Hogyan működik? 1) A rendszer a regisztrációnál megadott születési dátum alapján automatikusan ellenőrzi a jogosultságot. 2) A születésnapodon automatikusan jóváírásra kerül 5.000 Ft bónusz pénz a bónusz egyenlegedre. 3) A bónusszal bármilyen sportra, bármilyen mérkőzésre fogadhatsz — nincs sportági megkötés. 4) Nincs forgatási követelmény, tehát a nyereményed azonnal kifizethetővé válik. 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Minden évben egyszer jár automatikusan.',
   7,                          -- ADMIN_BONUS
   5000.00,
   0.00,
@@ -987,7 +974,7 @@ VALUES
   1,
   '2026-01-01 00:00:00',
   NULL,
-  0                           -- Csak admin
+  0                           -- Nem publikus listaelem; refresh_all évente 1x automatikusan jóváírja jogosult usernek
 );
 
 -- 9. BETMATCHBONUS SZÜLETÉSNAPI BÓNUSZ (NINCS KÓD - IGÉNYLŐS, ELSŐ 500)
@@ -1002,7 +989,7 @@ VALUES
 (
   NULL,
   'BetMatch Születésnapi Bónusz (első 500)',
-  'A BetMatchBonus születésnapi különleges promóciója — limitált számban elérhető! Hogyan működik? 1) A BetMatchBonus évfordulóján az első 500 igénylő ügyfél kap 5.000 Ft bónuszt. 2) Igényeld a bónuszt a profilodban vagy az ügyfélszolgálaton keresztül — aki előbb igényli, az kapja meg! 3) A bónusszal bármilyen sportra, bármilyen mérkőzésre fogadhatsz — nincs sportági megkötés. 4) Nincs forgatási követelmény, a nyereményed azonnal kifizethetővé válik! 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: Csak 500 db érhető el összesen, ne habozz!',
+  'A BetMatchBonus születésnapi különleges promóciója — limitált számban elérhető! Hogyan működik? 1) A promóció évente április 25-én aktiválódik. 2) Ezen a napon az első 500 jogosult igénylés teljesülhet. 3) A bónusszal bármilyen sportra, bármilyen mérkőzésre fogadhatsz — nincs sportági megkötés. 4) Nincs forgatási követelmény, a nyereményed azonnal kifizethetővé válik. 5) A maximálisan nyerhető összeg a bónusz 5-szöröse (25.000 Ft). Fontos: Csak 500 db érhető el összesen.',
   7,                          -- ADMIN_BONUS
   5000.00,
   0.00,
@@ -1032,7 +1019,7 @@ VALUES
   1,
   '2026-01-01 00:00:00',
   NULL,
-  0                           -- Csak admin
+  0                           -- Alapból inaktív; refresh_all auto-toggle aktiválja április 25-én
 );
 
 -- 10. HÉTVÉGI BÓNUSZ (SZOMBAT-VASÁRNAP, VAN KÓDJA)
@@ -1077,7 +1064,7 @@ VALUES
   1,
   '2026-01-01 00:00:00',
   NULL,
-  0                           -- Csak admin
+  0                           -- Alapból inaktív; refresh_all auto-toggle állítja hétvégi napokon
 );
 
 -- 11. ADMIN BÓNUSZ (BELSŐ HASZNÁLAT - BÓNUSZ PÉNZ)

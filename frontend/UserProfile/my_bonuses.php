@@ -9,6 +9,12 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
+// Felhasznált/lejárt bónuszok 3 nap után törlése
+$cleanupStmt = $conn->prepare("\n    DELETE FROM UserBonuses\n    WHERE user_id = ?\n      AND (\n            used = 1\n            OR status IN ('COMPLETED', 'FAILED', 'EXPIRED')\n            OR (status = 'ACTIVE' AND expires_at IS NOT NULL AND expires_at <= NOW())\n          )\n      AND COALESCE(used_at, expires_at, created_at) < DATE_SUB(NOW(), INTERVAL 3 DAY)\n");
+$cleanupStmt->bind_param("i", $user_id);
+$cleanupStmt->execute();
+$cleanupStmt->close();
+
 // Felhasználó bónusz egyenlegének lekérése
 $hasBonusBalance = false;
 $colStmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Users' AND COLUMN_NAME = 'bonus_balance'");
@@ -83,6 +89,16 @@ foreach ($bonuses as $bonus) {
 }
 
 $expired_bonuses = count($archived_bonuses);
+
+$archivedPerPage = 3;
+$archivedPage = max(1, (int)($_GET['arch_page'] ?? 1));
+$archivedTotal = count($archived_bonuses);
+$archivedPages = max(1, (int)ceil($archivedTotal / $archivedPerPage));
+if ($archivedPage > $archivedPages) {
+    $archivedPage = $archivedPages;
+}
+$archivedOffset = ($archivedPage - 1) * $archivedPerPage;
+$archivedBonusesPaged = array_slice($archived_bonuses, $archivedOffset, $archivedPerPage);
 
 // LOSS trigger bónuszokhoz: mai cashback free betek lekérdezése
 $lossCashbackStats = [];
@@ -391,6 +407,8 @@ foreach ($current_bonuses as $cb) {
                                                         echo '<span class="badge bg-success"><i class="fas fa-check-circle"></i> <span data-i18n="userProfile.myBonuses.active">Aktív</span></span>';
                                                     } elseif ($bonus['status'] === 'COMPLETED') {
                                                         echo '<span class="badge bg-primary"><i class="fas fa-trophy"></i> <span data-i18n="userProfile.myBonuses.completed">Teljesítve</span></span>';
+                                                    } elseif ((int)($bonus['used'] ?? 0) === 1 && (string)($bonus['status'] ?? '') === 'EXPIRED') {
+                                                        echo '<span class="badge" style="background:#6c757d;"><i class="fas fa-undo-alt"></i> Visszavonva</span>';
                                                     } elseif ($bonus['used']) {
                                                         echo '<span class="badge bg-info text-dark"><i class="fas fa-check"></i> <span data-i18n="userProfile.myBonuses.used">Felhasznált</span></span>';
                                                     } else {
@@ -406,10 +424,13 @@ foreach ($current_bonuses as $cb) {
                     <?php endif; ?>
 
                     <?php if (!empty($archived_bonuses)): ?>
-                        <div class="card mt-4" style="background: #121212; border: 1px solid #3f3f3f; color: #ddd;">
+                        <div id="archived-bonuses" class="card mt-4" style="background: #121212; border: 1px solid #3f3f3f; color: #ddd;">
                             <div class="card-body">
                                 <h5 class="mb-3" style="color: #f2b705;"><i class="fas fa-archive"></i> <span data-i18n="userProfile.myBonuses.usedOrExpired">Felhasznált / Lejárt Bónuszok</span></h5>
-                                <?php foreach ($archived_bonuses as $bonus): ?>
+                                <p class="mb-3" style="font-size:0.85rem;color:#aaa;">
+                                    <i class="fas fa-info-circle"></i> Ezek a bónuszok 3 nap után automatikusan törlődnek.
+                                </p>
+                                <?php foreach ($archivedBonusesPaged as $bonus): ?>
                                     <div class="card mb-3" style="background: #1b2436; border: 1px solid #3d4658; color: #ddd;">
                                         <div class="card-body">
                                             <div class="row align-items-center">
@@ -453,6 +474,8 @@ foreach ($current_bonuses as $cb) {
 
                                                         if ($bonus['status'] === 'COMPLETED') {
                                                             echo '<span class="badge bg-primary"><i class="fas fa-trophy"></i> <span data-i18n="userProfile.myBonuses.completed">Teljesítve</span></span>';
+                                                        } elseif ((int)($bonus['used'] ?? 0) === 1 && (string)($bonus['status'] ?? '') === 'EXPIRED') {
+                                                            echo '<span class="badge" style="background:#6c757d;"><i class="fas fa-undo-alt"></i> Visszavonva</span>';
                                                         } elseif ($bonus['used']) {
                                                             echo '<span class="badge bg-info text-dark"><i class="fas fa-check"></i> <span data-i18n="userProfile.myBonuses.used">Felhasznált</span></span>';
                                                         } elseif (!$is_valid) {
@@ -466,6 +489,46 @@ foreach ($current_bonuses as $cb) {
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
+
+                                <?php if ($archivedPages > 1): ?>
+                                    <div class="d-flex justify-content-center mt-3">
+                                        <nav aria-label="Felhasznált/Lejárt bónuszok lapozó">
+                                            <ul class="pagination pagination-sm mb-0">
+                                                <li class="page-item <?= $archivedPage <= 1 ? 'disabled' : '' ?>">
+                                                    <a class="page-link" href="?arch_page=<?= max(1, $archivedPage - 1) ?>#archived-bonuses" aria-label="Előző">&laquo;</a>
+                                                </li>
+
+                                                <?php
+                                                $aStart = max(1, $archivedPage - 2);
+                                                $aEnd = min($archivedPages, $archivedPage + 2);
+                                                if ($aStart > 1):
+                                                ?>
+                                                    <li class="page-item"><a class="page-link" href="?arch_page=1#archived-bonuses">1</a></li>
+                                                    <?php if ($aStart > 2): ?>
+                                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                                    <?php endif; ?>
+                                                <?php endif; ?>
+
+                                                <?php for ($ap = $aStart; $ap <= $aEnd; $ap++): ?>
+                                                    <li class="page-item <?= $ap === $archivedPage ? 'active' : '' ?>">
+                                                        <a class="page-link" href="?arch_page=<?= $ap ?>#archived-bonuses"><?= $ap ?></a>
+                                                    </li>
+                                                <?php endfor; ?>
+
+                                                <?php if ($aEnd < $archivedPages): ?>
+                                                    <?php if ($aEnd < $archivedPages - 1): ?>
+                                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                                    <?php endif; ?>
+                                                    <li class="page-item"><a class="page-link" href="?arch_page=<?= $archivedPages ?>#archived-bonuses"><?= $archivedPages ?></a></li>
+                                                <?php endif; ?>
+
+                                                <li class="page-item <?= $archivedPage >= $archivedPages ? 'disabled' : '' ?>">
+                                                    <a class="page-link" href="?arch_page=<?= min($archivedPages, $archivedPage + 1) ?>#archived-bonuses" aria-label="Következő">&raquo;</a>
+                                                </li>
+                                            </ul>
+                                        </nav>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     <?php endif; ?>

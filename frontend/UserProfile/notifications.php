@@ -182,6 +182,12 @@ $unreadStmt->close();
             const data = await res.json();
             if (!data.success) throw new Error();
             allNotifications = data.notifications;
+
+            // Az oldal megnyitásakor automatikusan olvasottra jelölünk mindent.
+            if (allNotifications.some(n => !n.is_read)) {
+                await markAllRead(true);
+            }
+
             renderNotifications();
         } catch {
             document.getElementById('notifLoader').innerHTML =
@@ -243,7 +249,7 @@ $unreadStmt->close();
         } catch {}
     }
 
-    async function markAllRead() {
+    async function markAllRead(silent) {
         try {
             await fetch(NOTIF_API, {
                 method: 'POST',
@@ -253,6 +259,10 @@ $unreadStmt->close();
             allNotifications.forEach(n => n.is_read = 1);
             renderNotifications();
             updateSidebarBadge();
+            if (!silent) {
+                // Kézi gombnyomásnál maradjon azonnali UI frissítés.
+                document.dispatchEvent(new CustomEvent('auth:changed'));
+            }
         } catch {}
     }
 

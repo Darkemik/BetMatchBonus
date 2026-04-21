@@ -43,8 +43,8 @@ if ($bonusColRes && (int)$bonusColRes['cnt'] > 0) {
 }
 
 $query = $hasWinningsBalance
-    ? "SELECT balance, winnings_balance" . ($hasBonusBalance ? ", bonus_balance" : "") . ", full_name, data_verified FROM Users WHERE id = ?"
-    : "SELECT balance, full_name, data_verified FROM Users WHERE id = ?";
+    ? "SELECT balance, winnings_balance" . ($hasBonusBalance ? ", bonus_balance" : "") . ", full_name, data_verified, data_verification_token FROM Users WHERE id = ?"
+    : "SELECT balance, full_name, data_verified, data_verification_token FROM Users WHERE id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -57,6 +57,7 @@ $deposited_balance = max(0, (float)$balance - (float)$winnings_balance);
 $total_deposit_and_winnings = (float)$deposited_balance + (float)$winnings_balance;
 $registered_full_name = $user['full_name'] ?? '';
 $data_verified = (int)($user['data_verified'] ?? 0);
+$has_pending_data_verification = !empty($user['data_verification_token']);
 $stmt->close();
 
 // Mentett banki adatok betöltése
@@ -131,7 +132,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
     $account_number = htmlspecialchars($_POST['account_number'] ?? '');
     $agreement = isset($_POST['agreement']) ? true : false;
 
-    if (!$data_verified) {
+    if ($has_pending_data_verification) {
+        $error_message = "A személyes adataid újraellenőrzése folyamatban van. Kifizetést csak admin jóváhagyás után kezdeményezhetsz.";
+    } elseif (!$data_verified) {
         $error_message = "A kifizetéshez először az adminnak ellenőriznie kell a személyes adataidat! Kérjük, a Személyes Adatok oldalon kérd az ellenőrzést.";
     } elseif ($amount <= 0) {
         $error_message = "A kifizetési összeg nagyobb kell legyen, mint 0!";
@@ -467,7 +470,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                     
                     <?php
                         $minWithdrawal = get_setting_int('min_withdrawal', 6000);
-                        $can_withdraw = $winnings_balance >= $minWithdrawal;
+                        $can_withdraw = $winnings_balance >= $minWithdrawal && $data_verified && !$has_pending_data_verification;
                         $withdrawable = $winnings_balance;
                     ?>
 
@@ -520,7 +523,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_withdrawal']))
                     <?php endif; ?>
                     </div>
 
-                    <?php if (!$data_verified): ?>
+                    <?php if ($has_pending_data_verification): ?>
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-hourglass-half"></i>
+                        A személyes adataid újraellenőrzése folyamatban van. Kifizetést csak admin jóváhagyás után kezdeményezhetsz.
+                    </div>
+                    <?php elseif (!$data_verified): ?>
                     <div class="alert alert-danger" role="alert" data-i18n-html="userProfile.withdrawal.verifyRequiredHtml">
                         <i class="fas fa-exclamation-triangle"></i>
                         A kifizetéshez először az adminnak ellenőriznie kell a személyes adataidat. Kérjük, a <a href="personal_data.php" class="alert-link">Személyes Adatok</a> oldalon kérd az ellenőrzést.

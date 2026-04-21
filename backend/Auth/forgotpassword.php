@@ -4,6 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../connect.php';
 require_once __DIR__ . '/../mail_config.php';
+require_once __DIR__ . '/audit_helper.php';
 require_once __DIR__ . '/../PHPMailer/Exception.php';
 require_once __DIR__ . '/../PHPMailer/PHPMailer.php';
 require_once __DIR__ . '/../PHPMailer/SMTP.php';
@@ -38,7 +39,8 @@ if (!$user) {
 }
 
 // Óránkénti limit ellenőrzése (max 3 kérés / óra)
-$limitStmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM UserLogs WHERE user_id = ? AND action = 'password_reset_request' AND created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)");
+// A limitet ActivityLog alapján számoljuk, így a UserLogs tábla nem szükséges.
+$limitStmt = $conn->prepare("\n+  SELECT COUNT(*) AS cnt\n+  FROM ActivityLog\n+  WHERE user_id = ?\n+    AND activity_type = 'password_reset'\n+    AND description = 'Jelszó-visszaállítási e-mail kérés.'\n+    AND created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)\n+");
 $limitStmt->bind_param("i", $user['id']);
 $limitStmt->execute();
 $limitRes = $limitStmt->get_result()->fetch_assoc();
@@ -58,11 +60,8 @@ $stmt->bind_param("si", $resetToken, $user['id']);
 $stmt->execute();
 $stmt->close();
 
-// Kérés naplózása a rate limit-hez
-$logStmt = $conn->prepare("INSERT INTO UserLogs (user_id, action, details, created_at) VALUES (?, 'password_reset_request', 'Jelszó-visszaállítási email kérés', NOW())");
-$logStmt->bind_param("i", $user['id']);
-$logStmt->execute();
-$logStmt->close();
+// Felhasználói naplóba is kerüljön be, hogy a profil Napló oldalon látható legyen.
+log_activity((int)$user['id'], 'password_reset', 'Jelszó-visszaállítási e-mail kérés.');
 
 // Email küldése a jelszó-visszaállító linkkel
 $resetUrl = SITE_BASE_URL . '/frontend/Auth/reset_password.php?token=' . $resetToken;

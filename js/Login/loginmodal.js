@@ -1,4 +1,107 @@
 document.addEventListener('DOMContentLoaded', function () {
+  var LOCATION_CACHE_KEY = 'bmb_client_settlement';
+  var LOCATION_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+
+  function withTimeout(promise, timeoutMs) {
+    return Promise.race([
+      promise,
+      new Promise(function(resolve) {
+        setTimeout(function() { resolve(null); }, timeoutMs);
+      })
+    ]);
+  }
+
+  function readCachedSettlement() {
+    try {
+      var raw = localStorage.getItem(LOCATION_CACHE_KEY);
+      if (!raw) return '';
+      var parsed = JSON.parse(raw);
+      if (!parsed || !parsed.name || !parsed.ts) return '';
+      if ((Date.now() - parsed.ts) > LOCATION_CACHE_TTL_MS) return '';
+      return String(parsed.name);
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function writeCachedSettlement(name) {
+    try {
+      localStorage.setItem(LOCATION_CACHE_KEY, JSON.stringify({
+        name: String(name || ''),
+        ts: Date.now()
+      }));
+    } catch (e) {
+      // Cache hiba esetén csendben továbblépünk.
+    }
+  }
+
+  function reverseGeocodeSettlement(lat, lon) {
+    var url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&addressdetails=1&lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lon);
+    return fetch(url, {
+      headers: {
+        'Accept': 'application/json'
+      }
+    })
+      .then(function(res) {
+        if (!res.ok) return null;
+        return res.json();
+      })
+      .then(function(data) {
+        if (!data || !data.address) return '';
+        var a = data.address;
+        var settlement = a.city || a.town || a.village || a.hamlet || a.municipality || a.county || '';
+        var countryCode = (a.country_code || '').toUpperCase();
+        return settlement ? (countryCode ? (settlement + ', ' + countryCode) : settlement) : '';
+      })
+      .catch(function() {
+        return '';
+      });
+  }
+
+  function getClientSettlement() {
+    var cached = readCachedSettlement();
+    if (cached) {
+      return Promise.resolve(cached);
+    }
+
+    if (!navigator.geolocation || !window.isSecureContext) {
+      return Promise.resolve('');
+    }
+
+    return withTimeout(new Promise(function(resolve) {
+      navigator.geolocation.getCurrentPosition(
+        function(pos) {
+          var lat = pos.coords && pos.coords.latitude;
+          var lon = pos.coords && pos.coords.longitude;
+          if (typeof lat !== 'number' || typeof lon !== 'number') {
+            resolve('');
+            return;
+          }
+
+          withTimeout(reverseGeocodeSettlement(lat, lon), 5000)
+            .then(function(name) {
+              var settlement = String(name || '').trim();
+              if (settlement) writeCachedSettlement(settlement);
+              resolve(settlement);
+            })
+            .catch(function() {
+              resolve('');
+            });
+        },
+        function() {
+          resolve('');
+        },
+        {
+          enableHighAccuracy: false,
+          timeout: 30000,
+          maximumAge: LOCATION_CACHE_TTL_MS
+        }
+      );
+    }), 32000).then(function(name) {
+      return String(name || '');
+    });
+  }
+
   // ── Caps Lock detektálás ──
   (function() {
     var pwField = document.getElementById('login-password');
@@ -83,17 +186,23 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     fd.append('client_browser', clientBrowser);
 
-    // reCAPTCHA v3 token lekérése, majd bejelentkezés
-    if (typeof grecaptcha !== 'undefined') {
-      grecaptcha.ready(function () {
-        grecaptcha.execute(window.RECAPTCHA_SITE_KEY, { action: 'login' }).then(function (token) {
-          fd.append('recaptcha_token', token);
-          doLogin(fd);
+    getClientSettlement().then(function(settlement) {
+      if (settlement) {
+        fd.append('client_location', settlement);
+      }
+
+      // reCAPTCHA v3 token lekérése, majd bejelentkezés
+      if (typeof grecaptcha !== 'undefined') {
+        grecaptcha.ready(function () {
+          grecaptcha.execute(window.RECAPTCHA_SITE_KEY, { action: 'login' }).then(function (token) {
+            fd.append('recaptcha_token', token);
+            doLogin(fd);
+          });
         });
-      });
-    } else {
-      doLogin(fd);
-    }
+      } else {
+        doLogin(fd);
+      }
+    });
   });
 
   function doLogin(fd) {

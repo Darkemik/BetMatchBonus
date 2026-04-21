@@ -13,6 +13,83 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
   exit;
 }
 
+function extractClientIp(): ?string {
+  $candidates = [];
+
+  if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
+    $candidates[] = trim((string)$_SERVER['HTTP_CF_CONNECTING_IP']);
+  }
+
+  if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+    $parts = explode(',', (string)$_SERVER['HTTP_X_FORWARDED_FOR']);
+    foreach ($parts as $part) {
+      $candidates[] = trim($part);
+    }
+  }
+
+  if (!empty($_SERVER['HTTP_X_REAL_IP'])) {
+    $candidates[] = trim((string)$_SERVER['HTTP_X_REAL_IP']);
+  }
+
+  if (!empty($_SERVER['REMOTE_ADDR'])) {
+    $candidates[] = trim((string)$_SERVER['REMOTE_ADDR']);
+  }
+
+  foreach ($candidates as $ip) {
+    if ($ip === '') {
+      continue;
+    }
+    if (filter_var($ip, FILTER_VALIDATE_IP)) {
+      return $ip;
+    }
+  }
+
+  return null;
+}
+
+function isLocalOrPrivateIp(?string $ip): bool {
+  if ($ip === null || $ip === '' || strtolower($ip) === 'localhost' || $ip === '::1' || $ip === '127.0.0.1') {
+    return true;
+  }
+
+  if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
+    return true;
+  }
+
+  return false;
+}
+
+function resolveLocationFromUserData(mysqli $conn, array $user): ?string {
+  if ((int)($user['data_verified'] ?? 0) !== 1) {
+    return null;
+  }
+
+  $city = trim((string)($user['city'] ?? ''));
+  $postalCode = trim((string)($user['postal_code'] ?? ''));
+  $country = trim((string)($user['country'] ?? ''));
+
+  if ($city === '' && $postalCode !== '') {
+    $stmtPostal = $conn->prepare("SELECT city FROM PostalCodes WHERE postal_code = ? LIMIT 1");
+    if ($stmtPostal) {
+      $stmtPostal->bind_param("s", $postalCode);
+      $stmtPostal->execute();
+      $resPostal = $stmtPostal->get_result();
+      $rowPostal = $resPostal ? $resPostal->fetch_assoc() : null;
+      $stmtPostal->close();
+      if ($rowPostal && !empty($rowPostal['city'])) {
+        $city = trim((string)$rowPostal['city']);
+      }
+    }
+  }
+
+  if ($city === '') {
+    return null;
+  }
+
+  $countryPart = $country !== '' ? $country : 'HU';
+  return mb_substr(trim($city . ', ' . $countryPart, ', '), 0, 120);
+}
+
 // reCAPTCHA v3 ellenőrzés
 $recaptchaToken = $_POST['recaptcha_token'] ?? '';
 $recaptchaResult = verifyRecaptcha($recaptchaToken, 'login');
@@ -31,6 +108,10 @@ if ($login === '' || $password === '') {
 }
 
 $stmt = $conn->prepare("SELECT id, username, email, password_hash, full_name, birth_date, is_active, is_verified,
+                               data_verified,
+                               city, postal_code, country,
+                               reset_token, reset_token_expiry,
+                               force_logout_at,
                                failed_login_attempts, login_locked_until
                         FROM Users
                         WHERE username = ? OR email = ?
@@ -59,6 +140,12 @@ if ($user && $user['login_locked_until'] !== null) {
 }
 
 $maxAttempts = get_setting_int('max_login_attempts', 3);
+
+// Ha admin reset indult (token aktív + force_logout_at beállítva), a régi jelszóval nem lehet belépni.
+if ($user && !empty($user['reset_token']) && !empty($user['reset_token_expiry']) && strtotime((string)$user['reset_token_expiry']) > time() && !empty($user['force_logout_at'])) {
+  echo json_encode(['success' => false, 'message' => 'Az admin jelszó-helyreállítást kért ehhez a fiókhoz. Kérjük, nézd meg az emailed és állíts be új jelszót!']);
+  exit;
+}
 
 if (!$user || !password_verify($password, $user['password_hash'])) {
   // Sikertelen bejelentkezés — számláló növelése
@@ -136,8 +223,12 @@ if ($rememberMe) {
   $tokenExpiry = time() + (10 * 60 * 60); // 10 óra — DB token lejárat
   $cookieExpiry = time() + (10 * 365 * 24 * 60 * 60); // ~10 év — cookie "örökre"
   
-  $ip = $_SERVER['REMOTE_ADDR'] ?? null;
+  $ip = extractClientIp();
   $ua = isset($_SERVER['HTTP_USER_AGENT']) ? mb_substr($_SERVER['HTTP_USER_AGENT'], 0, 255) : null;
+  $clientLocation = trim((string)($_POST['client_location'] ?? ''));
+  if ($clientLocation !== '') {
+    $clientLocation = mb_substr($clientLocation, 0, 120);
+  }
   $clientBrowser = trim($_POST['client_browser'] ?? '');
 
   // Ha a kliens böngésző nevet küldött, beleírjuk a user-agent elejére jelzésként
@@ -180,9 +271,16 @@ if ($rememberMe) {
   // Token mentése a UserSessions táblába (multi-device)
   // Helyszín meghatározása IP alapján
   $location = null;
-  $isLocal = in_array($ip, ['::1', '127.0.0.1', 'localhost', null, ''], true);
+  $profileLocation = resolveLocationFromUserData($conn, $user);
+  $isLocal = isLocalOrPrivateIp($ip);
   if ($isLocal) {
-    $location = 'Helyi gép (localhost)';
+    if ($clientLocation !== '') {
+      $location = $clientLocation;
+    } elseif ($profileLocation !== null) {
+      $location = $profileLocation;
+    } else {
+      $location = 'Helyi gép (localhost)';
+    }
   } else {
     $geoCtx = stream_context_create(['http' => ['timeout' => 2]]);
     $geoJson = @file_get_contents('http://ip-api.com/json/' . urlencode($ip) . '?fields=status,city,country,countryCode', false, $geoCtx);
@@ -193,6 +291,12 @@ if ($rememberMe) {
         $cc = $geo['countryCode'] ?? '';
         $location = trim($city . ', ' . $cc, ', ');
       }
+    }
+    if (!$location && $clientLocation !== '') {
+      $location = $clientLocation;
+    }
+    if (!$location && $profileLocation !== null) {
+      $location = $profileLocation;
     }
   }
 
